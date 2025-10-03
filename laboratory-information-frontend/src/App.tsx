@@ -1,6 +1,11 @@
 import { useEffect, useSyncExternalStore } from 'react'
 import LoginPage from './pages/auth'
-import { Admin, LabManagement, LabUser, Technician, ServiceEngineer, Patient } from './pages/roles'
+import { Admin } from './pages/roles/Admin'
+import { LabManagement } from './pages/roles/LabManagement'
+import { LabUser } from './pages/roles/lab/LabUser'
+import { Technician } from './pages/roles/lab/Technician'
+import { ServiceEngineer } from './pages/roles/lab/ServiceEngineer'
+import { Patient } from './pages/roles/patient/Patient'
 
 function useHashLocation() {
   const subscribe = (cb: () => void) => {
@@ -26,6 +31,7 @@ function App() {
   if (route.startsWith('/role/technician')) return <Technician />
   if (route.startsWith('/role/service')) return <ServiceEngineer />
   if (route.startsWith('/role/patient')) return <Patient />
+  if (route.startsWith('/role/user')) return <Patient />
 
   return <LoginPage />
 }
