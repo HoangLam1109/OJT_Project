@@ -2,7 +2,6 @@ import { useEffect, useSyncExternalStore } from 'react'
 import LoginPage from './pages/auth'
 import { Admin } from './pages/roles/Admin'
 import { LabManagement } from './pages/roles/LabManagement'
-import { NormalUser } from './pages/roles/NormalUser'
 import { LabUser } from './pages/roles/lab/LabUser'
 import { Technician } from './pages/roles/lab/Technician'
 import { ServiceEngineer } from './pages/roles/lab/ServiceEngineer'
@@ -32,7 +31,7 @@ function App() {
   if (route.startsWith('/role/technician')) return <Technician />
   if (route.startsWith('/role/service')) return <ServiceEngineer />
   if (route.startsWith('/role/patient')) return <Patient />
-  if (route.startsWith('/role/user')) return <NormalUser />
+  
 
   return <LoginPage />
 }
