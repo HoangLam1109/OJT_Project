@@ -1,6 +1,6 @@
+import { useEffect } from 'react'
 import './styles.css'
 import viteLogo from '/vite.svg'
-import { useEffect } from 'react'
 
 function DesktopLogin() {
   return (
@@ -157,4 +157,3 @@ function LoginPage() {
 }
 
 export default LoginPage
-
