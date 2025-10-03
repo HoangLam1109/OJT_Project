@@ -1,10 +1,12 @@
 import React from 'react'
 
-export const LabManagement = () => {
+export const Patient = () => {
   return (
     <div>
-      <h2>LabManagement</h2>
+      <h2>Patient</h2>
       <button onClick={() => { window.location.hash = '/' }}>Đăng xuất</button>
     </div>
   )
 }
+
+

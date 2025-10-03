@@ -1,10 +1,12 @@
 import React from 'react'
 
-export const LabManagement = () => {
+export const Technician = () => {
   return (
     <div>
-      <h2>LabManagement</h2>
+      <h2>Technician</h2>
       <button onClick={() => { window.location.hash = '/' }}>Đăng xuất</button>
     </div>
   )
 }
+
+
