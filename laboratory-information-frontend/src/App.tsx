@@ -1,35 +1,40 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useSyncExternalStore } from 'react'
+import LoginPage from './pages/auth'
+import { Admin } from './pages/roles/Admin'
+import { LabManagement } from './pages/roles/LabManagement'
+import { NormalUser } from './pages/roles/NormalUser'
+import { LabUser } from './pages/roles/lab/LabUser'
+import { Technician } from './pages/roles/lab/Technician'
+import { ServiceEngineer } from './pages/roles/lab/ServiceEngineer'
+import { Patient } from './pages/roles/patient/Patient'
+
+function useHashLocation() {
+  const subscribe = (cb: () => void) => {
+    window.addEventListener('hashchange', cb)
+    return () => window.removeEventListener('hashchange', cb)
+  }
+  return useSyncExternalStore(subscribe, () => window.location.hash, () => '#')
+}
 
 function App() {
-  const [count, setCount] = useState(0)
+  const hash = useHashLocation()
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+  useEffect(() => {
+    if (!hash) return
+    // Fallback: ensure hash always starts with '#'
+  }, [hash])
+
+  const route = hash.replace(/^#/, '')
+
+  if (route.startsWith('/role/admin')) return <Admin />
+  if (route.startsWith('/role/lab-manager')) return <LabManagement />
+  if (route.startsWith('/role/lab-user')) return <LabUser />
+  if (route.startsWith('/role/technician')) return <Technician />
+  if (route.startsWith('/role/service')) return <ServiceEngineer />
+  if (route.startsWith('/role/patient')) return <Patient />
+  if (route.startsWith('/role/user')) return <NormalUser />
+
+  return <LoginPage />
 }
 
 export default App
