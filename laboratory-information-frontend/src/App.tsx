@@ -15,6 +15,10 @@ function useHashLocation() {
   return useSyncExternalStore(subscribe, () => window.location.hash, () => '#')
 }
 
+function NormalUser() {
+  return <div>Normal User Page</div>
+}
+
 function App() {
   const hash = useHashLocation()
 
