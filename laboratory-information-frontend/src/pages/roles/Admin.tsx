@@ -11,6 +11,7 @@ export const Admin = () => {
       icon: '📊',
       isActive: true 
     },
+    //aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
     { 
       id: 'patients', 
       label: 'Quản lý bệnh nhân', 
