@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Toaster } from 'sonner';
 import { LoginForm } from './components/auth/LoginForm';
+import { HomePage } from './layouts/HomeLayout';
+import type { User } from './types';
 
 import { AdminLayout } from './layouts/AdminLayout';
 import { LabManagerLayout } from './layouts/LabManagerLayout';
@@ -17,94 +19,11 @@ import { SettingsPage } from './pages/SettingsPage';
 import { AddUserPage } from './pages/AddUserPage';
 import { LabManagerDashboard } from './pages/LabManagerDashboard';
 
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: 'admin' | 'laboratory_manager' | 'service' | 'lab_user' | 'normal_user' | 'technician';
-  active: boolean;
-  lastLogin?: string;
-  permissions: string[];
-  phone_number?: string;
-  identify_number?: string;
-  gender?: string;
-  age?: number;
-  address?: string;
-  date_of_birth?: string;
-  schedule?: {
-    startTime: string;
-    endTime: string;
-    workDays: string[];
-  };
-}
-
-export interface Patient {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  dateOfBirth: string;
-  gender: string;
-  address: string;
-  testHistory: Test[];
-}
-
-export interface Test {
-  id: string;
-  patientId: string;
-  testType: string;
-  orderDate: string;
-  status: 'pending' | 'in-progress' | 'completed' | 'validated' | 'ai_reviewed';
-  sampleId?: string;
-  results?: string;
-  fee: number;
-  technician?: string;
-  completionDate?: string;
-  aiReviewData?: {
-    reviewedAt: string;
-    reviewScore: number;
-    confidence: number;
-    flags: string[];
-    recommendations: string[];
-    anomalies: Array<{
-      parameter: string;
-      value: number;
-      expected: string;
-      severity: 'low' | 'medium' | 'high';
-      description: string;
-    }>;
-  };
-}
-
-export interface Chemical {
-  id: string;
-  name: string;
-  batchCode: string;
-  quantity: number;
-  unit: string;
-  expiryDate: string;
-  minStockLevel: number;
-  costPerUnit: number;
-  supplier: string;
-  testTypes: string[];
-  quantityPerTest: number;
-}
-
-export interface Bill {
-  id: string;
-  patientId: string;
-  tests: string[];
-  totalAmount: number;
-  paymentStatus: 'pending' | 'paid' | 'overdue';
-  paymentMethod?: string;
-  paymentDate?: string;
-  dueDate: string;
-}
 
 function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState<'home' | 'login' | 'forgot-password'>('login');
+  const [currentPage, setCurrentPage] = useState<'home' | 'login' | 'forgot-password'>('home');
   const [adminCurrentPage, setAdminCurrentPage] = useState<string>('dashboard');
 
   // Mock authentication check
@@ -119,13 +38,14 @@ function App() {
   const handleLogin = (user: User) => {
     setCurrentUser(user);
     localStorage.setItem('limsUser', JSON.stringify(user));
-    setCurrentPage('home');
+    // After login, show the appropriate dashboard based on role
+    // The renderLayout function will handle showing the correct layout
   };
 
   const handleLogout = () => {
     setCurrentUser(null);
     localStorage.removeItem('limsUser');
-    setCurrentPage('login');
+    setCurrentPage('home');
   };
 
   const handleShowHome = () => {
@@ -134,6 +54,16 @@ function App() {
 
   const handleShowForgotPassword = () => {
     setCurrentPage('forgot-password');
+  };
+
+  const handleShowLogin = () => {
+    setCurrentPage('login');
+  };
+
+  const handleShowRegister = () => {
+    // For now, redirect to login page
+    // In the future, you can add a register page
+    setCurrentPage('login');
   };
 
   // Render appropriate dashboard based on role
@@ -252,6 +182,12 @@ function App() {
   if (!currentUser) {
     return (
       <>
+        {currentPage === 'home' && (
+          <HomePage 
+            onShowLogin={handleShowLogin}
+            onShowRegister={handleShowRegister}
+          />
+        )}
         {currentPage === 'login' && (
           <LoginForm 
             onLogin={handleLogin}

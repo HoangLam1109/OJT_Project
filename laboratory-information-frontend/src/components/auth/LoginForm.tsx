@@ -3,7 +3,7 @@ import { Button } from '../common/button';
 import { Alert, AlertDescription } from '../common/alert';
 import { toast } from 'sonner';
 import { authenticateUser } from '../../data/mockData';
-import type { User } from '../../App';
+import type { User } from '../../types';
 import { LoginHeader } from './LoginHeader';
 import { LoginInputField } from './LoginInputField';
 import { LoginDemoAccounts } from './LoginDemoAccounts';
@@ -26,7 +26,7 @@ export function LoginForm({ onLogin, onShowForgotPassword, onBackToHome }: Login
     const user = authenticateUser(email, password);
     if (user) {
       toast.success(`Chào mừng, ${user.name}!`);
-      onLogin(user);
+      onLogin(user as User);
     } else {
       setError('Sai thông tin đăng nhập');
     }
