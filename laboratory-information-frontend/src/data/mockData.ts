@@ -1,4 +1,4 @@
-import type { User } from '../App.tsx';
+import type { User } from '../types';
 
 export interface MockUser extends User {
   password: string;

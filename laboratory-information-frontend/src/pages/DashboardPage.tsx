@@ -1,4 +1,3 @@
-import React from 'react';
 import { 
   Card, 
   CardContent, 
@@ -10,8 +9,7 @@ import { Button } from '../components/common/button';
 import { 
   TestTube2, 
   Users, 
-  UserPlus, 
-  TrendingUp, 
+  UserPlus,  
   AlertTriangle, 
   CheckCircle, 
   Clock, 
