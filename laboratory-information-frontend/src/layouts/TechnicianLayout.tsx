@@ -15,7 +15,7 @@ import {
   Calculator,
   Clock
 } from 'lucide-react';
-import { Button } from '../components/common/button';
+import Button from '../components/common/button';
 import { Input } from '../components/common/input';
 import type { User as UserType } from '../types';
 

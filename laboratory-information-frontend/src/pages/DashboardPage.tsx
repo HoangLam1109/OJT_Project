@@ -5,7 +5,7 @@ import {
   CardHeader, 
   CardTitle 
 } from '../components/common/card';
-import { Button } from '../components/common/button';
+import Button from '../components/common/button';
 import { 
   TestTube2, 
   Users, 

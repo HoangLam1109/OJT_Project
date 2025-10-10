@@ -1,5 +1,5 @@
 import { Card, CardContent } from '../common/card';
-import { Button } from '../common/button';
+import Button from '../common/button';
 import { 
   Phone,
   Mail,

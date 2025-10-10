@@ -1,4 +1,4 @@
-import { Button } from '../common/button';
+import Button from '../common/button';
 import { 
   Microscope,
   Phone,

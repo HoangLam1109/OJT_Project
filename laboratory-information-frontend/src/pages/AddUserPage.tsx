@@ -6,7 +6,7 @@ import {
   CardHeader,
   CardTitle
 } from '../components/common/card';
-import { Button } from '../components/common/button';
+import Button from '../components/common/button';
 import { Input } from '../components/common/input';
 import { Label } from '../components/common/label';
 import {
@@ -21,7 +21,7 @@ import {
   MapPin,
   IdCard
 } from 'lucide-react';
-import type { User } from '../App';
+import type { User } from '../types';
 
 interface AddUserPageProps {
   onBack: () => void;

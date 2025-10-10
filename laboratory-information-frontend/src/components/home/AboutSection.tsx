@@ -1,4 +1,4 @@
-import { Button } from '../common/button';
+import Button from '../common/button';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { 
   Building2,
