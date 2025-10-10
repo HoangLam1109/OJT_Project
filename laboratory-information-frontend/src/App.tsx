@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Toaster } from 'sonner';
 import { LoginForm } from './components/auth/LoginForm';
+import { RegisterForm } from './components/auth/RegisterForm';
 import { HomePage } from './layouts/HomeLayout';
 import type { User } from './types';
 
@@ -23,7 +24,7 @@ import { LabManagerDashboard } from './pages/LabManagerDashboard';
 function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState<'home' | 'login' | 'forgot-password'>('home');
+  const [currentPage, setCurrentPage] = useState<'home' | 'login' | 'register' | 'forgot-password'>('home');
   const [adminCurrentPage, setAdminCurrentPage] = useState<string>('dashboard');
 
   // Mock authentication check
@@ -61,9 +62,7 @@ function App() {
   };
 
   const handleShowRegister = () => {
-    // For now, redirect to login page
-    // In the future, you can add a register page
-    setCurrentPage('login');
+    setCurrentPage('register');
   };
 
   // Render appropriate dashboard based on role
@@ -192,6 +191,13 @@ function App() {
           <LoginForm 
             onLogin={handleLogin}
             onShowForgotPassword={handleShowForgotPassword}
+            onBackToHome={handleShowHome}
+            onShowRegister={handleShowRegister}
+          />
+        )}
+        {currentPage === 'register' && (
+          <RegisterForm 
+            onBackToLogin={handleShowLogin}
             onBackToHome={handleShowHome}
           />
         )}
