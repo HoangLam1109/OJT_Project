@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Toaster } from 'sonner';
-import { LoginForm } from './layouts/AuthLayout';
+import { LoginForm } from './components/auth/LoginForm';
+
 import { AdminLayout } from './layouts/AdminLayout';
 import { LabManagerLayout } from './layouts/LabManagerLayout';
 import { ServiceLayout } from './layouts/ServiceLayout';
@@ -256,7 +257,6 @@ function App() {
             onLogin={handleLogin}
             onShowForgotPassword={handleShowForgotPassword}
             onBackToHome={handleShowHome}
-            embedded={false}
           />
         )}
         {currentPage === 'forgot-password' && (
