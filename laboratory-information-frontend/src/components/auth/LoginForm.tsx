@@ -47,7 +47,7 @@ export function LoginForm({ onLogin, onShowForgotPassword, onBackToHome }: Login
               id="email"
               label="Địa chỉ Email"
               type="email"
-              placeholder="Nhập email..."
+              placeholder="Nhập email..." 
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               icon="mail"
