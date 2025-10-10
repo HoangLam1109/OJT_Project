@@ -6,7 +6,7 @@ import {
   CardHeader,
   CardTitle
 } from '../components/common/card';
-import { Button } from '../components/common/button';
+import Button from '../components/common/button';
 import { Input } from '../components/common/input';
 import { Label } from '../components/common/label';
 import {
@@ -23,10 +23,9 @@ import {
   RefreshCw,
   Brain,
   MessageSquare,
-  Settings,
   Download
 } from 'lucide-react';
-import type { Test } from '../App';
+import type { Test } from '../types';
 
 interface TestOrderManagementProps {
   currentUser: any;

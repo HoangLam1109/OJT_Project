@@ -15,10 +15,10 @@ import {
   AlertTriangle,
   User
 } from 'lucide-react';
-import { Button } from '../components/common/button';
+import Button from '../components/common/button';
 import { Input } from '../components/common/input';
 import { Card } from '../components/common/card';
-import type { User as UserType } from '../App';
+import type { User as UserType } from '../types';
 
 interface AdminLayoutProps {
   children: React.ReactNode;

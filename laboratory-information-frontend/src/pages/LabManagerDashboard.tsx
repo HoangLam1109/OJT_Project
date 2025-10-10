@@ -12,7 +12,6 @@ import {
   TestTube2, 
   TrendingUp,
   AlertCircle,
-  CheckCircle,
   Clock,
   Activity
 } from 'lucide-react';

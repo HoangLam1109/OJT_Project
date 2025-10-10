@@ -6,11 +6,10 @@ import {
   CardHeader,
   CardTitle
 } from '../components/common/card';
-import { Button } from '../components/common/button';
+import Button from '../components/common/button';
 import { Input } from '../components/common/input';
 import { Label } from '../components/common/label';
 import {
-  Settings,
   Save,
   RefreshCw,
   AlertTriangle,
