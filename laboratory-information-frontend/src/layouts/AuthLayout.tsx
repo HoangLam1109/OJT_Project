@@ -213,6 +213,18 @@ export function LoginForm({ onLogin, onShowForgotPassword, onBackToHome, embedde
                     <span className="text-gray-600">Service:</span>
                     <span className="text-gray-900 bg-white/70 px-2 py-1 rounded text-xs">service@lab.com / service123</span>
                   </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Lab User:</span>
+                    <span className="text-gray-900 bg-white/70 px-2 py-1 rounded text-xs">labuser@lab.com / labuser123</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Technician:</span>
+                    <span className="text-gray-900 bg-white/70 px-2 py-1 rounded text-xs">technician@lab.com / tech123</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Patient:</span>
+                    <span className="text-gray-900 bg-white/70 px-2 py-1 rounded text-xs">user@example.com / user123</span>
+                  </div>
                 </div>
               </div>
 
