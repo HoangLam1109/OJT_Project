@@ -20,7 +20,7 @@ export function LoginHeader() {
         </span>
       </CardTitle>
       <CardDescription className="text-sm text-gray-600 max-w-sm mx-auto">
-        Đăng nhập để truy cập hệ thống
+        Đăng nhập để truy cập bảng điều khiển
       </CardDescription>
     </>
   );

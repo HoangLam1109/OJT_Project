@@ -91,7 +91,7 @@ export function HomePage({ onShowLogin, onShowRegister }: HomePageProps) {
         <TestimonialsSection />
         <FAQSection />
         <ContactSection />
-        <CTASection onShowLogin={onShowLogin} />
+        <CTASection onShowLogin={onShowLogin} onShowRegister={onShowRegister} />
         <Footer />
       </div>
     </div>
