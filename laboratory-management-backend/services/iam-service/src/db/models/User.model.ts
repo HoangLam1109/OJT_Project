@@ -1,0 +1,108 @@
+import { randomUUID, type UUID } from "crypto"
+import mongoose, { Document } from "mongoose"
+
+interface IUser extends Document {
+    _id: UUID
+    email: string
+    fullName: string
+    identityNumber: string
+    gender: string
+    age: number
+    dateOfBirth: Date
+    passwordHash: string
+    createdAt: Date
+//   phoneNumber: string
+//   address: string
+//   lastLogin: Date
+//   lastPasswordChange: Date
+//   failedLoginAttempts: number
+//   isLocked: boolean
+//   isActive: boolean
+//   lockedUntil: Date
+//   lastActivity: Date
+//   updatedAt: Date
+//   createdBy: string
+//   updatedBy: string
+//   isDeleted: boolean
+//   deletedAt: Date
+//   deletedBy: string
+}
+
+const userSchema = new mongoose.Schema<IUser>(
+  {
+    _id: {
+      type: String,
+      default: () => randomUUID(),
+    },
+    email: {
+      type: String,
+      required: [true, "Email is required!"],
+      unique: true,
+      trim: true,
+      lowercase: true,
+      validate: {
+        validator: function (value: string): boolean {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+          return emailRegex.test(value)
+        },
+        message: "Invalid email format!",
+      },
+    },
+    fullName: {
+      type: String,
+      required: [true, "Full name is required!"],
+      trim: true,
+      minlength: [3, "Full name must be at least 3 characters long!"],
+      maxlength: [100, "Full name cannot exceed 100 characters!"],
+    },
+    identityNumber: {
+        type: String,
+        required: [true, "Identity number is required!"],
+        trim: true,
+        unique: true,
+    },
+    gender: {
+        type: String,
+        trim: true,
+        lowercase: true,
+        enum: ["male", "female"],
+    },
+    age: {
+        type: Number,
+        required: [true, "Age is required!"],
+        trim: true,
+    },
+    dateOfBirth: {
+        type: Date,
+        required: [true, "Date of birth is required!"],
+        format: "MM/DD/YYYY",
+    },
+    passwordHash: {
+        type: String,
+        required: [true, "Password is required!"],
+        unique: true,
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now,
+    },
+  },
+  {
+    _id: false,
+    timestamps: true,
+    collection: "users-data",
+  }
+)
+
+userSchema.pre("save", function(next) {
+  if (!this._id) {
+    this._id = randomUUID();
+  }
+  next();
+});
+
+const User = mongoose.model<IUser>("User", userSchema)
+
+export default User
+
+export type { IUser }
