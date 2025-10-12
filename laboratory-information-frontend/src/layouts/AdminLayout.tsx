@@ -18,7 +18,7 @@ import {
 import Button from '../components/common/button';
 import { Input } from '../components/common/input';
 import { Card } from '../components/common/card';
-import type { User as UserType } from '../types';
+import type { User as UserType } from '../features/login/types/User';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
