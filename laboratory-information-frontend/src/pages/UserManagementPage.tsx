@@ -22,7 +22,7 @@ import {
   Activity,
   FileText
 } from 'lucide-react';
-import type { User } from '../types';
+import type { User } from '../features/login/types/User';
 
 interface UserManagementProps {
   currentUser: User;

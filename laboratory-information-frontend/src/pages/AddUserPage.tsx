@@ -21,8 +21,7 @@ import {
   MapPin,
   IdCard
 } from 'lucide-react';
-import type { User } from '../types';
-
+import type { User } from '../features/login/types/User';
 interface AddUserPageProps {
   onBack: () => void;
   onSave: (user: Omit<User, 'id'>) => void;

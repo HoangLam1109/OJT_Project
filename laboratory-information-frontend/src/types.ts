@@ -1,23 +1,4 @@
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: 'admin' | 'laboratory_manager' | 'service' | 'lab_user' | 'normal_user' | 'technician';
-  active: boolean;
-  lastLogin?: string;
-  permissions: string[];
-  phone_number?: string;
-  identify_number?: string;
-  gender?: string;
-  age?: number;
-  address?: string;
-  date_of_birth?: string;
-  schedule?: {
-    startTime: string;
-    endTime: string;
-    workDays: string[];
-  };
-}
+
 
 export interface Patient {
   id: string;
@@ -81,3 +62,17 @@ export interface Bill {
   paymentDate?: string;
   dueDate: string;
 }
+
+
+// Dùng cho component chỉ có nút "Đăng nhập"
+export interface LoginType {
+  onShowLogin: () => void;
+}
+
+// Dùng cho component chỉ có nút "Đăng ký"
+export interface RegisterType {
+  onShowRegister: () => void;
+}
+
+// Dùng cho component có cả hai
+export interface LoginAndRegisterType extends LoginType, RegisterType {}

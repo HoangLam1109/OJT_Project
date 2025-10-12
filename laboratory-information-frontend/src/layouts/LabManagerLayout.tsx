@@ -16,8 +16,7 @@ import {
 } from 'lucide-react';
 import Button from '../components/common/button';
 import { Input } from '../components/common/input';
-import type { User as UserType } from '../types';
-
+import type { User as UserType } from '../features/login/types/User';
 interface LabManagerLayoutProps {
   children: React.ReactNode;
   currentUser: UserType;
