@@ -1,11 +1,13 @@
 import type { Request, Response } from "express";
-import { userRepository } from "../repositories/index.js";
+import { UserService } from "../services/user.service.js";
 import type { IUser } from "../db/models/User.model.ts";
 import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
 import { errorHandler } from "../utils/error.util.js";
 import { clearJWT, generateJWT } from "../utils/jwt.util.js";
 dotenv.config();
+
+const userService = new UserService();
 
 const registerUser = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -16,8 +18,8 @@ const registerUser = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const existingEmail = await userRepository.findByEmail(email);
-    const existingIdentityNumber = await userRepository.findByIdentityNumber(identityNumber);
+    const existingEmail = await userService.getUserByEmail(email);
+    const existingIdentityNumber = await userService.getUserByIdentityNumber(identityNumber);
     if (existingEmail || existingIdentityNumber) {
       res.status(400).json({
         message: existingEmail
@@ -26,19 +28,17 @@ const registerUser = async (req: Request, res: Response): Promise<void> => {
       });
       return;
     }
-
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    const newUser = await userRepository.create({
+    
+    const newUser = await userService.createUser({
       email,
       fullName,
       identityNumber,
       gender,
       age,
       dateOfBirth: new Date(dateOfBirth),
-      passwordHash: hashedPassword,
+      password: password,
     });
+
     res.status(201).json({ message: "User created successfully!" });
   } catch (error) {
     errorHandler(res, error);
@@ -47,16 +47,14 @@ const registerUser = async (req: Request, res: Response): Promise<void> => {
 
 const loginUser = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { identifier, password } = req.body;
+    const { email, password } = req.body;
 
-    if (!identifier || !password) {
+    if (!email || !password) {
       res.status(400).json({ message: "Missing credentials" });
       return;
     }
 
-    const user: IUser | null = identifier.includes("@")
-      ? await userRepository.findByEmail(identifier)
-      : await userRepository.findByIdentityNumber(identifier);
+    const user: IUser | null = await userService.getUserByEmail(email);
 
     if (!user) {
       res.status(400).json({ message: "User not found!" });

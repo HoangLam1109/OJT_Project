@@ -1,31 +1,34 @@
 import { randomUUID, type UUID } from "crypto"
 import mongoose, { Document } from "mongoose"
 
-interface IUser extends Document {
-    _id: UUID
-    email: string
-    fullName: string
-    identityNumber: string
-    gender: string
-    age: number
-    dateOfBirth: Date
-    passwordHash: string
-    createdAt: Date
-//   phoneNumber: string
-//   address: string
-//   lastLogin: Date
-//   lastPasswordChange: Date
-//   failedLoginAttempts: number
-//   isLocked: boolean
-//   isActive: boolean
-//   lockedUntil: Date
-//   lastActivity: Date
-//   updatedAt: Date
-//   createdBy: string
-//   updatedBy: string
-//   isDeleted: boolean
-//   deletedAt: Date
-//   deletedBy: string
+export interface IUser extends Document {
+  _id: UUID
+  email: string
+  fullName: string
+  identityNumber: string
+  gender: string
+  age: number
+  dateOfBirth: Date
+  passwordHash: string
+  createdAt: Date
+  updatedAt: Date
+
+  // Future fields (commented out for now)
+  
+  // phoneNumber?: string
+  // address?: string
+  // lastLogin?: Date
+  // lastPasswordChange?: Date
+  // failedLoginAttempts?: number
+  // isLocked?: boolean
+  // isActive?: boolean
+  // lockedUntil?: Date
+  // lastActivity?: Date
+  // createdBy?: string
+  // updatedBy?: string
+  // isDeleted?: boolean
+  // deletedAt?: Date
+  // deletedBy?: string
 }
 
 const userSchema = new mongoose.Schema<IUser>(
@@ -56,41 +59,37 @@ const userSchema = new mongoose.Schema<IUser>(
       maxlength: [100, "Full name cannot exceed 100 characters!"],
     },
     identityNumber: {
-        type: String,
-        required: [true, "Identity number is required!"],
-        trim: true,
-        unique: true,
+      type: String,
+      required: [true, "Identity number is required!"],
+      trim: true,
+      unique: true,
     },
     gender: {
-        type: String,
-        trim: true,
-        lowercase: true,
-        enum: ["male", "female"],
+      type: String,
+      trim: true,
+      lowercase: true,
+      enum: ["male", "female"],
     },
     age: {
-        type: Number,
-        required: [true, "Age is required!"],
-        trim: true,
+      type: Number,
+      required: [true, "Age is required!"],
+      min: [1, "Age must be at least 1!"],
+      max: [150, "Age cannot exceed 150!"],
     },
     dateOfBirth: {
-        type: Date,
-        required: [true, "Date of birth is required!"],
-        format: "MM/DD/YYYY",
+      type: Date,
+      required: [true, "Date of birth is required!"],
+      format: "MM/DD/YYYY",
     },
     passwordHash: {
-        type: String,
-        required: [true, "Password is required!"],
-        unique: true,
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now,
+      type: String,
+      required: [true, "Password hash is required!"],
     },
   },
   {
     _id: false,
     timestamps: true,
-    collection: "users-data",
+    collection: "users",
   }
 )
 
@@ -104,5 +103,3 @@ userSchema.pre("save", function(next) {
 const User = mongoose.model<IUser>("User", userSchema)
 
 export default User
-
-export type { IUser }
