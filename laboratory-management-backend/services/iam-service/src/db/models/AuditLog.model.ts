@@ -69,6 +69,13 @@ const auditLogSchema = new mongoose.Schema<IAuditLog>(
   }
 )
 
+// Index for faster searchs in document
+auditLogSchema.index({ eventCode: 1 })
+auditLogSchema.index({ userId: 1 })
+auditLogSchema.index({ performedAt: 1 })
+auditLogSchema.index({ action: 1 })
+auditLogSchema.index({ serviceName: 1 })
+
 auditLogSchema.pre("save", function(next) {
   if (!this._id) {
     this._id = randomUUID();

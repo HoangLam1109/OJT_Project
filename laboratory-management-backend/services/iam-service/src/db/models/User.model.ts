@@ -12,21 +12,23 @@ export interface IUser extends Document {
   passwordHash: string
   createdAt: Date
   updatedAt: Date
+  isActive?: boolean
+  isDeleted?: boolean
 
   // Future fields (commented out for now)
-  
+
   // phoneNumber?: string
   // address?: string
   // lastLogin?: Date
   // lastPasswordChange?: Date
   // failedLoginAttempts?: number
   // isLocked?: boolean
-  // isActive?: boolean
+  
   // lockedUntil?: Date
   // lastActivity?: Date
   // createdBy?: string
   // updatedBy?: string
-  // isDeleted?: boolean
+  
   // deletedAt?: Date
   // deletedBy?: string
 }
@@ -85,6 +87,14 @@ const userSchema = new mongoose.Schema<IUser>(
       type: String,
       required: [true, "Password hash is required!"],
     },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     _id: false,
@@ -92,6 +102,10 @@ const userSchema = new mongoose.Schema<IUser>(
     collection: "users",
   }
 )
+
+userSchema.index({ isActive: 1 })
+userSchema.index({ isDeleted: 1 })
+
 
 userSchema.pre("save", function(next) {
   if (!this._id) {

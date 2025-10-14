@@ -1,11 +1,14 @@
 import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import User from "../db/models/User.model.js";
+import { JWT_SECRET } from "../config/env.config.js";
+import { SessionService } from "../services/session.service.js";
 
 declare global {
   namespace Express {
     interface Request {
       user?: any;
+      session?: any;
     }
   }
 }
@@ -23,7 +26,6 @@ const authenticateUser = async (
       return;
     }
 
-    const JWT_SECRET = process.env.JWT_SECRET;
     if (!JWT_SECRET) {
       res.status(500).json({ message: "JWT secret is not defined" });
       return;
@@ -38,7 +40,32 @@ const authenticateUser = async (
       return;
     }
 
+    // Additional security: Validate session exists and is active
+    console.log(`[AUTH MIDDLEWARE] Validating sessions for user: ${user._id}`);
+    const sessionService = new SessionService();
+    const activeSessions = await sessionService.getUserSessions(user._id as string);
+    console.log(`[AUTH MIDDLEWARE] Found ${activeSessions.length} sessions for user ${user._id}`);
+
+    if (activeSessions.length === 0) {
+      console.log(`[AUTH MIDDLEWARE] No active sessions found for user ${user._id} - blocking request`);
+      res.status(401).json({ message: "No active sessions found" });
+      return;
+    }
+
+    // Check if any session is still valid (not expired and active)
+    const validSession = activeSessions.find(session =>
+      session.isActive && new Date() < session.expiresAt
+    );
+
+    if (!validSession) {
+      console.log(`[AUTH MIDDLEWARE] No valid active session found for user ${user._id} - blocking request`);
+      res.status(401).json({ message: "No valid active session found" });
+      return;
+    }
+
+    console.log(`[AUTH MIDDLEWARE] Session validation passed for user ${user._id}`);
     req.user = user;
+    req.session = validSession;
 
     next();
   } catch (error) {

@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { UserService } from "../services/user.service.js";
+import { SessionService } from "../services/session.service.js";
 import type { IUser } from "../db/models/User.model.ts";
 import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
@@ -8,6 +9,7 @@ import { clearJWT, generateJWT } from "../utils/jwt.util.js";
 dotenv.config();
 
 const userService = new UserService();
+const sessionService = new SessionService();
 
 const registerUser = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -28,7 +30,7 @@ const registerUser = async (req: Request, res: Response): Promise<void> => {
       });
       return;
     }
-    
+
     const newUser = await userService.createUser({
       email,
       fullName,
@@ -37,7 +39,7 @@ const registerUser = async (req: Request, res: Response): Promise<void> => {
       age,
       dateOfBirth: new Date(dateOfBirth),
       password: password,
-    });
+    }, undefined);
 
     res.status(201).json({ message: "User created successfully!" });
   } catch (error) {
@@ -66,8 +68,27 @@ const loginUser = async (req: Request, res: Response): Promise<void> => {
       res.status(400).json({ message: "Invalid password!" });
       return;
     }
+
+    // Create both JWT (for cookies) and Session (for server-side control)
     generateJWT(res, user._id as string);
-    res.status(200).json({ message: "Login successful!" });
+
+    // Create session record for additional security and control
+    const session = await sessionService.createSession({
+      userId: user._id as string,
+      ipAddress: req.ip || 'unknown',
+      userAgent: req.headers['user-agent'] || 'unknown'
+    });
+
+    res.status(200).json({
+      message: "Login successful!",
+      sessionToken: session.sessionToken,
+      expiresAt: session.expiresAt,
+      user: {
+        id: user._id,
+        email: user.email,
+        fullName: user.fullName
+      }
+    });
   } catch (error) {
     errorHandler(res, error);
   }
@@ -75,7 +96,15 @@ const loginUser = async (req: Request, res: Response): Promise<void> => {
 
 const logoutUser = async (req: Request, res: Response): Promise<void> => {
   try {
+    // Clear JWT cookie
     clearJWT(res);
+    console.log(req.user?._id);
+    // If we have session info from middleware, invalidate the session
+    if (req.user) {
+      await sessionService.invalidateAllUserSessions(req.user?._id as string);
+      console.log("Session invalidated successfully!");
+    }
+
     res.status(200).json({ message: "Logout successful!" });
   } catch (error) {
     errorHandler(res, error);

@@ -14,7 +14,7 @@ export class UserRepository implements IUserRepository {
   constructor(private userModel: any) {}
 
   async findById(id: string, fields?: string): Promise<any> {
-    return await this.userModel.findById(id, fields || "_id email fullName identityNumber gender age dateOfBirth");
+    return await this.userModel.findById(id, fields || "_id email fullName phoneNumber identityNumber gender age dateOfBirth address");
   }
 
   async findByEmail(email: string): Promise<any> {

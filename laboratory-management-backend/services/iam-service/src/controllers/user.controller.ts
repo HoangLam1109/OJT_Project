@@ -36,7 +36,7 @@ const getAll = async (req: Request, res: Response): Promise<void> => {
 const createUser = async (req: Request, res: Response): Promise<void> => {
   try {
     const userData = req.body;
-    const newUser = await userService.createUser(userData);
+    const newUser = await userService.createUser(userData, req.user?._id);
     res.status(201).json({
       message: "User created successfully!",
       userId: newUser._id
@@ -55,7 +55,7 @@ const updateUser = async (req: Request, res: Response): Promise<void> => {
     }
 
     const userData = req.body;
-    const updatedUser = await userService.updateUser(userId, userData);
+    const updatedUser = await userService.updateUser(userId, userData, req.user?._id);
 
     if (!updatedUser) {
       res.status(404).json({ message: "User not found" });
@@ -79,7 +79,7 @@ const deleteUser = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const deletedUser = await userService.deleteUser(userId);
+    const deletedUser = await userService.deleteUser(userId, req.user?._id);
     if (!deletedUser) {
       res.status(404).json({ message: "User not found" });
       return;

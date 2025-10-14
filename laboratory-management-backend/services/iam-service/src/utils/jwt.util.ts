@@ -1,8 +1,9 @@
 import type { Response } from "express";
+import { JWT_SECRET, JWT_EXPIRY } from "../config/env.config.js";
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET: string = process.env.JWT_SECRET || "4534ec35d2f0763d5339201829c2cc6fd4552491";
-const JWT_EXPIRY: string = process.env.JWT_EXPIRY || "1h";
+// const JWT_SECRET: string = process.env.JWT_SECRET || "4534ec35d2f0763d5339201829c2cc6fd4552491";
+// const JWT_EXPIRY: string = process.env.JWT_EXPIRY || "1h";
 
 const generateJWT = (res: Response, userId: string) => {
   const token = jwt.sign({ userId }, JWT_SECRET, { expiresIn: '1h' });
