@@ -69,10 +69,8 @@ const loginUser = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Create both JWT (for cookies) and Session (for server-side control)
     generateJWT(res, user._id as string);
 
-    // Create session record for additional security and control
     const session = await sessionService.createSession({
       userId: user._id as string,
       ipAddress: req.ip || 'unknown',
@@ -82,6 +80,7 @@ const loginUser = async (req: Request, res: Response): Promise<void> => {
     res.status(200).json({
       message: "Login successful!",
       sessionToken: session.sessionToken,
+      refreshToken: session.refreshToken,
       expiresAt: session.expiresAt,
       user: {
         id: user._id,
@@ -96,13 +95,9 @@ const loginUser = async (req: Request, res: Response): Promise<void> => {
 
 const logoutUser = async (req: Request, res: Response): Promise<void> => {
   try {
-    // Clear JWT cookie
     clearJWT(res);
-    console.log(req.user?._id);
-    // If we have session info from middleware, invalidate the session
     if (req.user) {
       await sessionService.invalidateAllUserSessions(req.user?._id as string);
-      console.log("Session invalidated successfully!");
     }
 
     res.status(200).json({ message: "Logout successful!" });
@@ -111,4 +106,29 @@ const logoutUser = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-export { registerUser, loginUser, logoutUser };
+const refreshUserToken = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { sessionId, refreshToken } = req.body;
+
+    if (!refreshToken) {
+      res.status(400).json({ message: "Missing refresh token" });
+      return;
+    }
+
+    const session = await sessionService.refreshSessionWithToken(sessionId, refreshToken);
+    if (!session) {
+      res.status(400).json({ message: "Invalid refresh token" });
+      return;
+    }
+
+    res.status(200).json({
+      message: "Token refreshed successfully!",
+      newSessionToken: session.newSessionToken,
+      newRefreshToken: session.newRefreshToken
+    });
+  } catch (error) {
+    errorHandler(res, error);
+  }
+};
+
+export { registerUser, loginUser, logoutUser, refreshUserToken };

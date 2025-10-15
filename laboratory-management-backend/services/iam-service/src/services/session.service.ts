@@ -17,20 +17,15 @@ export interface SessionValidationResult {
 }
 
 export class SessionService {
-  /**
-   * Create a new user session
-   */
   async createSession(sessionData: CreateSessionData): Promise<IUserSession> {
-    // Generate a secure session token
     const sessionToken = this._generateSessionToken();
     const refreshToken = this._generateRefreshToken();
 
-    // Set default expiration (24 hours from now)
     const expiresAt = sessionData.expiresAt || new Date(Date.now() + 24 * 60 * 60 * 1000);
 
     const newSession = await userSessionRepository.create({
       ...sessionData,
-      userId: sessionData.userId as any, // Cast to UUID type
+      userId: sessionData.userId as any,
       sessionToken,
       refreshToken,
       expiresAt,
@@ -40,9 +35,6 @@ export class SessionService {
     return newSession;
   }
 
-  /**
-   * Get session by token with caching support
-   */
   async getSessionByToken(token: string): Promise<IUserSession | null> {
     return await userSessionRepository.findBySessionToken(token);
   }
@@ -72,9 +64,6 @@ export class SessionService {
     return { isValid: true, session };
   }
 
-  /**
-   * Invalidate a specific session
-   */
   async invalidateSession(sessionId: string): Promise<boolean> {
     const session = await userSessionRepository.findById(sessionId);
 
@@ -82,30 +71,57 @@ export class SessionService {
       return false;
     }
 
-    // Update session to inactive
     await userSessionRepository.updateById(sessionId, { isActive: false });
     return true;
   }
 
-  /**
-   * Invalidate all sessions for a specific user
-   */
   async invalidateAllUserSessions(userId: string): Promise<number> {
     const invalidatedCount = await userSessionRepository.invalidateAllUserSessions(userId);
     return invalidatedCount;
   }
 
-  /**
-   * Refresh a session (extend expiration time)
-   */
   async refreshSession(sessionId: string): Promise<IUserSession | null> {
-    const newExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // Extend by 24 hours
+    const newExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
     const updatedSession = await userSessionRepository.updateById(sessionId, {
       expiresAt: newExpiresAt
     });
 
     return updatedSession;
+  }
+
+  async validateRefreshToken(sessionId: string, refreshToken: string): Promise<boolean> {
+    const session = await userSessionRepository.findById(sessionId);
+    if (!session || !session.refreshToken || session.refreshToken !== refreshToken) {
+      return false;
+    }
+    return true;
+  }
+
+  async refreshSessionWithToken(sessionId: string, providedRefreshToken: string): Promise<{ newSessionToken: string; newRefreshToken: string } | null> {
+    const isValid = await this.validateRefreshToken(sessionId, providedRefreshToken);
+    if (!isValid) {
+      await this.invalidateSession(sessionId); 
+      return null;
+    }
+
+    const session = await userSessionRepository.findById(sessionId);
+    if (!session) return null;
+
+    const newSessionToken = this._generateSessionToken();
+    const newRefreshToken = this._generateRefreshToken();
+    const newExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    
+    const updatedSession = await userSessionRepository.updateById(sessionId, {
+      sessionToken: newSessionToken,
+      refreshToken: newRefreshToken,
+      expiresAt: newExpiresAt
+    });
+
+    if (updatedSession) {
+      return { newSessionToken, newRefreshToken };
+    }
+    return null;
   }
 
   async getUserSessions(userId: string): Promise<IUserSession[]> {

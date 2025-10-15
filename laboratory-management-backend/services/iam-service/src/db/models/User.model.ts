@@ -23,12 +23,10 @@ export interface IUser extends Document {
   // lastPasswordChange?: Date
   // failedLoginAttempts?: number
   // isLocked?: boolean
-  
   // lockedUntil?: Date
   // lastActivity?: Date
   // createdBy?: string
   // updatedBy?: string
-  
   // deletedAt?: Date
   // deletedBy?: string
 }

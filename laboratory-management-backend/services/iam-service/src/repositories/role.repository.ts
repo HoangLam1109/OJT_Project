@@ -2,6 +2,7 @@
 export interface IRoleRepository {
   findById(id: string, fields?: string): Promise<any>;
   findByRoleCode(roleCode: string): Promise<any>;
+  findUserByRoleId(roleId: string): Promise<any>;
   create(userData: any): Promise<any>;
   updateById(id: string, userData: any): Promise<any>;
   deleteById(id: string): Promise<any>;
@@ -10,14 +11,21 @@ export interface IRoleRepository {
 
 // Role repository implementation
 export class RoleRepository implements IRoleRepository {
-  constructor(private roleModel: any) {}
+  constructor(private roleModel: any, private userRoleModel: any) {}
 
   async findById(id: string, fields?: string): Promise<any> {
-    return await this.roleModel.findById(id, fields || "_id roleCode roleName description isSystemRole isActive");
+    return await this.roleModel.findById(
+      id,
+      fields || "_id roleCode roleName description isSystemRole isActive"
+    );
   }
 
   async findByRoleCode(roleCode: string): Promise<any> {
     return await this.roleModel.findOne({ roleCode });
+  }
+
+  async findUserByRoleId(roleId: string): Promise<any> {
+    return await this.userRoleModel.find({ roleId });
   }
 
   async create(userData: any): Promise<any> {
