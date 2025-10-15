@@ -75,7 +75,7 @@ export function AppRoutes() {
               {adminPage === "user-management" && <UserManagementPage  currentUser={user!}/>}
               {adminPage === "patient-management" && <PatientManagementPage />}
               {adminPage === "test-management" && <TestOrderManagementPage currentUser={user!} />}
-              {adminPage === "audit-reports" && <AuditReportsPage currentUser={user!} />}
+              {adminPage === "audit-reports" && <AuditReportsPage />}
               {adminPage === "settings" && <SettingsPage currentUser={user!} />}
             </AdminLayout>
           </ProtectedRoute>
