@@ -1,3 +1,5 @@
+/*
+
 import type { Request, Response } from "express";
 import { RoleService } from "../services/role.service.js";
 import { errorHandler } from "../utils/error.util.js";
@@ -39,7 +41,7 @@ const createRole = async (req: Request, res: Response): Promise<void> => {
     const newRole = await roleService.createRole(roleData, req.user?._id);
     res.status(201).json({
       message: "Role created successfully!",
-      userId: newRole._id
+      roleId: newRole._id
     });
   } catch (error) {
     errorHandler(res, error);
@@ -48,14 +50,14 @@ const createRole = async (req: Request, res: Response): Promise<void> => {
 
 const updateRole = async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = req.params.id;
-    if (!userId) {
-      res.status(400).json({ message: "User ID is required" });
+    const roleId = req.params.id;
+    if (!roleId) {
+      res.status(400).json({ message: "Role ID is required" });
       return;
     }
 
     const roleData = req.body;
-    const updatedRole = await roleService.updateRole(userId, roleData, req.user?._id);
+    const updatedRole = await roleService.updateRole(roleId, roleData, req.user?._id);
 
     if (!updatedRole) {
       res.status(404).json({ message: "Role not found" });
@@ -64,7 +66,7 @@ const updateRole = async (req: Request, res: Response): Promise<void> => {
 
     res.status(200).json({
       message: "Role updated successfully!",
-      userId: updatedRole._id
+      roleId: updatedRole._id
     });
   } catch (error) {
     errorHandler(res, error);
@@ -73,13 +75,13 @@ const updateRole = async (req: Request, res: Response): Promise<void> => {
 
 const deleteRole = async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = req.params.id;
-    if (!userId) {
-      res.status(400).json({ message: "User ID is required" });
+    const roleId = req.params.id;
+    if (!roleId) {
+      res.status(400).json({ message: "Role ID is required" });
       return;
     }
 
-    const deletedRole = await roleService.deleteRole(userId, req.user?._id);
+    const deletedRole = await roleService.deleteRole(roleId, req.user?._id);
     if (!deletedRole) {
       res.status(404).json({ message: "Role not found" });
       return;
@@ -87,7 +89,7 @@ const deleteRole = async (req: Request, res: Response): Promise<void> => {
 
     res.status(200).json({
       message: "Role deleted successfully!",
-      userId: deletedRole._id
+      roleId: deletedRole._id
     });
   } catch (error) {
     errorHandler(res, error);
@@ -95,3 +97,5 @@ const deleteRole = async (req: Request, res: Response): Promise<void> => {
 };
 
 export { getRole, getAll, createRole, updateRole, deleteRole };
+
+*/
