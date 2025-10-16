@@ -1,9 +1,8 @@
 
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
+// import { toast } from "sonner";
 import { LoginForm } from "./LoginForm";
 import { LoginHeader } from "./LoginFormHeader";
-import { LoginDemoAccounts } from "./LoginDemoAccounts";
 import type { LoginFormProps } from "../types/LoginFormProps";
 import type { User } from "../types/User";
 
@@ -16,27 +15,27 @@ export function LoginPage({
   const navigate = useNavigate();
 
   const handleLogin = (user: User) => {
-    toast.success(`Chào mừng, ${user.name}!`);
+    // toast.success(`Chào mừng, ${user.name}!`);
     onLogin(user);
-
+    
     // Phân quyền dựa trên role
     switch (user.role) {
-      case 'admin':
+      case 'ADMIN':
         navigate('/admin');
         break;
-      case 'laboratory_manager':
+      case 'MANAGER':
         navigate('/labmanager');
         console.log('role', user.role);
         break;
-      case 'service':
+      case 'SERVICE':
         navigate('/service');
         console.log('role', user.role);
         break;
-      case 'lab_user':
+      case 'LAB_USER':
         navigate('/labuser');
         console.log('role', user.role);
         break;
-        case 'normal_user':
+        case 'USER':
         navigate('/normaluser');
         console.log('role', user.role);
         break;
@@ -62,7 +61,7 @@ export function LoginPage({
               onBackToHome={() => navigate("/")}
               onShowRegister={onShowRegister}
             />
-            <LoginDemoAccounts />
+          
           </div>
         </div>
       </div>
