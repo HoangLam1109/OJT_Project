@@ -112,13 +112,15 @@ export class UserService {
       };
 
       try {
-        await passwordHistoryRepository.create({
-          userId: userId || "",
-          passwordHash: hashedPassword,
-          changedAt: new Date(),
-          changedBy: performedBy || userId,
-          changedReason: "Password changed through updating user!",
-        });
+        if (userId) {
+          await passwordHistoryRepository.create({
+            userId: userId || "",
+            passwordHash: hashedPassword,
+            changedAt: new Date(),
+            changedBy: performedBy || userId,
+            changedReason: "Password changed through updating user!",
+          });
+        }
       } catch (error) {
         console.log(error);
       }

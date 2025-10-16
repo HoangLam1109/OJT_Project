@@ -2,6 +2,7 @@ import { randomBytes, randomUUID } from "crypto";
 import { userSessionRepository } from "../repositories/index.js";
 import { auditLogRepository } from "../repositories/index.js";
 import type { IUserSession } from "../db/models/UserSession.model.js";
+import { SESSION_DURATION } from "../config/env.config.js";
 
 export interface CreateSessionData {
   userId: string;
@@ -21,8 +22,15 @@ export class SessionService {
     const sessionToken = this._generateSessionToken();
     const refreshToken = this._generateRefreshToken();
 
-    const expiresAt = sessionData.expiresAt || new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const expiresAt = sessionData.expiresAt || new Date(Date.now() + SESSION_DURATION);
 
+    const existingSessions = await this.getUserSessions(sessionData.userId);
+    const activeSessions = existingSessions.filter(s => s.isActive);
+    
+    if (activeSessions.length >= 5) {
+      await this.invalidateSession(activeSessions[0]?._id as string);
+    }
+    
     const newSession = await userSessionRepository.create({
       ...sessionData,
       userId: sessionData.userId as any,

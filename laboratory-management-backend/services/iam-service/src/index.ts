@@ -18,8 +18,12 @@ app.use(cors());
 
 connectDB();
 
-// Redis is disabled - using mock client
-console.log('🚫 Redis is disabled - using mock client for caching');
+import { SessionService } from "./services/session.service.js";
+const sessionService = new SessionService();
+
+// Clean up expired sessions on startup
+await sessionService.cleanupExpiredSessions();
+console.log('Cleaned up expired sessions on startup');
 
 app.use(express.json());
 app.use(cookieParser());

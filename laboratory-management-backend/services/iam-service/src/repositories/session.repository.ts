@@ -21,8 +21,7 @@ export class UserSessionRepository implements IUserSessionRepository {
   async create(sessionData: Partial<IUserSession>): Promise<IUserSession> {
     const session = new this.userSessionModel(sessionData);
     const savedSession = await session.save();
-    
-    // Also cache in Redis for fast access (if Redis is available)
+
     if (this.redisClient) {
       await this.cacheSession(savedSession._id, {
         userId: savedSession.userId,
