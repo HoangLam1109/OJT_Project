@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 // import { toast } from "sonner";
 import { LoginForm } from "./LoginForm";
 import { LoginHeader } from "./LoginFormHeader";
-import { LoginDemoAccounts } from "./LoginDemoAccounts";
 import type { LoginFormProps } from "../types/LoginFormProps";
 import type { User } from "../types/User";
 
@@ -62,7 +61,7 @@ export function LoginPage({
               onBackToHome={() => navigate("/")}
               onShowRegister={onShowRegister}
             />
-            <LoginDemoAccounts />
+          
           </div>
         </div>
       </div>
