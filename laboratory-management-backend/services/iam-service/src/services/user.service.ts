@@ -36,9 +36,25 @@ export class UserService {
     userData: CreateUserData,
     performedBy?: string
   ): Promise<IUser> {
-    const newUser = await this._passwordCheck("", userData, performedBy);
-    const createdUser = await userRepository.create(newUser);
+    // 1. Hash password
+    const hashedPassword = await bcrypt.hash(userData.password, 10);
 
+    // 2. Tạo user với passwordHash
+    const userToCreate = {
+      ...userData,
+      passwordHash: hashedPassword,
+      dateOfBirth: new Date(userData.dateOfBirth),
+    };
+
+    const createdUser = await userRepository.create(userToCreate);
+
+    // 3. Tạo PasswordHistory
+    await passwordHistoryRepository.create({
+      userId: createdUser._id,
+      passwordHash: hashedPassword,
+      createdAt: new Date(),
+    });
+    // 4. Log event
     await this._logEvent(
       "E_00001",
       "CREATE",
@@ -110,11 +126,11 @@ export class UserService {
       };
 
       await passwordHistoryRepository.create({
-            userId: userId,
-            passwordHash: hashedPassword,
-            changedAt: new Date(),
-            performedBy: performedBy
-        });
+        userId: userId,
+        passwordHash: hashedPassword,
+        changedAt: new Date(),
+        performedBy: performedBy
+      });
 
       delete (newUser as any).password;
       return newUser;
