@@ -1,5 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
+import cors from "cors";
 
 import authRouter from "./routes/v1/auth.routes.js";
 import userRouter from "./routes/v1/user.routes.js";
@@ -20,6 +21,14 @@ connectDB();
 // Redis is disabled - using mock client
 console.log('🚫 Redis is disabled - using mock client for caching');
 
+app.use(
+  cors({
+    origin: "http://localhost:5173", // URL frontend React
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true, // cho phép gửi cookie/token
+  })
+);
+
 app.use(express.json());
 app.use(cookieParser());
 app.use("/api", authRouter);
@@ -29,6 +38,7 @@ app.use("/api/role", authenticateUser, roleRouter);
 app.get("/", (req, res) => {
   res.send("JWT Authentication System is running!");
 });
+
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

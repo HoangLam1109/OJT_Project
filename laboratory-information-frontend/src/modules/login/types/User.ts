@@ -5,7 +5,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'admin' | 'laboratory_manager' | 'service' | 'lab_user' | 'normal_user' | 'technician';
+  role: 'ADMIN' | 'MANAGER' | 'SERVICE' | 'LAB_USER' | 'USER' ;
   active: boolean;
   lastLogin?: string;
   permissions: string[];
