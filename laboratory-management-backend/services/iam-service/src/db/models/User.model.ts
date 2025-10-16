@@ -1,6 +1,6 @@
 import { randomUUID, type UUID } from "crypto"
 import mongoose, { Document } from "mongoose"
-import { SYSTEM_ROLES } from "../../constants/roles.constant.js"
+import type { RoleCode } from "../../constants/roles.constant.js"
 
 export interface IUser extends Document {
   _id: UUID
@@ -15,7 +15,7 @@ export interface IUser extends Document {
   updatedAt: Date
   isActive?: boolean
   isDeleted?: boolean
-  role?: string
+  role?: RoleCode
 
   // Future fields (commented out for now)
 
@@ -69,7 +69,6 @@ const userSchema = new mongoose.Schema<IUser>(
     role: {
       type: String,
       trim: true,
-      enum: Object.values(SYSTEM_ROLES),
       default: 'USER'
     },
     gender: {

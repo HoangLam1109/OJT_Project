@@ -113,7 +113,7 @@ export class UserService {
 
       try {
         await passwordHistoryRepository.create({
-          userId,
+          userId: userId || "",
           passwordHash: hashedPassword,
           changedAt: new Date(),
           changedBy: performedBy || userId,

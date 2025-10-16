@@ -1,3 +1,5 @@
+/*
+
 import { USER_ROLE_PRIVILEGES } from "../constants/privileges.constant.js";
 import { SYSTEM_ROLES } from "../constants/roles.constant.js";
 
@@ -90,3 +92,5 @@ export class RoleRepository implements IRoleRepository {
     return await this.roleModel.find({}, fields);
   }
 }
+
+*/
