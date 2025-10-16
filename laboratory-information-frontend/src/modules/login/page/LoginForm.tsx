@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import { Alert, AlertDescription } from "../../../components/common/alert";
 import Button from "../../../components/common/button";
-import type { LoginFormProps } from "../types/LoginFormProps";
+import { CardTitle, CardDescription } from '../../../components/common/card';
+import { Shield} from 'lucide-react';
 import { authenticateUser } from "../services/loginApi";
+import type { LoginFormProps } from "../types/LoginFormProps";
+import  {LoginInputField} from "./LoginFormInputField";
 
 export function LoginForm({ onLogin, onShowForgotPassword, onShowRegister, onBackToHome }: LoginFormProps) {
   const [email, setEmail] = useState("");
@@ -17,24 +20,48 @@ export function LoginForm({ onLogin, onShowForgotPassword, onShowRegister, onBac
     if (user) onLogin(user);
     else setError("Sai thông tin đăng nhập");
   };
-  
 
   return (
-    <>
+    <div className="max-w-md mx-auto">
+      {/* Login Header */}
+      <div className="flex justify-center mb-4">
+        <div className="relative">
+          <div className="p-4 bg-gradient-to-br from-gray-900 to-gray-700 rounded-xl shadow-lg">
+            <Shield className="h-8 w-8 text-white" />
+          </div>
+          <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+        </div>
+      </div>
+
+      <CardTitle className="text-2xl text-gray-900 mb-2 leading-tight text-center">
+        Hệ Thống Quản Lý Thông Tin <br />
+        <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+          Phòng Thí Nghiệm
+        </span>
+      </CardTitle>
+      <CardDescription className="text-sm text-gray-600 max-w-sm mx-auto text-center mb-6">
+        Đăng nhập để truy cập bảng điều khiển
+      </CardDescription>
+
+      {/* Login Form */}
       <form onSubmit={handleSubmit} className="space-y-4">
-        <input
+        <LoginInputField
+          id="email"
+          label="Email"
+          placeholder="Nhập email"
           type="email"
-          placeholder="Email"
-          className="w-full border px-3 py-2 rounded"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          icon="mail"
         />
-        <input
+        <LoginInputField
+          id="password"
+          label="Mật khẩu"
+          placeholder="Nhập mật khẩu"
           type="password"
-          placeholder="Mật khẩu"
-          className="w-full border px-3 py-2 rounded"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          icon="lock"
         />
 
         {error && (
@@ -48,7 +75,8 @@ export function LoginForm({ onLogin, onShowForgotPassword, onShowRegister, onBac
         </Button>
       </form>
 
-      <div className="text-center space-y-2">
+      {/* Footer Links */}
+      <div className="text-center space-y-2 mt-4">
         <button
           type="button"
           onClick={onShowForgotPassword}
@@ -76,6 +104,6 @@ export function LoginForm({ onLogin, onShowForgotPassword, onShowRegister, onBac
           ← Quay lại trang chủ
         </button>
       </div>
-    </>
+    </div>
   );
 }
