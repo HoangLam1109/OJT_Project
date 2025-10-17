@@ -8,7 +8,7 @@ import connectDB from "./config/database.config.js";
 import cors from "cors";
 import { PORT } from "./config/env.config.js";
 import cookieParser from "cookie-parser";
-import authenticateUser from "./middlewares/authenticate.middleware.js";
+import authenticateUser from "./middlewares/auth.middleware.js";
 
 dotenv.config();
 
