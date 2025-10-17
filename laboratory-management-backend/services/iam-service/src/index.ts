@@ -13,8 +13,11 @@ import authenticateUser from "./middlewares/authenticate.middleware.js";
 dotenv.config();
 
 const app = express();
-app.use(cors());
-//const PORT = process.env.PORT || 3000;
+app.use(cors({
+  origin: "http://localhost:5173",  // frontend origin
+  credentials: true                 // cho phép gửi cookie / credentials
+}));
+
 
 connectDB();
 
@@ -24,6 +27,7 @@ const sessionService = new SessionService();
 // Clean up expired sessions on startup
 await sessionService.cleanupExpiredSessions();
 console.log('Cleaned up expired sessions on startup');
+
 
 app.use(express.json());
 app.use(cookieParser());
