@@ -7,10 +7,8 @@ import {
 import User from '../../db/models/User.model.js';
 import connectDB from '../../config/database.config.js';
 
-// Load environment variables
 dotenv.config();
 
-// Seed data for users
 const usersSeedData = [
   {
     email: 'admin@example.com',
@@ -74,7 +72,6 @@ const usersSeedData = [
   },
 ];
 
-// Seed function
 async function seedDatabase() {
   try {
     await connectDB();
@@ -90,13 +87,11 @@ async function seedDatabase() {
       });
 
       if (!existingUser) {
-        // Hash the password
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(userData.password, saltRounds);
 
-        // Create the user
         await User.create({
-          _id: userData.identityNumber, // Using identityNumber as UUID
+          _id: userData.identityNumber,
           email: userData.email,
           fullName: userData.fullName,
           identityNumber: userData.identityNumber,
@@ -118,11 +113,9 @@ async function seedDatabase() {
   } catch (error) {
     console.error('Error seeding database:', error);
   } finally {
-    // Close database connection
     await mongoose.connection.close();
     console.log('Database connection closed.');
   }
 }
 
-// Run the seed function
 seedDatabase();

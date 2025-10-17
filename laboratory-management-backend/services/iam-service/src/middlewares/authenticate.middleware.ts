@@ -43,7 +43,6 @@ const authenticateUser = async (
       return;
     }
 
-    // Additional security: Validate session exists and is active
     console.log(`[AUTH MIDDLEWARE] Validating sessions for user: ${user._id}`);
     try {
       const sessionService = new SessionService();

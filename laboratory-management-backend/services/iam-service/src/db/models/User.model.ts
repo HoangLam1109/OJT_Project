@@ -7,7 +7,6 @@ export interface IUser extends Document {
   email: string
   fullName: string
   identityNumber: string
-  role: string
   gender: string
   age: number
   dateOfBirth: Date
@@ -101,7 +100,6 @@ const userSchema = new mongoose.Schema<IUser>(
       type: Boolean,
       default: false,
     },
-
   },
   {
     _id: false,
@@ -114,7 +112,7 @@ userSchema.index({ isActive: 1 })
 userSchema.index({ isDeleted: 1 })
 
 
-userSchema.pre("save", function (next) {
+userSchema.pre("save", function(next) {
   if (!this._id) {
     this._id = randomUUID();
   }
