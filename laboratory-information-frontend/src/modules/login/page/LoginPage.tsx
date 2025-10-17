@@ -2,8 +2,6 @@
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { LoginForm } from "./LoginForm";
-import { LoginHeader } from "./LoginFormHeader";
-import { LoginDemoAccounts } from "./LoginDemoAccounts";
 import type { LoginFormProps } from "../types/LoginFormProps";
 import type { User } from "../types/User";
 
@@ -18,25 +16,25 @@ export function LoginPage({
   const handleLogin = (user: User) => {
     toast.success(`Chào mừng, ${user.name}!`);
     onLogin(user);
-
+    
     // Phân quyền dựa trên role
     switch (user.role) {
-      case 'admin':
+      case 'ADMIN':
         navigate('/admin');
         break;
-      case 'laboratory_manager':
+      case 'MANAGER':
         navigate('/labmanager');
         console.log('role', user.role);
         break;
-      case 'service':
+      case 'SERVICE':
         navigate('/service');
         console.log('role', user.role);
         break;
-      case 'lab_user':
+      case 'LAB_USER':
         navigate('/labuser');
         console.log('role', user.role);
         break;
-        case 'normal_user':
+        case 'USER':
         navigate('/normaluser');
         console.log('role', user.role);
         break;
@@ -47,22 +45,19 @@ export function LoginPage({
   };
 
 
-  return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 to-gray-200">
-      <div className="w-full max-w-lg mx-auto px-4">
-        <div className="bg-white rounded-2xl shadow-xl border overflow-hidden">
-          <div className="px-6 pt-6 pb-4 text-center">
-            <LoginHeader />
-          </div>
+    return (
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 px-4">
+      <div className="w-full max-w-md mx-auto">
+        <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+          <div className="px-8 py-10">
 
-          <div className="px-5 pb-4 space-y-3">
+            {/* Login Form */}
             <LoginForm
               onLogin={handleLogin}
               onShowForgotPassword={onShowForgotPassword}
               onBackToHome={() => navigate("/")}
               onShowRegister={onShowRegister}
             />
-            <LoginDemoAccounts />
           </div>
         </div>
       </div>
