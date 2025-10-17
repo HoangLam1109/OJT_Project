@@ -16,12 +16,13 @@ export async function registerUser(userData: RegisterRequest): Promise<RegisterR
         success: true,
         message: response.data.message || 'Đăng ký thành công',
         user: response.data.user,
+
       };
     }
 
     return {
       success: false,
-      message: 'Đăng ký thất bại',
+      message: 'Đăng ký thất bại !',
     };
   } catch (error: unknown) {
     console.error("Register error:", error);

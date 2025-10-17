@@ -23,7 +23,7 @@ export async function authenticateUser(email: string, password: string): Promise
       return user;
     }
 
-    return null;
+    return null; 
   } catch (error: unknown) {
     // Kiểm tra kiểu error trước khi dùng
     if (error instanceof Error) {
