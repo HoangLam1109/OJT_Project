@@ -2,7 +2,9 @@ import bcrypt from "bcryptjs";
 import { userRepository } from "../repositories/index.js";
 import { auditLogRepository } from "../repositories/index.js";
 import { passwordHistoryRepository } from "../repositories/index.js";
+
 import type { IUser } from "../db/models/User.model.js";
+import { errorHandler } from "../utils/error.util.js";
 
 export interface CreateUserData {
   email: string;
@@ -36,25 +38,9 @@ export class UserService {
     userData: CreateUserData,
     performedBy?: string
   ): Promise<IUser> {
-    // 1. Hash password
-    const hashedPassword = await bcrypt.hash(userData.password, 10);
+    const newUser = await this._passwordCheck("", userData, performedBy);
+    const createdUser = await userRepository.create(newUser);
 
-    // 2. Tạo user với passwordHash
-    const userToCreate = {
-      ...userData,
-      passwordHash: hashedPassword,
-      dateOfBirth: new Date(userData.dateOfBirth),
-    };
-
-    const createdUser = await userRepository.create(userToCreate);
-
-    // 3. Tạo PasswordHistory
-    await passwordHistoryRepository.create({
-      userId: createdUser._id,
-      passwordHash: hashedPassword,
-      createdAt: new Date(),
-    });
-    // 4. Log event
     await this._logEvent(
       "E_00001",
       "CREATE",
@@ -125,12 +111,19 @@ export class UserService {
         passwordHash: hashedPassword,
       };
 
-      await passwordHistoryRepository.create({
-        userId: userId,
-        passwordHash: hashedPassword,
-        changedAt: new Date(),
-        performedBy: performedBy
-      });
+      try {
+        if (userId) {
+          await passwordHistoryRepository.create({
+            userId: userId || "",
+            passwordHash: hashedPassword,
+            changedAt: new Date(),
+            changedBy: performedBy || userId,
+            changedReason: "Password changed through updating user!",
+          });
+        }
+      } catch (error) {
+        console.log(error);
+      }
 
       delete (newUser as any).password;
       return newUser;

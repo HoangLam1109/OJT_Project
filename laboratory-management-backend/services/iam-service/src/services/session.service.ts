@@ -2,6 +2,7 @@ import { randomBytes, randomUUID } from "crypto";
 import { userSessionRepository } from "../repositories/index.js";
 import { auditLogRepository } from "../repositories/index.js";
 import type { IUserSession } from "../db/models/UserSession.model.js";
+import { SESSION_DURATION } from "../config/env.config.js";
 
 export interface CreateSessionData {
   userId: string;
@@ -21,7 +22,15 @@ export class SessionService {
     const sessionToken = this._generateSessionToken();
     const refreshToken = this._generateRefreshToken();
 
-    const expiresAt = sessionData.expiresAt || new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const expiresAt =
+      sessionData.expiresAt || new Date(Date.now() + SESSION_DURATION);
+
+    const existingSessions = await this.getUserSessions(sessionData.userId);
+    const activeSessions = existingSessions.filter((s) => s.isActive);
+
+    if (activeSessions.length >= 5) {
+      await this.invalidateSession(activeSessions[0]?._id as string);
+    }
 
     const newSession = await userSessionRepository.create({
       ...sessionData,
@@ -29,7 +38,7 @@ export class SessionService {
       sessionToken,
       refreshToken,
       expiresAt,
-      isActive: true
+      isActive: true,
     });
 
     return newSession;
@@ -76,7 +85,8 @@ export class SessionService {
   }
 
   async invalidateAllUserSessions(userId: string): Promise<number> {
-    const invalidatedCount = await userSessionRepository.invalidateAllUserSessions(userId);
+    const invalidatedCount =
+      await userSessionRepository.invalidateAllUserSessions(userId);
     return invalidatedCount;
   }
 
@@ -84,24 +94,37 @@ export class SessionService {
     const newExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
     const updatedSession = await userSessionRepository.updateById(sessionId, {
-      expiresAt: newExpiresAt
+      expiresAt: newExpiresAt,
     });
 
     return updatedSession;
   }
 
-  async validateRefreshToken(sessionId: string, refreshToken: string): Promise<boolean> {
+  async validateRefreshToken(
+    sessionId: string,
+    refreshToken: string
+  ): Promise<boolean> {
     const session = await userSessionRepository.findById(sessionId);
-    if (!session || !session.refreshToken || session.refreshToken !== refreshToken) {
+    if (
+      !session ||
+      !session.refreshToken ||
+      session.refreshToken !== refreshToken
+    ) {
       return false;
     }
     return true;
   }
 
-  async refreshSessionWithToken(sessionId: string, providedRefreshToken: string): Promise<{ newSessionToken: string; newRefreshToken: string } | null> {
-    const isValid = await this.validateRefreshToken(sessionId, providedRefreshToken);
+  async refreshSessionWithToken(
+    sessionId: string,
+    providedRefreshToken: string
+  ): Promise<{ newSessionToken: string; newRefreshToken: string } | null> {
+    const isValid = await this.validateRefreshToken(
+      sessionId,
+      providedRefreshToken
+    );
     if (!isValid) {
-      await this.invalidateSession(sessionId); 
+      await this.invalidateSession(sessionId);
       return null;
     }
 
@@ -111,11 +134,11 @@ export class SessionService {
     const newSessionToken = this._generateSessionToken();
     const newRefreshToken = this._generateRefreshToken();
     const newExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
-    
+
     const updatedSession = await userSessionRepository.updateById(sessionId, {
       sessionToken: newSessionToken,
       refreshToken: newRefreshToken,
-      expiresAt: newExpiresAt
+      expiresAt: newExpiresAt,
     });
 
     if (updatedSession) {
@@ -125,7 +148,7 @@ export class SessionService {
   }
 
   async getUserSessions(userId: string): Promise<IUserSession[]> {
-    return await userSessionRepository.findByUserId(userId) as IUserSession[];
+    return (await userSessionRepository.findByUserId(userId)) as IUserSession[];
   }
 
   async cleanupExpiredSessions(): Promise<number> {
@@ -134,7 +157,9 @@ export class SessionService {
 
     for (const session of expiredSessions) {
       if (new Date() > session.expiresAt) {
-        await userSessionRepository.updateById(session._id, { isActive: false });
+        await userSessionRepository.updateById(session._id, {
+          isActive: false,
+        });
         cleanedCount++;
       }
     }
@@ -143,10 +168,10 @@ export class SessionService {
   }
 
   private _generateSessionToken(): string {
-    return randomBytes(32).toString('hex');
+    return randomBytes(32).toString("hex");
   }
 
   private _generateRefreshToken(): string {
-    return randomBytes(64).toString('hex');
+    return randomBytes(64).toString("hex");
   }
 }

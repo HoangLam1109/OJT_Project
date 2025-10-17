@@ -1,12 +1,12 @@
 import { randomUUID, type UUID } from "crypto"
 import mongoose, { Document } from "mongoose"
+import type { RoleCode } from "../../constants/roles.constant.js"
 
 export interface IUser extends Document {
   _id: UUID
   email: string
   fullName: string
   identityNumber: string
-  role: string
   gender: string
   age: number
   dateOfBirth: Date
@@ -15,6 +15,7 @@ export interface IUser extends Document {
   updatedAt: Date
   isActive?: boolean
   isDeleted?: boolean
+  role?: RoleCode
 
   // Future fields (commented out for now)
 
@@ -67,10 +68,9 @@ const userSchema = new mongoose.Schema<IUser>(
     },
     role: {
       type: String,
-      default: "USER",
-      enum: ["USER", "ADMIN", "SUPER_ADMIN"], 
+      trim: true,
+      default: 'USER'
     },
-
     gender: {
       type: String,
       trim: true,
@@ -100,7 +100,6 @@ const userSchema = new mongoose.Schema<IUser>(
       type: Boolean,
       default: false,
     },
-
   },
   {
     _id: false,
@@ -113,7 +112,7 @@ userSchema.index({ isActive: 1 })
 userSchema.index({ isDeleted: 1 })
 
 
-userSchema.pre("save", function (next) {
+userSchema.pre("save", function(next) {
   if (!this._id) {
     this._id = randomUUID();
   }

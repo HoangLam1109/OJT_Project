@@ -76,21 +76,15 @@ const loginUser = async (req: Request, res: Response): Promise<void> => {
       ipAddress: req.ip || 'unknown',
       userAgent: req.headers['user-agent'] || 'unknown'
     });
-    console.log("🔹 Email:", email);
-console.log("🔹 User:", user);
-console.log("🔹 Role field:", user.role);
 
     res.status(200).json({
       message: "Login successful!",
-      sessionToken: session.sessionToken,
-      refreshToken: session.refreshToken,
       expiresAt: session.expiresAt,
       user: {
         id: user._id,
         email: user.email,
         fullName: user.fullName,
         role: user.role,
-        
       }
     });
   } catch (error) {

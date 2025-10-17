@@ -29,10 +29,6 @@ const roleSchema = new mongoose.Schema<IRole>(
       unique: true,
       trim: true,
       uppercase: true,
-      enum: {
-        values: Object.values(ROLE_CODES),
-        message: 'Role code must be one of: ' + Object.values(ROLE_CODES).join(', ')
-      },
     },
     roleName: {
       type: String,

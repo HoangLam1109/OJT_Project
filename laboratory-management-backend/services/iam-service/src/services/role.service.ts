@@ -1,3 +1,4 @@
+/*
 import bcrypt from "bcryptjs";
 import { roleRepository } from "../repositories/index.js";
 import { auditLogRepository } from "../repositories/index.js";
@@ -7,16 +8,14 @@ export interface CreateRoleData {
   roleCode: string;
   roleName: string;
   description?: string;
-  isSystemRole?: boolean;
-  isActive?: boolean;
+  privileges?: string[];
 }
 
 export interface UpdateRoleData {
   roleCode?: string;
   roleName?: string;
   description?: string;
-  isSystemRole?: boolean;
-  isActive?: boolean;
+  privileges?: string[];
 }
 
 export class RoleService {
@@ -25,14 +24,14 @@ export class RoleService {
   }
 
   async createRole(roleData: CreateRoleData, performedBy?: string): Promise<IRole> {
-    const newRole = await roleRepository.create(roleData);
+    const newRole = await roleRepository.create(roleData, performedBy);
 
     await this._logEvent("E_00001", "CREATE", "Role created successfully!", performedBy || newRole._id);
     return newRole;
   }
 
   async updateRole(roleId: string, roleData: UpdateRoleData, performedBy?: string): Promise<IRole | null> {
-    const updatedRole = await roleRepository.updateById(roleId, roleData);
+    const updatedRole = await roleRepository.updateById(roleId, roleData, performedBy);
 
     await this._logEvent("E_00002", "UPDATE", "Role updated successfully!", performedBy || roleId);
     return updatedRole;
@@ -65,3 +64,4 @@ export class RoleService {
     });
   }
 }
+*/
