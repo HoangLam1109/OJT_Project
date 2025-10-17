@@ -1,7 +1,8 @@
 
 import { Input } from '../../../components/common/input';
 import { Label } from '../../../components/common/label';
-import { Mail, Lock, User, Phone, Calendar, IdCard, MapPin } from 'lucide-react';
+import { Mail, Lock, User, Phone, Calendar, IdCard, MapPin, Eye, EyeOff } from 'lucide-react';
+import { useState } from 'react';
 import type { RegisterInputFieldProps } from '../types/register';
 
 export function RegisterInputField({
@@ -15,6 +16,8 @@ export function RegisterInputField({
   required = true,
   inputSize = 'md',
 }: RegisterInputFieldProps) {
+  const [showPassword, setShowPassword] = useState(false);
+  
   const Icon =
     icon === 'mail' ? Mail :
     icon === 'lock' ? Lock :
@@ -26,6 +29,8 @@ export function RegisterInputField({
     null;
 
   const heightClass = inputSize === 'sm' ? 'h-10' : 'h-11';
+  const isPasswordField = type === 'password';
+  const inputType = isPasswordField && showPassword ? 'text' : type;
 
   return (
     <div className="space-y-2">
@@ -36,13 +41,22 @@ export function RegisterInputField({
         {Icon && <Icon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />}
         <Input
           id={id}
-          type={type}
+          type={inputType}
           placeholder={placeholder}
-          className={`pl-10 ${heightClass} border-gray-200 focus:border-blue-400 rounded-lg`}
+          className={`${Icon ? 'pl-10' : 'pl-3'} ${isPasswordField ? 'pr-10' : 'pr-3'} ${heightClass} border-gray-200 focus:border-blue-400 rounded-lg`}
           value={value}
           onChange={onChange}
           required={required}
         />
+        {isPasswordField && (
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 hover:text-gray-600 focus:outline-none"
+          >
+            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
+        )}
       </div>
     </div>
   );

@@ -8,6 +8,7 @@ export function AdditionalInfoFields({ phone, setPhone, gender, setGender, dob, 
 				<RegisterInputField 
                            id="phone" 
                            label="Số điện thoại" 
+                           type="tel"
                            placeholder="0xxxxxxxxx" 
                            value={phone} 
                            onChange={e => setPhone(e.target.value)} 
@@ -44,6 +45,7 @@ export function AdditionalInfoFields({ phone, setPhone, gender, setGender, dob, 
 				<RegisterInputField 
                             id="idNumber"
                             label="CMND/CCCD" 
+                            type="text"
                             placeholder="Số CMND/CCCD" 
                             value={idNumber} 
                             onChange={e => setIdNumber(e.target.value)} 
@@ -56,6 +58,7 @@ export function AdditionalInfoFields({ phone, setPhone, gender, setGender, dob, 
 			<RegisterInputField 
                             id="address"
                             label="Địa chỉ" 
+                            type="text"
                             placeholder="Nhập địa chỉ..." 
                             value={address} 
                             onChange={e => setAddress(e.target.value)} 

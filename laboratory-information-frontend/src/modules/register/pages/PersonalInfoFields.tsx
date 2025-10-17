@@ -8,6 +8,7 @@ export function PersonalInfoFields({ fullName, setFullName, email, setEmail, pas
             <RegisterInputField
                 id="fullName"
                 label="Họ và tên"
+                type="text"
                 placeholder="Nhập họ và tên..."
                 value={fullName}
                 onChange={e => setFullName(e.target.value)}
@@ -17,6 +18,7 @@ export function PersonalInfoFields({ fullName, setFullName, email, setEmail, pas
             <RegisterInputField
                 id="email"
                 label="Địa chỉ Email"
+                type="email"
                 placeholder="Nhập email..."
                 value={email}
                 onChange={e => setEmail(e.target.value)}
@@ -26,6 +28,7 @@ export function PersonalInfoFields({ fullName, setFullName, email, setEmail, pas
             <RegisterInputField
                 id="password"
                 label="Mật khẩu"
+                type="password"
                 placeholder="Nhập mật khẩu..."
                 value={password}
                 onChange={handlePasswordChange}
@@ -38,6 +41,7 @@ export function PersonalInfoFields({ fullName, setFullName, email, setEmail, pas
             <RegisterInputField
                 id="confirmPassword"
                 label="Xác nhận mật khẩu"
+                type="password"
                 placeholder="Nhập lại mật khẩu..."
                 value={confirmPassword}
                 onChange={e => setConfirmPassword(e.target.value)}
