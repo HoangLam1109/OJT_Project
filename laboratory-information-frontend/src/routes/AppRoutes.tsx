@@ -19,7 +19,7 @@ import { LabUserLayout } from "../modules/labuser/layout/LabUserLayout";
 import { NormalUserLayout } from "../modules/normaluser/layout/NormalUserLayout";
 export function AppRoutes() {
   const { user, login, logout } = useAuthContext();
-  const navigate = useNavigate(); // ✅ hook điều hướng
+  const navigate = useNavigate();
   const [adminPage, setAdminPage] = useState("dashboard");
 
   return (
@@ -59,7 +59,7 @@ export function AppRoutes() {
           />}
       />
 
-      {/* Route được bảo vệ */}
+      
         <Route
         path="/admin"
         element={
@@ -68,14 +68,14 @@ export function AppRoutes() {
               currentUser={user!}
               onLogout={logout}
               currentPage={adminPage}
-              onNavigate={(page) => setAdminPage(page)} // khi click menu, set page mới
+              onNavigate={(page) => setAdminPage(page)} 
             >
-              {/* Render theo điều kiện */}
+              
               {adminPage === "dashboard" && <DashboardPage />}
               {adminPage === "user-management" && <UserManagementPage  currentUser={user!}/>}
               {adminPage === "patient-management" && <PatientManagementPage />}
               {adminPage === "test-management" && <TestOrderManagementPage currentUser={user!} />}
-              {adminPage === "audit-reports" && <AuditReportsPage currentUser={user!} />}
+              {adminPage === "audit-reports" && <AuditReportsPage />}
               {adminPage === "settings" && <SettingsPage currentUser={user!} />}
             </AdminLayout>
           </ProtectedRoute>
@@ -84,7 +84,7 @@ export function AppRoutes() {
       <Route
         path="/labmanager"
         element={
-          <ProtectedRoute allowedRoles={['laboratory_manager']}>
+          <ProtectedRoute allowedRoles={['MANAGER']}>
             <LabManagerLayout
               currentUser={user!}
               onLogout={logout}
@@ -100,7 +100,7 @@ export function AppRoutes() {
         <Route
         path="/service"
         element={
-          <ProtectedRoute allowedRoles={['service']}>
+          <ProtectedRoute allowedRoles={['SERVICE']}>
             <ServiceLayout
               currentUser={user!}
               onLogout={logout}
@@ -116,7 +116,7 @@ export function AppRoutes() {
          <Route
         path="/labuser"
         element={
-          <ProtectedRoute allowedRoles={['lab_user']}>
+          <ProtectedRoute allowedRoles={['LAB_USER']}>
             <LabUserLayout
               currentUser={user!}
               onLogout={logout}
@@ -132,7 +132,7 @@ export function AppRoutes() {
            <Route
         path="/normaluser"
         element={
-          <ProtectedRoute allowedRoles={['normal_user']}>
+          <ProtectedRoute allowedRoles={['USER']}>
             <NormalUserLayout
               currentUser={user!}
               onLogout={logout}

@@ -54,3 +54,30 @@ export interface FooterActionsProps {
 	onBackToLogin: () => void;
 	onBackToHome?: () => void;
 }
+
+// API Types
+export interface RegisterRequest {
+  email: string;
+  fullName: string;
+  identityNumber: string;
+  gender: string;
+  age: number;
+  dateOfBirth: string;
+  password: string;
+}
+
+export interface RegisterResponse {
+  success: boolean;
+  message: string;
+  user?: {
+    id: string;
+    email: string;
+    fullName: string;
+    role: string;
+  };
+}
+
+export interface ApiError {
+  message: string;
+  status: number;
+}

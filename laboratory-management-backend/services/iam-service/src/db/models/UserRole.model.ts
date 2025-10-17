@@ -43,7 +43,6 @@ const userRoleSchema = new mongoose.Schema<IUserRole>(
 
 userRoleSchema.index({ roleId: 1, userId: 1 }, { unique: true });
 
-// Pre-save hook to set UUID if not present
 userRoleSchema.pre("save", function (next) {
   if (!this._id) {
     this._id = randomUUID();

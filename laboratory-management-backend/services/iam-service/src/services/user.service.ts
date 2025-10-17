@@ -2,7 +2,9 @@ import bcrypt from "bcryptjs";
 import { userRepository } from "../repositories/index.js";
 import { auditLogRepository } from "../repositories/index.js";
 import { passwordHistoryRepository } from "../repositories/index.js";
+
 import type { IUser } from "../db/models/User.model.js";
+import { errorHandler } from "../utils/error.util.js";
 
 export interface CreateUserData {
   email: string;
@@ -109,12 +111,19 @@ export class UserService {
         passwordHash: hashedPassword,
       };
 
-      await passwordHistoryRepository.create({
-            userId: userId,
+      try {
+        if (userId) {
+          await passwordHistoryRepository.create({
+            userId: userId || "",
             passwordHash: hashedPassword,
             changedAt: new Date(),
-            performedBy: performedBy
-        });
+            changedBy: performedBy || userId,
+            changedReason: "Password changed through updating user!",
+          });
+        }
+      } catch (error) {
+        console.log(error);
+      }
 
       delete (newUser as any).password;
       return newUser;

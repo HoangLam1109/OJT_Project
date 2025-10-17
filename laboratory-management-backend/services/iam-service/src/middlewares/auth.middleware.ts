@@ -33,7 +33,10 @@ const authenticateUser = async (
 
     const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
 
-    const user = await User.findById(decoded.userId, "_id email fullName identityNumber gender age dateOfBirth");
+    const user = await User.findById(
+      decoded.userId,
+      "_id email fullName identityNumber gender age dateOfBirth"
+    );
 
     if (!user) {
       res.status(401).json({ message: "Not authorized, user not found" });
@@ -42,30 +45,50 @@ const authenticateUser = async (
 
     // Additional security: Validate session exists and is active
     console.log(`[AUTH MIDDLEWARE] Validating sessions for user: ${user._id}`);
-    const sessionService = new SessionService();
-    const activeSessions = await sessionService.getUserSessions(user._id as string);
-    console.log(`[AUTH MIDDLEWARE] Found ${activeSessions.length} sessions for user ${user._id}`);
+    try {
+      const sessionService = new SessionService();
+      const activeSessions = await sessionService.getUserSessions(
+        user._id as string
+      );
+      console.log(
+        `[AUTH MIDDLEWARE] Found ${activeSessions.length} sessions for user ${user._id}`
+      );
 
-    if (activeSessions.length === 0) {
-      console.log(`[AUTH MIDDLEWARE] No active sessions found for user ${user._id} - blocking request`);
-      res.status(401).json({ message: "No active sessions found" });
+      if (activeSessions.length === 0) {
+        console.log(
+          `[AUTH MIDDLEWARE] No active sessions found for user ${user._id} - blocking request`
+        );
+        res.status(401).json({ message: "No active sessions found" });
+        return;
+      }
+
+      // Check if any session is still valid (not expired and active)
+      const validSession = activeSessions.find(
+        (session) => session.isActive && new Date() < session.expiresAt
+      );
+
+      if (!validSession) {
+        console.log(
+          `[AUTH MIDDLEWARE] No valid active session found for user ${user._id} - blocking request`
+        );
+        res.status(401).json({ message: "No valid active session found" });
+        return;
+      }
+
+      req.session = validSession;
+    } catch (error) {
+      console.error(
+        `[AUTH MIDDLEWARE] Session validation error for user ${user._id}:`,
+        error
+      );
+      res.status(500).json({ message: "Session validation failed" });
       return;
     }
 
-    // Check if any session is still valid (not expired and active)
-    const validSession = activeSessions.find(session =>
-      session.isActive && new Date() < session.expiresAt
+    console.log(
+      `[AUTH MIDDLEWARE] Session validation passed for user ${user._id}`
     );
-
-    if (!validSession) {
-      console.log(`[AUTH MIDDLEWARE] No valid active session found for user ${user._id} - blocking request`);
-      res.status(401).json({ message: "No valid active session found" });
-      return;
-    }
-
-    console.log(`[AUTH MIDDLEWARE] Session validation passed for user ${user._id}`);
     req.user = user;
-    req.session = validSession;
 
     next();
   } catch (error) {
