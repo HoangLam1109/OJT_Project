@@ -119,7 +119,7 @@ export function DashboardPage() {
           <p className="text-gray-600 mt-1">Chào mừng trở lại! Đây là tình hình hoạt động phòng thí nghiệm hôm nay.</p>
         </div>
         <div className="flex space-x-3">
-          <Button className="bg-blue-600 hover:bg-blue-700">
+          <Button className="bg-blue-600 hover:bg-blue-700 text-white">
             <Plus className="h-4 w-4 mr-2" />
             Tạo xét nghiệm mới
           </Button>

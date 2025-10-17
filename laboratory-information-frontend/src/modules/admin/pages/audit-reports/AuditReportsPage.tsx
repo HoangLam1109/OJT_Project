@@ -42,9 +42,9 @@ const mockAuditLogs: AuditLog[] = [
     timestamp: '2024-10-08T10:30:00',
     service: 'IAM',
     eventCode: 'USER_LOGIN',
-    action: 'User logged in',
+    action: 'Người dùng đăng nhập',
     user: 'admin@lab.com',
-    details: 'Successful login from admin dashboard',
+    details: 'Đăng nhập thành công từ trang quản trị',
     ipAddress: '192.168.1.100',
     severity: 'info'
   },
@@ -53,9 +53,9 @@ const mockAuditLogs: AuditLog[] = [
     timestamp: '2024-10-08T10:25:00',
     service: 'Test Order',
     eventCode: 'ORDER_CREATED',
-    action: 'Test order created',
+    action: 'Tạo yêu cầu xét nghiệm',
     user: 'technician@lab.com',
-    details: 'Created order T005 for patient P001',
+    details: 'Đã tạo yêu cầu T005 cho bệnh nhân P001',
     ipAddress: '192.168.1.101',
     severity: 'info'
   },
@@ -64,9 +64,9 @@ const mockAuditLogs: AuditLog[] = [
     timestamp: '2024-10-08T10:20:00',
     service: 'Patient',
     eventCode: 'PATIENT_UPDATED',
-    action: 'Patient record updated',
+    action: 'Cập nhật thông tin bệnh nhân',
     user: 'labuser@lab.com',
-    details: 'Updated contact information for patient P002',
+    details: 'Cập nhật thông tin liên hệ cho bệnh nhân P002',
     ipAddress: '192.168.1.102',
     severity: 'info'
   },
@@ -75,9 +75,9 @@ const mockAuditLogs: AuditLog[] = [
     timestamp: '2024-10-08T10:15:00',
     service: 'Test Order',
     eventCode: 'RESULT_FLAGGED',
-    action: 'Result flagged as critical',
+    action: 'Kết quả được đánh dấu nguy hiểm',
     user: 'system',
-    details: 'AI flagged abnormal WBC count for patient P003',
+    details: 'AI phát hiện số lượng WBC bất thường cho bệnh nhân P003',
     ipAddress: '127.0.0.1',
     severity: 'warning'
   },
@@ -86,9 +86,9 @@ const mockAuditLogs: AuditLog[] = [
     timestamp: '2024-10-08T10:10:00',
     service: 'IAM',
     eventCode: 'USER_FAILED_LOGIN',
-    action: 'Failed login attempt',
+    action: 'Đăng nhập thất bại',
     user: 'unknown@lab.com',
-    details: 'Invalid credentials provided',
+    details: 'Thông tin đăng nhập không hợp lệ',
     ipAddress: '192.168.1.105',
     severity: 'error'
   },
@@ -97,9 +97,9 @@ const mockAuditLogs: AuditLog[] = [
     timestamp: '2024-10-08T10:05:00',
     service: 'Test Order',
     eventCode: 'RESULT_VALIDATED',
-    action: 'Test result validated',
+    action: 'Xác nhận kết quả xét nghiệm',
     user: 'manager@lab.com',
-    details: 'Validated results for order T003',
+    details: 'Đã xác nhận kết quả cho yêu cầu T003',
     ipAddress: '192.168.1.103',
     severity: 'info'
   }
@@ -160,15 +160,15 @@ export function AuditReportsPage() {
 
   const handleExportLogs = (format: 'csv' | 'pdf') => {
     // Mock export functionality
-    const filename = `audit_logs_${new Date().toISOString().split('T')[0]}.${format}`;
-    console.log(`Exporting ${filteredLogs.length} logs as ${format.toUpperCase()}:`, filename);
-    alert(`Exported ${filteredLogs.length} audit logs as ${format.toUpperCase()}`);
+    const filename = `nhat_ky_${new Date().toISOString().split('T')[0]}.${format}`;
+    console.log(`Đang xuất ${filteredLogs.length} nhật ký dưới dạng ${format.toUpperCase()}:`, filename);
+    alert(`Đã xuất ${filteredLogs.length} nhật ký dưới dạng ${format.toUpperCase()}`);
   };
 
   const handleGenerateReport = () => {
     // Mock report generation
-    console.log('Generating comprehensive audit report...');
-    alert('Comprehensive audit report generated successfully!');
+    console.log('Đang tạo báo cáo kiểm toán tổng hợp...');
+    alert('Đã tạo báo cáo kiểm toán tổng hợp thành công!');
   };
 
   return (
@@ -176,21 +176,21 @@ export function AuditReportsPage() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Audit & Reports</h1>
-          <p className="text-gray-600 mt-1">Monitor system activity and generate compliance reports</p>
+          <h1 className="text-3xl font-bold text-gray-900">Nhật ký & Báo cáo</h1>
+          <p className="text-gray-600 mt-1">Theo dõi hoạt động hệ thống và tạo báo cáo tuân thủ</p>
         </div>
         <div className="flex space-x-3">
           <Button onClick={handleGenerateReport} variant="outline">
             <FileText className="h-4 w-4 mr-2" />
-            Generate Report
+            Tạo báo cáo
           </Button>
           <Button onClick={() => handleExportLogs('csv')} variant="outline">
             <Download className="h-4 w-4 mr-2" />
-            Export CSV
+            Xuất CSV
           </Button>
-          <Button onClick={() => handleExportLogs('pdf')} className="bg-blue-600 hover:bg-blue-700">
+          <Button onClick={() => handleExportLogs('pdf')} className="bg-blue-600 hover:bg-blue-700 text-white">
             <Download className="h-4 w-4 mr-2" />
-            Export PDF
+            Xuất PDF
           </Button>
         </div>
       </div>
@@ -201,7 +201,7 @@ export function AuditReportsPage() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Total Events</p>
+                <p className="text-sm text-gray-600">Tổng sự kiện</p>
                 <p className="text-2xl font-bold text-gray-900">{auditLogs.length}</p>
               </div>
               <Activity className="h-8 w-8 text-blue-600" />
@@ -213,7 +213,7 @@ export function AuditReportsPage() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">IAM Events</p>
+                <p className="text-sm text-gray-600">Sự kiện IAM</p>
                 <p className="text-2xl font-bold text-blue-600">
                   {auditLogs.filter(log => log.service === 'IAM').length}
                 </p>
@@ -227,7 +227,7 @@ export function AuditReportsPage() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Test Events</p>
+                <p className="text-sm text-gray-600">Sự kiện xét nghiệm</p>
                 <p className="text-2xl font-bold text-green-600">
                   {auditLogs.filter(log => log.service === 'Test Order').length}
                 </p>
@@ -241,7 +241,7 @@ export function AuditReportsPage() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Errors/Warnings</p>
+                <p className="text-sm text-gray-600">Lỗi/Cảnh báo</p>
                 <p className="text-2xl font-bold text-red-600">
                   {auditLogs.filter(log => log.severity === 'error' || log.severity === 'warning').length}
                 </p>
@@ -257,19 +257,19 @@ export function AuditReportsPage() {
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Filter className="h-5 w-5" />
-            <span>Filters</span>
+            <span>Bộ lọc</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             {/* Search */}
             <div className="space-y-2">
-              <Label htmlFor="search">Search</Label>
+              <Label htmlFor="search">Tìm kiếm</Label>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   id="search"
-                  placeholder="Search logs..."
+                  placeholder="Tìm kiếm nhật ký..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -279,39 +279,39 @@ export function AuditReportsPage() {
 
             {/* Service Filter */}
             <div className="space-y-2">
-              <Label htmlFor="service">Service</Label>
+              <Label htmlFor="service">Dịch vụ</Label>
               <select
                 id="service"
                 value={selectedService}
                 onChange={(e) => setSelectedService(e.target.value)}
                 className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                <option value="all">All Services</option>
+                <option value="all">Tất cả dịch vụ</option>
                 <option value="IAM">IAM</option>
-                <option value="Patient">Patient</option>
-                <option value="Test Order">Test Order</option>
+                <option value="Patient">Bệnh nhân</option>
+                <option value="Test Order">Xét nghiệm</option>
               </select>
             </div>
 
             {/* Severity Filter */}
             <div className="space-y-2">
-              <Label htmlFor="severity">Severity</Label>
+              <Label htmlFor="severity">Mức độ</Label>
               <select
                 id="severity"
                 value={selectedSeverity}
                 onChange={(e) => setSelectedSeverity(e.target.value)}
                 className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                <option value="all">All Severities</option>
-                <option value="info">Info</option>
-                <option value="warning">Warning</option>
-                <option value="error">Error</option>
+                <option value="all">Tất cả mức độ</option>
+                <option value="info">Thông tin</option>
+                <option value="warning">Cảnh báo</option>
+                <option value="error">Lỗi nghiêm trọng</option>
               </select>
             </div>
 
             {/* Date From */}
             <div className="space-y-2">
-              <Label htmlFor="dateFrom">From Date</Label>
+              <Label htmlFor="dateFrom">Từ ngày</Label>
               <div className="relative">
                 <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
@@ -326,7 +326,7 @@ export function AuditReportsPage() {
 
             {/* Date To */}
             <div className="space-y-2">
-              <Label htmlFor="dateTo">To Date</Label>
+              <Label htmlFor="dateTo">Đến ngày</Label>
               <div className="relative">
                 <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
@@ -342,7 +342,7 @@ export function AuditReportsPage() {
 
           <div className="flex justify-between items-center mt-4 pt-4 border-t">
             <p className="text-sm text-gray-600">
-              Showing {filteredLogs.length} of {auditLogs.length} events
+              Hiển thị {filteredLogs.length} trên {auditLogs.length} sự kiện
             </p>
             <Button
               variant="outline"
@@ -355,7 +355,7 @@ export function AuditReportsPage() {
               }}
             >
               <RefreshCw className="h-4 w-4 mr-2" />
-              Reset Filters
+              Đặt lại bộ lọc
             </Button>
           </div>
         </CardContent>
@@ -364,21 +364,21 @@ export function AuditReportsPage() {
       {/* Audit Logs Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Audit Logs</CardTitle>
-          <CardDescription>Detailed system activity logs with filtering and export capabilities</CardDescription>
+          <CardTitle>Nhật ký hệ thống</CardTitle>
+          <CardDescription>Nhật ký hoạt động hệ thống chi tiết với khả năng lọc và xuất báo cáo</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full table-auto">
               <thead>
                 <tr className="border-b border-gray-200">
-                  <th className="text-left p-3 font-medium text-gray-900">Timestamp</th>
-                  <th className="text-left p-3 font-medium text-gray-900">Service</th>
-                  <th className="text-left p-3 font-medium text-gray-900">Event</th>
-                  <th className="text-left p-3 font-medium text-gray-900">User</th>
-                  <th className="text-left p-3 font-medium text-gray-900">Details</th>
-                  <th className="text-left p-3 font-medium text-gray-900">Severity</th>
-                  <th className="text-center p-3 font-medium text-gray-900">Actions</th>
+                  <th className="text-left p-3 font-medium text-gray-900">Thời gian</th>
+                  <th className="text-left p-3 font-medium text-gray-900">Dịch vụ</th>
+                  <th className="text-left p-3 font-medium text-gray-900">Sự kiện</th>
+                  <th className="text-left p-3 font-medium text-gray-900">Người dùng</th>
+                  <th className="text-left p-3 font-medium text-gray-900">Chi tiết</th>
+                  <th className="text-left p-3 font-medium text-gray-900">Mức độ</th>
+                  <th className="text-center p-3 font-medium text-gray-900">Thao tác</th>
                 </tr>
               </thead>
               <tbody>
@@ -426,7 +426,7 @@ export function AuditReportsPage() {
                           variant="outline"
                           size="sm"
                           onClick={() => {
-                            alert(`Viewing details for log ID: ${log.id}\n\nFull Details:\n${log.details}\n\nTimestamp: ${log.timestamp}\nIP Address: ${log.ipAddress}`);
+                            alert(`Chi tiết nhật ký #${log.id}\n\nNội dung chi tiết:\n${log.details}\n\nThời gian: ${log.timestamp}\nĐịa chỉ IP: ${log.ipAddress}`);
                           }}
                         >
                           <Eye className="h-4 w-4" />
@@ -442,8 +442,8 @@ export function AuditReportsPage() {
           {filteredLogs.length === 0 && (
             <div className="text-center py-12">
               <Activity className="h-12 w-12 mx-auto text-gray-300 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No audit logs found</h3>
-              <p className="text-gray-600">Try adjusting your filters to see more results.</p>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Không tìm thấy nhật ký</h3>
+              <p className="text-gray-600">Hãy điều chỉnh bộ lọc để xem thêm kết quả.</p>
             </div>
           )}
         </CardContent>
@@ -452,41 +452,41 @@ export function AuditReportsPage() {
       {/* Report Generation Section */}
       <Card>
         <CardHeader>
-          <CardTitle>Report Generation</CardTitle>
-          <CardDescription>Generate comprehensive reports for compliance and analysis</CardDescription>
+          <CardTitle>Tạo báo cáo</CardTitle>
+          <CardDescription>Tạo báo cáo tổng hợp để phân tích và tuân thủ</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="p-4 border border-gray-200 rounded-lg">
-              <h4 className="font-medium text-gray-900 mb-2">Compliance Report</h4>
+              <h4 className="font-medium text-gray-900 mb-2">Báo cáo tuân thủ</h4>
               <p className="text-sm text-gray-600 mb-4">
-                Generate a comprehensive compliance report including all audit trails, user activities, and system events.
+                Tạo báo cáo tuân thủ tổng hợp bao gồm nhật ký kiểm toán, hoạt động người dùng và sự kiện hệ thống.
               </p>
               <Button variant="outline" className="w-full">
                 <FileText className="h-4 w-4 mr-2" />
-                Generate Compliance Report
+                Tạo báo cáo tuân thủ
               </Button>
             </div>
 
             <div className="p-4 border border-gray-200 rounded-lg">
-              <h4 className="font-medium text-gray-900 mb-2">Test Orders Report</h4>
+              <h4 className="font-medium text-gray-900 mb-2">Báo cáo xét nghiệm</h4>
               <p className="text-sm text-gray-600 mb-4">
-                Export detailed test order reports with patient information, results, and validation status.
+                Xuất báo cáo xét nghiệm chi tiết với thông tin bệnh nhân, kết quả và trạng thái xác nhận.
               </p>
               <Button variant="outline" className="w-full">
                 <TestTube2 className="h-4 w-4 mr-2" />
-                Generate Test Report
+                Tạo báo cáo xét nghiệm
               </Button>
             </div>
 
             <div className="p-4 border border-gray-200 rounded-lg">
-              <h4 className="font-medium text-gray-900 mb-2">User Activity Report</h4>
+              <h4 className="font-medium text-gray-900 mb-2">Báo cáo hoạt động người dùng</h4>
               <p className="text-sm text-gray-600 mb-4">
-                Create reports focused on user activities, login patterns, and access controls.
+                Tạo báo cáo tập trung vào hoạt động người dùng, mẫu đăng nhập và kiểm soát truy cập.
               </p>
               <Button variant="outline" className="w-full">
                 <Users className="h-4 w-4 mr-2" />
-                Generate User Report
+                Tạo báo cáo người dùng
               </Button>
             </div>
           </div>

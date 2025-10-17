@@ -36,12 +36,12 @@ const mockTestOrders: Test[] = [
   {
     id: 'T001',
     patientId: 'P001',
-    testType: 'Complete Blood Count',
+    testType: 'Công thức máu hoàn chỉnh',
     orderDate: '2024-10-07',
     status: 'completed',
     sampleId: 'S001',
     results: 'WBC: 7.2 K/uL, RBC: 4.5 M/uL, Hemoglobin: 14.2 g/dL',
-    fee: 150,
+    fee: 150000,
     technician: 'Mike Johnson',
     completionDate: '2024-10-08',
     aiReviewData: {
@@ -49,33 +49,33 @@ const mockTestOrders: Test[] = [
       reviewScore: 0.95,
       confidence: 0.98,
       flags: ['normal'],
-      recommendations: ['Results within normal ranges'],
+      recommendations: ['Kết quả trong giới hạn bình thường'],
       anomalies: []
     }
   },
   {
     id: 'T002',
     patientId: 'P002',
-    testType: 'Lipid Panel',
+    testType: 'Xét nghiệm mỡ máu',
     orderDate: '2024-10-06',
     status: 'in-progress',
-    fee: 120,
+    fee: 120000,
     technician: 'Lisa Chen',
     sampleId: 'S002'
   },
   {
     id: 'T003',
     patientId: 'P003',
-    testType: 'Thyroid Function',
+    testType: 'Chức năng tuyến giáp',
     orderDate: '2024-10-08',
     status: 'pending',
-    fee: 180,
+    fee: 180000,
     sampleId: 'S003'
   },
   {
     id: 'T004',
     patientId: 'P001',
-    testType: 'Liver Function',
+    testType: 'Chức năng gan',
     orderDate: '2024-10-05',
     status: 'validated',
     sampleId: 'S004',
@@ -88,14 +88,14 @@ const mockTestOrders: Test[] = [
       reviewScore: 0.87,
       confidence: 0.92,
       flags: ['abnormal'],
-      recommendations: ['Elevated ALT - recommend follow-up'],
+      recommendations: ['ALT tăng cao - đề nghị theo dõi thêm'],
       anomalies: [
         {
           parameter: 'ALT',
           value: 45,
           expected: '7-40 U/L',
           severity: 'medium',
-          description: 'Slightly elevated ALT levels'
+          description: 'Nồng độ ALT tăng nhẹ'
         }
       ]
     }
@@ -151,17 +151,17 @@ export function TestOrderManagementPage({ currentUser }: TestOrderManagementProp
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Test Order Management</h1>
-          <p className="text-gray-600 mt-1">Manage test orders, results, and AI reviews</p>
+          <h1 className="text-3xl font-bold text-gray-900">Quản lý Yêu cầu Xét nghiệm</h1>
+          <p className="text-gray-600 mt-1">Quản lý yêu cầu xét nghiệm, kết quả và đánh giá AI</p>
         </div>
         <div className="flex space-x-3">
-          <Button onClick={() => setShowCreateModal(true)} className="bg-blue-600 hover:bg-blue-700">
+          <Button onClick={() => setShowCreateModal(true)} className="bg-blue-600 hover:bg-blue-700 text-white">
             <Plus className="h-4 w-4 mr-2" />
-            Create Order
+            Tạo yêu cầu
           </Button>
           <Button variant="outline">
             <RefreshCw className="h-4 w-4 mr-2" />
-            Sync HL7
+            Đồng bộ HL7
           </Button>
         </div>
       </div>
@@ -172,7 +172,7 @@ export function TestOrderManagementPage({ currentUser }: TestOrderManagementProp
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Pending Orders</p>
+                <p className="text-sm text-gray-600">Chờ xử lý</p>
                 <p className="text-2xl font-bold text-yellow-600">
                   {testOrders.filter(t => t.status === 'pending').length}
                 </p>
@@ -186,7 +186,7 @@ export function TestOrderManagementPage({ currentUser }: TestOrderManagementProp
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">In Progress</p>
+                <p className="text-sm text-gray-600">Đang thực hiện</p>
                 <p className="text-2xl font-bold text-blue-600">
                   {testOrders.filter(t => t.status === 'in-progress').length}
                 </p>
@@ -200,7 +200,7 @@ export function TestOrderManagementPage({ currentUser }: TestOrderManagementProp
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Completed</p>
+                <p className="text-sm text-gray-600">Đã hoàn thành</p>
                 <p className="text-2xl font-bold text-green-600">
                   {testOrders.filter(t => t.status === 'completed').length}
                 </p>
@@ -214,7 +214,7 @@ export function TestOrderManagementPage({ currentUser }: TestOrderManagementProp
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">AI Flagged</p>
+                <p className="text-sm text-gray-600">Cảnh báo AI</p>
                 <p className="text-2xl font-bold text-red-600">
                   {testOrders.filter(t => t.aiReviewData?.flags.includes('abnormal')).length}
                 </p>
@@ -233,7 +233,7 @@ export function TestOrderManagementPage({ currentUser }: TestOrderManagementProp
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
-                  placeholder="Search by Test ID, Patient ID, or Test Type..."
+                  placeholder="Tìm theo mã xét nghiệm, mã bệnh nhân hoặc loại xét nghiệm..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -246,12 +246,12 @@ export function TestOrderManagementPage({ currentUser }: TestOrderManagementProp
                 onChange={(e) => setSelectedStatus(e.target.value)}
                 className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                <option value="all">All Status</option>
-                <option value="pending">Pending</option>
-                <option value="in-progress">In Progress</option>
-                <option value="completed">Completed</option>
-                <option value="validated">Validated</option>
-                <option value="ai_reviewed">AI Reviewed</option>
+                <option value="all">Tất cả trạng thái</option>
+                <option value="pending">Chờ xử lý</option>
+                <option value="in-progress">Đang thực hiện</option>
+                <option value="completed">Đã hoàn thành</option>
+                <option value="validated">Đã xác nhận</option>
+                <option value="ai_reviewed">Đã kiểm tra AI</option>
               </select>
             </div>
           </div>
@@ -261,21 +261,21 @@ export function TestOrderManagementPage({ currentUser }: TestOrderManagementProp
       {/* Test Orders Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Test Orders ({filteredOrders.length})</CardTitle>
-          <CardDescription>Manage and track test orders through their lifecycle</CardDescription>
+          <CardTitle>Yêu cầu Xét nghiệm ({filteredOrders.length})</CardTitle>
+          <CardDescription>Quản lý và theo dõi yêu cầu xét nghiệm trong vòng đời</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full table-auto">
               <thead>
                 <tr className="border-b border-gray-200">
-                  <th className="text-left p-4 font-medium text-gray-900">Order Details</th>
-                  <th className="text-left p-4 font-medium text-gray-900">Patient</th>
-                  <th className="text-left p-4 font-medium text-gray-900">Sample</th>
-                  <th className="text-left p-4 font-medium text-gray-900">Status</th>
-                  <th className="text-left p-4 font-medium text-gray-900">Technician</th>
-                  <th className="text-left p-4 font-medium text-gray-900">AI Flags</th>
-                  <th className="text-center p-4 font-medium text-gray-900">Actions</th>
+                  <th className="text-left p-4 font-medium text-gray-900">Chi tiết yêu cầu</th>
+                  <th className="text-left p-4 font-medium text-gray-900">Bệnh nhân</th>
+                  <th className="text-left p-4 font-medium text-gray-900">Mẫu</th>
+                  <th className="text-left p-4 font-medium text-gray-900">Trạng thái</th>
+                  <th className="text-left p-4 font-medium text-gray-900">Kỹ thuật viên</th>
+                  <th className="text-left p-4 font-medium text-gray-900">Cờ AI</th>
+                  <th className="text-center p-4 font-medium text-gray-900">Thao tác</th>
                 </tr>
               </thead>
               <tbody>
@@ -286,24 +286,29 @@ export function TestOrderManagementPage({ currentUser }: TestOrderManagementProp
                         <p className="font-medium text-gray-900">{order.id}</p>
                         <p className="text-sm text-gray-600">{order.testType}</p>
                         <p className="text-xs text-gray-500">
-                          Ordered: {new Date(order.orderDate).toLocaleDateString()}
+                          Ngày yêu cầu: {new Date(order.orderDate).toLocaleDateString('vi-VN')}
                         </p>
-                        <p className="text-xs text-gray-500">Fee: ${order.fee}</p>
+                        <p className="text-xs text-gray-500">Phí: {order.fee.toLocaleString('vi-VN')} VNĐ</p>
                       </div>
                     </td>
                     <td className="p-4">
                       <p className="text-sm font-medium text-gray-900">{order.patientId}</p>
                     </td>
                     <td className="p-4">
-                      <p className="text-sm text-gray-900">{order.sampleId || 'Not collected'}</p>
+                      <p className="text-sm text-gray-900">{order.sampleId || 'Chưa lấy mẫu'}</p>
                     </td>
                     <td className="p-4">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
-                        {order.status.replace('-', ' ')}
+                        {order.status === 'pending' ? 'Chờ xử lý' :
+                         order.status === 'in-progress' ? 'Đang thực hiện' :
+                         order.status === 'completed' ? 'Đã hoàn thành' :
+                         order.status === 'validated' ? 'Đã xác nhận' :
+                         order.status === 'ai_reviewed' ? 'Đã kiểm tra AI' :
+                         order.status.replace('-', ' ')}
                       </span>
                     </td>
                     <td className="p-4">
-                      <p className="text-sm text-gray-900">{order.technician || 'Unassigned'}</p>
+                      <p className="text-sm text-gray-900">{order.technician || 'Chưa phân công'}</p>
                     </td>
                     <td className="p-4">
                       {order.aiReviewData ? (
@@ -311,21 +316,21 @@ export function TestOrderManagementPage({ currentUser }: TestOrderManagementProp
                           {order.aiReviewData.flags.includes('abnormal') && (
                             <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-red-100 text-red-800">
                               <AlertTriangle className="h-3 w-3 mr-1" />
-                              Abnormal
+                              Bất thường
                             </span>
                           )}
                           {order.aiReviewData.flags.includes('normal') && (
                             <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
                               <CheckCircle className="h-3 w-3 mr-1" />
-                              Normal
+                              Bình thường
                             </span>
                           )}
                           <p className="text-xs text-gray-500">
-                            Score: {Math.round((order.aiReviewData.reviewScore || 0) * 100)}%
+                            Điểm: {Math.round((order.aiReviewData.reviewScore || 0) * 100)}%
                           </p>
                         </div>
                       ) : (
-                        <span className="text-xs text-gray-400">Not reviewed</span>
+                        <span className="text-xs text-gray-400">Chưa kiểm tra</span>
                       )}
                     </td>
                     <td className="p-4">
@@ -442,56 +447,62 @@ function TestResultModal({ test, onClose }: {
 }) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+      <Card className="w-full max-w-4xl bg-white max-h-[90vh] overflow-y-auto">
         <CardHeader>
-          <CardTitle>Test Results - {test.id}</CardTitle>
-          <CardDescription>{test.testType} for Patient {test.patientId}</CardDescription>
+          <CardTitle>Kết quả xét nghiệm - {test.id}</CardTitle>
+          <CardDescription>{test.testType} cho Bệnh nhân {test.patientId}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Test Info */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900">Test Information</h3>
+              <h3 className="text-lg font-semibold text-gray-900">Thông tin xét nghiệm</h3>
               <div className="space-y-3">
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Test ID</label>
+                  <label className="text-sm font-medium text-gray-600">Mã xét nghiệm</label>
                   <p className="text-gray-900">{test.id}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Patient ID</label>
+                  <label className="text-sm font-medium text-gray-600">Mã bệnh nhân</label>
                   <p className="text-gray-900">{test.patientId}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Test Type</label>
+                  <label className="text-sm font-medium text-gray-600">Loại xét nghiệm</label>
                   <p className="text-gray-900">{test.testType}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Sample ID</label>
-                  <p className="text-gray-900">{test.sampleId || 'Not collected'}</p>
+                  <label className="text-sm font-medium text-gray-600">Mã mẫu</label>
+                  <p className="text-gray-900">{test.sampleId || 'Chưa lấy mẫu'}</p>
                 </div>
               </div>
             </div>
 
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900">Status & Timeline</h3>
+              <h3 className="text-lg font-semibold text-gray-900">Trạng thái & Thời gian</h3>
               <div className="space-y-3">
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Status</label>
-                  <p className="text-gray-900 capitalize">{test.status.replace('-', ' ')}</p>
+                  <label className="text-sm font-medium text-gray-600">Trạng thái</label>
+                  <p className="text-gray-900 capitalize">{
+                    test.status === 'pending' ? 'Chờ xử lý' :
+                    test.status === 'in-progress' ? 'Đang thực hiện' :
+                    test.status === 'completed' ? 'Đã hoàn thành' :
+                    test.status === 'validated' ? 'Đã xác nhận' :
+                    test.status === 'ai_reviewed' ? 'Đã kiểm tra AI' :
+                    test.status}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Order Date</label>
-                  <p className="text-gray-900">{new Date(test.orderDate).toLocaleString()}</p>
+                  <label className="text-sm font-medium text-gray-600">Ngày yêu cầu</label>
+                  <p className="text-gray-900">{new Date(test.orderDate).toLocaleString('vi-VN')}</p>
                 </div>
                 {test.completionDate && (
                   <div>
-                    <label className="text-sm font-medium text-gray-600">Completion Date</label>
-                    <p className="text-gray-900">{new Date(test.completionDate).toLocaleString()}</p>
+                    <label className="text-sm font-medium text-gray-600">Ngày hoàn thành</label>
+                    <p className="text-gray-900">{new Date(test.completionDate).toLocaleString('vi-VN')}</p>
                   </div>
                 )}
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Technician</label>
-                  <p className="text-gray-900">{test.technician || 'Unassigned'}</p>
+                  <label className="text-sm font-medium text-gray-600">Kỹ thuật viên</label>
+                  <p className="text-gray-900">{test.technician || 'Chưa phân công'}</p>
                 </div>
               </div>
             </div>
@@ -500,7 +511,7 @@ function TestResultModal({ test, onClose }: {
           {/* Results */}
           {test.results && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900">Test Results</h3>
+              <h3 className="text-lg font-semibold text-gray-900">Kết quả xét nghiệm</h3>
               <div className="p-4 bg-gray-50 rounded-lg">
                 <p className="text-gray-900 font-mono">{test.results}</p>
               </div>
@@ -510,7 +521,7 @@ function TestResultModal({ test, onClose }: {
           {/* AI Review Summary */}
           {test.aiReviewData && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900">AI Review Summary</h3>
+              <h3 className="text-lg font-semibold text-gray-900">Tóm tắt đánh giá AI</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="p-4 bg-blue-50 rounded-lg">
                   <p className="text-sm text-blue-600 font-medium">Review Score</p>
@@ -536,19 +547,19 @@ function TestResultModal({ test, onClose }: {
 
           <div className="flex justify-end space-x-3 pt-4 border-t">
             <Button variant="outline" onClick={onClose}>
-              Close
+              Đóng
             </Button>
             <Button variant="outline">
               <MessageSquare className="h-4 w-4 mr-2" />
-              Add Comment
+              Thêm ghi chú
             </Button>
             <Button variant="outline">
               <Download className="h-4 w-4 mr-2" />
-              Export Report
+              Xuất báo cáo
             </Button>
             {test.status === 'completed' && (
               <Button className="bg-green-600 hover:bg-green-700">
-                Validate Results
+                Xác nhận kết quả
               </Button>
             )}
           </div>
@@ -571,9 +582,9 @@ function AIReviewModal({ test, onClose }: {
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Brain className="h-6 w-6 text-blue-600" />
-            <span>AI Review - {test.id}</span>
+            <span>Đánh giá AI - {test.id}</span>
           </CardTitle>
-          <CardDescription>Detailed AI analysis and recommendations</CardDescription>
+          <CardDescription>Phân tích chi tiết và khuyến nghị từ AI</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* AI Metrics */}
@@ -581,7 +592,7 @@ function AIReviewModal({ test, onClose }: {
             <Card>
               <CardContent className="p-4">
                 <div className="text-center">
-                  <p className="text-sm text-gray-600">Review Score</p>
+                  <p className="text-sm text-gray-600">Điểm đánh giá</p>
                   <p className="text-3xl font-bold text-blue-600">
                     {Math.round((test.aiReviewData.reviewScore || 0) * 100)}%
                   </p>
@@ -591,7 +602,7 @@ function AIReviewModal({ test, onClose }: {
             <Card>
               <CardContent className="p-4">
                 <div className="text-center">
-                  <p className="text-sm text-gray-600">Confidence Level</p>
+                  <p className="text-sm text-gray-600">Độ tin cậy</p>
                   <p className="text-3xl font-bold text-green-600">
                     {Math.round((test.aiReviewData.confidence || 0) * 100)}%
                   </p>
@@ -601,7 +612,7 @@ function AIReviewModal({ test, onClose }: {
             <Card>
               <CardContent className="p-4">
                 <div className="text-center">
-                  <p className="text-sm text-gray-600">Anomalies Found</p>
+                  <p className="text-sm text-gray-600">Số bất thường</p>
                   <p className="text-3xl font-bold text-red-600">
                     {test.aiReviewData.anomalies?.length || 0}
                   </p>
@@ -612,7 +623,7 @@ function AIReviewModal({ test, onClose }: {
 
           {/* Flags */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900">AI Flags</h3>
+            <h3 className="text-lg font-semibold text-gray-900">Cờ cảnh báo AI</h3>
             <div className="flex flex-wrap gap-2">
               {test.aiReviewData.flags.map((flag, index) => (
                 <span
@@ -623,7 +634,9 @@ function AIReviewModal({ test, onClose }: {
                     'bg-yellow-100 text-yellow-800'
                   }`}
                 >
-                  {flag}
+                  {flag === 'normal' ? 'Bình thường' :
+                   flag === 'abnormal' ? 'Bất thường' :
+                   flag}
                 </span>
               ))}
             </div>
@@ -631,7 +644,7 @@ function AIReviewModal({ test, onClose }: {
 
           {/* Recommendations */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900">AI Recommendations</h3>
+            <h3 className="text-lg font-semibold text-gray-900">Khuyến nghị của AI</h3>
             <div className="space-y-2">
               {test.aiReviewData.recommendations.map((rec, index) => (
                 <div key={index} className="flex items-start space-x-3 p-3 bg-blue-50 rounded-lg">
@@ -645,7 +658,7 @@ function AIReviewModal({ test, onClose }: {
           {/* Anomalies */}
           {test.aiReviewData.anomalies && test.aiReviewData.anomalies.length > 0 && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900">Detected Anomalies</h3>
+              <h3 className="text-lg font-semibold text-gray-900">Phát hiện bất thường</h3>
               <div className="space-y-3">
                 {test.aiReviewData.anomalies.map((anomaly, index) => (
                   <div key={index} className="p-4 border border-red-200 bg-red-50 rounded-lg">
@@ -658,14 +671,16 @@ function AIReviewModal({ test, onClose }: {
                             anomaly.severity === 'medium' ? 'bg-yellow-100 text-yellow-800' :
                             'bg-green-100 text-green-800'
                           }`}>
-                            {anomaly.severity} severity
+                            {anomaly.severity === 'high' ? 'Mức độ cao' :
+                             anomaly.severity === 'medium' ? 'Mức độ trung bình' :
+                             'Mức độ thấp'}
                           </span>
                         </div>
                         <p className="text-sm text-gray-600 mt-1">{anomaly.description}</p>
                         <div className="mt-2 text-sm">
-                          <span className="text-gray-600">Value: </span>
+                          <span className="text-gray-600">Giá trị: </span>
                           <span className="font-medium text-gray-900">{anomaly.value}</span>
-                          <span className="text-gray-600 ml-4">Expected: </span>
+                          <span className="text-gray-600 ml-4">Kỳ vọng: </span>
                           <span className="font-medium text-gray-900">{anomaly.expected}</span>
                         </div>
                       </div>
@@ -679,24 +694,24 @@ function AIReviewModal({ test, onClose }: {
 
           {/* Review Metadata */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900">Review Details</h3>
+            <h3 className="text-lg font-semibold text-gray-900">Chi tiết đánh giá</h3>
             <div className="p-4 bg-gray-50 rounded-lg">
               <p className="text-sm text-gray-600">
-                Reviewed at: {new Date(test.aiReviewData.reviewedAt).toLocaleString()}
+                Thời gian đánh giá: {new Date(test.aiReviewData.reviewedAt).toLocaleString('vi-VN')}
               </p>
             </div>
           </div>
 
           <div className="flex justify-end space-x-3 pt-4 border-t">
             <Button variant="outline" onClick={onClose}>
-              Close
+              Đóng
             </Button>
             <Button variant="outline">
               <Download className="h-4 w-4 mr-2" />
-              Export Analysis
+              Xuất phân tích
             </Button>
             <Button className="bg-blue-600 hover:bg-blue-700">
-              Accept AI Review
+              Chấp nhận đánh giá AI
             </Button>
           </div>
         </CardContent>
@@ -736,7 +751,7 @@ function CreateOrderModal({ onClose, onCreate }: {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <Card className="w-full max-w-2xl">
+      <Card className="w-full max-w-2xl bg-white">
         <CardHeader>
           <CardTitle>Create Test Order</CardTitle>
           <CardDescription>Create a new test order for a patient</CardDescription>
@@ -799,7 +814,7 @@ function CreateOrderModal({ onClose, onCreate }: {
               <Button type="button" variant="outline" onClick={onClose}>
                 Cancel
               </Button>
-              <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+              <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white">
                 Create Order
               </Button>
             </div>

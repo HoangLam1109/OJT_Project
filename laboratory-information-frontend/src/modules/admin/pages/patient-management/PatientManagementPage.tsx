@@ -134,7 +134,7 @@ export default function PatientManagementPage() {
           <h1 className="text-3xl font-bold text-gray-900">Quản lý Bệnh nhân</h1>
           <p className="text-gray-600 mt-1">Quản lý hồ sơ bệnh nhân và lịch sử xét nghiệm</p>
         </div>
-        <Button onClick={() => setShowAddPatientModal(true)} className="bg-blue-600 hover:bg-blue-700">
+        <Button onClick={() => setShowAddPatientModal(true)} className="bg-blue-600 hover:bg-blue-700 text-white">
           <Plus className="h-4 w-4 mr-2" />
           Thêm bệnh nhân
         </Button>
@@ -403,7 +403,7 @@ function AddPatientModal({ onClose, onAdd }: {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <Card className="w-full max-w-2xl bg-white max-h-[90vh] overflow-y-auto">
         <CardHeader>
           <CardTitle>Add New Patient</CardTitle>
           <CardDescription>Register a new patient in the system</CardDescription>
@@ -488,7 +488,7 @@ function AddPatientModal({ onClose, onAdd }: {
               <Button type="button" variant="outline" onClick={onClose}>
                 Cancel
               </Button>
-              <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+              <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white">
                 Add Patient
               </Button>
             </div>
@@ -521,7 +521,7 @@ function EditPatientModal({ patient, onClose, onSave }: {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <Card className="w-full max-w-2xl bg-white max-h-[90vh] overflow-y-auto">
         <CardHeader>
           <CardTitle>Edit Patient</CardTitle>
           <CardDescription>Update patient information</CardDescription>
@@ -601,7 +601,7 @@ function EditPatientModal({ patient, onClose, onSave }: {
               <Button type="button" variant="outline" onClick={onClose}>
                 Cancel
               </Button>
-              <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+              <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white">
                 Save Changes
               </Button>
             </div>
@@ -641,7 +641,7 @@ function ViewPatientModal({ patient, onClose }: {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+      <Card className="w-full max-w-4xl bg-white max-h-[90vh] overflow-y-auto">
         <CardHeader>
           <CardTitle>Patient Details</CardTitle>
           <CardDescription>Complete patient information and test history</CardDescription>
@@ -740,7 +740,7 @@ function ViewPatientModal({ patient, onClose }: {
             <Button type="button" variant="outline" onClick={onClose}>
               Close
             </Button>
-            <Button className="bg-blue-600 hover:bg-blue-700">
+            <Button className="bg-blue-600 hover:bg-blue-700 text-white">
               Create Test Order
             </Button>
           </div>

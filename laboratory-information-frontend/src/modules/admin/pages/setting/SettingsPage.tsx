@@ -116,8 +116,8 @@ export function SettingsPage({ currentUser }: SettingsPageProps) {
 
   const handleSaveSystemSettings = () => {
     // Save system settings logic
-    console.log('Saving system settings:', systemSettings);
-    alert('System settings saved successfully!');
+    console.log('Đang lưu cài đặt hệ thống:', systemSettings);
+    alert('Đã lưu cài đặt hệ thống thành công!');
   };
 
   const handleDeleteConfig = (configId: string) => {
@@ -155,25 +155,25 @@ export function SettingsPage({ currentUser }: SettingsPageProps) {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">System Settings</h1>
-          <p className="text-gray-600 mt-1">Configure system parameters and integrations</p>
+          <h1 className="text-3xl font-bold text-gray-900">Cài đặt hệ thống</h1>
+          <p className="text-gray-600 mt-1">Cấu hình tham số và tích hợp hệ thống</p>
         </div>
-        <Button onClick={handleSaveSystemSettings} className="bg-blue-600 hover:bg-blue-700">
+        <Button onClick={handleSaveSystemSettings} className="bg-blue-600 hover:bg-blue-700 text-white">
           <Save className="h-4 w-4 mr-2" />
-          Save All Settings
+          Lưu tất cả cài đặt
         </Button>
       </div>
 
       {/* Laboratory Information */}
       <Card>
         <CardHeader>
-          <CardTitle>Laboratory Information</CardTitle>
-          <CardDescription>Basic laboratory details and contact information</CardDescription>
+          <CardTitle>Thông tin phòng xét nghiệm</CardTitle>
+          <CardDescription>Thông tin cơ bản và liên hệ của phòng xét nghiệm</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="labName">Laboratory Name</Label>
+              <Label htmlFor="labName">Tên phòng xét nghiệm</Label>
               <Input
                 id="labName"
                 value={systemSettings.labName}
@@ -181,7 +181,7 @@ export function SettingsPage({ currentUser }: SettingsPageProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="labPhone">Phone Number</Label>
+              <Label htmlFor="labPhone">Số điện thoại</Label>
               <Input
                 id="labPhone"
                 value={systemSettings.labPhone}
@@ -190,7 +190,7 @@ export function SettingsPage({ currentUser }: SettingsPageProps) {
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="labAddress">Address</Label>
+            <Label htmlFor="labAddress">Địa chỉ</Label>
             <Input
               id="labAddress"
               value={systemSettings.labAddress}
@@ -212,13 +212,13 @@ export function SettingsPage({ currentUser }: SettingsPageProps) {
       {/* System Configuration */}
       <Card>
         <CardHeader>
-          <CardTitle>System Configuration</CardTitle>
-          <CardDescription>Configure system behavior and automation settings</CardDescription>
+          <CardTitle>Cấu hình hệ thống</CardTitle>
+          <CardDescription>Cấu hình hoạt động và tự động hóa hệ thống</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="hl7Sync">HL7 Sync Interval (minutes)</Label>
+              <Label htmlFor="hl7Sync">Chu kỳ đồng bộ HL7 (phút)</Label>
               <Input
                 id="hl7Sync"
                 type="number"
@@ -228,7 +228,7 @@ export function SettingsPage({ currentUser }: SettingsPageProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="backupRetention">Backup Retention (days)</Label>
+              <Label htmlFor="backupRetention">Thời gian lưu trữ sao lưu (ngày)</Label>
               <Input
                 id="backupRetention"
                 type="number"
@@ -240,7 +240,7 @@ export function SettingsPage({ currentUser }: SettingsPageProps) {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="aiThreshold">AI Review Threshold</Label>
+              <Label htmlFor="aiThreshold">Ngưỡng đánh giá AI</Label>
               <Input
                 id="aiThreshold"
                 type="number"
@@ -252,7 +252,7 @@ export function SettingsPage({ currentUser }: SettingsPageProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="alertEmail">Critical Alert Email</Label>
+              <Label htmlFor="alertEmail">Email cảnh báo quan trọng</Label>
               <Input
                 id="alertEmail"
                 type="email"
@@ -269,7 +269,7 @@ export function SettingsPage({ currentUser }: SettingsPageProps) {
               onChange={(e) => setSystemSettings({...systemSettings, autoBackupEnabled: e.target.checked})}
               className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
             />
-            <Label htmlFor="autoBackup">Enable automatic backups</Label>
+            <Label htmlFor="autoBackup">Bật sao lưu tự động</Label>
           </div>
         </CardContent>
       </Card>
@@ -279,12 +279,12 @@ export function SettingsPage({ currentUser }: SettingsPageProps) {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Test Result Flagging</CardTitle>
-              <CardDescription>Configure thresholds for automatic result flagging</CardDescription>
+              <CardTitle>Cấu hình đánh dấu kết quả</CardTitle>
+              <CardDescription>Cấu hình ngưỡng cho đánh dấu kết quả tự động</CardDescription>
             </div>
             <Button onClick={() => setShowAddConfigModal(true)} variant="outline">
               <Plus className="h-4 w-4 mr-2" />
-              Add Parameter
+              Thêm thông số
             </Button>
           </div>
         </CardHeader>
@@ -293,12 +293,12 @@ export function SettingsPage({ currentUser }: SettingsPageProps) {
             <table className="w-full table-auto">
               <thead>
                 <tr className="border-b border-gray-200">
-                  <th className="text-left p-3 font-medium text-gray-900">Parameter</th>
-                  <th className="text-left p-3 font-medium text-gray-900">Low Threshold</th>
-                  <th className="text-left p-3 font-medium text-gray-900">High Threshold</th>
-                  <th className="text-left p-3 font-medium text-gray-900">Unit</th>
-                  <th className="text-left p-3 font-medium text-gray-900">Severity</th>
-                  <th className="text-center p-3 font-medium text-gray-900">Actions</th>
+                  <th className="text-left p-3 font-medium text-gray-900">Thông số</th>
+                  <th className="text-left p-3 font-medium text-gray-900">Ngưỡng thấp</th>
+                  <th className="text-left p-3 font-medium text-gray-900">Ngưỡng cao</th>
+                  <th className="text-left p-3 font-medium text-gray-900">Đơn vị</th>
+                  <th className="text-left p-3 font-medium text-gray-900">Mức độ</th>
+                  <th className="text-center p-3 font-medium text-gray-900">Thao tác</th>
                 </tr>
               </thead>
               <tbody>
@@ -346,8 +346,8 @@ export function SettingsPage({ currentUser }: SettingsPageProps) {
       {/* Instrument Integration */}
       <Card>
         <CardHeader>
-          <CardTitle>Instrument Integration</CardTitle>
-          <CardDescription>Monitor and manage laboratory instrument connections</CardDescription>
+          <CardTitle>Tích hợp thiết bị</CardTitle>
+          <CardDescription>Giám sát và quản lý kết nối thiết bị phòng xét nghiệm</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -369,10 +369,11 @@ export function SettingsPage({ currentUser }: SettingsPageProps) {
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(instrument.status)}`}>
                       {instrument.status === 'connected' && <CheckCircle className="h-3 w-3 mr-1" />}
                       {instrument.status === 'error' && <AlertTriangle className="h-3 w-3 mr-1" />}
-                      {instrument.status}
+                      {instrument.status === 'connected' ? 'Đã kết nối' : 
+                       instrument.status === 'error' ? 'Lỗi' : 'Ngắt kết nối'}
                     </span>
                     <p className="text-xs text-gray-500 mt-1">
-                      Last sync: {new Date(instrument.lastSync).toLocaleString()}
+                      Đồng bộ lần cuối: {new Date(instrument.lastSync).toLocaleString()}
                     </p>
                   </div>
                   <Button
@@ -392,13 +393,13 @@ export function SettingsPage({ currentUser }: SettingsPageProps) {
       {/* User Profile Settings */}
       <Card>
         <CardHeader>
-          <CardTitle>User Profile</CardTitle>
-          <CardDescription>Manage your personal account settings</CardDescription>
+          <CardTitle>Hồ sơ người dùng</CardTitle>
+          <CardDescription>Quản lý cài đặt tài khoản cá nhân</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="userName">Full Name</Label>
+              <Label htmlFor="userName">Họ và tên</Label>
               <Input
                 id="userName"
                 value={currentUser.name}
@@ -417,7 +418,7 @@ export function SettingsPage({ currentUser }: SettingsPageProps) {
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="userRole">Role</Label>
+            <Label htmlFor="userRole">Vai trò</Label>
             <Input
               id="userRole"
               value={currentUser.role}
@@ -427,7 +428,7 @@ export function SettingsPage({ currentUser }: SettingsPageProps) {
           </div>
           <div className="pt-4">
             <Button variant="outline">
-              Change Password
+              Đổi mật khẩu
             </Button>
           </div>
         </CardContent>
@@ -490,24 +491,24 @@ function AddConfigModal({ onClose, onAdd }: {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Add Flagging Parameter</CardTitle>
-          <CardDescription>Configure a new parameter for result flagging</CardDescription>
+          <CardTitle>Thêm thông số đánh dấu</CardTitle>
+          <CardDescription>Cấu hình thông số mới cho đánh dấu kết quả</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="parameter">Parameter Name *</Label>
+              <Label htmlFor="parameter">Tên thông số *</Label>
               <Input
                 id="parameter"
                 value={formData.parameter}
                 onChange={(e) => setFormData({...formData, parameter: e.target.value})}
                 required
-                placeholder="e.g., WBC, RBC, Glucose"
+                placeholder="Ví dụ: WBC, RBC, Glucose"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="lowThreshold">Low Threshold *</Label>
+                <Label htmlFor="lowThreshold">Ngưỡng thấp *</Label>
                 <Input
                   id="lowThreshold"
                   type="number"
@@ -518,7 +519,7 @@ function AddConfigModal({ onClose, onAdd }: {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="highThreshold">High Threshold *</Label>
+                <Label htmlFor="highThreshold">Ngưỡng cao *</Label>
                 <Input
                   id="highThreshold"
                   type="number"
@@ -530,17 +531,17 @@ function AddConfigModal({ onClose, onAdd }: {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="unit">Unit *</Label>
+              <Label htmlFor="unit">Đơn vị *</Label>
               <Input
                 id="unit"
                 value={formData.unit}
                 onChange={(e) => setFormData({...formData, unit: e.target.value})}
                 required
-                placeholder="e.g., K/uL, mg/dL, U/L"
+                placeholder="Ví dụ: K/uL, mg/dL, U/L"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="severity">Severity Level *</Label>
+              <Label htmlFor="severity">Mức độ nghiêm trọng *</Label>
               <select
                 id="severity"
                 value={formData.severity}
@@ -548,17 +549,17 @@ function AddConfigModal({ onClose, onAdd }: {
                 className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 required
               >
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
+                <option value="low">Thấp</option>
+                <option value="medium">Trung bình</option>
+                <option value="high">Cao</option>
               </select>
             </div>
             <div className="flex justify-end space-x-3 pt-4 border-t">
               <Button type="button" variant="outline" onClick={onClose}>
-                Cancel
+                Hủy bỏ
               </Button>
               <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
-                Add Parameter
+                Thêm thông số
               </Button>
             </div>
           </form>
@@ -585,13 +586,13 @@ function EditConfigModal({ config, onClose, onSave }: {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Edit Flagging Parameter</CardTitle>
-          <CardDescription>Update parameter configuration</CardDescription>
+          <CardTitle>Chỉnh sửa thông số đánh dấu</CardTitle>
+          <CardDescription>Cập nhật cấu hình thông số</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="parameter">Parameter Name *</Label>
+              <Label htmlFor="parameter">Tên thông số *</Label>
               <Input
                 id="parameter"
                 value={formData.parameter}
@@ -601,7 +602,7 @@ function EditConfigModal({ config, onClose, onSave }: {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="lowThreshold">Low Threshold *</Label>
+                <Label htmlFor="lowThreshold">Ngưỡng thấp *</Label>
                 <Input
                   id="lowThreshold"
                   type="number"
@@ -612,7 +613,7 @@ function EditConfigModal({ config, onClose, onSave }: {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="highThreshold">High Threshold *</Label>
+                <Label htmlFor="highThreshold">Ngưỡng cao *</Label>
                 <Input
                   id="highThreshold"
                   type="number"
@@ -624,7 +625,7 @@ function EditConfigModal({ config, onClose, onSave }: {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="unit">Unit *</Label>
+              <Label htmlFor="unit">Đơn vị *</Label>
               <Input
                 id="unit"
                 value={formData.unit}
@@ -633,7 +634,7 @@ function EditConfigModal({ config, onClose, onSave }: {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="severity">Severity Level *</Label>
+              <Label htmlFor="severity">Mức độ nghiêm trọng *</Label>
               <select
                 id="severity"
                 value={formData.severity}
@@ -641,17 +642,17 @@ function EditConfigModal({ config, onClose, onSave }: {
                 className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 required
               >
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
+                <option value="low">Thấp</option>
+                <option value="medium">Trung bình</option>
+                <option value="high">Cao</option>
               </select>
             </div>
             <div className="flex justify-end space-x-3 pt-4 border-t">
               <Button type="button" variant="outline" onClick={onClose}>
-                Cancel
+                Hủy bỏ
               </Button>
               <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
-                Save Changes
+                Lưu thay đổi
               </Button>
             </div>
           </form>

@@ -20,13 +20,13 @@ import {
   Phone,
   Shield,
   Activity,
-  FileText
+  FileText,
+  X
 } from 'lucide-react';
 import type { User } from '../../../login/types/User';
 
 interface UserManagementProps {
   currentUser: User;
-  onNavigateToAddUser?: () => void;
 }
 
 // Mock user data phù hợp với database schema
@@ -102,11 +102,12 @@ const roles = [
   { id: 'normal_user', name: 'Bệnh nhân', description: 'Chỉ xem kết quả cá nhân' }
 ];
 
-export function UserManagementPage({ currentUser, onNavigateToAddUser }: UserManagementProps) {
+export function UserManagementPage({ currentUser }: UserManagementProps) {
   const [users, setUsers] = useState<User[]>(mockUsers);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRole, setSelectedRole] = useState<string>('all');
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [activeTab, setActiveTab] = useState<string>('users');
 
@@ -155,7 +156,7 @@ export function UserManagementPage({ currentUser, onNavigateToAddUser }: UserMan
           <h1 className="text-3xl font-bold text-gray-900">Quản lý Người dùng</h1>
           <p className="text-gray-600 mt-1">Quản lý tài khoản người dùng, vai trò và quyền hạn</p>
         </div>
-        <Button onClick={onNavigateToAddUser} className="bg-blue-600 hover:bg-blue-700">
+        <Button onClick={() => setShowAddModal(true)} className="bg-blue-600 hover:bg-blue-700 text-white">
           <Plus className="h-4 w-4 mr-2" />
           Thêm người dùng
         </Button>
@@ -398,6 +399,133 @@ export function UserManagementPage({ currentUser, onNavigateToAddUser }: UserMan
           }}
         />
       )}
+
+      {/* Add User Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-gray-600/40 flex items-center justify-center z-50">
+          <Card className="w-full max-w-xl bg-white shadow-lg">
+            <CardHeader className="pb-3">
+              <div className="flex justify-between items-start">
+                <div>
+                  <CardTitle>Thêm người dùng mới</CardTitle>
+                  <CardDescription>Tạo tài khoản người dùng mới cho hệ thống phòng thí nghiệm</CardDescription>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowAddModal(false)}
+                  className="text-gray-500 -mt-2 -mr-2"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                const newUser: Partial<User> = {
+                  id: `usr${(users.length + 1).toString().padStart(3, '0')}`,
+                  name: formData.get('fullName') as string,
+                  email: formData.get('email') as string,
+                  role: formData.get('role') as User['role'],
+                  active: true,
+                  lastLogin: undefined,
+                  permissions: [],
+                  phone_number: formData.get('phone_number') as string || undefined,
+                  identify_number: formData.get('identify_number') as string || undefined,
+                };
+                setUsers([...users, newUser as User]);
+                setShowAddModal(false);
+              }} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="fullName">Họ và tên</Label>
+                  <Input
+                    id="fullName"
+                    name="fullName"
+                    placeholder="Nhập họ và tên"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="Nhập địa chỉ email"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="password">Mật khẩu</Label>
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    placeholder="Nhập mật khẩu"
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="phone_number">Số điện thoại</Label>
+                    <Input
+                      id="phone_number"
+                      name="phone_number"
+                      placeholder="Nhập số điện thoại"
+                      className="w-full"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="identify_number">Số CMND/CCCD</Label>
+                    <Input
+                      id="identify_number"
+                      name="identify_number"
+                      placeholder="Nhập số CMND/CCCD"
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="role">Vai trò</Label>
+                  <select
+                    id="role"
+                    name="role"
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  >
+                    <option value="">Chọn vai trò</option>
+                    {roles.map(role => (
+                      <option key={role.id} value={role.id}>{role.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex justify-end space-x-3 pt-4 border-t">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowAddModal(false)}
+                  >
+                    Hủy bỏ
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    Tạo người dùng
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
@@ -416,17 +544,17 @@ function EditUserModal({ user, onClose, onSave }: {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-gray-600/40 flex items-center justify-center z-50">
+      <Card className="w-full max-w-2xl bg-white max-h-[90vh] overflow-y-auto">
         <CardHeader>
-          <CardTitle>Edit User</CardTitle>
-          <CardDescription>Update user information and settings</CardDescription>
+          <CardTitle>Chỉnh sửa người dùng</CardTitle>
+          <CardDescription>Cập nhật thông tin và cài đặt người dùng</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Full Name *</Label>
+                <Label htmlFor="name">Họ và tên *</Label>
                 <Input
                   id="name"
                   value={formData.name}
@@ -448,7 +576,7 @@ function EditUserModal({ user, onClose, onSave }: {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="role">Role *</Label>
+                <Label htmlFor="role">Vai trò *</Label>
                 <select
                   id="role"
                   value={formData.role}
@@ -462,22 +590,22 @@ function EditUserModal({ user, onClose, onSave }: {
                 </select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="status">Status</Label>
+                <Label htmlFor="status">Trạng thái</Label>
                 <select
                   id="status"
                   value={formData.active ? 'active' : 'inactive'}
                   onChange={(e) => setFormData({...formData, active: e.target.value === 'active'})}
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
+                  <option value="active">Đang hoạt động</option>
+                  <option value="inactive">Ngưng hoạt động</option>
                 </select>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
+                <Label htmlFor="phone">Số điện thoại</Label>
                 <Input
                   id="phone"
                   value={formData.phone_number || ''}
@@ -485,7 +613,7 @@ function EditUserModal({ user, onClose, onSave }: {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="identify">ID Number</Label>
+                <Label htmlFor="identify">Số CMND/CCCD</Label>
                 <Input
                   id="identify"
                   value={formData.identify_number || ''}
@@ -496,10 +624,10 @@ function EditUserModal({ user, onClose, onSave }: {
 
             <div className="flex justify-end space-x-3 pt-4 border-t">
               <Button type="button" variant="outline" onClick={onClose}>
-                Cancel
+                Hủy bỏ
               </Button>
-              <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
-                Save Changes
+              <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white">
+                Lưu thay đổi
               </Button>
             </div>
           </form>
