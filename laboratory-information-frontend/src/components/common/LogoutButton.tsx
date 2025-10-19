@@ -1,36 +1,29 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { logoutUser } from "../../service/authService/logoutApi";
+import { useAuthContext } from "../../hooks/useAuthContext";
 
 export const LogoutButton: React.FC = () => {
   const navigate = useNavigate();
+  const { onLogout } = useAuthContext();
   const [loading, setLoading] = useState(false);
 
-  const handleLogout = async (): Promise<void> => {
+  const handleLogout = async () => {
     const confirmed = window.confirm("Bạn có chắc chắn muốn đăng xuất?");
     if (!confirmed) return;
 
     try {
       setLoading(true);
+      const success = await logoutUser();
 
-      const response = await axios.post(
-        "http://localhost:3000/api/logout",
-        {},
-        { withCredentials: true }
-      );
-
-      // Nếu backend trả về 204 (No Content), coi là thành công
-      if (response.status === 204 || response.status === 200) {
-        localStorage.removeItem("user");
+      if (success) {
+        onLogout(); 
         toast.success("Đăng xuất thành công!");
         navigate("/login");
       } else {
         toast.error("Đăng xuất thất bại!");
       }
-    } catch (error) {
-      console.error("Logout failed:", error);
-      toast.error("Đăng xuất thất bại!");
     } finally {
       setLoading(false);
     }

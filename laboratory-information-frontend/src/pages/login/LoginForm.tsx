@@ -3,11 +3,11 @@ import { Alert, AlertDescription } from "../../components/common/alert";
 import Button from "../../components/common/button";
 import { CardTitle, CardDescription } from '../../components/common/card';
 import { Shield} from 'lucide-react';
-import { authenticateUser } from "../../hooks/loginApi";
+import { authenticateUser } from "../../service/authService/loginApi";
 import type { LoginFormProps } from "../../types/Login.type";
 import  {LoginInputField} from "./LoginFormInputField";
 
-export function LoginForm({ onLogin, onShowForgotPassword, onShowRegister, onBackToHome }: LoginFormProps) {
+export function LoginForm({ onLogin, onShowRegister, onBackToHome }: LoginFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -79,7 +79,7 @@ export function LoginForm({ onLogin, onShowForgotPassword, onShowRegister, onBac
       <div className="text-center space-y-2 mt-4">
         <button
           type="button"
-          onClick={onShowForgotPassword}
+         
           className="text-sm text-gray-700 hover:text-gray-900 hover:underline"
         >
           Quên mật khẩu?

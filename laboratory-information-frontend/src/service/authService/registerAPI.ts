@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { RegisterRequest, RegisterResponse } from "../pages/register/types/register";
+import type { RegisterRequest, RegisterResponse } from "../../pages/register/types/register";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 

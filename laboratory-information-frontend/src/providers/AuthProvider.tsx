@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import type { ReactNode } from "react";
-import { AuthContext } from "./AuthContext";
-import type { AuthContextType } from "./types/AuthContextType"; 
+import { AuthContext } from "../context/AuthContext";
+import type { AuthContextType } from "../types/AuthContextType"; 
 import type { User } from "../types/User";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -14,17 +14,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(false);
   }, []);
 
-  const login = (user: User) => {
+  const onLogin = (user: User) => {
     setUser(user);
     localStorage.setItem("limsUser", JSON.stringify(user));
   };
 
-  const logout = () => {
+  const onLogout = () => {
     setUser(null);
     localStorage.removeItem("limsUser");
   };
 
-  const value: AuthContextType = { user, login, logout, loading };
+  const value: AuthContextType = { user, onLogin, onLogout, loading };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider 
+             value={value}>{children}
+         </AuthContext.Provider>;
 }

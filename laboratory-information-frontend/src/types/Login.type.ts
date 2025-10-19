@@ -3,12 +3,10 @@ import type { User } from "./User";
 
 export interface LoginFormProps {
   onLogin: (user: User) => void; 
-  onShowForgotPassword: () => void;
+  // onShowForgotPassword: () => void;
   onBackToHome: () => void;
   onShowRegister: () => void;
 }
-
-
 
 export interface LoginType {
   onShowLogin: () => void;
