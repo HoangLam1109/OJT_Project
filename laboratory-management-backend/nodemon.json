@@ -1,6 +1,6 @@
 {
-  "watch": ["services/iam-service/src"],
+  "watch": ["src"],
   "ext": "ts,json",
-  "ignore": ["services/iam-service/src/**/*.spec.ts"],
+  "ignore": ["src/**/*.spec.ts"],
   "exec": "node --loader ts-node/esm services/iam-service/src/index.ts"
 }

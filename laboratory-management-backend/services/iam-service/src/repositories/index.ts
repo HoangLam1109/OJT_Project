@@ -1,11 +1,9 @@
 import User from "../db/models/User.model.js";
 import AuditLog from "../db/models/AuditLog.model.js";
-import UserSession from "../db/models/UserSession.model.js";
 import PasswordHistory from "../db/models/PasswordHistory.model.js";
 
 import { UserRepository } from "./user.repository.js";
 import { AuditLogRepository } from "./auditLog.repository.js";
-import { UserSessionRepository } from "./session.repository.js";
 import { PasswordHistoryRepository } from "./passwordHistory.repository.js";
 
 
@@ -14,7 +12,6 @@ export class RepositoryFactory {
   private static userRepository: UserRepository;
 
   private static auditLogRepository: AuditLogRepository;
-  private static userSessionRepository: UserSessionRepository;
   private static passwordHistoryRepository: PasswordHistoryRepository;
 
   static async initializeRepositories(): Promise<void> {
@@ -36,14 +33,6 @@ export class RepositoryFactory {
     return this.auditLogRepository;
   }
 
-  static getUserSessionRepository(): UserSessionRepository {
-    if (!this.userSessionRepository) {
-      // Pass null for Redis client since we're using mock
-      this.userSessionRepository = new UserSessionRepository(UserSession, null);
-    }
-    return this.userSessionRepository;
-  }
-
   static getPasswordHistoryRepository(): PasswordHistoryRepository {
     if (!this.passwordHistoryRepository) {
       this.passwordHistoryRepository = new PasswordHistoryRepository(PasswordHistory);
@@ -55,6 +44,4 @@ export class RepositoryFactory {
 // Export individual repositories for convenience
 export const userRepository = RepositoryFactory.getUserRepository();
 export const auditLogRepository = RepositoryFactory.getAuditLogRepository();
-
-export const userSessionRepository = RepositoryFactory.getUserSessionRepository();
 export const passwordHistoryRepository = RepositoryFactory.getPasswordHistoryRepository();
