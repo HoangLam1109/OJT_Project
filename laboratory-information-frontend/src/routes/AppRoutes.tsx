@@ -1,9 +1,9 @@
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
-import { HomePage } from "../layouts/HomeLayout";
-import { LoginPage } from "../layouts/LoginLayout";
+import { HomeLayout } from "../layouts/HomeLayout";
+import { LoginLayout } from "../layouts/LoginLayout";
 import { RegisterForm } from "../pages/register/RegisterForm";
 import { ProtectedRoute } from "./ProtectedRoute";
-import { useAuthContext } from "../context/types/useAuthContext";
+import { useAuthContext } from "../hooks/useAuthContext";
 import { AdminLayout } from "../layouts/AdminLayout";
 import { DashboardPage } from "../pages/admin/DashboardPage";
 
@@ -15,7 +15,7 @@ import { UserManagementPage } from "../pages/admin/UserManagementPage";
 import { TestOrderManagementPage } from "../pages/admin/TestOrderManagementPage";
 
 export function AppRoutes() {
-  const { user, login, logout } = useAuthContext();
+  const { user, onLogout } = useAuthContext();
   const navigate = useNavigate();
   const [adminPage, setAdminPage] = useState("dashboard");
 
@@ -25,7 +25,7 @@ export function AppRoutes() {
       <Route
         path="/"
         element={
-          <HomePage
+          <HomeLayout
             onShowLogin={() => navigate("/login")}
             onShowRegister={() => navigate("/register")}
           />
@@ -37,12 +37,7 @@ export function AppRoutes() {
       <Route
         path="/login"
         element={
-          <LoginPage
-            onLogin={login}
-            onShowForgotPassword={() => alert("Tính năng đang phát triển")}
-            onBackToHome={() => navigate("/")}
-            onShowRegister={() => navigate("/register")}
-          />
+          <LoginLayout/>
         }
       />
 
@@ -63,7 +58,7 @@ export function AppRoutes() {
           <ProtectedRoute>
             <AdminLayout
               currentUser={user!}
-              onLogout={logout}
+              onLogout={onLogout}
               currentPage={adminPage}
               onNavigate={(page) => setAdminPage(page)} 
             >

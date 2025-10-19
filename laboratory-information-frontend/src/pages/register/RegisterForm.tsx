@@ -7,7 +7,7 @@ import { AdditionalInfoFields } from './AdditionalInfoFields';
 import { FooterActions } from './FooterActions';
 import type { RegisterFormProps } from './types/register';
 import { isValidEmail, isValidPhone, validatePassword } from './types/validators';
-import { registerUser } from '../../hooks/registerAPI';
+import { registerUser } from '../../service/authService/registerAPI';
 
 export function RegisterForm({ onBackToLogin, onBackToHome }: RegisterFormProps) {
   const [fullName, setFullName] = useState('');
