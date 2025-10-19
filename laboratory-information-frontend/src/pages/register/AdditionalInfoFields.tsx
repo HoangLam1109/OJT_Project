@@ -1,5 +1,5 @@
 import { RegisterInputField } from './RegisterInputField';
-import type { AdditionalInfoFieldsProps } from '../types/register';
+import type { AdditionalInfoFieldsProps } from './types/register';
 
 export function AdditionalInfoFields({ phone, setPhone, gender, setGender, dob, setDob, idNumber, setIdNumber, address, setAddress }: AdditionalInfoFieldsProps) {
 	return (

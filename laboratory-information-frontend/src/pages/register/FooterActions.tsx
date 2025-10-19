@@ -1,5 +1,5 @@
 
-import type { FooterActionsProps } from '../types/register';
+import type { FooterActionsProps } from './types/register';
 
 export function FooterActions({ onBackToLogin, onBackToHome }: FooterActionsProps) {
 	return (

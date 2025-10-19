@@ -11,7 +11,7 @@ import {
   Clock,
   CheckCircle
 } from 'lucide-react';
-import type { LoginAndRegisterType } from '../../types';
+import type { LoginAndRegisterType } from '../../types/Login.type';
 
 
 export function HeroSection({ onShowLogin, onShowRegister }: LoginAndRegisterType) {

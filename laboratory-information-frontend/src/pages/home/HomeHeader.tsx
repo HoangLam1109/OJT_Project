@@ -1,6 +1,6 @@
 import { Microscope, ArrowRight } from "lucide-react";
 import Button from "../../components/common/button";
-import type { LoginType } from "../../types";
+import type { LoginType } from "../../types/Login.type";
 
 
 export function HomeHeader({ onShowLogin }: LoginType) {

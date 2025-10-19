@@ -1,10 +1,10 @@
 
-import type { AdminLayoutProps } from '../types/AdminTypes';
+import type { AdminLayoutProps } from '../pages/admin/types/AdminTypes';
 import { Sidebar } from '../components/common/Sidebar';
 import { useState } from 'react';
 import { LayoutDashboard, Users, FileText, Settings, TestTube2, UserCheck } from 'lucide-react';
 import { TopHeader } from '../components/common/TopHeader';
-import type { NavigationItem } from '../types/types';
+import type { NavigationItem } from '../types/Layout.types';
 
 const navigationItems: NavigationItem[] = [
   { id: 'dashboard', label: 'Tổng quan', icon: LayoutDashboard },

@@ -1,9 +1,9 @@
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { HomePage } from "../layouts/HomeLayout";
-import { LoginPage } from "../pages/login/page/LoginPage";
-import { RegisterForm } from "../pages/register/pages/RegisterForm";
+import { LoginPage } from "../layouts/LoginLayout";
+import { RegisterForm } from "../pages/register/RegisterForm";
 import { ProtectedRoute } from "./ProtectedRoute";
-import { useAuthContext } from "../types/useAuthContext";
+import { useAuthContext } from "../context/types/useAuthContext";
 import { AdminLayout } from "../layouts/AdminLayout";
 import { DashboardPage } from "../pages/admin/DashboardPage";
 

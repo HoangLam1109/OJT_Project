@@ -9,7 +9,7 @@ import {
   Lightbulb,
   TrendingUp
 } from 'lucide-react';
-import type { LoginType } from '../../types';
+import type { LoginType } from '../../types/Login.type';
 
 export function AboutSection({ onShowLogin }: LoginType) {
   const benefits = [

@@ -1,7 +1,7 @@
 
 import Button from './button';
 import { ChevronLeft, Menu, Shield, User } from 'lucide-react';
-import type { SidebarProps } from '../../types/types';
+import type { SidebarProps } from '../../types/Layout.types';
 import { LogoutButton } from './LogoutButton';
 
 

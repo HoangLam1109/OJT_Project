@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import Button from '../../../components/common/button';
-import { Alert, AlertDescription } from '../../../components/common/alert';
+import Button from '../../components/common/button';
+import { Alert, AlertDescription } from '../../components/common/alert';
 import { RegisterHeader } from './RegisterHeader';
 import { PersonalInfoFields } from './PersonalInfoFields';
 import { AdditionalInfoFields } from './AdditionalInfoFields';
 import { FooterActions } from './FooterActions';
-import type { RegisterFormProps } from '../types/register';
-import { isValidEmail, isValidPhone, validatePassword } from './validators';
-import { registerUser } from '../services/registerAPI';
+import type { RegisterFormProps } from './types/register';
+import { isValidEmail, isValidPhone, validatePassword } from './types/validators';
+import { registerUser } from '../../hooks/registerAPI';
 
 export function RegisterForm({ onBackToLogin, onBackToHome }: RegisterFormProps) {
   const [fullName, setFullName] = useState('');

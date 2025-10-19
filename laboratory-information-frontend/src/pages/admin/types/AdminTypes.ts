@@ -1,3 +1,14 @@
+import type { User as UserType } from '../../../types/User';
+import React from 'react';
+
+export interface AdminLayoutProps {
+  children: React.ReactNode;
+  currentUser: UserType;
+  onLogout: () => void;
+  currentPage: string;
+  onNavigate: (page: string) => void;
+}
+
 
 
 export interface Patient {
@@ -64,15 +75,3 @@ export interface Bill {
 }
 
 
-// Dùng cho component chỉ có nút "Đăng nhập"
-export interface LoginType {
-  onShowLogin: () => void;
-}
-
-// Dùng cho component chỉ có nút "Đăng ký"
-export interface RegisterType {
-  onShowRegister: () => void;
-}
-
-// Dùng cho component có cả hai
-export interface LoginAndRegisterType extends LoginType, RegisterType {}

@@ -23,7 +23,7 @@ import {
   FileText,
   X
 } from 'lucide-react';
-import type { User } from '../login/types/User';
+import type { User } from '../../types/User';
 
 interface UserManagementProps {
   currentUser: User;
@@ -287,7 +287,7 @@ export function UserManagementPage({ currentUser }: UserManagementProps) {
                             >
                               {user.active ? <Lock className="h-4 w-4" /> : <Unlock className="h-4 w-4" />}
                             </Button>
-                            {currentUser.role === 'admin' && (
+                            {currentUser.role === 'ADMIN' && (
                               <Button
                                 variant="outline"
                                 size="sm"

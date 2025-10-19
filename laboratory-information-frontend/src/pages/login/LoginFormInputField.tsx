@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Input } from '../../../components/common/input';
-import { Label } from '../../../components/common/label';
+import { Input } from '../../components/common/input';
+import { Label } from '../../components/common/label';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 
 interface Props {

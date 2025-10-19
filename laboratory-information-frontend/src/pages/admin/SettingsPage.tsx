@@ -18,9 +18,10 @@ import {
   Plus,
   Edit
 } from 'lucide-react';
+import type { User } from '../../types/User';
 
 interface SettingsPageProps {
-  currentUser: any;
+  currentUser: User;
 }
 
 interface FlaggingConfig {
