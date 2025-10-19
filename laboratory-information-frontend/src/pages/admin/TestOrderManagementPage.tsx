@@ -25,10 +25,11 @@ import {
   MessageSquare,
   Download
 } from 'lucide-react';
-import type { Test } from '../../types';
+import type { Test } from './types/AdminTypes';
+import type { User } from '../../types/User';
 
 interface TestOrderManagementProps {
-  currentUser: any;
+  currentUser: User;
 }
 
 // Mock test order data

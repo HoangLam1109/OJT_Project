@@ -3,7 +3,7 @@ import { Search, Bell, Activity, AlertTriangle, User } from 'lucide-react';
 import { Input } from './input';
 import Button  from './button';
 import { Card } from './card';
-import type { TopHeaderProps } from '../../types/types';
+import type { TopHeaderProps } from '../../types/Layout.types';
 
 
 export function TopHeader({ currentUser }: TopHeaderProps) {

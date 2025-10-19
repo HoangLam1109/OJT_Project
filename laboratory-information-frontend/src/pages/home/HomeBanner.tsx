@@ -1,6 +1,6 @@
 import { Sparkles } from "lucide-react";
 import Button from "../../components/common/button";
-import type { RegisterType } from "../../types";
+import type { RegisterType } from "../../types/Login.type";
 
 export function HomeBanner({ onShowRegister }: RegisterType) {
   return (

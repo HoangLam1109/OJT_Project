@@ -1,4 +1,4 @@
-import { CardTitle, CardDescription } from '../../../components/common/card';
+import { CardTitle, CardDescription } from '../../components/common/card';
 import { Shield } from 'lucide-react';
 
 export function RegisterHeader() {

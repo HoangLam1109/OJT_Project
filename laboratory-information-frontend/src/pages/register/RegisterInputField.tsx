@@ -1,9 +1,9 @@
 
-import { Input } from '../../../components/common/input';
-import { Label } from '../../../components/common/label';
+import { Input } from '../../components/common/input';
+import { Label } from '../../components/common/label';
 import { Mail, Lock, User, Phone, Calendar, IdCard, MapPin, Eye, EyeOff } from 'lucide-react';
 import { useState } from 'react';
-import type { RegisterInputFieldProps } from '../types/register';
+import type { RegisterInputFieldProps } from './types/register';
 
 export function RegisterInputField({
   id,

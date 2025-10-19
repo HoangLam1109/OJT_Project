@@ -1,5 +1,5 @@
 import { RegisterInputField } from './RegisterInputField';
-import type { PersonalInfoFieldsProps } from '../types/register';
+import type { PersonalInfoFieldsProps } from './types/register';
 
 
 export function PersonalInfoFields({ fullName, setFullName, email, setEmail, password, confirmPassword, setConfirmPassword, passwordError, handlePasswordChange }: PersonalInfoFieldsProps) {

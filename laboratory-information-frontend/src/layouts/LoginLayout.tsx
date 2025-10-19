@@ -1,8 +1,8 @@
 
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { LoginForm } from "./LoginForm";
-import type { LoginFormProps } from "../types/LoginFormProps";
+import { LoginForm } from "../pages/login/LoginForm";
+import type { LoginFormProps } from "../types/Login.type";
 import type { User } from "../types/User";
 
 export function LoginPage({

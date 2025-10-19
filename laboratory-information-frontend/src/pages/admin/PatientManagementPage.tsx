@@ -21,7 +21,7 @@ import {
   MapPin,
   TestTube2
 } from 'lucide-react';
-import type { Patient } from '../../types';
+import type { Patient } from './types/AdminTypes';
 
 // Mock patient data
 const mockPatients: Patient[] = [

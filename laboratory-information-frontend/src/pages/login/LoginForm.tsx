@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import { Alert, AlertDescription } from "../../../components/common/alert";
-import Button from "../../../components/common/button";
-import { CardTitle, CardDescription } from '../../../components/common/card';
+import { Alert, AlertDescription } from "../../components/common/alert";
+import Button from "../../components/common/button";
+import { CardTitle, CardDescription } from '../../components/common/card';
 import { Shield} from 'lucide-react';
-import { authenticateUser } from "../services/loginApi";
-import type { LoginFormProps } from "../types/LoginFormProps";
+import { authenticateUser } from "../../hooks/loginApi";
+import type { LoginFormProps } from "../../types/Login.type";
 import  {LoginInputField} from "./LoginFormInputField";
 
 export function LoginForm({ onLogin, onShowForgotPassword, onShowRegister, onBackToHome }: LoginFormProps) {

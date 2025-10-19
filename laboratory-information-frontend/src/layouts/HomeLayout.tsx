@@ -1,4 +1,4 @@
-import type { LoginAndRegisterType } from '../types';
+import type { LoginAndRegisterType } from '../types/Login.type'; 
 import {
   HeroSection,
   FeaturesSection,

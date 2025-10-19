@@ -1,4 +1,4 @@
-import type { User as UserType} from "../pages/login/types/User";
+import type { User as UserType} from "./User";
 
 export interface NavigationItem {
   id: string;
