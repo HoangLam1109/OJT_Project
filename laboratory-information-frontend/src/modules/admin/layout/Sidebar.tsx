@@ -2,6 +2,7 @@
 import Button from '../../../components/common/button';
 import { ChevronLeft, Menu, Shield, User } from 'lucide-react';
 import type { SidebarProps } from './types';
+import { LogoutButton } from '../../../components/common/LogoutButton';
 
 
 export function Sidebar({
@@ -12,7 +13,6 @@ export function Sidebar({
   setSidebarCollapsed,
   onNavigate,
   navigationItems,
-  onLogout
 }: SidebarProps) {
   return (
     <div className={`bg-white shadow-lg transition-all duration-300 ${
@@ -80,23 +80,10 @@ export function Sidebar({
             </div>
           </div>
         )}
+          <div className="flex items-center gap-3">
+        <LogoutButton />
+      </div>
         
-        <Button
-          variant="outline"
-          className={`w-full text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 ${
-            sidebarCollapsed ? 'px-2' : ''
-          }`}
-          onClick={onLogout}
-        >
-          {sidebarCollapsed ? (
-            <Shield className="h-4 w-4" />
-          ) : (
-            <>
-              <Shield className="h-4 w-4 mr-2" />
-              Đăng xuất
-            </>
-          )}
-        </Button>
       </div>
     </div>
   );

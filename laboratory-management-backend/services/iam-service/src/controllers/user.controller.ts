@@ -90,7 +90,7 @@ const deleteUser = async (req: Request, res: Response): Promise<void> => {
       userId: deletedUser._id
     });
   } catch (error) {
-    errorHandler(res, error);
+    errorHandler(res, error); 
   }
 };
 
