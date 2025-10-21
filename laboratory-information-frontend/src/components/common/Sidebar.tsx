@@ -80,10 +80,7 @@ export function Sidebar({
             </div>
           </div>
         )}
-          <div className="flex items-center gap-3">
-        <LogoutButton />
-      </div>
-        
+        <LogoutButton collapsed={sidebarCollapsed} />
       </div>
     </div>
   );

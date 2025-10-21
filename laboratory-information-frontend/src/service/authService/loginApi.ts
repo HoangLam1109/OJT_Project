@@ -1,17 +1,13 @@
-import axios from "axios";
+import { apiService, apiUtils } from "../apiClient";
 import type { User } from "../../types/User";
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export async function authenticateUser(email: string, password: string): Promise<User | null> {
   try {
-    const response = await axios.post(`${API_BASE_URL}/login`, { email, password }, {
-      withCredentials: true, // để gửi cookie JWT nếu có
-    });
+    const response = await apiService.post<{ user: any }>("/login", { email, password });
 
-    if (response.status === 200 && response.data?.user) {
+    if (response?.user) {
       // mapping dữ liệu backend trả về sang frontend
-      const backendUser = response.data.user;
+      const backendUser = response.user;
       const user: User = {
         id: backendUser.id || backendUser._id,
         name: backendUser.fullName || backendUser.name,
@@ -25,15 +21,7 @@ export async function authenticateUser(email: string, password: string): Promise
 
     return null; 
   } catch (error: unknown) {
-    // Kiểm tra kiểu error trước khi dùng
-    if (error instanceof Error) {
-      console.error("Login error:", error.message);
-    } else if (axios.isAxiosError(error)) {
-      console.error("Login error:", error.response?.data || error.message);
-    } else {
-      console.error("Login error:", error);
-    }
+    console.error("Login error:", apiUtils.getErrorMessage(error));
     return null;
   }
-
 }
