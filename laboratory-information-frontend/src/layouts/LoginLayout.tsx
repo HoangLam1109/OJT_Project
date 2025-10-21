@@ -17,9 +17,9 @@ export function LoginLayout() {
       case 'ADMIN':
         navigate('/admin');
         break;
-      // case 'MANAGER':
-      //   navigate('/labmanager');
-      //   break;
+      case 'MANAGER':
+        navigate('/manager');
+        break;
       // case 'SERVICE':
       //   navigate('/service');
       //   break;

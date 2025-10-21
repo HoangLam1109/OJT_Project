@@ -13,11 +13,14 @@ import { AuditReportsPage } from "../pages/admin/AuditReportsPage";
 import { useState } from "react";
 import { UserManagementPage } from "../pages/admin/UserManagementPage";
 import { TestOrderManagementPage } from "../pages/admin/TestOrderManagementPage";
+import { ManagerUserManagementPage } from "../pages/manager";
+import { ManagerLayout } from "../layouts/ManagerLayout";
 
 export function AppRoutes() {
   const { user, onLogout } = useAuthContext();
   const navigate = useNavigate();
   const [adminPage, setAdminPage] = useState("dashboard");
+  const [managerPage, setManagerPage] = useState("user-management");
 
   return (
     <Routes>
@@ -55,7 +58,7 @@ export function AppRoutes() {
         <Route
         path="/admin"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={["ADMIN"]}>
             <AdminLayout
               currentUser={user!}
               onLogout={onLogout}
@@ -70,6 +73,35 @@ export function AppRoutes() {
               {adminPage === "audit-reports" && <AuditReportsPage />}
               {adminPage === "settings" && <SettingsPage currentUser={user!} />}
             </AdminLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Trang Manager */}
+      <Route
+        path="/manager"
+        element={
+          <ProtectedRoute allowedRoles={["MANAGER", "ADMIN"]}>
+            <ManagerLayout
+              currentUser={user!}
+              onLogout={onLogout}
+              currentPage={managerPage}
+              onNavigate={(page) => setManagerPage(page)}
+            >
+              {managerPage === "user-management" && <ManagerUserManagementPage currentUser={user!} />}
+              {managerPage === "dashboard" && (
+                <div className="text-center py-12">
+                  <h2 className="text-2xl font-bold text-gray-900">Dashboard Manager</h2>
+                  <p className="text-gray-500 mt-2">Trang tổng quan đang được phát triển</p>
+                </div>
+              )}
+              {managerPage === "settings" && (
+                <div className="text-center py-12">
+                  <h2 className="text-2xl font-bold text-gray-900">Cài đặt</h2>
+                  <p className="text-gray-500 mt-2">Trang cài đặt đang được phát triển</p>
+                </div>
+              )}
+            </ManagerLayout>
           </ProtectedRoute>
         }
       />

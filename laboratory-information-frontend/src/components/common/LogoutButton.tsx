@@ -1,10 +1,15 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { LogOut } from "lucide-react";
 import { logoutUser } from "../../service/authService/logoutApi";
 import { useAuthContext } from "../../hooks/useAuthContext";
 
-export const LogoutButton: React.FC = () => {
+interface LogoutButtonProps {
+  collapsed?: boolean;
+}
+
+export const LogoutButton: React.FC<LogoutButtonProps> = ({ collapsed = false }) => {
   const navigate = useNavigate();
   const { onLogout } = useAuthContext();
   const [loading, setLoading] = useState(false);
@@ -33,9 +38,18 @@ export const LogoutButton: React.FC = () => {
     <button
       onClick={handleLogout}
       disabled={loading}
-      className="px-4 py-2 rounded-lg bg-red-500 text-white font-medium hover:bg-red-600 transition disabled:opacity-60"
+      className={`rounded-lg bg-red-500 text-white font-medium hover:bg-red-600 transition disabled:opacity-60 ${
+        collapsed 
+          ? 'p-2 w-full flex items-center justify-center' 
+          : 'px-4 py-2'
+      }`}
+      title={collapsed ? (loading ? "Đang đăng xuất..." : "Logout") : undefined}
     >
-      {loading ? "Đang đăng xuất..." : "Logout"}
+      {collapsed ? (
+        <LogOut className="h-4 w-4" />
+      ) : (
+        loading ? "Đang đăng xuất..." : "Logout"
+      )}
     </button>
   );
 };
