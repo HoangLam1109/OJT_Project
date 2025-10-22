@@ -92,14 +92,14 @@ export function UserTable({ users, onView, onEdit, onDelete, onToggleLock }: Use
               <td className="py-3 px-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold">
-                    {user.name.charAt(0).toUpperCase()}
+                    {user.name?.charAt(0)?.toUpperCase() || '?'}
                   </div>
                   <div>
                     <div className="font-medium text-gray-900">
-                      {user.name}
+                      {user.name || 'N/A'}
                     </div>
                     <div className="text-sm text-gray-500">
-                      {user.email}
+                      {user.email || 'N/A'}
                     </div>
                   </div>
                 </div>
