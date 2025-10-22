@@ -2,33 +2,29 @@ import { useState } from 'react';
 import { Plus, RefreshCw } from 'lucide-react';
 import Button from '../../components/common/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/common/card';
-import { UserTable } from './components/UserTable';
-import { UserForm } from './components/UserForm';
-import { UserFilters } from './components/UserFilters';
-import { UserStatistics } from './components/UserStatistics';
-import { DeleteConfirmDialog } from './components/DeleteConfirmDialog';
-import { useUserManagement } from './hooks/useUserManagement';
-import { useUserFilters } from './hooks/useUserFilters';
-import { useUserStatistics } from './hooks/useUserStatistics';
-import { useUserModal } from './hooks/useUserModal';
-import type { ManagerUser, UserFormData } from './types/ManagerTypes';
+import { AdminUserTable } from './components/AdminUserTable';
+import { AdminUserForm } from './components/AdminUserForm';
+import { AdminUserFilters } from './components/AdminUserFilters';
+import { AdminUserStatistics } from './components/AdminUserStatistics';
+import { AdminDeleteConfirmDialog } from './components/AdminDeleteConfirmDialog';
+import { useAdminUserManagement } from './hooks/useAdminUserManagement';
+import { useAdminUserFilters } from './hooks/useAdminUserFilters';
+import { useAdminUserStatistics } from './hooks/useAdminUserStatistics';
+import { useAdminUserModal } from './hooks/useAdminUserModal';
+import type { AdminUser, AdminUserFormData } from './types/AdminTypes';
 
-// interface ManagerUserManagementPageProps {
-//   currentUser?: ManagerUser;
-// }
-
-export function ManagerUserManagementPage() {
+export function AdminUserManagementPage() {
   // Custom hooks
-  const { users, isLoading, loadUsers, createUser, updateUser, deleteUser, toggleUserLock } = useUserManagement();
-  const { filters, setFilters, filteredUsers } = useUserFilters(users);
-  const statistics = useUserStatistics(users);
-  const { modalState, openCreateModal, openViewModal, openEditModal, closeModal } = useUserModal();
+  const { users, isLoading, loadUsers, createUser, updateUser, deleteUser, toggleUserLock } = useAdminUserManagement();
+  const { filters, setFilters, filteredUsers } = useAdminUserFilters(users);
+  const statistics = useAdminUserStatistics(users);
+  const { modalState, openCreateModal, openViewModal, openEditModal, closeModal } = useAdminUserModal();
   
   // Local state
-  const [deleteUserState, setDeleteUserState] = useState<ManagerUser | null>(null);
+  const [deleteUserState, setDeleteUserState] = useState<AdminUser | null>(null);
 
   // Handlers
-  const handleFormSubmit = async (data: UserFormData) => {
+  const handleFormSubmit = async (data: AdminUserFormData) => {
     let success = false;
     
     if (modalState.mode === 'create') {
@@ -51,7 +47,7 @@ export function ManagerUserManagementPage() {
     }
   };
 
-  const handleToggleLock = async (user: ManagerUser) => {
+  const handleToggleLock = async (user: AdminUser) => {
     await toggleUserLock(user.id, user.active);
   };
 
@@ -65,10 +61,10 @@ export function ManagerUserManagementPage() {
       />
 
       {/* Statistics */}
-      <UserStatistics statistics={statistics} />
+      <AdminUserStatistics statistics={statistics} />
 
       {/* Filters */}
-      <UserFilters filters={filters} onFiltersChange={setFilters} />
+      <AdminUserFilters filters={filters} onFiltersChange={setFilters} />
 
       {/* Users Table */}
       <UsersTableCard
@@ -83,7 +79,7 @@ export function ManagerUserManagementPage() {
 
       {/* User Form Modal */}
       {modalState.isOpen && (
-        <UserForm
+        <AdminUserForm
           mode={modalState.mode}
           user={modalState.user}
           onSubmit={handleFormSubmit}
@@ -93,7 +89,7 @@ export function ManagerUserManagementPage() {
 
       {/* Delete Confirmation Dialog */}
       {deleteUserState && (
-        <DeleteConfirmDialog
+        <AdminDeleteConfirmDialog
           user={deleteUserState}
           onConfirm={handleDeleteConfirm}
           onCancel={() => setDeleteUserState(null)}
@@ -140,13 +136,13 @@ function PageHeader({ onRefresh, onCreate, isLoading }: PageHeaderProps) {
 }
 
 interface UsersTableCardProps {
-  users: ManagerUser[];
+  users: AdminUser[];
   totalUsers: number;
   isLoading: boolean;
-  onView: (user: ManagerUser) => void;
-  onEdit: (user: ManagerUser) => void;
-  onDelete: (user: ManagerUser) => void;
-  onToggleLock: (user: ManagerUser) => void;
+  onView: (user: AdminUser) => void;
+  onEdit: (user: AdminUser) => void;
+  onDelete: (user: AdminUser) => void;
+  onToggleLock: (user: AdminUser) => void;
 }
 
 function UsersTableCard({
@@ -172,7 +168,7 @@ function UsersTableCard({
             <RefreshCw className="w-8 h-8 animate-spin text-gray-400" />
           </div>
         ) : (
-          <UserTable
+          <AdminUserTable
             users={users}
             onView={onView}
             onEdit={onEdit}
@@ -185,4 +181,5 @@ function UsersTableCard({
   );
 }
 
-export default ManagerUserManagementPage;
+export default AdminUserManagementPage;
+

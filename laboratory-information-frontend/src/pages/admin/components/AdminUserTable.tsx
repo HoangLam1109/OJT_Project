@@ -1,16 +1,16 @@
 import { User, Lock, Unlock, Edit, Trash2, Eye } from 'lucide-react';
 import Button from '../../../components/common/button';
-import type { ManagerUser } from '../types/ManagerTypes';
+import type { AdminUser } from '../types/AdminTypes';
 
-interface UserTableProps {
-  users: ManagerUser[];
-  onView: (user: ManagerUser) => void;
-  onEdit: (user: ManagerUser) => void;
-  onDelete: (user: ManagerUser) => void;
-  onToggleLock: (user: ManagerUser) => void;
+interface AdminUserTableProps {
+  users: AdminUser[];
+  onView: (user: AdminUser) => void;
+  onEdit: (user: AdminUser) => void;
+  onDelete: (user: AdminUser) => void;
+  onToggleLock: (user: AdminUser) => void;
 }
 
-export function UserTable({ users, onView, onEdit, onDelete, onToggleLock }: UserTableProps) {
+export function AdminUserTable({ users, onView, onEdit, onDelete, onToggleLock }: AdminUserTableProps) {
   const getRoleBadgeColor = (role: string) => {
     const colors = {
       ADMIN: 'bg-purple-100 text-purple-800',
@@ -92,14 +92,14 @@ export function UserTable({ users, onView, onEdit, onDelete, onToggleLock }: Use
               <td className="py-3 px-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold">
-                    {user.name?.charAt(0)?.toUpperCase() || '?'}
+                    {user.name.charAt(0).toUpperCase()}
                   </div>
                   <div>
                     <div className="font-medium text-gray-900">
-                      {user.name || 'N/A'}
+                      {user.name}
                     </div>
                     <div className="text-sm text-gray-500">
-                      {user.email || 'N/A'}
+                      {user.email}
                     </div>
                   </div>
                 </div>

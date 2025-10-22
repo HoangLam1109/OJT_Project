@@ -16,8 +16,8 @@
   --muted-foreground: 215.4 16.3% 46.9%;
   --accent: 210 40% 96%;
   --accent-foreground: 222.2 84% 4.9%;
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 98%;
   --border: 214.3 31.8% 91.4%;
   --input: 214.3 31.8% 91.4%;
   --ring: 222.2 84% 4.9%;
@@ -249,4 +249,14 @@ html {
   50% {
     opacity: .5;
   }
+}
+
+/* Ensure destructive buttons are visible */
+.bg-destructive {
+  background-color: hsl(var(--destructive)) !important;
+  color: hsl(var(--destructive-foreground)) !important;
+}
+
+.bg-destructive:hover {
+  background-color: hsl(var(--destructive) / 0.9) !important;
 }

@@ -9,6 +9,10 @@ export default {
   theme: {
     extend: {
       colors: {
+        destructive: {
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
+        },// tương đương #dc2626
         primary: {
           DEFAULT: '#007BFF',
           50: '#E6F3FF',

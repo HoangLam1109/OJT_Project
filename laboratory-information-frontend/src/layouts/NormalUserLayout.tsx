@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Outlet } from 'react-router-dom';
 import { Sidebar } from '../components/common/Sidebar';
 import { TopHeader } from '../components/common/TopHeader';
 import type { NavigationItem } from '../types/Layout.types';
