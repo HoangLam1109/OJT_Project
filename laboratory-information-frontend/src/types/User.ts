@@ -18,3 +18,5 @@ export interface User {
     workDays: string[];
   };
 }
+
+export type SafeUser = Omit<User, 'email' | 'phone_number' | 'identify_number' | 'address'>;

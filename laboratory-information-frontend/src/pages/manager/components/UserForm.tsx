@@ -31,7 +31,7 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
   useEffect(() => {
     if (user && (mode === 'edit' || mode === 'view')) {
       setFormData({
-        fullName: user.name,
+        fullName: user.name|| '',
         email: user.email,
         role: user.role,
         phone_number: user.phone_number || '',
