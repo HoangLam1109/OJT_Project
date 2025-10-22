@@ -11,7 +11,6 @@ import {
   AdminPatientManagementPage,
   AdminTestOrderManagementPage,
   AdminAuditReportsPage,
-  AdminSettingsPage,
   AdminProfilePage
 } from "../pages/admin";
 import { useState } from "react";
@@ -96,7 +95,6 @@ export function AppRoutes() {
               {adminPage === "patient-management" && <AdminPatientManagementPage />}
               {adminPage === "test-management" && <AdminTestOrderManagementPage />}
               {adminPage === "audit-reports" && <AdminAuditReportsPage />}
-              {adminPage === "settings" && <AdminSettingsPage />}
               {adminPage === "profile" && <AdminProfilePage />}
             </AdminLayout>
           </ProtectedRoute>

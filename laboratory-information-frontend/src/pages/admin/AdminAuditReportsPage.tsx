@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/common/card';
-import { FileText, Download, Filter, Eye, AlertTriangle, CheckCircle, XCircle, Shield, Database } from 'lucide-react';
+import { FileText, Download, Filter, Calendar, Eye, AlertTriangle, CheckCircle, XCircle, Clock, User, Shield, Database } from 'lucide-react';
 import Button from '../../components/common/button';
 import { Input } from '../../components/common/input';
 import { mockAuditLogs } from './data/mockAuditLogs';
