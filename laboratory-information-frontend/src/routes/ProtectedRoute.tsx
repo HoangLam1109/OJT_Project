@@ -1,5 +1,5 @@
 import { Navigate } from "react-router-dom";
-import { useAuth } from "../modules/login/hooks/useAuth";
+import {useAuthContext} from "../hooks/useAuthContext";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -7,7 +7,7 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
-  const { user, loading } = useAuth();
+  const { user, loading } = useAuthContext();
 
   if (loading) return <div className="text-center mt-10">Đang tải...</div>;
   if (!user) return <Navigate to="/login" replace />;

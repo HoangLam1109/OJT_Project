@@ -12,11 +12,28 @@ import authenticateUser from "./middlewares/authenticate.middleware.js";
 
 dotenv.config();
 
+// Add error handlers early for debugging
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  process.exit(1);
+});
+
 const app = express();
-app.use(cors({
-  origin: 'http://localhost:5173',
-  credentials: true
-}));
+// Configure CORS to reflect the incoming origin and allow credentials.
+// When credentials are used, Access-Control-Allow-Origin must not be '*'.
+const corsOptions = {
+  origin: "http://localhost:5173",
+  credentials: true,
+  methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+
+app.use(cors(corsOptions));
+
 
 connectDB();
 

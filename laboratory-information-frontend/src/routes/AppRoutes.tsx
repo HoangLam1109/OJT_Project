@@ -1,26 +1,31 @@
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
-import { HomePage } from "../modules/home/HomeLayout";
-import { LoginPage } from "../modules/login/page/LoginPage";
-import { RegisterForm } from "../modules/register/pages/RegisterForm";
+import { HomeLayout } from "../layouts/HomeLayout";
+import { LoginLayout } from "../layouts/LoginLayout";
+import { RegisterForm } from "../pages/register/RegisterForm";
 import { ProtectedRoute } from "./ProtectedRoute";
-import { useAuthContext } from "../modules/login/context/useAuthContext";
-import { AdminLayout } from "../modules/admin/layout/AdminLayout";
-import { DashboardPage } from "../modules/admin/pages/dashboard/DashboardPage";
-import { LabManagerLayout } from "../modules/manager/layout/LabManagerLayout";
-import { LabManagerDashboard } from "../modules/manager/pages/LabManagerDashboard";
-import { ServiceLayout } from "../modules/actor-service/layout/ServiceLayout";
-import { SettingsPage } from "../modules/admin/pages/setting/SettingsPage";
-import PatientManagementPage from "../modules/admin/pages/patient-management/PatientManagementPage";
-import { AuditReportsPage } from "../modules/admin/pages/audit-reports/AuditReportsPage";
+import { useAuthContext } from "../hooks/useAuthContext";
+import { AdminLayout } from "../layouts/AdminLayout";
+import { DashboardPage } from "../pages/admin/DashboardPage";
+
+import { SettingsPage} from "../pages/admin/SettingsPage";
+import PatientManagementPage from "../pages/admin/PatientManagementPage";
+import { AuditReportsPage } from "../pages/admin/AuditReportsPage";
 import { useState } from "react";
-import { UserManagementPage } from "../modules/admin/pages/user-management/UserManagementPage";
-import { TestOrderManagementPage } from "../modules/admin/pages/test-order-management/TestOrderManagementPage";
-import { LabUserLayout } from "../modules/labuser/layout/LabUserLayout";
-import { NormalUserLayout } from "../modules/normaluser/layout/NormalUserLayout";
+import { UserManagementPage } from "../pages/admin/UserManagementPage";
+import { TestOrderManagementPage } from "../pages/admin/TestOrderManagementPage";
+import { ManagerUserManagementPage } from "../pages/manager";
+import { ManagerLayout } from "../layouts/ManagerLayout";
+import NormalUserLayout from "../layouts/NormalUserLayout";
+import Dashboard from "../pages/NormalUser/Dashboard";
+import TestResults from "../pages/NormalUser/TestResults";
+import Profile from "../pages/NormalUser/Profile";
+
 export function AppRoutes() {
-  const { user, login, logout } = useAuthContext();
+  const { user, onLogout } = useAuthContext();
   const navigate = useNavigate();
   const [adminPage, setAdminPage] = useState("dashboard");
+  const [managerPage, setManagerPage] = useState("user-management");
+  const [normalUserPage, setNormalUserPage] = useState("dashboard");
 
   return (
     <Routes>
@@ -28,7 +33,7 @@ export function AppRoutes() {
       <Route
         path="/"
         element={
-          <HomePage
+          <HomeLayout
             onShowLogin={() => navigate("/login")}
             onShowRegister={() => navigate("/register")}
           />
@@ -40,12 +45,7 @@ export function AppRoutes() {
       <Route
         path="/login"
         element={
-          <LoginPage
-            onLogin={login}
-            onShowForgotPassword={() => alert("Tính năng đang phát triển")}
-            onBackToHome={() => navigate("/")}
-            onShowRegister={() => navigate("/register")}
-          />
+          <LoginLayout/>
         }
       />
 
@@ -59,14 +59,32 @@ export function AppRoutes() {
           />}
       />
 
-      
-        <Route
+      {/* Trang Normal User */}
+      <Route
+        path="/user"
+        element={
+          <ProtectedRoute allowedRoles={["USER"]}>
+            <NormalUserLayout
+              currentUser={user!}
+              onLogout={onLogout}
+              currentPage={normalUserPage}
+              onNavigate={(page) => setNormalUserPage(page)}
+            >
+              {normalUserPage === "dashboard" && <Dashboard />}
+              {normalUserPage === "test-results" && <TestResults />}
+              {normalUserPage === "profile" && <Profile />}
+            </NormalUserLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
         path="/admin"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={["ADMIN"]}>
             <AdminLayout
               currentUser={user!}
-              onLogout={logout}
+              onLogout={onLogout}
               currentPage={adminPage}
               onNavigate={(page) => setAdminPage(page)} 
             >
@@ -81,70 +99,36 @@ export function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
+      {/* Trang Manager */}
       <Route
-        path="/labmanager"
+        path="/manager"
         element={
-          <ProtectedRoute allowedRoles={['MANAGER']}>
-            <LabManagerLayout
+          <ProtectedRoute allowedRoles={["MANAGER", "ADMIN"]}>
+            <ManagerLayout
               currentUser={user!}
-              onLogout={logout}
-              currentPage="dashboard"
-              onNavigate={(page) => console.log('Navigate to', page)}
+              onLogout={onLogout}
+              currentPage={managerPage}
+              onNavigate={(page) => setManagerPage(page)}
             >
-              <LabManagerDashboard />
-            </LabManagerLayout>
+              {managerPage === "user-management" && <ManagerUserManagementPage currentUser={user!} />}
+              {managerPage === "dashboard" && (
+                <div className="text-center py-12">
+                  <h2 className="text-2xl font-bold text-gray-900">Dashboard Manager</h2>
+                  <p className="text-gray-500 mt-2">Trang tổng quan đang được phát triển</p>
+                </div>
+              )}
+              {managerPage === "settings" && (
+                <div className="text-center py-12">
+                  <h2 className="text-2xl font-bold text-gray-900">Cài đặt</h2>
+                  <p className="text-gray-500 mt-2">Trang cài đặt đang được phát triển</p>
+                </div>
+              )}
+            </ManagerLayout>
           </ProtectedRoute>
         }
       />
-      
-        <Route
-        path="/service"
-        element={
-          <ProtectedRoute allowedRoles={['SERVICE']}>
-            <ServiceLayout
-              currentUser={user!}
-              onLogout={logout}
-              currentPage="dashboard"
-              onNavigate={(page) => console.log('Navigate to', page)}
-            >
-              <SettingsPage  currentUser={user!}/>
-            </ServiceLayout>
-          </ProtectedRoute>
-        }
-      />
-
-         <Route
-        path="/labuser"
-        element={
-          <ProtectedRoute allowedRoles={['LAB_USER']}>
-            <LabUserLayout
-              currentUser={user!}
-              onLogout={logout}
-              currentPage="dashboard"
-              onNavigate={(page) => console.log('Navigate to', page)}
-            >
-            <DashboardPage />
-            </LabUserLayout>
-          </ProtectedRoute>
-        }
-      />
-
-           <Route
-        path="/normaluser"
-        element={
-          <ProtectedRoute allowedRoles={['USER']}>
-            <NormalUserLayout
-              currentUser={user!}
-              onLogout={logout}
-              currentPage="dashboard"
-              onNavigate={(page) => console.log('Navigate to', page)}
-            >
-            <DashboardPage />
-            </NormalUserLayout>
-          </ProtectedRoute>
-        }
-      />
-
+     
 
 
       {/* Nếu không khớp route nào thì quay lại Home */}
