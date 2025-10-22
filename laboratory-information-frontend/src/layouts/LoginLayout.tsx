@@ -23,9 +23,9 @@ export function LoginLayout() {
       // case 'SERVICE':
       //   navigate('/service');
       //   break;
-      // case 'LAB_USER':
-      //   navigate('/labuser');
-      //   break;
+      case 'LAB_USER':
+        navigate('/labuser');
+        break;
       case 'USER':
         navigate('/user');
         break;
