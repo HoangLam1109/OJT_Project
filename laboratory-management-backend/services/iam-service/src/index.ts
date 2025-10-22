@@ -2,14 +2,14 @@ import dotenv from "dotenv";
 
 import express from "express";
 
-import authRouter from "./routes/v1/auth.routes.js";
-import userRouter from "./routes/v1/user.routes.js";
+import routes from "./routes/index.js";
 
 import connectDB from "./config/database.config.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import authenticateUser from "./middlewares/authenticate.middleware.js";
 
+import swaggerUi from "swagger-ui-express";
+import swaggerDocument from "./swagger-output.json" with { type: "json"};
 dotenv.config();
 
 // Add error handlers early for debugging
@@ -39,8 +39,11 @@ connectDB();
 
 app.use(express.json());
 app.use(cookieParser());
-app.use("/api", authRouter);
-app.use("/api/user", authenticateUser.authenticateUser , userRouter);
+
+
+app.use("/api", routes);
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.get("/", (req, res) => {
   res.send("JWT Authentication System is running!");
