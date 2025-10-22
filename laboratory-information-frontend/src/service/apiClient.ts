@@ -60,7 +60,7 @@ const createApiClient = (): AxiosInstance => {
 export const apiClient = createApiClient();
 
 // Generic API response types
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   message: string;
   data?: T;
@@ -82,7 +82,7 @@ export class ApiService {
   }
 
   // GET request
-  async get<T = any>(url: string, config?: AxiosRequestConfig): Promise<T> {
+  async get<T = unknown>(url: string, config?: AxiosRequestConfig): Promise<T> {
     try {
       const response = await this.client.get<T>(url, config);
       return response.data;
@@ -93,7 +93,7 @@ export class ApiService {
   }
 
   // POST request
-  async post<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+  async post<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
     try {
       const response = await this.client.post<T>(url, data, config);
       return response.data;
@@ -104,7 +104,7 @@ export class ApiService {
   }
 
   // PUT request
-  async put<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+  async put<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
     try {
       const response = await this.client.put<T>(url, data, config);
       return response.data;
@@ -115,7 +115,7 @@ export class ApiService {
   }
 
   // PATCH request
-  async patch<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+  async patch<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
     try {
       const response = await this.client.patch<T>(url, data, config);
       return response.data;
@@ -126,7 +126,7 @@ export class ApiService {
   }
 
   // DELETE request
-  async delete<T = any>(url: string, config?: AxiosRequestConfig): Promise<T> {
+  async delete<T = unknown>(url: string, config?: AxiosRequestConfig): Promise<T> {
     try {
       const response = await this.client.delete<T>(url, config);
       return response.data;
@@ -160,9 +160,9 @@ export const apiService = new ApiService();
 // Utility functions for common operations
 export const apiUtils = {
   // Check if response is successful
-  isSuccessResponse: (response: any): boolean => {
-    return response && (response.status === 200 || response.status === 201);
-  },
+  isSuccessResponse: (response: AxiosResponse | undefined): boolean => {
+  return !!response && (response.status === 200 || response.status === 201);
+},
 
   // Extract error message from axios error
   getErrorMessage: (error: unknown): string => {

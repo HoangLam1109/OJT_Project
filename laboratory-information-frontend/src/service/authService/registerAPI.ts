@@ -1,15 +1,14 @@
 import { apiService, apiUtils } from "../apiClient";
 import type { RegisterRequest, RegisterResponse } from "../../pages/register/types/register";
-
+import type { User } from "../../types/User";
 export async function registerUser(userData: RegisterRequest): Promise<RegisterResponse> {
   try {
-    const response = await apiService.post<{ message: string; user: any }>("/register", userData);
-
+    const response = await apiService.post<{ message: string; user: User }>("/register", userData);
+    console.log("Register response:", response);
     if (response) {
       return {
         success: true,
         message: response.message || 'Đăng ký thành công',
-        user: response.user,
       };
     }
 
