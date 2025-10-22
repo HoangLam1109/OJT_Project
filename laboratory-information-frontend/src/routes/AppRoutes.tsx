@@ -15,12 +15,17 @@ import { UserManagementPage } from "../pages/admin/UserManagementPage";
 import { TestOrderManagementPage } from "../pages/admin/TestOrderManagementPage";
 import { ManagerUserManagementPage } from "../pages/manager";
 import { ManagerLayout } from "../layouts/ManagerLayout";
+import NormalUserLayout from "../layouts/NormalUserLayout";
+import Dashboard from "../pages/NormalUser/Dashboard";
+import TestResults from "../pages/NormalUser/TestResults";
+import Profile from "../pages/NormalUser/Profile";
 
 export function AppRoutes() {
   const { user, onLogout } = useAuthContext();
   const navigate = useNavigate();
   const [adminPage, setAdminPage] = useState("dashboard");
   const [managerPage, setManagerPage] = useState("user-management");
+  const [normalUserPage, setNormalUserPage] = useState("dashboard");
 
   return (
     <Routes>
@@ -54,8 +59,26 @@ export function AppRoutes() {
           />}
       />
 
-      
-        <Route
+      {/* Trang Normal User */}
+      <Route
+        path="/user"
+        element={
+          <ProtectedRoute allowedRoles={["USER"]}>
+            <NormalUserLayout
+              currentUser={user!}
+              onLogout={onLogout}
+              currentPage={normalUserPage}
+              onNavigate={(page) => setNormalUserPage(page)}
+            >
+              {normalUserPage === "dashboard" && <Dashboard />}
+              {normalUserPage === "test-results" && <TestResults />}
+              {normalUserPage === "profile" && <Profile />}
+            </NormalUserLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
         path="/admin"
         element={
           <ProtectedRoute allowedRoles={["ADMIN"]}>
