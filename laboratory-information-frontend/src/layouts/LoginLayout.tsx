@@ -26,6 +26,9 @@ export function LoginLayout() {
       // case 'LAB_USER':
       //   navigate('/labuser');
       //   break;
+      case 'USER':
+        navigate('/user');
+        break;
       default:
         navigate('/home');
         break;
