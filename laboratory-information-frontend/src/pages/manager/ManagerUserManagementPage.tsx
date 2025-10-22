@@ -13,11 +13,11 @@ import { useUserStatistics } from './hooks/useUserStatistics';
 import { useUserModal } from './hooks/useUserModal';
 import type { ManagerUser, UserFormData } from './types/ManagerTypes';
 
-interface ManagerUserManagementPageProps {
-  currentUser?: ManagerUser;
-}
+// interface ManagerUserManagementPageProps {
+//   currentUser?: ManagerUser;
+// }
 
-export function ManagerUserManagementPage({ }: ManagerUserManagementPageProps) {
+export function ManagerUserManagementPage() {
   // Custom hooks
   const { users, isLoading, loadUsers, createUser, updateUser, deleteUser, toggleUserLock } = useUserManagement();
   const { filters, setFilters, filteredUsers } = useUserFilters(users);

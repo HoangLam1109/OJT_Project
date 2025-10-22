@@ -30,7 +30,7 @@ export function AppRoutes() {
   return (
     <Routes>
       {/* Trang chủ */}
-      <Route
+      <Route     
         path="/"
         element={
           <HomeLayout
