@@ -20,6 +20,12 @@ import NormalUserLayout from "../layouts/NormalUserLayout";
 import Dashboard from "../pages/NormalUser/Dashboard";
 import TestResults from "../pages/NormalUser/TestResults";
 import Profile from "../pages/NormalUser/Profile";
+import { LabUserLayout } from "../layouts/LabUserLayout";
+import LabUserDashboard from "../pages/LabUser/Dashboard";
+import TestOrdersPage from "../pages/LabUser/TestOrdersPage";
+import TestResultsPage from "../pages/LabUser/TestResultsPage";
+import LabUserPatientManagementPage from "../pages/LabUser/PatientManagementPage";
+import LabUserProfile from "../pages/LabUser/Profile";
 
 export function AppRoutes() {
   const { user, onLogout } = useAuthContext();
@@ -27,6 +33,7 @@ export function AppRoutes() {
   const [adminPage, setAdminPage] = useState("dashboard");
   const [managerPage, setManagerPage] = useState("user-management");
   const [normalUserPage, setNormalUserPage] = useState("dashboard");
+  const [labUserPage, setLabUserPage] = useState("dashboard");
 
   return (
     <Routes>
@@ -126,6 +133,45 @@ export function AppRoutes() {
                 </div>
               )}
             </ManagerLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Trang Lab User */}
+      <Route
+        path="/labuser"
+        element={
+          <ProtectedRoute allowedRoles={["LAB_USER"]}>
+            <LabUserLayout
+              currentUser={user!}
+              onLogout={onLogout}
+              currentPage={labUserPage}
+              onNavigate={(page) => setLabUserPage(page)}
+            >
+              {labUserPage === "dashboard" && <LabUserDashboard />}
+                     {labUserPage === "patients" && <LabUserPatientManagementPage />}
+              {labUserPage === "test-orders" && <TestOrdersPage />}
+              {labUserPage === "test-results" && <TestResultsPage />}
+              {labUserPage === "instruments" && (
+                <div className="text-center py-12">
+                  <h2 className="text-2xl font-bold text-gray-900">Quản lý Thiết bị</h2>
+                  <p className="text-gray-500 mt-2">Trang quản lý thiết bị đang được phát triển</p>
+                </div>
+              )}
+              {labUserPage === "reagents" && (
+                <div className="text-center py-12">
+                  <h2 className="text-2xl font-bold text-gray-900">Quản lý Thuốc thử</h2>
+                  <p className="text-gray-500 mt-2">Trang quản lý thuốc thử đang được phát triển</p>
+                </div>
+              )}
+              {labUserPage === "reports" && (
+                <div className="text-center py-12">
+                  <h2 className="text-2xl font-bold text-gray-900">Báo cáo</h2>
+                  <p className="text-gray-500 mt-2">Trang báo cáo đang được phát triển</p>
+                </div>
+              )}
+              {labUserPage === "profile" && <LabUserProfile />}
+            </LabUserLayout>
           </ProtectedRoute>
         }
       />
