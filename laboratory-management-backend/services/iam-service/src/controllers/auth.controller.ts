@@ -10,6 +10,38 @@ dotenv.config();
 const userService = new UserService();
 
 const registerUser = async (req: Request, res: Response): Promise<void> => {
+  /*
+    #swagger.auto = false
+    #swagger.tags = ['Authentication']
+    #swagger.description = 'Register a new user account'
+    #swagger.parameters['body'] = {
+      in: 'body',
+      description: 'User registration data',
+      required: true,
+      schema: {
+        email: 'string',
+        fullName: 'string',
+        identityNumber: 'string',
+        gender: 'string',
+        age: 'number',
+        dateOfBirth: 'string',
+        password: 'string'
+      }
+    }
+    #swagger.responses[200] = {
+      description: 'User registered successfully',
+      schema: {
+        message: 'User created successfully!'
+      }
+    }
+    #swagger.responses[400] = {
+      description: 'Bad request - missing required fields or user already exists',
+      schema: {
+        message: 'Missing required fields!' | 'Email already exists!' | 'Identity number already exists!'
+      }
+    }
+    #swagger.responses[500] = { description: 'Internal server error' }
+  */
   try {
     const {
       email,
@@ -69,6 +101,39 @@ const registerUser = async (req: Request, res: Response): Promise<void> => {
 };
 
 const loginUser = async (req: Request, res: Response): Promise<void> => {
+  /*
+    #swagger.auto = false
+    #swagger.tags = ['Authentication']
+    #swagger.description = 'Login with email and password'
+    #swagger.parameters['body'] = {
+      in: 'body',
+      description: 'Login credentials',
+      required: true,
+      schema: {
+        email: 'string',
+        password: 'string'
+      }
+    }
+    #swagger.responses[200] = {
+      description: 'Login successful',
+      schema: {
+        message: 'Login successful!',
+        user: {
+          id: 'string',
+          email: 'string',
+          fullName: 'string',
+          role: 'string'
+        }
+      }
+    }
+    #swagger.responses[400] = {
+      description: 'Bad request - missing credentials, user not found, or invalid password',
+      schema: {
+        message: 'Missing credentials' | 'User not found!' | 'Invalid password!'
+      }
+    }
+    #swagger.responses[500] = { description: 'Internal server error' }
+  */
   try {
     const { email, password } = req.body;
 
@@ -92,12 +157,6 @@ const loginUser = async (req: Request, res: Response): Promise<void> => {
 
     generateJWT(res, user._id as string);
 
-    // const session = await sessionService.createSession({
-    //   userId: user._id as string,
-    //   ipAddress: req.ip || "unknown",
-    //   userAgent: req.headers["user-agent"] || "unknown",
-    // });
-
     res.status(200).json({
       message: "Login successful!",
       user: {
@@ -113,10 +172,23 @@ const loginUser = async (req: Request, res: Response): Promise<void> => {
 };
 
 const logoutUser = async (req: Request, res: Response): Promise<void> => {
+  /*
+    #swagger.auto = false
+    #swagger.tags = ['Authentication']
+    #swagger.description = 'Logout user and clear JWT tokens'
+    #swagger.security = [{"apiKeyAuth": []}]
+    #swagger.responses[200] = {
+      description: 'Logout successful',
+      schema: {
+        message: 'Logout successful!'
+      }
+    }
+    #swagger.responses[401] = { description: 'Authentication required' }
+    #swagger.responses[500] = { description: 'Internal server error' }
+  */
   try {
     clearJWT(res);
     if (req.user) {
-      // await sessionService.invalidateAllUserSessions(req.user?._id as string);
     }
 
     res.status(200).json({ message: "Logout successful!" });
@@ -126,6 +198,25 @@ const logoutUser = async (req: Request, res: Response): Promise<void> => {
 };
 
 const refreshToken = async (req: Request, res: Response) => {
+  /*
+    #swagger.auto = false
+    #swagger.tags = ['Authentication']
+    #swagger.description = 'Refresh access token using refresh token'
+    #swagger.security = [{"apiKeyAuth": []}]
+    #swagger.responses[200] = {
+      description: 'Token refreshed successfully',
+      schema: {
+        message: 'Refresh token successful!'
+      }
+    }
+    #swagger.responses[401] = {
+      description: 'Unauthorized - no refresh token provided or invalid token',
+      schema: {
+        message: 'No refresh token provided' | 'Failed to refresh token'
+      }
+    }
+    #swagger.responses[500] = { description: 'Internal server error' }
+  */
   try {
     const userId = (req as any).userId;
     const refreshToken = req.cookies.refreshToken;
