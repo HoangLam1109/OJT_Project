@@ -5,6 +5,7 @@ export { AdminPatientManagementPage } from './AdminPatientManagementPage';
 export { AdminTestOrderManagementPage } from './AdminTestOrderManagementPage';
 export { AdminAuditReportsPage } from './AdminAuditReportsPage';
 export { AdminSettingsPage } from './AdminSettingsPage';
+export { AdminProfilePage } from './AdminProfilePage';
 export type { 
   AdminUser, 
   AdminUserFormData, 

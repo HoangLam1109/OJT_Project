@@ -12,7 +12,7 @@ const navigationItems: NavigationItem[] = [
   { id: 'patient-management', label: 'Quản lý bệnh nhân', icon: UserCheck },
   { id: 'test-management', label: 'Quản lý xét nghiệm', icon: TestTube2 },
   { id: 'audit-reports', label: 'Báo cáo & Kiểm toán', icon: FileText },
-  { id: 'settings', label: 'Cài đặt', icon: Settings },
+  { id: 'profile', label: 'Hồ sơ cá nhân', icon: Settings },
 ];
 
 export function AdminLayout({ children, currentUser, onLogout, currentPage, onNavigate }: AdminLayoutProps) {

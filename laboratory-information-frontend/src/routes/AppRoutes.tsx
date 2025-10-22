@@ -11,7 +11,8 @@ import {
   AdminPatientManagementPage,
   AdminTestOrderManagementPage,
   AdminAuditReportsPage,
-  AdminSettingsPage
+  AdminSettingsPage,
+  AdminProfilePage
 } from "../pages/admin";
 import { useState } from "react";
 import { ManagerUserManagementPage } from "../pages/manager";
@@ -96,6 +97,7 @@ export function AppRoutes() {
               {adminPage === "test-management" && <AdminTestOrderManagementPage />}
               {adminPage === "audit-reports" && <AdminAuditReportsPage />}
               {adminPage === "settings" && <AdminSettingsPage />}
+              {adminPage === "profile" && <AdminProfilePage />}
             </AdminLayout>
           </ProtectedRoute>
         }
@@ -112,7 +114,7 @@ export function AppRoutes() {
               currentPage={managerPage}
               onNavigate={(page) => setManagerPage(page)}
             >
-              {managerPage === "user-management" && <ManagerUserManagementPage currentUser={user!} />}
+              {managerPage === "user-management" && <ManagerUserManagementPage />}
               {managerPage === "dashboard" && (
                 <div className="text-center py-12">
                   <h2 className="text-2xl font-bold text-gray-900">Dashboard Manager</h2>
