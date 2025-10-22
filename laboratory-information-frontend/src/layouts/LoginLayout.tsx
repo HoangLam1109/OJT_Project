@@ -10,7 +10,7 @@ export function LoginLayout() {
 
   const handleLogin = (user: User) => {
     toast.success(`Chào mừng, ${user.name}!`);
-    onLogin(user); // 
+    onLogin(user); 
 
     // Phân quyền điều hướng
     switch (user.role) {
