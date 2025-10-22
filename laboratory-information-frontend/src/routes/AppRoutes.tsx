@@ -5,14 +5,15 @@ import { RegisterForm } from "../pages/register/RegisterForm";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { useAuthContext } from "../hooks/useAuthContext";
 import { AdminLayout } from "../layouts/AdminLayout";
-import { DashboardPage } from "../pages/admin/DashboardPage";
-
-import { SettingsPage} from "../pages/admin/SettingsPage";
-import PatientManagementPage from "../pages/admin/PatientManagementPage";
-import { AuditReportsPage } from "../pages/admin/AuditReportsPage";
+import { 
+  AdminDashboardPage,
+  AdminUserManagementPage,
+  AdminPatientManagementPage,
+  AdminTestOrderManagementPage,
+  AdminAuditReportsPage,
+  AdminSettingsPage
+} from "../pages/admin";
 import { useState } from "react";
-import { UserManagementPage } from "../pages/admin/UserManagementPage";
-import { TestOrderManagementPage } from "../pages/admin/TestOrderManagementPage";
 import { ManagerUserManagementPage } from "../pages/manager";
 import { ManagerLayout } from "../layouts/ManagerLayout";
 import NormalUserLayout from "../layouts/NormalUserLayout";
@@ -89,12 +90,12 @@ export function AppRoutes() {
               onNavigate={(page) => setAdminPage(page)} 
             >
               
-              {adminPage === "dashboard" && <DashboardPage />}
-              {adminPage === "user-management" && <UserManagementPage  currentUser={user!}/>}
-              {adminPage === "patient-management" && <PatientManagementPage />}
-              {adminPage === "test-management" && <TestOrderManagementPage currentUser={user!} />}
-              {adminPage === "audit-reports" && <AuditReportsPage />}
-              {adminPage === "settings" && <SettingsPage currentUser={user!} />}
+              {adminPage === "dashboard" && <AdminDashboardPage />}
+              {adminPage === "user-management" && <AdminUserManagementPage />}
+              {adminPage === "patient-management" && <AdminPatientManagementPage />}
+              {adminPage === "test-management" && <AdminTestOrderManagementPage />}
+              {adminPage === "audit-reports" && <AdminAuditReportsPage />}
+              {adminPage === "settings" && <AdminSettingsPage />}
             </AdminLayout>
           </ProtectedRoute>
         }
