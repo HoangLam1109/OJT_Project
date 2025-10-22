@@ -9,8 +9,10 @@ export default {
   theme: {
     extend: {
       colors: {
-      destructive: "#dc2626", // hoặc màu đỏ bạn muốn
-      ring: "#3b82f6", 
+        destructive: {
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
+        },// tương đương #dc2626
         primary: {
           DEFAULT: '#007BFF',
           50: '#E6F3FF',

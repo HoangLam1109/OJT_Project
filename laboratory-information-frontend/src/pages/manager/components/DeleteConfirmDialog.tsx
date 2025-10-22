@@ -54,7 +54,11 @@ export function DeleteConfirmDialog({ user, onConfirm, onCancel }: DeleteConfirm
           <Button variant="outline" onClick={onCancel}>
             Hủy
           </Button>
-          <Button variant="destructive" onClick={onConfirm}>
+          <Button 
+            variant="destructive" 
+            onClick={onConfirm}
+            className="bg-red-600 hover:bg-red-700 text-white"
+          >
             Xóa người dùng
           </Button>
         </div>
