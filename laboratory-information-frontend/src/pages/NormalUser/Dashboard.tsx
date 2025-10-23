@@ -17,18 +17,16 @@ const Dashboard: React.FC = () => {
 
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Greeting Section */}
+    <div className="space-y-6">
+
       <div className="space-y-1">
         <h1 className="text-2xl font-semibold text-gray-900">
           {getGreeting(user?.name)}
         </h1>
-        <p className="text-gray-600">Đây là tổng quan về hoạt động gần đây của bạn</p>
+        <p className="text-sm text-gray-500">Đây là tổng quan về hoạt động gần đây của bạn</p>
       </div>
 
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Tổng số xét nghiệm */}
         <Card className="bg-white shadow-sm hover:shadow-md transition-shadow">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -44,7 +42,6 @@ const Dashboard: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Đang xử lý */}
         <Card className="bg-white shadow-sm hover:shadow-md transition-shadow">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -60,7 +57,6 @@ const Dashboard: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Hoàn thành */}
         <Card className="bg-white shadow-sm hover:shadow-md transition-shadow">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -77,7 +73,6 @@ const Dashboard: React.FC = () => {
         </Card>
       </div>
 
-      {/* Recent Tests Section */}
       <div className="mt-8">
         <Card className="bg-white shadow-sm">
           <CardContent className="p-6">
