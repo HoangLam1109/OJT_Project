@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, RefreshCw } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import Button from '../../components/common/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/common/card';
 import { UserTable } from './components/UserTable';
@@ -19,7 +19,7 @@ import type { ManagerUser, UserFormData } from './types/ManagerTypes';
 
 export function ManagerUserManagementPage() {
   // Custom hooks
-  const { users, isLoading, loadUsers, createUser, updateUser, deleteUser, toggleUserLock } = useUserManagement();
+  const { users, createUser, updateUser, deleteUser, toggleUserLock } = useUserManagement();
   const { filters, setFilters, filteredUsers } = useUserFilters(users);
   const statistics = useUserStatistics(users);
   const { modalState, openCreateModal, openViewModal, openEditModal, closeModal } = useUserModal();
@@ -59,9 +59,7 @@ export function ManagerUserManagementPage() {
     <div className="space-y-6">
       {/* Header */}
       <PageHeader 
-        onRefresh={loadUsers} 
         onCreate={openCreateModal}
-        isLoading={isLoading}
       />
 
       {/* Statistics */}
@@ -74,7 +72,6 @@ export function ManagerUserManagementPage() {
       <UsersTableCard
         users={filteredUsers}
         totalUsers={users.length}
-        isLoading={isLoading}
         onView={openViewModal}
         onEdit={openEditModal}
         onDelete={setDeleteUserState}
@@ -105,12 +102,10 @@ export function ManagerUserManagementPage() {
 
 // Subcomponents for better organization
 interface PageHeaderProps {
-  onRefresh: () => void;
   onCreate: () => void;
-  isLoading: boolean;
 }
 
-function PageHeader({ onRefresh, onCreate, isLoading }: PageHeaderProps) {
+function PageHeader({ onCreate }: PageHeaderProps) {
   return (
     <div className="flex items-center justify-between">
       <div>
@@ -122,14 +117,6 @@ function PageHeader({ onRefresh, onCreate, isLoading }: PageHeaderProps) {
         </p>
       </div>
       <div className="flex items-center gap-3">
-        <Button
-          variant="outline"
-          onClick={onRefresh}
-          disabled={isLoading}
-        >
-          <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-          Làm mới
-        </Button>
         <Button onClick={onCreate}>
           <Plus className="w-4 h-4 mr-2" />
           Tạo người dùng
@@ -142,7 +129,6 @@ function PageHeader({ onRefresh, onCreate, isLoading }: PageHeaderProps) {
 interface UsersTableCardProps {
   users: ManagerUser[];
   totalUsers: number;
-  isLoading: boolean;
   onView: (user: ManagerUser) => void;
   onEdit: (user: ManagerUser) => void;
   onDelete: (user: ManagerUser) => void;
@@ -152,7 +138,6 @@ interface UsersTableCardProps {
 function UsersTableCard({
   users,
   totalUsers,
-  isLoading,
   onView,
   onEdit,
   onDelete,
@@ -167,11 +152,6 @@ function UsersTableCard({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <RefreshCw className="w-8 h-8 animate-spin text-gray-400" />
-          </div>
-        ) : (
           <UserTable
             users={users}
             onView={onView}
@@ -179,7 +159,6 @@ function UsersTableCard({
             onDelete={onDelete}
             onToggleLock={onToggleLock}
           />
-        )}
       </CardContent>
     </Card>
   );

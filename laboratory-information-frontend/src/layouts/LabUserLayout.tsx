@@ -77,7 +77,7 @@ export const LabUserLayout: React.FC<LabUserLayoutProps> = ({
         onLogout={onLogout}
       />
       <div className={`flex-1 flex flex-col overflow-hidden ${sidebarCollapsed ? 'ml-16' : 'ml-64'}`}>
-        <TopHeader currentUser={currentUser} />
+        <TopHeader />
         <main className="flex-1 overflow-y-auto bg-gray-50 p-6">
           {children}
         </main>

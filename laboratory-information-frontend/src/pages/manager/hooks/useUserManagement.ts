@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 import type { ManagerUser, UserFormData } from '../types/ManagerTypes';
 import { userService } from '../../../service/userService';
@@ -6,6 +6,7 @@ import { userService } from '../../../service/userService';
 export function useUserManagement() {
   const [users, setUsers] = useState<ManagerUser[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const hasLoadedRef = useRef(false);
 
   // Load users from API
   const loadUsers = useCallback(async () => {
@@ -13,7 +14,10 @@ export function useUserManagement() {
     try {
       const usersData = await userService.getAllUsers();
       setUsers(usersData);
-      toast.success('Tải danh sách người dùng thành công');
+      if (!hasLoadedRef.current) {
+        toast.success('Tải danh sách người dùng thành công');
+        hasLoadedRef.current = true;
+      }
     } catch (error) {
       console.error('Error loading users:', error);
       toast.error('Không thể tải danh sách người dùng');

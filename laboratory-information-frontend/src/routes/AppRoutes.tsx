@@ -7,7 +7,6 @@ import { useAuthContext } from "../hooks/useAuthContext";
 import { AdminLayout } from "../layouts/AdminLayout";
 import {
   AdminDashboardPage,
-  AdminUserManagementPage,
   AdminPatientManagementPage,
   AdminTestOrderManagementPage,
   AdminAuditReportsPage,
@@ -105,7 +104,7 @@ export function AppRoutes() {
             >
 
               {adminPage === "dashboard" && <AdminDashboardPage />}
-              {adminPage === "user-management" && <AdminUserManagementPage />}
+              {adminPage === "user-management" && <ManagerUserManagementPage />}
               {adminPage === "patient-management" && <AdminPatientManagementPage />}
               {adminPage === "test-management" && <AdminTestOrderManagementPage />}
               {adminPage === "audit-reports" && <AdminAuditReportsPage />}

@@ -43,7 +43,7 @@ export function ManagerLayout({
       <div className={`flex-1 flex flex-col transition-all duration-300 ${
         sidebarCollapsed ? 'ml-16' : 'ml-64'
       }`}>
-        <TopHeader currentUser={currentUser} />
+        <TopHeader/>
         <main className="flex-1 p-6 bg-gray-50 overflow-auto">{children}</main>
       </div>
     </div>
