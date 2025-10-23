@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { randomUUID } from "crypto";
 import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
 import {
@@ -91,7 +92,7 @@ async function seedDatabase() {
         const hashedPassword = await bcrypt.hash(userData.password, saltRounds);
 
         await User.create({
-          _id: userData.identityNumber,
+          _id: randomUUID(),
           email: userData.email,
           fullName: userData.fullName,
           identityNumber: userData.identityNumber,

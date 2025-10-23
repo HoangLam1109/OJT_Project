@@ -24,6 +24,7 @@ export interface UpdateUserData {
   age?: number;
   dateOfBirth?: Date;
   password?: string;
+  role?: string;
 }
 
 export class UserService {
@@ -92,7 +93,7 @@ export class UserService {
 
   async getAllUsers(): Promise<IUser[]> {
     return await userRepository.findAll(
-      "_id email fullName phoneNumber identityNumber gender age dateOfBirth address"
+      "_id email fullName phoneNumber identityNumber gender age dateOfBirth address role"
     );
   }
 

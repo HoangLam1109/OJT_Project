@@ -6,9 +6,7 @@ export interface NavigationItem {
   icon: React.ComponentType<{ className?: string }>;
 }
 
-export interface TopHeaderProps {
-  currentUser: UserType;
-}
+
 
 export interface SidebarProps {
   currentUserName: string;

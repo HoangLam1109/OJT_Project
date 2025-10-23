@@ -5,9 +5,8 @@ import { RegisterForm } from "../pages/register/RegisterForm";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { useAuthContext } from "../hooks/useAuthContext";
 import { AdminLayout } from "../layouts/AdminLayout";
-import { 
+import {
   AdminDashboardPage,
-  AdminUserManagementPage,
   AdminPatientManagementPage,
   AdminTestOrderManagementPage,
   AdminAuditReportsPage,
@@ -28,6 +27,13 @@ import LabUserPatientManagementPage from "../pages/LabUser/PatientManagementPage
 import InstrumentManagementPage from "../pages/LabUser/InstrumentManagementPage";
 import ReagentManagementPage from "../pages/LabUser/ReagentManagementPage";
 import PersonalProfilePage from "../pages/LabUser/PersonalProfilePage";
+import LabUserProfile from "../pages/LabUser/Profile";
+import { ServiceLayout } from "../layouts/ServiceLayout";
+import ServiceDashboardPage from "../pages/service/ServiceDashboardPage";
+import ServiceEventLogPage from "../pages/service/ServiceEventLogPage";
+import ServiceReagentPage from "../pages/service/ServiceReagentPage";
+import ServiceInstrumentPage from "../pages/service/ServiceInstrumentPage";
+import { ServiceTestPage } from "../pages/service/ServiceTestPage";
 
 export function AppRoutes() {
   const { user, onLogout } = useAuthContext();
@@ -36,11 +42,12 @@ export function AppRoutes() {
   const [managerPage, setManagerPage] = useState("user-management");
   const [normalUserPage, setNormalUserPage] = useState("dashboard");
   const [labUserPage, setLabUserPage] = useState("dashboard");
+  const [servicePage, setServicePage] = useState("dashboard");
 
   return (
     <Routes>
       {/* Trang chủ */}
-      <Route     
+      <Route
         path="/"
         element={
           <HomeLayout
@@ -55,7 +62,7 @@ export function AppRoutes() {
       <Route
         path="/login"
         element={
-          <LoginLayout/>
+          <LoginLayout />
         }
       />
 
@@ -96,11 +103,11 @@ export function AppRoutes() {
               currentUser={user!}
               onLogout={onLogout}
               currentPage={adminPage}
-              onNavigate={(page) => setAdminPage(page)} 
+              onNavigate={(page) => setAdminPage(page)}
             >
-              
+
               {adminPage === "dashboard" && <AdminDashboardPage />}
-              {adminPage === "user-management" && <AdminUserManagementPage />}
+              {adminPage === "user-management" && <ManagerUserManagementPage />}
               {adminPage === "patient-management" && <AdminPatientManagementPage />}
               {adminPage === "test-management" && <AdminTestOrderManagementPage />}
               {adminPage === "audit-reports" && <AdminAuditReportsPage />}
@@ -151,7 +158,7 @@ export function AppRoutes() {
               onNavigate={(page) => setLabUserPage(page)}
             >
               {labUserPage === "dashboard" && <LabUserDashboard />}
-                     {labUserPage === "patients" && <LabUserPatientManagementPage />}
+              {labUserPage === "patients" && <LabUserPatientManagementPage />}
               {labUserPage === "test-orders" && <TestOrdersPage />}
               {labUserPage === "test-results" && <TestResultsPage />}
               {labUserPage === "instruments" && <InstrumentManagementPage />}
@@ -167,7 +174,28 @@ export function AppRoutes() {
           </ProtectedRoute>
         }
       />
-     
+
+
+      {/* Trang Service */}
+      <Route
+        path="/service"
+        element={
+          <ProtectedRoute allowedRoles={["SERVICE"]}>
+            <ServiceLayout
+              currentUser={user!}
+              onLogout={onLogout}
+              currentPage={servicePage}
+              onNavigate={(page) => setServicePage(page)}
+            >
+              {servicePage === "dashboard" && <ServiceDashboardPage />}
+              {servicePage === "event-logs" && <ServiceEventLogPage />}
+              {servicePage === "reagents" && <ServiceReagentPage />}
+              {servicePage === "instruments" && <ServiceInstrumentPage />}
+              {servicePage === "blood-testing" && <ServiceTestPage />}
+            </ServiceLayout>
+          </ProtectedRoute>
+        }
+      />
 
 
       {/* Nếu không khớp route nào thì quay lại Home */}

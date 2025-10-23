@@ -12,11 +12,6 @@ export interface User {
   age?: number;
   address?: string;
   date_of_birth?: string;
-  schedule?: {
-    startTime: string;
-    endTime: string;
-    workDays: string[];
-  };
 }
 
 export type SafeUser = Omit<User, 'email' | 'phone_number' | 'identify_number' | 'address'>;

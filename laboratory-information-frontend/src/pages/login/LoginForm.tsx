@@ -1,11 +1,10 @@
 import React, { useState } from "react";
 import { Alert, AlertDescription } from "../../components/common/alert";
 import Button from "../../components/common/button";
-import { CardTitle, CardDescription } from '../../components/common/card';
-import { Shield} from 'lucide-react';
+import { TestTube } from 'lucide-react';
 import { authenticateUser } from "../../service/authService/loginApi";
 import type { LoginFormProps } from "../../types/Login.type";
-import  {LoginInputField} from "./LoginFormInputField";
+import { LoginInputField } from "./LoginFormInputField";
 
 export function LoginForm({ onLogin, onShowRegister, onBackToHome }: LoginFormProps) {
   const [email, setEmail] = useState("");
@@ -22,26 +21,25 @@ export function LoginForm({ onLogin, onShowRegister, onBackToHome }: LoginFormPr
   };
 
   return (
-    <div className="max-w-md mx-auto">
-      {/* Login Header */}
-      <div className="flex justify-center mb-4">
-        <div className="relative">
-          <div className="p-4 bg-gradient-to-br from-gray-900 to-gray-700 rounded-xl shadow-lg">
-            <Shield className="h-8 w-8 text-white" />
+    <div className="w-full">
+      {/* Welcome Header */}
+      <div className="text-center mb-8">
+        <div className="flex justify-center mb-4">
+          <div className="relative">
+            <div className="p-3 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl shadow-lg">
+              <TestTube className="h-6 w-6 text-white" />
+            </div>
+            <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
           </div>
-          <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
         </div>
+        
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          Chào mừng trở lại
+        </h1>
+        <p className="text-gray-600 text-sm">
+          Đăng nhập để tiếp tục sử dụng hệ thống
+        </p>
       </div>
-
-      <CardTitle className="text-2xl text-gray-900 mb-2 leading-tight text-center">
-        Hệ Thống Quản Lý Thông Tin <br />
-        <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-          Phòng Thí Nghiệm
-        </span>
-      </CardTitle>
-      <CardDescription className="text-sm text-gray-600 max-w-sm mx-auto text-center mb-6">
-        Đăng nhập để truy cập bảng điều khiển
-      </CardDescription>
 
       {/* Login Form */}
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -70,17 +68,20 @@ export function LoginForm({ onLogin, onShowRegister, onBackToHome }: LoginFormPr
           </Alert>
         )}
 
-        <Button type="submit" className="w-full h-12 bg-gray-800 text-white rounded-lg">
+        <Button
+          type="submit"
+          className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg active:scale-95 transform transition-all duration-150 hover:from-blue-700 hover:to-indigo-700 focus:from-blue-700 focus:to-indigo-700 hover:shadow-lg hover:-translate-y-0.5"
+        >
           Đăng nhập
         </Button>
+
       </form>
 
       {/* Footer Links */}
-      <div className="text-center space-y-2 mt-4">
+      <div className="text-center space-y-3 mt-6">
         <button
           type="button"
-         
-          className="text-sm text-gray-700 hover:text-gray-900 hover:underline"
+          className="text-sm text-blue-600 hover:text-blue-800 hover:underline font-medium"
         >
           Quên mật khẩu?
         </button>
@@ -90,7 +91,7 @@ export function LoginForm({ onLogin, onShowRegister, onBackToHome }: LoginFormPr
           <button
             type="button"
             onClick={onShowRegister}
-            className="text-blue-600 hover:text-blue-800 hover:underline"
+            className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
           >
             Đăng ký ngay
           </button>
@@ -99,7 +100,7 @@ export function LoginForm({ onLogin, onShowRegister, onBackToHome }: LoginFormPr
         <button
           type="button"
           onClick={() => onBackToHome?.()}
-          className="text-sm text-gray-700 hover:text-gray-900 hover:underline"
+          className="text-sm text-gray-500 hover:text-gray-700 hover:underline flex items-center justify-center gap-1 mx-auto"
         >
           ← Quay lại trang chủ
         </button>
