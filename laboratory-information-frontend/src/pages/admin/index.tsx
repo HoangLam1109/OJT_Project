@@ -1,5 +1,4 @@
-export { AdminUserManagementPage as default } from './AdminUserManagementPage';
-export { AdminUserManagementPage } from './AdminUserManagementPage';
+
 export { AdminDashboardPage } from './AdminDashboardPage';
 export { AdminPatientManagementPage } from './AdminPatientManagementPage';
 export { AdminTestOrderManagementPage } from './AdminTestOrderManagementPage';
