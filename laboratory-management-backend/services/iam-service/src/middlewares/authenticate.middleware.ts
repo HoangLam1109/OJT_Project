@@ -1,15 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import User from "../db/models/User.model.js";
-
-declare global {
-  namespace Express {
-    interface Request {
-      user?: any;
-      session?: any;
-    }
-  }
-}
+import UserModel from "../db/models/User.model.js";
 
 const refreshTokenValidation = (
   req: Request,
@@ -17,7 +8,6 @@ const refreshTokenValidation = (
   next: NextFunction
 ) => {
   const refreshToken = req.cookies.refreshToken;
-
   if (!refreshToken) {
     return res.status(401).json({ message: "No refresh token provided" });
   }
@@ -46,7 +36,6 @@ const authenticateUser = async (
 ): Promise<void> => {
   try {
     const token = req.cookies.accessToken;
-
     if (!token) {
       res.status(401).json({ message: "Not authorized, no token" });
       return;
@@ -61,7 +50,7 @@ const authenticateUser = async (
       userId: string;
     };
 
-    const user = await User.findById(
+    const user = await UserModel.findById(
       decoded.userId,
       "_id email fullName identityNumber gender age dateOfBirth role"
     );

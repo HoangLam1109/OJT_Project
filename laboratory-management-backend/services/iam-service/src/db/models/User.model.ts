@@ -17,6 +17,11 @@ export interface IUser extends Document {
   isDeleted?: boolean
   role?: RoleCode
 
+  // OAuth fields
+  provider?: 'google' | 'facebook' | 'local'
+  providerId?: string
+  avatar?: string
+
   // Future fields (commented out for now)
 
   // phoneNumber?: string
@@ -62,9 +67,12 @@ const userSchema = new mongoose.Schema<IUser>(
     },
     identityNumber: {
       type: String,
-      required: [true, "Identity number is required!"],
+      required: function(this: IUser) {
+        return this.provider === 'local' || !this.provider;
+      },
       trim: true,
       unique: true,
+      sparse: true, // Allow multiple null values
     },
     role: {
       type: String,
@@ -76,21 +84,45 @@ const userSchema = new mongoose.Schema<IUser>(
       trim: true,
       lowercase: true,
       enum: ["male", "female"],
+      required: function(this: IUser) {
+        return this.provider === 'local' || !this.provider;
+      },
     },
     age: {
       type: Number,
-      required: [true, "Age is required!"],
       min: [1, "Age must be at least 1!"],
       max: [150, "Age cannot exceed 150!"],
+      required: function(this: IUser) {
+        return this.provider === 'local' || !this.provider;
+      },
     },
     dateOfBirth: {
       type: Date,
-      required: [true, "Date of birth is required!"],
       format: "MM/DD/YYYY",
+      required: function(this: IUser) {
+        return this.provider === 'local' || !this.provider;
+      },
     },
     passwordHash: {
       type: String,
-      required: [true, "Password hash is required!"],
+      required: function(this: IUser) {
+        return this.provider === 'local' || !this.provider;
+      },
+    },
+    provider: {
+      type: String,
+      enum: ['google', 'facebook', 'local'],
+      default: 'local'
+    },
+    providerId: {
+      type: String,
+      required: function(this: IUser) {
+        return !!this.provider && this.provider !== 'local';
+      },
+    },
+    avatar: {
+      type: String,
+      trim: true,
     },
     isActive: {
       type: Boolean,
@@ -110,6 +142,9 @@ const userSchema = new mongoose.Schema<IUser>(
 
 userSchema.index({ isActive: 1 })
 userSchema.index({ isDeleted: 1 })
+userSchema.index({ provider: 1 })
+userSchema.index({ providerId: 1 })
+userSchema.index({ email: 1, provider: 1 }, { unique: true, sparse: true })
 
 
 userSchema.pre("save", function(next) {
@@ -119,6 +154,6 @@ userSchema.pre("save", function(next) {
   next();
 });
 
-const User = mongoose.model<IUser>("User", userSchema)
+const UserModel = mongoose.model<IUser>("User", userSchema)
 
-export default User
+export default UserModel

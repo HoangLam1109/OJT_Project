@@ -224,18 +224,7 @@ const refreshToken = async (req: Request, res: Response) => {
     if (!refreshToken) {
       return res.status(401).json({ message: "No refresh token provided" });
     }
-
-    // const sessions = await sessionService.getUserSessions(userId);
-    // const activeSession = sessions.find(s =>
-    //   s.isActive &&
-    //   s.refreshToken === refreshToken &&
-    //   new Date() < s.expiresAt
-    // );
-
-    // if (!activeSession) {
-    //   return Send.unauthorized(res, "Invalid or expired refresh token");
-    // }
-
+    
     // Generate new access token
     refreshJWT(res, userId);
 
