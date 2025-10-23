@@ -25,7 +25,9 @@ import LabUserDashboard from "../pages/LabUser/Dashboard";
 import TestOrdersPage from "../pages/LabUser/TestOrdersPage";
 import TestResultsPage from "../pages/LabUser/TestResultsPage";
 import LabUserPatientManagementPage from "../pages/LabUser/PatientManagementPage";
-import LabUserProfile from "../pages/LabUser/Profile";
+import InstrumentManagementPage from "../pages/LabUser/InstrumentManagementPage";
+import ReagentManagementPage from "../pages/LabUser/ReagentManagementPage";
+import PersonalProfilePage from "../pages/LabUser/PersonalProfilePage";
 
 export function AppRoutes() {
   const { user, onLogout } = useAuthContext();
@@ -152,25 +154,15 @@ export function AppRoutes() {
                      {labUserPage === "patients" && <LabUserPatientManagementPage />}
               {labUserPage === "test-orders" && <TestOrdersPage />}
               {labUserPage === "test-results" && <TestResultsPage />}
-              {labUserPage === "instruments" && (
-                <div className="text-center py-12">
-                  <h2 className="text-2xl font-bold text-gray-900">Quản lý Thiết bị</h2>
-                  <p className="text-gray-500 mt-2">Trang quản lý thiết bị đang được phát triển</p>
-                </div>
-              )}
-              {labUserPage === "reagents" && (
-                <div className="text-center py-12">
-                  <h2 className="text-2xl font-bold text-gray-900">Quản lý Thuốc thử</h2>
-                  <p className="text-gray-500 mt-2">Trang quản lý thuốc thử đang được phát triển</p>
-                </div>
-              )}
+              {labUserPage === "instruments" && <InstrumentManagementPage />}
+              {labUserPage === "reagents" && <ReagentManagementPage />}
               {labUserPage === "reports" && (
                 <div className="text-center py-12">
                   <h2 className="text-2xl font-bold text-gray-900">Báo cáo</h2>
                   <p className="text-gray-500 mt-2">Trang báo cáo đang được phát triển</p>
                 </div>
               )}
-              {labUserPage === "profile" && <LabUserProfile />}
+              {labUserPage === "profile" && <PersonalProfilePage />}
             </LabUserLayout>
           </ProtectedRoute>
         }

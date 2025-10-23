@@ -376,18 +376,28 @@ const TestOrderFormModal: React.FC<{
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
+      <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom-4 duration-300 border border-gray-200">
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold">
-              {isEdit ? 'Chỉnh sửa Lệnh Xét nghiệm' : 'Tạo Lệnh Xét nghiệm mới'}
-            </h2>
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <TestTube2 className="w-6 h-6 text-blue-600" />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900">
+                  {isEdit ? 'Chỉnh sửa Lệnh Xét nghiệm' : 'Tạo Lệnh Xét nghiệm mới'}
+                </h2>
+                <p className="text-sm text-gray-500">
+                  {isEdit ? 'Cập nhật thông tin lệnh xét nghiệm' : 'Nhập thông tin để tạo lệnh xét nghiệm mới'}
+                </p>
+              </div>
+            </div>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600"
+              className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              <X className="w-6 h-6" />
+              <X className="w-5 h-5" />
             </button>
           </div>
 
@@ -402,8 +412,8 @@ const TestOrderFormModal: React.FC<{
                   id="patient"
                   value={formData.patientId}
                   onChange={(e) => handlePatientChange(e.target.value)}
-                  className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
-                    errors.patientId ? 'border-red-500' : ''
+                  className={`mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors ${
+                    errors.patientId ? 'border-red-500 bg-red-50' : 'hover:border-gray-400'
                   }`}
                 >
                   <option value="">Chọn bệnh nhân</option>
@@ -427,8 +437,8 @@ const TestOrderFormModal: React.FC<{
                   id="testType"
                   value={formData.testType}
                   onChange={(e) => setFormData(prev => ({ ...prev, testType: e.target.value }))}
-                  className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
-                    errors.testType ? 'border-red-500' : ''
+                  className={`mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors ${
+                    errors.testType ? 'border-red-500 bg-red-50' : 'hover:border-gray-400'
                   }`}
                 >
                   <option value="">Chọn loại xét nghiệm</option>
@@ -452,7 +462,7 @@ const TestOrderFormModal: React.FC<{
                   id="testName"
                   value={formData.testName}
                   onChange={(e) => setFormData(prev => ({ ...prev, testName: e.target.value }))}
-                  className={errors.testName ? 'border-red-500' : ''}
+                  className={`rounded-lg transition-colors ${errors.testName ? 'border-red-500 bg-red-50' : 'hover:border-gray-400'}`}
                   placeholder="Nhập tên xét nghiệm"
                 />
                 {errors.testName && (
@@ -549,22 +559,27 @@ const TestOrderFormModal: React.FC<{
                 id="notes"
                 value={formData.notes}
                 onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 hover:border-gray-400 transition-colors resize-none"
                 rows={3}
                 placeholder="Nhập ghi chú..."
               />
             </div>
 
             {/* Actions */}
-            <div className="flex justify-end space-x-3">
+            <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
               <Button
                 type="button"
                 variant="outline"
                 onClick={onClose}
+                className="px-6 py-2"
               >
                 Hủy
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button 
+                type="submit" 
+                disabled={isSubmitting}
+                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white"
+              >
                 <Save className="w-4 h-4 mr-2" />
                 {isSubmitting ? 'Đang xử lý...' : (isEdit ? 'Cập nhật' : 'Tạo mới')}
               </Button>
@@ -657,16 +672,24 @@ const ReviewResultModal: React.FC<{
   if (!isOpen || !order) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
+      <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom-4 duration-300 border border-gray-200">
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold">Nhập kết quả xét nghiệm</h2>
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-purple-100 rounded-lg">
+                <TestTube2 className="w-6 h-6 text-purple-600" />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900">Nhập kết quả xét nghiệm</h2>
+                <p className="text-sm text-gray-500">Cập nhật kết quả và thông tin liên quan</p>
+              </div>
+            </div>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600"
+              className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              <X className="w-6 h-6" />
+              <X className="w-5 h-5" />
             </button>
           </div>
 
@@ -812,21 +835,29 @@ const ReviewResultModal: React.FC<{
             </div>
 
             {/* Actions */}
-            <div className="flex justify-end space-x-3">
+            <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
               <Button
                 type="button"
                 variant="outline"
                 onClick={onClose}
+                className="px-6 py-2"
               >
                 Hủy
               </Button>
-              <Button type="submit">
-                <TestTube2 className="w-4 h-4 mr-2" />
-                Cập nhật kết quả
-              </Button>
-              <Button type="button" variant="outline">
+              <Button 
+                type="button" 
+                variant="outline"
+                className="px-6 py-2 border-orange-300 text-orange-600 hover:bg-orange-50"
+              >
                 <Upload className="w-4 h-4 mr-2" />
                 Gửi để duyệt
+              </Button>
+              <Button 
+                type="submit"
+                className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white"
+              >
+                <TestTube2 className="w-4 h-4 mr-2" />
+                Cập nhật kết quả
               </Button>
             </div>
           </form>
@@ -846,31 +877,36 @@ const DeleteConfirmModal: React.FC<{
   if (!isOpen || !order) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-md w-full">
+    <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
+      <div className="bg-white rounded-xl shadow-2xl max-w-md w-full animate-in slide-in-from-bottom-4 duration-300 border border-gray-200">
         <div className="p-6">
           <div className="flex items-center mb-4">
-            <AlertTriangle className="w-6 h-6 text-red-500 mr-3" />
-            <h2 className="text-xl font-semibold">Xác nhận xóa</h2>
+            <div className="p-2 bg-red-100 rounded-lg mr-3">
+              <AlertTriangle className="w-6 h-6 text-red-600" />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">Xác nhận xóa</h2>
+              <p className="text-sm text-gray-500">Hành động này không thể hoàn tác</p>
+            </div>
           </div>
           
-          <p className="text-gray-600 mb-6">
-            Bạn có chắc chắn muốn xóa lệnh xét nghiệm <strong>{order.id}</strong> của bệnh nhân <strong>{order.patientName}</strong>?
-            <br />
-            <span className="text-red-600">Hành động này không thể hoàn tác!</span>
-          </p>
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <p className="text-gray-700">
+              Bạn có chắc chắn muốn xóa lệnh xét nghiệm <strong className="text-red-600">{order.id}</strong> của bệnh nhân <strong className="text-red-600">{order.patientName}</strong>?
+            </p>
+          </div>
 
           <div className="flex justify-end space-x-3">
             <Button
               variant="outline"
               onClick={onClose}
+              className="px-6 py-2"
             >
               Hủy
             </Button>
             <Button
-              variant="outline"
               onClick={onConfirm}
-              className="bg-red-600 text-white hover:bg-red-700"
+              className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white"
             >
               <Trash2 className="w-4 h-4 mr-2" />
               Xóa
@@ -1139,7 +1175,10 @@ const TestOrdersPage: React.FC = () => {
           <p className="text-gray-600">Tạo, chỉnh sửa và quản lý các lệnh xét nghiệm</p>
         </div>
         <div className="flex items-center space-x-4">
-          <Button onClick={handleCreate} className="flex items-center">
+          <Button 
+            onClick={handleCreate} 
+            className="flex items-center bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+          >
             <Plus className="w-4 h-4 mr-2" />
             Tạo Lệnh Xét nghiệm
           </Button>
