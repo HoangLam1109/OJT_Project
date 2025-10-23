@@ -115,48 +115,48 @@ export function RegisterForm({ onBackToLogin, onBackToHome }: RegisterFormProps)
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50 to-white">
-      <div className="w-full max-w-2xl mx-auto px-4">
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-          <div className="px-6 pt-6 pb-2 text-center">
-            <RegisterHeader />
-          </div>
-          <div className="px-5 pb-4 space-y-2">
-            <form onSubmit={handleSubmit} className="space-y-2">
-              <PersonalInfoFields
-                fullName={fullName} setFullName={setFullName}
-                email={email} setEmail={setEmail}
-                password={password} setPassword={setPassword}
-                confirmPassword={confirmPassword} setConfirmPassword={setConfirmPassword}
-                passwordError={passwordError} handlePasswordChange={handlePasswordChange}
-              />
-              <AdditionalInfoFields
-                phone={phone} setPhone={setPhone}
-                gender={gender} setGender={setGender}
-                dob={dob} setDob={setDob}
-                idNumber={idNumber} setIdNumber={setIdNumber}
-                address={address} setAddress={setAddress}
-              />
-              {error && (
-                <Alert variant="destructive">
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-              {successMessage && (
-                <Alert className="border-green-200 bg-green-50">
-                  <AlertDescription className="text-green-800">{successMessage}</AlertDescription>
-                </Alert>
-              )}
+    <div className="w-full max-w-2xl mx-auto">
+      <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+        <div className="px-6 pt-6 pb-3 text-center">
+          <RegisterHeader />
+        </div>
+        <div className="px-6 pb-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <PersonalInfoFields
+              fullName={fullName} setFullName={setFullName}
+              email={email} setEmail={setEmail}
+              password={password} setPassword={setPassword}
+              confirmPassword={confirmPassword} setConfirmPassword={setConfirmPassword}
+              passwordError={passwordError} handlePasswordChange={handlePasswordChange}
+            />
+            <AdditionalInfoFields
+              phone={phone} setPhone={setPhone}
+              gender={gender} setGender={setGender}
+              dob={dob} setDob={setDob}
+              idNumber={idNumber} setIdNumber={setIdNumber}
+              address={address} setAddress={setAddress}
+            />
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+            {successMessage && (
+              <Alert className="border-green-200 bg-green-50">
+                <AlertDescription className="text-green-800">{successMessage}</AlertDescription>
+              </Alert>
+            )}
+            <div className="pt-2">
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-12 bg-gray-800 text-white rounded-lg active:scale-95 transform transition-all duration-150 hover:bg-gray-800 focus:bg-gray-800 hover:shadow-lg hover:-translate-y-0.5"
+                className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
                 {isLoading ? 'Đang đăng ký...' : 'Đăng ký tài khoản'}
               </Button>
-              <FooterActions onBackToLogin={onBackToLogin} onBackToHome={onBackToHome} />
-            </form>
-          </div>
+            </div>
+            <FooterActions onBackToLogin={onBackToLogin} onBackToHome={onBackToHome} />
+          </form>
         </div>
       </div>
     </div>
