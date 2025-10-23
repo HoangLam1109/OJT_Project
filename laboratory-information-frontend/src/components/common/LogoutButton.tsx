@@ -38,7 +38,7 @@ export const LogoutButton: React.FC<LogoutButtonProps> = ({ collapsed = false })
     <button
       onClick={handleLogout}
       disabled={loading}
-      className={`rounded-lg bg-red-500 text-white font-medium hover:bg-red-600 transition disabled:opacity-60 ${
+      className={`rounded-lg bg-blue-500 text-white font-medium hover:bg-blue-600 transition disabled:opacity-60 ${
         collapsed 
           ? 'p-2 w-full flex items-center justify-center' 
           : 'px-4 py-2'
