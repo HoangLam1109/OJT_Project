@@ -5,7 +5,7 @@ import type { RoleCode } from "../../constants/roles.constant.js"
 export interface IUser extends Document {
   _id: UUID
   email: string
-  fullName?: string
+  fullName: string
   identityNumber: string
   gender: string
   age: number

@@ -2,10 +2,10 @@ import React, { useState } from "react";
 import { Alert, AlertDescription } from "../../components/common/alert";
 import Button from "../../components/common/button";
 import { CardTitle, CardDescription } from '../../components/common/card';
-import { Shield} from 'lucide-react';
+import { Shield } from 'lucide-react';
 import { authenticateUser } from "../../service/authService/loginApi";
 import type { LoginFormProps } from "../../types/Login.type";
-import  {LoginInputField} from "./LoginFormInputField";
+import { LoginInputField } from "./LoginFormInputField";
 
 export function LoginForm({ onLogin, onShowRegister, onBackToHome }: LoginFormProps) {
   const [email, setEmail] = useState("");
@@ -70,16 +70,20 @@ export function LoginForm({ onLogin, onShowRegister, onBackToHome }: LoginFormPr
           </Alert>
         )}
 
-        <Button type="submit" className="w-full h-12 bg-gray-800 text-white rounded-lg">
+        <Button
+          type="submit"
+          className="w-full h-12 bg-gray-800 text-white rounded-lg active:scale-95 transform transition-all duration-150 hover:bg-gray-800 focus:bg-gray-800 hover:shadow-lg hover:-translate-y-0.5"
+        >
           Đăng nhập
         </Button>
+
       </form>
 
       {/* Footer Links */}
       <div className="text-center space-y-2 mt-4">
         <button
           type="button"
-         
+
           className="text-sm text-gray-700 hover:text-gray-900 hover:underline"
         >
           Quên mật khẩu?
