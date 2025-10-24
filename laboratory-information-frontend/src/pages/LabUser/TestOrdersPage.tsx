@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../components/commo
 import Button from '../../components/common/button';
 import { Input } from '../../components/common/input';
 import { Label } from '../../components/common/label';
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '../../components/common/table';
 import { toast } from 'sonner';
 import {
   Search,
@@ -927,99 +928,97 @@ const TestOrderTable: React.FC<{
   onReview: (order: TestOrder) => void;
 }> = ({ orders, onViewDetail, onEdit, onDelete, onReview }) => {
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
-          <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Mã lệnh
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Tên bệnh nhân
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Ngày tạo
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Trạng thái
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Loại xét nghiệm
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Người tạo
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Thao tác
-            </th>
-          </tr>
-        </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
-          {orders.map((order) => (
-            <tr key={order.id} className="hover:bg-gray-50">
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                {order.id}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                <div>
-                  <div className="font-medium">{order.patientName}</div>
-                  <div className="text-gray-500">{order.patientId}</div>
-                </div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {order.createdAt}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <StatusBadge status={order.status} />
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                <div>
-                  <div className="font-medium">{order.testType}</div>
-                  <div className="text-gray-500">{order.testName}</div>
-                </div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {order.createdBy}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                <div className="flex space-x-2">
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Mã lệnh
+          </TableHead>
+          <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Tên bệnh nhân
+          </TableHead>
+          <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Ngày tạo
+          </TableHead>
+          <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Trạng thái
+          </TableHead>
+          <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Loại xét nghiệm
+          </TableHead>
+          <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Người tạo
+          </TableHead>
+          <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Thao tác
+          </TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {orders.map((order) => (
+          <TableRow key={order.id}>
+            <TableCell className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+              {order.id}
+            </TableCell>
+            <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <div>
+                <div className="font-medium">{order.patientName}</div>
+                <div className="text-gray-500">{order.patientId}</div>
+              </div>
+            </TableCell>
+            <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              {order.createdAt}
+            </TableCell>
+            <TableCell className="px-6 py-4 whitespace-nowrap">
+              <StatusBadge status={order.status} />
+            </TableCell>
+            <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <div>
+                <div className="font-medium">{order.testType}</div>
+                <div className="text-gray-500">{order.testName}</div>
+              </div>
+            </TableCell>
+            <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              {order.createdBy}
+            </TableCell>
+            <TableCell className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => onViewDetail(order)}
+                  className="text-blue-600 hover:text-blue-900"
+                  title="Xem chi tiết"
+                >
+                  <Eye className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => onEdit(order)}
+                  className="text-green-600 hover:text-green-900"
+                  title="Chỉnh sửa"
+                >
+                  <Edit className="w-4 h-4" />
+                </button>
+                {order.status === 'Completed' && (
                   <button
-                    onClick={() => onViewDetail(order)}
-                    className="text-blue-600 hover:text-blue-900"
-                    title="Xem chi tiết"
+                    onClick={() => onReview(order)}
+                    className="text-purple-600 hover:text-purple-900"
+                    title="Review kết quả"
                   >
-                    <Eye className="w-4 h-4" />
+                    <TestTube2 className="w-4 h-4" />
                   </button>
-                  <button
-                    onClick={() => onEdit(order)}
-                    className="text-green-600 hover:text-green-900"
-                    title="Chỉnh sửa"
-                  >
-                    <Edit className="w-4 h-4" />
-                  </button>
-                  {order.status === 'Completed' && (
-                    <button
-                      onClick={() => onReview(order)}
-                      className="text-purple-600 hover:text-purple-900"
-                      title="Review kết quả"
-                    >
-                      <TestTube2 className="w-4 h-4" />
-                    </button>
-                  )}
-                  <button
-                    onClick={() => onDelete(order)}
-                    className="text-red-600 hover:text-red-900"
-                    title="Xóa"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+                )}
+                <button
+                  onClick={() => onDelete(order)}
+                  className="text-red-600 hover:text-red-900"
+                  title="Xóa"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
   );
 };
 

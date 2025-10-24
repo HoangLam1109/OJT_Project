@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../components/commo
 import Button from '../../components/common/button';
 import { Input } from '../../components/common/input';
 import { Label } from '../../components/common/label';
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '../../components/common/table';
 import { toast } from 'sonner';
 import {
   Search,
@@ -820,86 +821,84 @@ const TestResultTable: React.FC<{
   onExportPDF: (result: TestResult) => void;
 }> = ({ results, onViewResult, onReviewResult, onExportPDF }) => {
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
-          <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Mã
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Bệnh nhân
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Loại XN
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Ngày hoàn thành
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Trạng thái
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Thao tác
-            </th>
-          </tr>
-        </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
-          {results.map((result) => (
-            <tr key={result.id} className="hover:bg-gray-50">
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                {result.id}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                <div>
-                  <div className="font-medium">{result.patientName}</div>
-                  <div className="text-gray-500">{result.patientId}</div>
-                </div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                <div>
-                  <div className="font-medium">{result.testType}</div>
-                  <div className="text-gray-500">{result.testName}</div>
-                </div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {result.completedAt}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <StatusBadge status={result.status} />
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                <div className="flex space-x-2">
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Mã
+          </TableHead>
+          <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Bệnh nhân
+          </TableHead>
+          <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Loại XN
+          </TableHead>
+          <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Ngày hoàn thành
+          </TableHead>
+          <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Trạng thái
+          </TableHead>
+          <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Thao tác
+          </TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {results.map((result) => (
+          <TableRow key={result.id}>
+            <TableCell className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+              {result.id}
+            </TableCell>
+            <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <div>
+                <div className="font-medium">{result.patientName}</div>
+                <div className="text-gray-500">{result.patientId}</div>
+              </div>
+            </TableCell>
+            <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <div>
+                <div className="font-medium">{result.testType}</div>
+                <div className="text-gray-500">{result.testName}</div>
+              </div>
+            </TableCell>
+            <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              {result.completedAt}
+            </TableCell>
+            <TableCell className="px-6 py-4 whitespace-nowrap">
+              <StatusBadge status={result.status} />
+            </TableCell>
+            <TableCell className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => onViewResult(result)}
+                  className="text-blue-600 hover:text-blue-900"
+                  title="Xem kết quả"
+                >
+                  <Eye className="w-4 h-4" />
+                </button>
+                {result.status === 'Completed' && (
                   <button
-                    onClick={() => onViewResult(result)}
-                    className="text-blue-600 hover:text-blue-900"
-                    title="Xem kết quả"
+                    onClick={() => onReviewResult(result)}
+                    className="text-green-600 hover:text-green-900"
+                    title="Review kết quả"
                   >
-                    <Eye className="w-4 h-4" />
+                    <FlaskConical className="w-4 h-4" />
                   </button>
-                  {result.status === 'Completed' && (
-                    <button
-                      onClick={() => onReviewResult(result)}
-                      className="text-green-600 hover:text-green-900"
-                      title="Review kết quả"
-                    >
-                      <FlaskConical className="w-4 h-4" />
-                    </button>
-                  )}
-                  <button
-                    onClick={() => onExportPDF(result)}
-                    className="text-purple-600 hover:text-purple-900"
-                    title="In / Xuất PDF"
-                  >
-                    <Printer className="w-4 h-4" />
-                  </button>
-                </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+                )}
+                <button
+                  onClick={() => onExportPDF(result)}
+                  className="text-purple-600 hover:text-purple-900"
+                  title="In / Xuất PDF"
+                >
+                  <Printer className="w-4 h-4" />
+                </button>
+              </div>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
   );
 };
 
