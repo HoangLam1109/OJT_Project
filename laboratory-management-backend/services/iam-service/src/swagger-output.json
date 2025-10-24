@@ -640,6 +640,86 @@
         ]
       }
     },
+    "/user/me": {
+      "get": {
+        "tags": [
+          "User CRUD"
+        ],
+        "description": "Get profile information of the authenticated user",
+        "responses": {
+          "200": {
+            "description": "Authenticated user profile retrieved successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "user": {
+                  "type": "object",
+                  "properties": {
+                    "_id": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "email": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "fullName": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "identityNumber": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "gender": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "age": {
+                      "type": "string",
+                      "example": "number"
+                    },
+                    "dateOfBirth": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "phoneNumber": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "address": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "role": {
+                      "type": "string",
+                      "example": "string"
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
     "/user/{id}": {
       "get": {
         "tags": [
