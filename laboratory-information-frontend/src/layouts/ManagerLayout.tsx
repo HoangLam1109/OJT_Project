@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Users, LayoutDashboard, Settings } from 'lucide-react';
+import { Users, LayoutDashboard, Settings, User as UserIcon } from 'lucide-react';
 import { Sidebar } from '../components/common/Sidebar';
 import { TopHeader } from '../components/common/TopHeader';
 import type { NavigationItem } from '../types/Layout.types';
@@ -9,6 +9,7 @@ const navigationItems: NavigationItem[] = [
   { id: 'user-management', label: 'Quản lý người dùng', icon: Users },
   { id: 'dashboard', label: 'Tổng quan', icon: LayoutDashboard },
   { id: 'settings', label: 'Cài đặt', icon: Settings },
+  { id: 'profile', label: 'Hồ sơ cá nhân', icon: UserIcon },
 ];
 
 interface ManagerLayoutProps {

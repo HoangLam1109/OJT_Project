@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { mockReagents, mockTestOrders, mockAuditLogs, type Reagent } from './data/mockReagentsData';
 import { useAuthContext } from '../../hooks/useAuthContext';
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '../../components/common/table';
 
 const ReagentManagementPage: React.FC = () => {
   const { user } = useAuthContext();
@@ -33,6 +34,7 @@ const ReagentManagementPage: React.FC = () => {
 
     if (searchTerm) {
       filtered = filtered.filter(reagent =>
+        reagent.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
         reagent.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         reagent.lotNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
         reagent.manufacturer?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -203,7 +205,7 @@ const ReagentManagementPage: React.FC = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
                 type="text"
-                placeholder="Tìm kiếm theo tên hoặc số lô..."
+                placeholder="Tìm kiếm theo mã, tên, số lô hoặc nhà sản xuất..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -240,104 +242,102 @@ const ReagentManagementPage: React.FC = () => {
 
       {/* Reagents Table */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Mã Thuốc Thử
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Tên Thuốc Thử
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Số Lô
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Hạn Dùng
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Số Lượng
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Trạng Thái
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Vị Trí Lưu
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Hành Động
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredReagents.map((reagent) => (
-                <tr key={reagent.id} className={getRowClassName(reagent)}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    <div className="flex items-center gap-2">
-                      <FlaskConical className="w-4 h-4 text-blue-500" />
-                      {reagent.id}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {reagent.name}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {reagent.lotNumber}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <div className="flex items-center gap-1">
-                      {isExpired(reagent.expiryDate) && (
-                        <AlertTriangle className="w-4 h-4 text-red-500" />
-                      )}
-                      {isExpiringSoon(reagent.expiryDate) && !isExpired(reagent.expiryDate) && (
-                        <AlertTriangle className="w-4 h-4 text-yellow-500" />
-                      )}
-                      {formatDate(reagent.expiryDate)}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <div className="flex items-center gap-1">
-                      <Package className="w-4 h-4 text-gray-500" />
-                      {reagent.quantity}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {getStatusBadge(reagent.status)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {reagent.storageLocation}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handleViewDetails(reagent)}
-                        className="text-blue-600 hover:text-blue-900 p-1 rounded"
-                        title="Xem chi tiết"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleEditReagent(reagent)}
-                        className="text-green-600 hover:text-green-900 p-1 rounded"
-                        title="Chỉnh sửa"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteReagent(reagent)}
-                        className="text-red-600 hover:text-red-900 p-1 rounded"
-                        title="Xóa thuốc thử"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Mã Thuốc Thử
+              </TableHead>
+              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Tên Thuốc Thử
+              </TableHead>
+              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Số Lô
+              </TableHead>
+              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Hạn Dùng
+              </TableHead>
+              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Số Lượng
+              </TableHead>
+              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Trạng Thái
+              </TableHead>
+              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Vị Trí Lưu
+              </TableHead>
+              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Hành Động
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredReagents.map((reagent) => (
+              <TableRow key={reagent.id} className={getRowClassName(reagent)}>
+                <TableCell className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  <div className="flex items-center gap-2">
+                    <FlaskConical className="w-4 h-4 text-blue-500" />
+                    {reagent.id}
+                  </div>
+                </TableCell>
+                <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {reagent.name}
+                </TableCell>
+                <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {reagent.lotNumber}
+                </TableCell>
+                <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <div className="flex items-center gap-1">
+                    {isExpired(reagent.expiryDate) && (
+                      <AlertTriangle className="w-4 h-4 text-red-500" />
+                    )}
+                    {isExpiringSoon(reagent.expiryDate) && !isExpired(reagent.expiryDate) && (
+                      <AlertTriangle className="w-4 h-4 text-yellow-500" />
+                    )}
+                    {formatDate(reagent.expiryDate)}
+                  </div>
+                </TableCell>
+                <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <div className="flex items-center gap-1">
+                    <Package className="w-4 h-4 text-gray-500" />
+                    {reagent.quantity}
+                  </div>
+                </TableCell>
+                <TableCell className="px-6 py-4 whitespace-nowrap">
+                  {getStatusBadge(reagent.status)}
+                </TableCell>
+                <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {reagent.storageLocation}
+                </TableCell>
+                <TableCell className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleViewDetails(reagent)}
+                      className="text-blue-600 hover:text-blue-900 p-1 rounded"
+                      title="Xem chi tiết"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleEditReagent(reagent)}
+                      className="text-green-600 hover:text-green-900 p-1 rounded"
+                      title="Chỉnh sửa"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteReagent(reagent)}
+                      className="text-red-600 hover:text-red-900 p-1 rounded"
+                      title="Xóa thuốc thử"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
 
       {/* Add/Edit Modal */}

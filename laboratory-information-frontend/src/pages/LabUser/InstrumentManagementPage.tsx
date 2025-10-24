@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { mockInstruments, mockTestOrders, mockAuditLogs, type Instrument } from './data/mockInstrumentsData';
 import { useAuthContext } from '../../hooks/useAuthContext';
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '../../components/common/table';
 
 const InstrumentManagementPage: React.FC = () => {
   const { user } = useAuthContext();
@@ -224,120 +225,118 @@ const InstrumentManagementPage: React.FC = () => {
 
       {/* Instruments Table */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Mã Thiết Bị
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Tên Thiết Bị
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Model
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Số Seri
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Trạng Thái
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Ngày Hiệu Chuẩn
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Ngày Cập Nhật
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Hành Động
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredInstruments.map((instrument) => (
-                <tr key={instrument.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {instrument.id}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {instrument.name}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {instrument.model}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {instrument.serial}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {getStatusBadge(instrument.status)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {formatDate(instrument.lastCalibrationDate)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {formatDate(instrument.updatedAt)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex items-center gap-2">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Mã Thiết Bị
+              </TableHead>
+              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Tên Thiết Bị
+              </TableHead>
+              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Model
+              </TableHead>
+              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Số Seri
+              </TableHead>
+              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Trạng Thái
+              </TableHead>
+              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Ngày Hiệu Chuẩn
+              </TableHead>
+              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Ngày Cập Nhật
+              </TableHead>
+              <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Hành Động
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredInstruments.map((instrument) => (
+              <TableRow key={instrument.id}>
+                <TableCell className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  {instrument.id}
+                </TableCell>
+                <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {instrument.name}
+                </TableCell>
+                <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {instrument.model}
+                </TableCell>
+                <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {instrument.serial}
+                </TableCell>
+                <TableCell className="px-6 py-4 whitespace-nowrap">
+                  {getStatusBadge(instrument.status)}
+                </TableCell>
+                <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {formatDate(instrument.lastCalibrationDate)}
+                </TableCell>
+                <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {formatDate(instrument.updatedAt)}
+                </TableCell>
+                <TableCell className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleViewDetails(instrument)}
+                      className="text-blue-600 hover:text-blue-900 p-1 rounded"
+                      title="Xem chi tiết"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleEditInstrument(instrument)}
+                      className="text-green-600 hover:text-green-900 p-1 rounded"
+                      title="Chỉnh sửa"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleToggleStatus(instrument)}
+                      className={`p-1 rounded ${
+                        instrument.status === 'Active' 
+                          ? 'text-red-600 hover:text-red-900' 
+                          : 'text-green-600 hover:text-green-900'
+                      }`}
+                      title={instrument.status === 'Active' ? 'Tắt' : 'Bật'}
+                    >
+                      <ToggleLeft className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleExecuteTest(instrument)}
+                      className="text-purple-600 hover:text-purple-900 p-1 rounded"
+                      title="Thực hiện xét nghiệm"
+                    >
+                      <PlayCircle className="w-4 h-4" />
+                    </button>
+                    {!isLabUser && (
                       <button
-                        onClick={() => handleViewDetails(instrument)}
-                        className="text-blue-600 hover:text-blue-900 p-1 rounded"
-                        title="Xem chi tiết"
+                        className="text-red-600 hover:text-red-900 p-1 rounded"
+                        title="Xóa thiết bị"
                       >
-                        <Eye className="w-4 h-4" />
+                        <Wrench className="w-4 h-4" />
                       </button>
-                      <button
-                        onClick={() => handleEditInstrument(instrument)}
-                        className="text-green-600 hover:text-green-900 p-1 rounded"
-                        title="Chỉnh sửa"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleToggleStatus(instrument)}
-                        className={`p-1 rounded ${
-                          instrument.status === 'Active' 
-                            ? 'text-red-600 hover:text-red-900' 
-                            : 'text-green-600 hover:text-green-900'
-                        }`}
-                        title={instrument.status === 'Active' ? 'Tắt' : 'Bật'}
-                      >
-                        <ToggleLeft className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleExecuteTest(instrument)}
-                        className="text-purple-600 hover:text-purple-900 p-1 rounded"
-                        title="Thực hiện xét nghiệm"
-                      >
-                        <PlayCircle className="w-4 h-4" />
-                      </button>
-                      {!isLabUser && (
+                    )}
+                    {isLabUser && (
+                      <div className="relative group">
                         <button
-                          className="text-red-600 hover:text-red-900 p-1 rounded"
-                          title="Xóa thiết bị"
+                          disabled
+                          className="text-gray-400 p-1 rounded cursor-not-allowed"
+                          title="Không có quyền xóa thiết bị"
                         >
                           <Wrench className="w-4 h-4" />
                         </button>
-                      )}
-                      {isLabUser && (
-                        <div className="relative group">
-                          <button
-                            disabled
-                            className="text-gray-400 p-1 rounded cursor-not-allowed"
-                            title="Không có quyền xóa thiết bị"
-                          >
-                            <Wrench className="w-4 h-4" />
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                      </div>
+                    )}
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
 
       {/* Add/Edit Modal */}

@@ -5,6 +5,7 @@ import {
   Beaker,
   Wrench,
   Activity,
+  Settings,
 } from 'lucide-react';
 import { Sidebar } from '../components/common/Sidebar';
 import { TopHeader } from '../components/common/TopHeader';
@@ -18,7 +19,7 @@ const navigationItems: NavigationItem[] = [
   { id: 'reagents', label: 'Quản lý hóa chất', icon: Beaker },
   { id: 'instruments', label: 'Quản lý thiết bị', icon: Wrench },
   { id: 'blood-testing', label: 'Thực hiện xét nghiệm', icon: TestTube },
-
+  { id: 'profile', label: 'Hồ sơ cá nhân', icon: Settings },
 ];
 
 
