@@ -61,6 +61,21 @@ export const updateUserSchema = Joi.object({
   dateOfBirth: Joi.date().messages({
     'date.base': 'Invalid date of birth',
   }),
+  phoneNumber: Joi.string().regex(/^[0-9]{10}$/).min(1).messages({
+    'string.min': 'Phone number must be at least 1 character long',
+    'string.pattern.base': 'Phone number must be 10 digits'
+  }),
+  address: Joi.string().min(1).messages({
+    'string.min': 'Address must be at least 1 character long',
+  }),
+  role: Joi.string().custom((value, helpers) => {
+    if (!validateRole(value)) {
+      return helpers.error('any.invalid');
+    }
+    return value;
+  }).messages({
+    'any.invalid': 'Invalid role code'
+  }),
   password: Joi.string().min(6).messages({
     'string.min': 'Password must be at least 6 characters long'
   })

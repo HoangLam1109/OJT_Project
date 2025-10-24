@@ -20,6 +20,19 @@ interface BackendUser {
 
 // Transform backend user to frontend user format
 const transformBackendUser = (backendUser: BackendUser): ManagerUser => {
+  // Format date of birth for HTML input type="date" (YYYY-MM-DD format)
+  let formattedDateOfBirth = '';
+  if (backendUser.dateOfBirth) {
+    try {
+      const date = new Date(backendUser.dateOfBirth);
+      if (!isNaN(date.getTime())) {
+        formattedDateOfBirth = date.toISOString().split('T')[0]; // Convert to YYYY-MM-DD
+      }
+    } catch (error) {
+      console.warn('Error formatting date of birth:', error);
+    }
+  }
+
   return {
     id: backendUser._id || '',
     name: backendUser.fullName || 'N/A',
@@ -30,10 +43,16 @@ const transformBackendUser = (backendUser: BackendUser): ManagerUser => {
     permissions: [], // Backend doesn't provide this yet
     phone_number: backendUser.phoneNumber || '',
     identify_number: backendUser.identityNumber || '',
-    gender: (backendUser.gender as 'male' | 'female' | 'other') || 'male',
+    gender: (() => {
+      const gender = backendUser.gender;
+      if (gender === 'male' || gender === 'Male') return 'Male';
+      if (gender === 'female' || gender === 'Female') return 'Female';
+      if (gender === 'other' || gender === 'Other') return 'Other';
+      return 'Male'; // default fallback
+    })(),
     age: backendUser.age || 0,
     address: backendUser.address || '',
-    date_of_birth: backendUser.dateOfBirth || '',
+    date_of_birth: formattedDateOfBirth,
     createdAt: backendUser.createdAt || '',
     updatedAt: backendUser.updatedAt || '',
   };
@@ -41,19 +60,38 @@ const transformBackendUser = (backendUser: BackendUser): ManagerUser => {
 
 // Transform frontend user to backend format
 const transformFrontendUser = (frontendUser: UserFormData) => {
-  return {
+  // Calculate age from date of birth if not provided or if age is 0
+  let calculatedAge = frontendUser.age;
+  if (!calculatedAge || calculatedAge <= 0) {
+    const today = new Date();
+    const birthDate = new Date(frontendUser.date_of_birth);
+    const age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    calculatedAge = monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate()) 
+      ? age - 1 
+      : age;
+    // Ensure minimum age of 1
+    calculatedAge = Math.max(calculatedAge, 1);
+  }
+
+  const backendData = {
     email: frontendUser.email,
     fullName: frontendUser.fullName,
     identityNumber: frontendUser.identify_number,
-    gender: frontendUser.gender,
-    age: frontendUser.age || 0,
+    gender: frontendUser.gender, // This should already be 'Male', 'Female', or 'Other' from frontend
+    age: calculatedAge,
     dateOfBirth: new Date(frontendUser.date_of_birth),
     phoneNumber: frontendUser.phone_number,
     address: frontendUser.address,
-    isActive: frontendUser.active,
+    // isActive: frontendUser.active, // Temporarily commented out - API doesn't accept this field for user creation
     role: frontendUser.role,
     ...(frontendUser.password && { password: frontendUser.password }),
   };
+
+  console.log('Frontend user data:', frontendUser);
+  console.log('Backend data being sent:', backendData);
+  
+  return backendData;
 };
 
 export class UserService {
@@ -93,7 +131,9 @@ export class UserService {
   // Create user
   async createUser(userData: UserFormData): Promise<ManagerUser> {
     try {
+      console.log('Creating user with data:', userData);
       const backendData = transformFrontendUser(userData);
+      console.log('Sending to API:', backendData);
       const response = await apiService.post<BackendUser>('/user/create', backendData);
       return transformBackendUser(response);
     } catch (error) {
@@ -142,6 +182,7 @@ export class UserService {
         phone_number: '',
         identify_number: '',
         gender: 'male',
+        gender: 'Male' as 'Male' | 'Female' | 'Other',
         date_of_birth: '',
         address: '',
         active: isActive,

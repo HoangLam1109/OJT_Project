@@ -7,6 +7,7 @@ const router = express.Router();
 
 router.use("/", authRoutes);
 
+// Temporarily remove all authentication for testing
 router.use("/user", authenticateUser.authenticateUser, userRoutes);
 
 export default router;
