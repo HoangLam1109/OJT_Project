@@ -2,6 +2,8 @@ import type { Request, Response } from "express";
 import type { IUser } from "../db/models/User.model.js";
 import { UserService } from "../services/user.service.js";
 import { errorHandler } from "../utils/error.util.js";
+import { PaginationUtils } from "../utils/pagination.util.js";
+import { PaginationOptions } from "../types/pagination.type.js";
 
 // Define the type for authenticated user (matches what the middleware provides)
 interface AuthenticatedUser {
@@ -71,6 +73,84 @@ const getUser = async (req: Request, res: Response): Promise<void> => {
     errorHandler(res, error);
   }
 };
+
+const getUsersWithPagination = async (req: Request, res: Response): Promise<void> => {
+  /*
+    #swagger.auto = false
+    #swagger.tags = ['User CRUD']
+    #swagger.description = 'Get users with pagination'
+    #swagger.security = [{"apiKeyAuth": []}]
+    #swagger.parameters['limit'] = {
+      in: 'query',
+      description: 'Number of users per page (1-100)',
+      required: false,
+      type: 'integer',
+      default: 10
+    }
+    #swagger.parameters['cursor'] = {
+      in: 'query',
+      description: 'Cursor for next page (user ID)',
+      required: false,
+      type: 'string'
+    }
+    #swagger.parameters['sortBy'] = {
+      in: 'query',
+      description: 'Field to sort by',
+      required: false,
+      type: 'string',
+      enum: ['createdAt', '_id', 'fullName', 'email'],
+      default: '_id'
+    }
+    #swagger.parameters['sortOrder'] = {
+      in: 'query',
+      description: 'Sort order',
+      required: false,
+      type: 'string',
+      enum: ['asc', 'desc'],
+      default: 'asc'
+    }
+    #swagger.responses[200] = {
+      description: 'Users retrieved successfully',
+      schema: {
+        data: {
+          type: 'array',
+          items: {
+            _id: 'string',
+            email: 'string',
+            fullName: 'string',
+            identityNumber: 'string',
+            gender: 'string',
+            age: 'number',
+            dateOfBirth: 'string',
+            phoneNumber: 'string',
+            address: 'string',
+            role: 'string',
+            createdAt: 'string',
+            updatedAt: 'string'
+          }
+        },
+        pagination: {
+          hasNextPage: 'boolean',
+          hasPreviousPage: 'boolean',
+          nextCursor: 'string',
+          previousCursor: 'string',
+          totalCount: 'number',
+          limit: 'number'
+        }
+      }
+    }
+    #swagger.responses[400] = { description: 'Invalid pagination parameters' }
+    #swagger.responses[401] = { description: 'Authentication required' }
+    #swagger.responses[500] = { description: 'Internal server error' }
+  */
+  try {
+    const options = PaginationUtils.parseQuery(req.query);
+    const users = await userService.getUsersWithPagination(options);
+    res.status(200).json(users);
+  } catch (error) {
+    errorHandler(res, error);
+  }
+}
 
 const getAll = async (req: Request, res: Response): Promise<void> => {
    /*
@@ -264,4 +344,4 @@ const deleteUser = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-export { getUser, getAll, createUser, updateUser, deleteUser };
+export { getUser, getAll, createUser, updateUser, deleteUser, getUsersWithPagination};

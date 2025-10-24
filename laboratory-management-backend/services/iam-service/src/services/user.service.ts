@@ -5,6 +5,8 @@ import { passwordHistoryRepository } from "../repositories/index.js";
 
 import type { IUser } from "../db/models/User.model.js";
 import { errorHandler } from "../utils/error.util.js";
+import { PaginationResponse, PaginationOptions } from "../types/pagination.type.js";
+import { PaginationUtils } from "../utils/pagination.util.js";
 
 export interface CreateUserData {
   email: string;
@@ -101,6 +103,13 @@ export class UserService {
     return await userRepository.findAll(
       "_id email fullName phoneNumber identityNumber gender age dateOfBirth address role"
     );
+  }
+
+  async getUsersWithPagination(
+    options: PaginationOptions
+  ): Promise<PaginationResponse<IUser>> {
+    const result = await userRepository.findWithPagination(options);
+    return PaginationUtils.formatResponse(result.data, result.hasNextPage, options, result.totalCount);
   }
 
   // Private helper method to hash passwords (skip for OAuth users)
