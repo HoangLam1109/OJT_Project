@@ -93,8 +93,8 @@ export class UserService {
     return await userRepository.findByEmail(email);
   }
 
-  async getUserByIdentityNumber(identityNumber: string): Promise<IUser | null> {
-    return await userRepository.findByIdentityNumber(identityNumber);
+  async getUserByPhoneNumber(phoneNumber: string): Promise<IUser | null> {
+    return await userRepository.findByPhoneNumber(phoneNumber);
   }
 
   async getAllUsers(): Promise<IUser[]> {

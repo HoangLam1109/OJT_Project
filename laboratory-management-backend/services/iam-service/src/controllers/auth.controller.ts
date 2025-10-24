@@ -51,9 +51,9 @@ const registerUser = async (req: Request, res: Response): Promise<void> => {
       identityNumber,
       gender,
       age,
+      phoneNumber,
       dateOfBirth,
       password,
-      phoneNumber,
       address,
     } = req.body;
 
@@ -63,6 +63,7 @@ const registerUser = async (req: Request, res: Response): Promise<void> => {
       !identityNumber ||
       !gender ||
       !age ||
+      !phoneNumber ||
       !dateOfBirth ||
       !password ||
       !phoneNumber ||
@@ -73,14 +74,14 @@ const registerUser = async (req: Request, res: Response): Promise<void> => {
     }
 
     const existingEmail = await userService.getUserByEmail(email);
-    const existingIdentityNumber = await userService.getUserByIdentityNumber(
+    const existingPhoneNumber = await userService.getUserByPhoneNumber(
       identityNumber
     );
-    if (existingEmail || existingIdentityNumber) {
+    if (existingEmail || existingPhoneNumber) {
       res.status(400).json({
         message: existingEmail
           ? "Email already exists!"
-          : "Identity number already exists!",
+          : "Phone number already exists!",
       });
       return;
     }
@@ -143,15 +144,20 @@ const loginUser = async (req: Request, res: Response): Promise<void> => {
     #swagger.responses[500] = { description: 'Internal server error' }
   */
   try {
-    const { email, password } = req.body;
+    const { identifier, password } = req.body;
 
-    if (!email || !password) {
+    if (!identifier || !password) {
       res.status(400).json({ message: "Missing credentials" });
       return;
     }
 
-    const user: IUser | null = await userService.getUserByEmail(email);
+    // ✅ Kiểm tra là email hay số điện thoại
+    const isEmail = /\S+@\S+\.\S+/.test(identifier);
 
+    // ✅ Tìm user theo email hoặc phoneNumber
+    const user: IUser | null = isEmail
+      ? await userService.getUserByEmail(identifier)
+      : await userService.getUserByPhoneNumber(identifier);
     if (!user) {
       res.status(400).json({ message: "User not found!" });
       return;
@@ -170,6 +176,7 @@ const loginUser = async (req: Request, res: Response): Promise<void> => {
       user: {
         id: user._id,
         email: user.email,
+        phoneNumber: user.phoneNumber,
         fullName: user.fullName,
         role: user.role,
       },

@@ -7,6 +7,7 @@ export interface IUser extends Document {
   email: string
   fullName: string
   identityNumber: string
+  phoneNumber:String
   gender: string
   age: number
   dateOfBirth: Date
@@ -73,6 +74,12 @@ const userSchema = new mongoose.Schema<IUser>(
       trim: true,
       unique: true,
       sparse: true, // Allow multiple null values
+    },
+    phoneNumber: {
+      type: String,
+      required: [true, "Phone number is required!"],
+      trim: true,
+      unique: true,
     },
     role: {
       type: String,
