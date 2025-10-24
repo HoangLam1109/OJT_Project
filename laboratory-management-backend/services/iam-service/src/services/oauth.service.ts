@@ -26,7 +26,6 @@ export class OAuthService {
         return existingOAuthUser;
       }
 
-      // Check if user exists with same email (for account linking)
       const existingEmailUser = await this.findUserByEmailAndProvider(
         userData.email,
         "local"

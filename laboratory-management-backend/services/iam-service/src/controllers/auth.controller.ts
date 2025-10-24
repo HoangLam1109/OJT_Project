@@ -119,7 +119,7 @@ const loginUser = async (req: Request, res: Response): Promise<void> => {
       description: 'Login credentials',
       required: true,
       schema: {
-        email: 'string',
+        identifier: 'string',
         password: 'string'
       }
     }

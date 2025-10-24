@@ -1,5 +1,5 @@
 import express from "express";
-import { getUser, createUser, updateUser, deleteUser, getAll } from "../../controllers/user.controller.js";
+import { getUser, createUser, updateUser, deleteUser, getAll, getUsersWithPagination } from "../../controllers/user.controller.js";
 import { authorize } from "../../middlewares/authorize.middleware.js";
 import { validateCreateUser, validateUpdateUser } from "../../middlewares/validate.middleware.js";
 
@@ -10,11 +10,9 @@ import { validateCreateUser, validateUpdateUser } from "../../middlewares/valida
 
 const router = express.Router();
 
-// Get all users - already authenticated in parent router
-router.get('/all', getAll);
-
-// Get user by ID - already authenticated in parent router  
-router.get('/:id', getUser);
+//router.get('/all', authorize(['read:users']), getAll);
+router.get('/all', authorize(['read:users']), getUsersWithPagination);
+router.get('/:id', authorize(['read:users']), getUser);
 
 router.post('/create', authorize(['manage:users']), validateCreateUser, createUser);
 router.put('/update/:id', authorize(['manage:users']), validateUpdateUser, updateUser);
