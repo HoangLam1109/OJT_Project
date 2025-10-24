@@ -1,0 +1,207 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "v1.0.0",
+    "title": "Patient Service API",
+    "description": "Patient Management Microservice for Laboratory Information Management System. Handles patient demographics, medical records, and access audit logs."
+  },
+  "host": "localhost:5001",
+  "basePath": "/api",
+  "tags": [
+    {
+      "name": "Patients",
+      "description": "Patient management operations (requires authentication)"
+    }
+  ],
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "securityDefinitions": {
+    "apiKeyAuth": {
+      "type": "apiKey",
+      "in": "cookie",
+      "name": "accessToken",
+      "description": "JWT access token stored in HTTP-only cookie. Set automatically on login from IAM Service."
+    }
+  },
+  "paths": {
+    "/patients/": {
+      "get": {
+        "tags": [
+          "Patients"
+        ],
+        "description": "Get all patients with pagination, search and filters",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number",
+            "type": "integer",
+            "default": 1
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Items per page",
+            "type": "integer",
+            "default": 10
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Search by patient code, user ID, or test type",
+            "type": "string"
+          },
+          {
+            "name": "isActive",
+            "in": "query",
+            "description": "Filter by active status",
+            "type": "boolean"
+          },
+          {
+            "name": "populateUser",
+            "in": "query",
+            "description": "Include user details from IAM Service (default: true)",
+            "type": "boolean",
+            "default": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Patients retrieved successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "patients": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_id": {
+                        "type": "string",
+                        "example": "uuid"
+                      },
+                      "user_id": {
+                        "type": "string",
+                        "example": "user-uuid-from-iam"
+                      },
+                      "user": {
+                        "type": "object",
+                        "properties": {
+                          "_id": {
+                            "type": "string",
+                            "example": "user-uuid-from-iam"
+                          },
+                          "email": {
+                            "type": "string",
+                            "example": "user@example.com"
+                          },
+                          "fullName": {
+                            "type": "string",
+                            "example": "Nguyen Van A"
+                          },
+                          "identityNumber": {
+                            "type": "string",
+                            "example": "001234567890"
+                          },
+                          "gender": {
+                            "type": "string",
+                            "example": "male"
+                          },
+                          "age": {
+                            "type": "number",
+                            "example": 35
+                          },
+                          "dateOfBirth": {
+                            "type": "string",
+                            "example": "1990-05-15"
+                          },
+                          "isActive": {
+                            "type": "boolean",
+                            "example": true
+                          },
+                          "role": {
+                            "type": "string",
+                            "example": "USER"
+                          }
+                        }
+                      },
+                      "patient_code": {
+                        "type": "string",
+                        "example": "PT202510240001"
+                      },
+                      "emergency_contact": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "example": "Nguyen Van Hung"
+                          },
+                          "phone": {
+                            "type": "string",
+                            "example": "0971234567"
+                          }
+                        }
+                      },
+                      "last_visit_date": {
+                        "type": "string",
+                        "example": "2025-10-20"
+                      },
+                      "last_test_type": {
+                        "type": "string",
+                        "example": "CBC"
+                      },
+                      "is_active": {
+                        "type": "boolean",
+                        "example": true
+                      },
+                      "created_at": {
+                        "type": "string",
+                        "example": "2025-10-22T11:00:00Z"
+                      },
+                      "updated_at": {
+                        "type": "string",
+                        "example": "2025-10-22T11:00:00Z"
+                      },
+                      "created_by": {
+                        "type": "string",
+                        "example": "admin-user-id"
+                      }
+                    }
+                  }
+                },
+                "total": {
+                  "type": "number",
+                  "example": 100
+                },
+                "page": {
+                  "type": "number",
+                  "example": 1
+                },
+                "totalPages": {
+                  "type": "number",
+                  "example": 10
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    }
+  }
+}

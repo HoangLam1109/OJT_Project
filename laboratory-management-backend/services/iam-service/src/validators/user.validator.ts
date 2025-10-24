@@ -10,8 +10,9 @@ export const createUserSchema = Joi.object({
     'string.min': 'Full name must be at least 1 character long',
     'any.required': 'Full name is required'
   }),
-  identityNumber: Joi.string().min(1).required().messages({
-    'string.min': 'Identity number must be at least 1 character long',
+  identityNumber: Joi.string().min(9).max(12).required().messages({
+    'string.min': 'Identity number must be at least 9 characters long',
+    'string.max': 'Identity number must be at most 12 characters long',
     'any.required': 'Identity number is required'
   }),
   gender: Joi.string().valid('Male', 'Female', 'Other').required().messages({
@@ -26,6 +27,15 @@ export const createUserSchema = Joi.object({
   dateOfBirth: Joi.date().required().messages({
     'date.base': 'Invalid date of birth',
     'any.required': 'Date of birth is required'
+  }),
+  phoneNumber: Joi.string().regex(/^[0-9]{10}$/).min(1).required().messages({
+    'string.min': 'Phone number must be at least 1 character long',
+    'any.required': 'Phone number is required',
+    'string.pattern.base': 'Phone number must be 10 digits'
+  }),
+  address: Joi.string().min(1).required().messages({
+    'string.min': 'Address must be at least 1 character long',
+    'any.required': 'Address is required'
   }),
   password: Joi.string().min(6).required().messages({
     'string.min': 'Password must be at least 6 characters long',
@@ -48,8 +58,9 @@ export const updateUserSchema = Joi.object({
   fullName: Joi.string().min(1).messages({
     'string.min': 'Full name must be at least 1 character long',
   }),
-  identityNumber: Joi.string().min(1).messages({
-    'string.min': 'Identity number must be at least 1 character long',
+  identityNumber: Joi.string().min(9).max(12).messages({
+    'string.min': 'Identity number must be at least 9 characters long',
+    'string.max': 'Identity number must be at most 12 characters long',
   }),
   gender: Joi.string().valid('Male', 'Female', 'Other').messages({
     'string.valid': 'Invalid gender',
@@ -78,5 +89,6 @@ export const updateUserSchema = Joi.object({
   }),
   password: Joi.string().min(6).messages({
     'string.min': 'Password must be at least 6 characters long'
-  })
+  }),
+  isActive: Joi.boolean().default(true),
 }).min(1);

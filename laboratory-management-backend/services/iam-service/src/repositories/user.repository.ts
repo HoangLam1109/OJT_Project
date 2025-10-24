@@ -2,7 +2,7 @@
 export interface IUserRepository {
   findById(id: string, fields?: string): Promise<any>;
   findByEmail(email: string): Promise<any>;
-  findByIdentityNumber(identityNumber: string): Promise<any>;
+  findByPhoneNumber(identityNumber: string): Promise<any>;
   create(userData: any): Promise<any>;
   updateById(id: string, userData: any): Promise<any>;
   deleteById(id: string): Promise<any>;
@@ -17,16 +17,20 @@ export class UserRepository implements IUserRepository {
     return await this.userModel.findById(
       id,
       fields ||
-        "_id email fullName phoneNumber identityNumber gender age dateOfBirth address"
-    );
+        "_id email fullName phoneNumber identityNumber gender age dateOfBirth phoneNumber address provider providerId"
+    );  
   }
 
   async findByEmail(email: string): Promise<any> {
     return await this.userModel.findOne({ email });
   }
 
-  async findByIdentityNumber(identityNumber: string): Promise<any> {
-    return await this.userModel.findOne({ identityNumber });
+  async findByPhoneNumber(phoneNumber: string): Promise<any> {
+    return await this.userModel.findOne({ phoneNumber });
+  }
+
+  async findOne(criteria: any): Promise<any> {
+    return await this.userModel.findOne(criteria);
   }
 
   async create(userData: any): Promise<any> {

@@ -7,7 +7,7 @@ import type { LoginFormProps } from "../../types/Login.type";
 import { LoginInputField } from "./LoginFormInputField";
 
 export function LoginForm({ onLogin, onShowRegister, onBackToHome }: LoginFormProps) {
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
@@ -15,7 +15,7 @@ export function LoginForm({ onLogin, onShowRegister, onBackToHome }: LoginFormPr
     e.preventDefault();
     setError("");
 
-    const user = await authenticateUser(email, password);
+    const user = await authenticateUser(identifier, password);
     if (user) onLogin(user);
     else setError("Sai thông tin đăng nhập");
   };
@@ -44,12 +44,12 @@ export function LoginForm({ onLogin, onShowRegister, onBackToHome }: LoginFormPr
       {/* Login Form */}
       <form onSubmit={handleSubmit} className="space-y-4">
         <LoginInputField
-          id="email"
-          label="Email"
-          placeholder="Nhập email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          id="identifier"
+          label="Email/Số điện thoại"
+          placeholder="Email hoặc Số điện thoại"
+          type="text"
+          value={identifier}
+          onChange={(e) => setIdentifier(e.target.value)}
           icon="mail"
         />
         <LoginInputField
