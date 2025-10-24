@@ -16,7 +16,7 @@ export interface UserFormData {
   role: User['role'];
   phone_number: string;
   identify_number: string;
-  gender: 'male' | 'female' | 'other';
+  gender: 'Male' | 'Female' | 'Other';
   date_of_birth: string;
   age?: number;
   address: string;
