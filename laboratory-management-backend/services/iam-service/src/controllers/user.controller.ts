@@ -21,6 +21,52 @@ interface AuthenticatedUser {
 
 const userService = new UserService();
 
+const getCurrentUser = async (req: Request, res: Response): Promise<void> => {
+  /*
+    #swagger.auto = false
+    #swagger.tags = ['User CRUD']
+    #swagger.description = 'Get profile information of the authenticated user'
+    #swagger.security = [{"apiKeyAuth": []}]
+    #swagger.responses[200] = {
+      description: 'Authenticated user profile retrieved successfully',
+      schema: {
+        user: {
+          _id: 'string',
+          email: 'string',
+          fullName: 'string',
+          identityNumber: 'string',
+          gender: 'string',
+          age: 'number',
+          dateOfBirth: 'string',
+          phoneNumber: 'string',
+          address: 'string',
+          role: 'string'
+        }
+      }
+    }
+    #swagger.responses[401] = { description: 'Authentication required' }
+    #swagger.responses[404] = { description: 'User not found' }
+    #swagger.responses[500] = { description: 'Internal server error' }
+  */
+  try {
+    const currentUser = req.user as AuthenticatedUser | undefined;
+    if (!currentUser?._id) {
+      res.status(401).json({ message: "Not authorized" });
+      return;
+    }
+
+    const user = await userService.getUser(currentUser._id);
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    res.status(200).json({ user });
+  } catch (error) {
+    errorHandler(res, error);
+  }
+};
+
 const getUser = async (req: Request, res: Response): Promise<void> => {
   /*
     #swagger.auto = false
@@ -345,4 +391,4 @@ const deleteUser = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-export { getUser, getAll, createUser, updateUser, deleteUser, getUsersWithPagination};
+export { getCurrentUser, getUser, getAll, createUser, updateUser, deleteUser, getUsersWithPagination};
