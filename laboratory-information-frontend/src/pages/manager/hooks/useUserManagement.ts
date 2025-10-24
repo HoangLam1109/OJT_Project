@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 import type { ManagerUser, UserFormData } from '../types/ManagerTypes';
 import { userService } from '../../../service/userService';
+import { apiUtils } from '../../../service/apiClient';
 
 export function useUserManagement() {
   const [users, setUsers] = useState<ManagerUser[]>([]);
@@ -35,7 +36,9 @@ export function useUserManagement() {
       return true;
     } catch (error) {
       console.error('Error creating user:', error);
-      toast.error('Có lỗi xảy ra khi tạo người dùng');
+      // Lấy message từ backend response
+      const errorMessage = apiUtils.getErrorMessage(error);
+      toast.error(errorMessage);
       return false;
     }
   }, [loadUsers]);
@@ -49,7 +52,9 @@ export function useUserManagement() {
       return true;
     } catch (error) {
       console.error('Error updating user:', error);
-      toast.error('Có lỗi xảy ra khi cập nhật người dùng');
+      // Lấy message từ backend response
+      const errorMessage = apiUtils.getErrorMessage(error);
+      toast.error(errorMessage);
       return false;
     }
   }, [loadUsers]);
@@ -63,7 +68,9 @@ export function useUserManagement() {
       return true;
     } catch (error) {
       console.error('Error deleting user:', error);
-      toast.error('Có lỗi xảy ra khi xóa người dùng');
+      // Lấy message từ backend response
+      const errorMessage = apiUtils.getErrorMessage(error);
+      toast.error(errorMessage);
       return false;
     }
   }, [loadUsers]);
@@ -77,7 +84,9 @@ export function useUserManagement() {
       return true;
     } catch (error) {
       console.error('Error toggling lock:', error);
-      toast.error('Có lỗi xảy ra khi thực hiện thao tác');
+      // Lấy message từ backend response
+      const errorMessage = apiUtils.getErrorMessage(error);
+      toast.error(errorMessage);
       return false;
     }
   }, [loadUsers]);

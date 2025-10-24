@@ -31,6 +31,7 @@ import ServiceEventLogPage from "../pages/service/ServiceEventLogPage";
 import ServiceReagentPage from "../pages/service/ServiceReagentPage";
 import ServiceInstrumentPage from "../pages/service/ServiceInstrumentPage";
 import { ServiceTestPage } from "../pages/service/ServiceTestPage";
+import { GoogleCallbackPage } from "../pages/login/GoogleCallbackPage";
 
 export function AppRoutes() {
   const { user, onLogout } = useAuthContext();
@@ -67,6 +68,12 @@ export function AppRoutes() {
       <Route
         path="/register"
         element={<RegisterPage />}
+      />
+
+      {/* Google OAuth Callback */}
+      <Route
+        path="/auth/google/callback"
+        element={<GoogleCallbackPage />}
       />
 
       {/* Trang Normal User */}
