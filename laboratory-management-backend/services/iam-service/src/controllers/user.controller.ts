@@ -12,6 +12,8 @@ interface AuthenticatedUser {
   gender: string;
   age: number;
   dateOfBirth: Date;
+  phoneNumber: string;
+  address: string;
   role: string;
 }
 
@@ -39,6 +41,8 @@ const getUser = async (req: Request, res: Response): Promise<void> => {
         gender: 'string',
         age: 'number',
         dateOfBirth: 'string',
+        phoneNumber: 'string',
+        address: 'string',
         role: 'string',
         createdAt: 'string',
         updatedAt: 'string'
@@ -85,6 +89,8 @@ const getAll = async (req: Request, res: Response): Promise<void> => {
           gender: 'string',
           age: 'number',
           dateOfBirth: 'string',
+          phoneNumber: 'string',
+          address: 'string',
           role: 'string',
           createdAt: 'string',
           updatedAt: 'string'
@@ -113,13 +119,15 @@ const createUser = async (req: Request, res: Response): Promise<void> => {
       description: 'User data',
       required: true,
       schema: {
-        email: 'string',
+        email: 'string@example.com',
         fullName: 'string',
         identityNumber: 'string',
-        gender: 'string',
-        age: 'number',
-        dateOfBirth: 'string',
-        password: 'string'
+        gender: 'Male',
+        age: '12',
+        dateOfBirth: '01/01/2002',
+        password: 'string',
+        phoneNumber: 'string',
+        address: 'string'
       }
     }
     #swagger.responses[201] = {
@@ -162,12 +170,14 @@ const updateUser = async (req: Request, res: Response): Promise<void> => {
       description: 'User update data',
       required: false,
       schema: {
-        email: 'string',
+        email: 'string@example.com',
         fullName: 'string',
         identityNumber: 'string',
-        gender: 'string',
-        age: 'number',
-        dateOfBirth: 'string'
+        gender: 'Male',
+        age: '22',
+        dateOfBirth: '01/01/2002',
+        phoneNumber: 'string',
+        address: 'string'
       }
     }
     #swagger.responses[200] = {

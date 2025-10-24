@@ -11,6 +11,8 @@ export interface IUser extends Document {
   age: number
   dateOfBirth: Date
   passwordHash: string
+  phoneNumber: string
+  address: string
   createdAt: Date
   updatedAt: Date
   isActive?: boolean
@@ -24,8 +26,6 @@ export interface IUser extends Document {
 
   // Future fields (commented out for now)
 
-  // phoneNumber?: string
-  // address?: string
   // lastLogin?: Date
   // lastPasswordChange?: Date
   // failedLoginAttempts?: number
@@ -104,6 +104,18 @@ const userSchema = new mongoose.Schema<IUser>(
       },
     },
     passwordHash: {
+      type: String,
+      required: function(this: IUser) {
+        return this.provider === 'local' || !this.provider;
+      },
+    },
+    phoneNumber: {
+      type: String,
+      required: function(this: IUser) {
+        return this.provider === 'local' || !this.provider;
+      },
+    },
+    address: {
       type: String,
       required: function(this: IUser) {
         return this.provider === 'local' || !this.provider;

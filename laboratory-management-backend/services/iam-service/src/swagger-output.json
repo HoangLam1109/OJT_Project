@@ -2,8 +2,8 @@
   "swagger": "2.0",
   "info": {
     "version": "v1.0.0",
-    "title": "LexBridge API",
-    "description": "LexBridge is a seamless platform that connects clients with verified legal experts, offering secure communication, easy appointment booking, transparent pricing, and comprehensive legal services all in one place."
+    "title": "Laboratory Information Management System API",
+    "description": "Laboratory Information Management System API"
   },
   "host": "localhost:3000",
   "basePath": "/api",
@@ -70,6 +70,14 @@
                   "example": "string"
                 },
                 "password": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "phoneNumber": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "address": {
                   "type": "string",
                   "example": "string"
                 }
@@ -506,6 +514,14 @@
                       "type": "string",
                       "example": "string"
                     },
+                    "phoneNumber": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "address": {
+                      "type": "string",
+                      "example": "string"
+                    },
                     "role": {
                       "type": "string",
                       "example": "string"
@@ -589,6 +605,14 @@
                   "type": "string",
                   "example": "string"
                 },
+                "phoneNumber": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "address": {
+                  "type": "string",
+                  "example": "string"
+                },
                 "role": {
                   "type": "string",
                   "example": "string"
@@ -644,7 +668,7 @@
               "properties": {
                 "email": {
                   "type": "string",
-                  "example": "string"
+                  "example": "string@example.com"
                 },
                 "fullName": {
                   "type": "string",
@@ -656,17 +680,25 @@
                 },
                 "gender": {
                   "type": "string",
-                  "example": "string"
+                  "example": "Male"
                 },
                 "age": {
                   "type": "string",
-                  "example": "number"
+                  "example": "12"
                 },
                 "dateOfBirth": {
                   "type": "string",
-                  "example": "string"
+                  "example": "01/01/2002"
                 },
                 "password": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "phoneNumber": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "address": {
                   "type": "string",
                   "example": "string"
                 }
@@ -735,7 +767,7 @@
               "properties": {
                 "email": {
                   "type": "string",
-                  "example": "string"
+                  "example": "string@example.com"
                 },
                 "fullName": {
                   "type": "string",
@@ -747,13 +779,21 @@
                 },
                 "gender": {
                   "type": "string",
-                  "example": "string"
+                  "example": "Male"
                 },
                 "age": {
                   "type": "string",
-                  "example": "number"
+                  "example": "22"
                 },
                 "dateOfBirth": {
+                  "type": "string",
+                  "example": "01/01/2002"
+                },
+                "phoneNumber": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "address": {
                   "type": "string",
                   "example": "string"
                 }

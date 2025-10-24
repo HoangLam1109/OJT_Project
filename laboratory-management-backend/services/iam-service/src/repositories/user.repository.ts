@@ -18,8 +18,8 @@ export class UserRepository implements IUserRepository {
     return await this.userModel.findById(
       id,
       fields ||
-        "_id email fullName phoneNumber identityNumber gender age dateOfBirth address provider providerId"
-    );
+        "_id email fullName phoneNumber identityNumber gender age dateOfBirth phoneNumber address provider providerId"
+    );  
   }
 
   async findByEmail(email: string): Promise<any> {

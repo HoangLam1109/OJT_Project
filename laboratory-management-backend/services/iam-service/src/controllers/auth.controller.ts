@@ -25,7 +25,9 @@ const registerUser = async (req: Request, res: Response): Promise<void> => {
         gender: 'string',
         age: 'number',
         dateOfBirth: 'string',
-        password: 'string'
+        password: 'string',
+        phoneNumber: 'string',
+        address: 'string'
       }
     }
     #swagger.responses[200] = {
@@ -51,6 +53,8 @@ const registerUser = async (req: Request, res: Response): Promise<void> => {
       age,
       dateOfBirth,
       password,
+      phoneNumber,
+      address,
     } = req.body;
 
     if (
@@ -60,7 +64,9 @@ const registerUser = async (req: Request, res: Response): Promise<void> => {
       !gender ||
       !age ||
       !dateOfBirth ||
-      !password
+      !password ||
+      !phoneNumber ||
+      !address
     ) {
       res.status(400).json({ message: "Missing required fields!" });
       return;
@@ -88,6 +94,8 @@ const registerUser = async (req: Request, res: Response): Promise<void> => {
         age,
         dateOfBirth: new Date(dateOfBirth),
         password: password,
+        phoneNumber,
+        address,
       },
       undefined
     );

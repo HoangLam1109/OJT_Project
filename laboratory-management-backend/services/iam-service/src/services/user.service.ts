@@ -14,6 +14,8 @@ export interface CreateUserData {
   age: number;
   dateOfBirth: Date;
   password: string;
+  phoneNumber: string;
+  address: string;
 }
 
 export interface UpdateUserData {
@@ -24,6 +26,8 @@ export interface UpdateUserData {
   age?: number;
   dateOfBirth?: Date;
   password?: string;
+  phoneNumber?: string;
+  address?: string;
   role?: string;
 }
 
