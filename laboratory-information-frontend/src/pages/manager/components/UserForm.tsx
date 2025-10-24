@@ -20,7 +20,7 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
     role: 'USER',
     phone_number: '',
     identify_number: '',
-    gender: 'male',
+    gender: 'Male',
     date_of_birth: '',
     address: '',
     active: true,
@@ -36,7 +36,7 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
         role: user.role,
         phone_number: user.phone_number || '',
         identify_number: user.identify_number || '',
-        gender: (user.gender as 'male' | 'female' | 'other') || 'male',
+        gender: (user.gender as 'Male' | 'Female' | 'Other') || 'Male',
         date_of_birth: user.date_of_birth || '',
         age: user.age,
         address: user.address || '',
@@ -46,6 +46,11 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
   }, [user, mode]);
 
   const validateForm = (): boolean => {
+    // Skip validation for edit mode
+    if (mode === 'edit') {
+      return true;
+    }
+
     const newErrors: ValidationErrors = {};
 
     if (!formData.fullName.trim()) {
@@ -138,7 +143,7 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
             {/* Full Name */}
             <div className="md:col-span-2">
               <Label htmlFor="fullName">
-                Họ và tên <span className="text-red-500">*</span>
+                Họ và tên {mode !== 'edit'}
               </Label>
               <Input
                 id="fullName"
@@ -148,7 +153,7 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
                 disabled={isReadOnly}
                 aria-invalid={!!errors.fullName}
               />
-              {errors.fullName && (
+              {errors.fullName && mode !== 'edit' && (
                 <p className="text-red-500 text-sm mt-1">{errors.fullName}</p>
               )}
             </div>
@@ -156,7 +161,7 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
             {/* Email */}
             <div>
               <Label htmlFor="email">
-                Email <span className="text-red-500">*</span>
+                Email {mode !== 'edit'}
               </Label>
               <Input
                 id="email"
@@ -167,7 +172,7 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
                 disabled={isReadOnly || mode === 'edit'}
                 aria-invalid={!!errors.email}
               />
-              {errors.email && (
+              {errors.email && mode !== 'edit' && (
                 <p className="text-red-500 text-sm mt-1">{errors.email}</p>
               )}
             </div>
@@ -176,7 +181,7 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
             {mode !== 'view' && (
               <div>
                 <Label htmlFor="password">
-                  Mật khẩu {mode === 'create' && <span className="text-red-500">*</span>}
+                  Mật khẩu {mode === 'create'}
                 </Label>
                 <Input
                   id="password"
@@ -186,7 +191,7 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
                   placeholder={mode === 'edit' ? 'Để trống nếu không đổi' : '••••••••'}
                   aria-invalid={!!errors.password}
                 />
-                {errors.password && (
+                {errors.password && mode !== 'edit' && (
                   <p className="text-red-500 text-sm mt-1">{errors.password}</p>
                 )}
               </div>
@@ -195,7 +200,7 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
             {/* Role */}
             <div>
               <Label htmlFor="role">
-                Vai trò <span className="text-red-500">*</span>
+                Vai trò {mode !== 'edit'}
               </Label>
               <select
                 id="role"
@@ -215,7 +220,7 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
             {/* Phone Number */}
             <div>
               <Label htmlFor="phone_number">
-                Số điện thoại <span className="text-red-500">*</span>
+                Số điện thoại {mode !== 'edit'}
               </Label>
               <Input
                 id="phone_number"
@@ -225,7 +230,7 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
                 disabled={isReadOnly}
                 aria-invalid={!!errors.phone_number}
               />
-              {errors.phone_number && (
+              {errors.phone_number && mode !== 'edit' && (
                 <p className="text-red-500 text-sm mt-1">{errors.phone_number}</p>
               )}
             </div>
@@ -233,7 +238,7 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
             {/* Identify Number */}
             <div>
               <Label htmlFor="identify_number">
-                CMND/CCCD <span className="text-red-500">*</span>
+                CMND/CCCD {mode !== 'edit'}
               </Label>
               <Input
                 id="identify_number"
@@ -243,7 +248,7 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
                 disabled={isReadOnly}
                 aria-invalid={!!errors.identify_number}
               />
-              {errors.identify_number && (
+              {errors.identify_number && mode !== 'edit' && (
                 <p className="text-red-500 text-sm mt-1">{errors.identify_number}</p>
               )}
             </div>
@@ -251,7 +256,7 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
             {/* Gender */}
             <div>
               <Label htmlFor="gender">
-                Giới tính <span className="text-red-500">*</span>
+                Giới tính {mode !== 'edit'}
               </Label>
               <select
                 id="gender"
@@ -260,16 +265,16 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
                 disabled={isReadOnly}
                 className="flex h-9 w-full rounded-md border border-input bg-input-background px-3 py-1 text-base transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30"
               >
-                <option value="male">Nam</option>
-                <option value="female">Nữ</option>
-                <option value="other">Khác</option>
+                <option value="Male">Nam</option>
+                <option value="Female">Nữ</option>
+                <option value="Other">Khác</option>
               </select>
             </div>
 
             {/* Date of Birth */}
             <div>
               <Label htmlFor="date_of_birth">
-                Ngày sinh <span className="text-red-500">*</span>
+                Ngày sinh {mode !== 'edit'}
               </Label>
               <Input
                 id="date_of_birth"
@@ -279,7 +284,7 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
                 disabled={isReadOnly}
                 aria-invalid={!!errors.date_of_birth}
               />
-              {errors.date_of_birth && (
+              {errors.date_of_birth && mode !== 'edit' && (
                 <p className="text-red-500 text-sm mt-1">{errors.date_of_birth}</p>
               )}
             </div>
