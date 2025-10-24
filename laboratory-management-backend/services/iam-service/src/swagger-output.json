@@ -2,8 +2,8 @@
   "swagger": "2.0",
   "info": {
     "version": "v1.0.0",
-    "title": "LexBridge API",
-    "description": "LexBridge is a seamless platform that connects clients with verified legal experts, offering secure communication, easy appointment booking, transparent pricing, and comprehensive legal services all in one place."
+    "title": "Laboratory Information Management System API",
+    "description": "Laboratory Information Management System API"
   },
   "host": "localhost:3000",
   "basePath": "/api",
@@ -70,6 +70,14 @@
                   "example": "string"
                 },
                 "password": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "phoneNumber": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "address": {
                   "type": "string",
                   "example": "string"
                 }
@@ -283,6 +291,186 @@
         ]
       }
     },
+    "/google": {
+      "get": {
+        "tags": [
+          "OAuth Authentication"
+        ],
+        "description": "Initiate Google OAuth login",
+        "responses": {
+          "302": {
+            "description": "Redirect to Google OAuth"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/google/callback": {
+      "get": {
+        "tags": [
+          "OAuth Authentication"
+        ],
+        "description": "Handle Google OAuth callback",
+        "responses": {
+          "200": {
+            "description": "OAuth login successful",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Google login successful!"
+                },
+                "user": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "email": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "fullName": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "role": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "provider": {
+                      "type": "string",
+                      "example": "string"
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "401": {
+            "description": "OAuth authentication failed",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Google authentication failed"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oauth/status": {
+      "get": {
+        "tags": [
+          "OAuth Authentication"
+        ],
+        "description": "Get current user OAuth status",
+        "responses": {
+          "200": {
+            "description": "OAuth status retrieved",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "isOAuthUser": {
+                  "type": "string",
+                  "example": "boolean"
+                },
+                "provider": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "hasPassword": {
+                  "type": "string",
+                  "example": "boolean"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/oauth/link": {
+      "post": {
+        "tags": [
+          "OAuth Authentication"
+        ],
+        "description": "Link OAuth account to existing local account",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "OAuth linking data",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "provider": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "providerId": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "email": {
+                  "type": "string",
+                  "example": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OAuth account linked successfully"
+          },
+          "400": {
+            "description": "Bad request - missing data or account already linked"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
     "/user/all": {
       "get": {
         "tags": [
@@ -323,6 +511,14 @@
                       "example": "number"
                     },
                     "dateOfBirth": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "phoneNumber": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "address": {
                       "type": "string",
                       "example": "string"
                     },
@@ -409,6 +605,14 @@
                   "type": "string",
                   "example": "string"
                 },
+                "phoneNumber": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "address": {
+                  "type": "string",
+                  "example": "string"
+                },
                 "role": {
                   "type": "string",
                   "example": "string"
@@ -464,7 +668,7 @@
               "properties": {
                 "email": {
                   "type": "string",
-                  "example": "string"
+                  "example": "string@example.com"
                 },
                 "fullName": {
                   "type": "string",
@@ -476,17 +680,25 @@
                 },
                 "gender": {
                   "type": "string",
-                  "example": "string"
+                  "example": "Male"
                 },
                 "age": {
                   "type": "string",
-                  "example": "number"
+                  "example": "12"
                 },
                 "dateOfBirth": {
                   "type": "string",
-                  "example": "string"
+                  "example": "01/01/2002"
                 },
                 "password": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "phoneNumber": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "address": {
                   "type": "string",
                   "example": "string"
                 }
@@ -555,7 +767,7 @@
               "properties": {
                 "email": {
                   "type": "string",
-                  "example": "string"
+                  "example": "string@example.com"
                 },
                 "fullName": {
                   "type": "string",
@@ -567,13 +779,21 @@
                 },
                 "gender": {
                   "type": "string",
-                  "example": "string"
+                  "example": "Male"
                 },
                 "age": {
                   "type": "string",
-                  "example": "number"
+                  "example": "22"
                 },
                 "dateOfBirth": {
+                  "type": "string",
+                  "example": "01/01/2002"
+                },
+                "phoneNumber": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "address": {
                   "type": "string",
                   "example": "string"
                 }

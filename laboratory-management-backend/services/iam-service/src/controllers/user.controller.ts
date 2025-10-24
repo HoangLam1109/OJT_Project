@@ -1,6 +1,21 @@
 import type { Request, Response } from "express";
+import type { IUser } from "../db/models/User.model.js";
 import { UserService } from "../services/user.service.js";
 import { errorHandler } from "../utils/error.util.js";
+
+// Define the type for authenticated user (matches what the middleware provides)
+interface AuthenticatedUser {
+  _id: string;
+  email: string;
+  fullName: string;
+  identityNumber: string;
+  gender: string;
+  age: number;
+  dateOfBirth: Date;
+  phoneNumber: string;
+  address: string;
+  role: string;
+}
 
 const userService = new UserService();
 
@@ -26,6 +41,8 @@ const getUser = async (req: Request, res: Response): Promise<void> => {
         gender: 'string',
         age: 'number',
         dateOfBirth: 'string',
+        phoneNumber: 'string',
+        address: 'string',
         role: 'string',
         createdAt: 'string',
         updatedAt: 'string'
@@ -37,7 +54,7 @@ const getUser = async (req: Request, res: Response): Promise<void> => {
     #swagger.responses[500] = { description: 'Internal server error' }
   */
   try {
-    const userId = req.params.id || req.user?._id;
+    const userId = req.params.id || (req.user as AuthenticatedUser)?._id;
     if (!userId) {
       res.status(400).json({ message: "User ID is required" });
       return;
@@ -72,6 +89,8 @@ const getAll = async (req: Request, res: Response): Promise<void> => {
           gender: 'string',
           age: 'number',
           dateOfBirth: 'string',
+          phoneNumber: 'string',
+          address: 'string',
           role: 'string',
           createdAt: 'string',
           updatedAt: 'string'
@@ -100,13 +119,15 @@ const createUser = async (req: Request, res: Response): Promise<void> => {
       description: 'User data',
       required: true,
       schema: {
-        email: 'string',
+        email: 'string@example.com',
         fullName: 'string',
         identityNumber: 'string',
-        gender: 'string',
-        age: 'number',
-        dateOfBirth: 'string',
-        password: 'string'
+        gender: 'Male',
+        age: '12',
+        dateOfBirth: '01/01/2002',
+        password: 'string',
+        phoneNumber: 'string',
+        address: 'string'
       }
     }
     #swagger.responses[201] = {
@@ -122,7 +143,7 @@ const createUser = async (req: Request, res: Response): Promise<void> => {
   */
   try {
     const userData = req.body;
-    const newUser = await userService.createUser(userData, req.user?._id);
+    const newUser = await userService.createUser(userData, (req.user as AuthenticatedUser)?._id);
     res.status(201).json({
       message: "User created successfully!",
       userId: newUser._id
@@ -149,12 +170,14 @@ const updateUser = async (req: Request, res: Response): Promise<void> => {
       description: 'User update data',
       required: false,
       schema: {
-        email: 'string',
+        email: 'string@example.com',
         fullName: 'string',
         identityNumber: 'string',
-        gender: 'string',
-        age: 'number',
-        dateOfBirth: 'string'
+        gender: 'Male',
+        age: '22',
+        dateOfBirth: '01/01/2002',
+        phoneNumber: 'string',
+        address: 'string'
       }
     }
     #swagger.responses[200] = {
@@ -177,7 +200,7 @@ const updateUser = async (req: Request, res: Response): Promise<void> => {
     }
 
     const userData = req.body;
-    const updatedUser = await userService.updateUser(userId, userData, req.user?._id);
+    const updatedUser = await userService.updateUser(userId, userData, (req.user as AuthenticatedUser)?._id);
 
     if (!updatedUser) {
       res.status(404).json({ message: "User not found" });
@@ -224,7 +247,7 @@ const deleteUser = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const deletedUser = await userService.deleteUser(userId, req.user?._id);
+    const deletedUser = await userService.deleteUser(userId, (req.user as AuthenticatedUser)?._id);
     if (!deletedUser) {
       res.status(404).json({ message: "User not found" });
       return;
