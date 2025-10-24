@@ -178,7 +178,8 @@ const updateUser = async (req: Request, res: Response): Promise<void> => {
         age: '22',
         dateOfBirth: '01/01/2002',
         phoneNumber: 'string',
-        address: 'string'
+        address: 'string',
+        isActive: 'boolean'
       }
     }
     #swagger.responses[200] = {
@@ -210,7 +211,8 @@ const updateUser = async (req: Request, res: Response): Promise<void> => {
 
     res.status(200).json({
       message: "User updated successfully!",
-      userId: updatedUser._id
+      userId: updatedUser._id,
+      role: updatedUser.role
     });
   } catch (error) {
     errorHandler(res, error);

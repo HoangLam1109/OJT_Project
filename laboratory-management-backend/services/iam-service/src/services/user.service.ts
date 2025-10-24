@@ -29,6 +29,7 @@ export interface UpdateUserData {
   phoneNumber?: string;
   address?: string;
   role?: string;
+  isActive?: boolean;
 }
 
 export class UserService {
@@ -45,6 +46,7 @@ export class UserService {
   ): Promise<IUser> {
     const newUser = await this._passwordCheck("", userData, performedBy);
     const createdUser = await userRepository.create(newUser);
+    console.log(createdUser);
 
     await this._logEvent(
       "E_00001",

@@ -52,11 +52,16 @@ const authenticateUser = async (
 
     const user = await UserModel.findById(
       decoded.userId,
-      "_id email fullName identityNumber gender age dateOfBirth role"
+      "_id email fullName identityNumber gender age dateOfBirth role isActive isDeleted"
     );
 
     if (!user) {
       res.status(401).json({ message: "Not authorized, user not found" });
+      return;
+    }
+
+    if (!user.isActive || user.isDeleted) {
+      res.status(401).json({ message: "Not authorized, user is not active or deleted" });
       return;
     }
 
