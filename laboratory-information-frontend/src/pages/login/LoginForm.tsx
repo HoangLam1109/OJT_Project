@@ -5,9 +5,10 @@ import { TestTube } from 'lucide-react';
 import { authenticateUser } from "../../service/authService/loginApi";
 import type { LoginFormProps } from "../../types/Login.type";
 import { LoginInputField } from "./LoginFormInputField";
+import { GoogleLoginButton } from "../../components/common/GoogleLoginButton";
 
 export function LoginForm({ onLogin, onShowRegister, onBackToHome }: LoginFormProps) {
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
@@ -15,7 +16,7 @@ export function LoginForm({ onLogin, onShowRegister, onBackToHome }: LoginFormPr
     e.preventDefault();
     setError("");
 
-    const user = await authenticateUser(email, password);
+    const user = await authenticateUser(identifier, password);
     if (user) onLogin(user);
     else setError("Sai thông tin đăng nhập");
   };
@@ -44,12 +45,12 @@ export function LoginForm({ onLogin, onShowRegister, onBackToHome }: LoginFormPr
       {/* Login Form */}
       <form onSubmit={handleSubmit} className="space-y-4">
         <LoginInputField
-          id="email"
-          label="Email"
-          placeholder="Nhập email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          id="identifier"
+          label="Email/Số điện thoại"
+          placeholder="Email hoặc Số điện thoại"
+          type="text"
+          value={identifier}
+          onChange={(e) => setIdentifier(e.target.value)}
           icon="mail"
         />
         <LoginInputField
@@ -76,6 +77,19 @@ export function LoginForm({ onLogin, onShowRegister, onBackToHome }: LoginFormPr
         </Button>
 
       </form>
+
+      {/* Divider */}
+      <div className="relative my-6">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-gray-300" />
+        </div>
+        <div className="relative flex justify-center text-sm">
+          <span className="px-2 bg-white text-gray-500">Hoặc</span>
+        </div>
+      </div>
+
+      {/* Google Login */}
+      <GoogleLoginButton />
 
       {/* Footer Links */}
       <div className="text-center space-y-3 mt-6">

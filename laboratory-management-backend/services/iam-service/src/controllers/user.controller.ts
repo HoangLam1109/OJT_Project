@@ -68,7 +68,8 @@ const getUser = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    res.status(200).json(user);
+    // Return in consistent format for internal API calls
+    res.status(200).json({ user });
   } catch (error) {
     errorHandler(res, error);
   }

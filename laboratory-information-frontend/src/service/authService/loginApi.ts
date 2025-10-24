@@ -1,9 +1,11 @@
 
 import { apiService, apiUtils } from "../apiClient";
 import type { User } from "../../types/User";
-export async function authenticateUser(email: string, password: string): Promise<User | null> {
+export async function authenticateUser(identifier: string, password: string): Promise<User | null> {
   try {
-    const response = await apiService.post<{ user: any }>("/login", { email, password });
+    console.log("Sending:", { identifier, password });
+
+    const response = await apiService.post<{ user: any }>("/login", { identifier, password });
     if (response?.user) {
       // mapping dữ liệu backend trả về sang frontend
       const backendUser = response.user;

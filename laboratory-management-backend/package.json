@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "dev": "npm run swagger && nodemon",
+    "dev:patient": "npm run swagger:patient && nodemon --exec \"node --loader ts-node/esm services/patientService/src/index.ts\"",
     "swagger": "tsx services/iam-service/src/swagger.ts",
+    "swagger:patient": "tsx services/patientService/src/swagger.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
