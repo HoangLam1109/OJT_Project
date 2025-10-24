@@ -4,7 +4,7 @@ import type { PersonalInfoFieldsProps } from './types/register';
 
 export function PersonalInfoFields({ fullName, setFullName, email, setEmail, password, confirmPassword, setConfirmPassword, passwordError, handlePasswordChange }: PersonalInfoFieldsProps) {
     return (
-        <>
+        <div className="space-y-3">
             <RegisterInputField
                 id="fullName"
                 label="Họ và tên"
@@ -25,19 +25,21 @@ export function PersonalInfoFields({ fullName, setFullName, email, setEmail, pas
                 icon="mail"
                 required
             />
-            <RegisterInputField
-                id="password"
-                label="Mật khẩu"
-                type="password"
-                placeholder="Nhập mật khẩu..."
-                value={password}
-                onChange={handlePasswordChange}
-                icon="lock"
-                inputSize="sm"
-                required
-            />
-            {passwordError && <p className="text-xs text-red-500 -mt-1">{passwordError}</p>}
-
+            <div className="space-y-1">
+                <RegisterInputField
+                    id="password"
+                    label="Mật khẩu"
+                    type="password"
+                    placeholder="Nhập mật khẩu..."
+                    value={password}
+                    onChange={handlePasswordChange}
+                    icon="lock"
+                    required
+                />
+                {passwordError && (
+                    <p className="text-xs text-red-500">{passwordError}</p>
+                )}
+            </div>
             <RegisterInputField
                 id="confirmPassword"
                 label="Xác nhận mật khẩu"
@@ -46,9 +48,8 @@ export function PersonalInfoFields({ fullName, setFullName, email, setEmail, pas
                 value={confirmPassword}
                 onChange={e => setConfirmPassword(e.target.value)}
                 icon="lock"
-                inputSize="sm"
                 required
             />
-        </>
+        </div>
     );
 }

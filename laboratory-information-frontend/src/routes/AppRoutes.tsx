@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { HomeLayout } from "../layouts/HomeLayout";
 import { LoginLayout } from "../layouts/LoginLayout";
-import { RegisterForm } from "../pages/register/RegisterForm";
+import { RegisterPage } from "../pages/register/RegisterPage";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { useAuthContext } from "../hooks/useAuthContext";
 import { AdminLayout } from "../layouts/AdminLayout";
@@ -66,11 +66,7 @@ export function AppRoutes() {
       {/* Trang đăng ký */}
       <Route
         path="/register"
-        element={
-          <RegisterForm
-            onBackToLogin={() => navigate("/login")}
-            onBackToHome={() => navigate("/")}
-          />}
+        element={<RegisterPage />}
       />
 
       {/* Trang Normal User */}

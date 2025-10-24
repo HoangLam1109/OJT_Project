@@ -14,7 +14,6 @@ export function RegisterInputField({
   onChange,
   icon,
   required = true,
-  inputSize = 'md',
 }: RegisterInputFieldProps) {
   const [showPassword, setShowPassword] = useState(false);
   
@@ -28,13 +27,13 @@ export function RegisterInputField({
     icon === 'address' ? MapPin :
     null;
 
-  const heightClass = inputSize === 'sm' ? 'h-10' : 'h-11';
+  const heightClass = 'h-11';
   const isPasswordField = type === 'password';
   const inputType = isPasswordField && showPassword ? 'text' : type;
 
   return (
     <div className="space-y-2">
-      <Label htmlFor={id} className="text-sm text-gray-700">
+      <Label htmlFor={id} className="text-sm font-medium text-gray-700">
         {label} {required && <span className="text-red-500">*</span>}
       </Label>
       <div className="relative">
@@ -43,7 +42,7 @@ export function RegisterInputField({
           id={id}
           type={inputType}
           placeholder={placeholder}
-          className={`${Icon ? 'pl-10' : 'pl-3'} ${isPasswordField ? 'pr-10' : 'pr-3'} ${heightClass} border-gray-200 focus:border-blue-400 rounded-lg`}
+          className={`${Icon ? 'pl-10' : 'pl-3'} ${isPasswordField ? 'pr-10' : 'pr-3'} ${heightClass} border-gray-200 focus:border-blue-400 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-100`}
           value={value}
           onChange={onChange}
           required={required}
@@ -52,7 +51,7 @@ export function RegisterInputField({
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 hover:text-gray-600 focus:outline-none"
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 hover:text-gray-600 focus:outline-none transition-colors"
           >
             {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           </button>
