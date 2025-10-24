@@ -27,6 +27,14 @@ export const createUserSchema = Joi.object({
     'date.base': 'Invalid date of birth',
     'any.required': 'Date of birth is required'
   }),
+  phoneNumber: Joi.string().min(1).required().messages({
+    'string.min': 'Phone number must be at least 1 character long',
+    'any.required': 'Phone number is required',
+  }),
+  address: Joi.string().min(1).required().messages({
+    'string.min': 'Address must be at least 1 character long',
+    'any.required': 'Address is required'
+  }),
   password: Joi.string().min(6).required().messages({
     'string.min': 'Password must be at least 6 characters long',
     'any.required': 'Password is required'
@@ -60,6 +68,12 @@ export const updateUserSchema = Joi.object({
   }),
   dateOfBirth: Joi.date().messages({
     'date.base': 'Invalid date of birth',
+  }),
+  phoneNumber: Joi.string().min(1).messages({
+    'string.min': 'Phone number must be at least 1 character long',
+  }),
+  address: Joi.string().min(1).messages({
+    'string.min': 'Address must be at least 1 character long',
   }),
   password: Joi.string().min(6).messages({
     'string.min': 'Password must be at least 6 characters long'

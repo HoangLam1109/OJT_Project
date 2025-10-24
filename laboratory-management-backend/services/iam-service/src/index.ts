@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 
 import express from "express";
+import passport from "passport";
 
 import routes from "./routes/index.js";
 
@@ -10,6 +11,10 @@ import cookieParser from "cookie-parser";
 
 import swaggerUi from "swagger-ui-express";
 import swaggerDocument from "./swagger-output.json" with { type: "json"};
+
+// Import OAuth config to initialize Passport strategies
+import "./config/oauth.config.js";
+
 dotenv.config();
 
 // Add error handlers early for debugging
@@ -40,6 +45,8 @@ connectDB();
 app.use(express.json());
 app.use(cookieParser());
 
+// Initialize Passport
+app.use(passport.initialize());
 
 app.use("/api", routes);
 

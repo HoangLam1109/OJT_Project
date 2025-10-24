@@ -14,6 +14,8 @@ export interface CreateUserData {
   age: number;
   dateOfBirth: Date;
   password: string;
+  phoneNumber: string;
+  address: string;
 }
 
 export interface UpdateUserData {
@@ -24,6 +26,8 @@ export interface UpdateUserData {
   age?: number;
   dateOfBirth?: Date;
   password?: string;
+  phoneNumber?: string;
+  address?: string;
   role?: string;
 }
 
@@ -97,12 +101,13 @@ export class UserService {
     );
   }
 
-  // Private helper method to hash passwords
+  // Private helper method to hash passwords (skip for OAuth users)
   private async _passwordCheck(
     userId: string,
     userData: UpdateUserData | CreateUserData,
     performedBy?: string
   ): Promise<UpdateUserData | CreateUserData> {
+    // Skip password hashing for OAuth users
     if (userData.password) {
       const saltRounds = 10;
       const hashedPassword = await bcrypt.hash(userData.password, saltRounds);
