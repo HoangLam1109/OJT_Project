@@ -796,6 +796,10 @@
                 "address": {
                   "type": "string",
                   "example": "string"
+                },
+                "isActive": {
+                  "type": "string",
+                  "example": "boolean"
                 }
               }
             }
