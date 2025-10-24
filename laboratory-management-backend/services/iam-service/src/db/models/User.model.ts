@@ -12,7 +12,6 @@ export interface IUser extends Document {
   age: number
   dateOfBirth: Date
   passwordHash: string
-  phoneNumber: string
   address: string
   createdAt: Date
   updatedAt: Date
@@ -73,7 +72,7 @@ const userSchema = new mongoose.Schema<IUser>(
       },
       trim: true,
       unique: true,
-      sparse: true, // Allow multiple null values
+      sparse: true,
     },
     phoneNumber: {
       type: String,
@@ -90,7 +89,7 @@ const userSchema = new mongoose.Schema<IUser>(
       type: String,
       trim: true,
       lowercase: true,
-      enum: ["male", "female"],
+      enum: ["male", "female", "other"],
       required: function(this: IUser) {
         return this.provider === 'local' || !this.provider;
       },
@@ -111,12 +110,6 @@ const userSchema = new mongoose.Schema<IUser>(
       },
     },
     passwordHash: {
-      type: String,
-      required: function(this: IUser) {
-        return this.provider === 'local' || !this.provider;
-      },
-    },
-    phoneNumber: {
       type: String,
       required: function(this: IUser) {
         return this.provider === 'local' || !this.provider;

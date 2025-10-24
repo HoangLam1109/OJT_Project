@@ -7,11 +7,8 @@ import authenticateUser from "../../middlewares/authenticate.middleware.js";
 const router = express.Router();
 
 router.post("/register", registerUser);
-
 router.post("/login", loginUser);
-
 router.post("/logout", authenticateUser.authenticateUser, logoutUser);
-
 router.post("/refresh-token", authenticateUser.refreshTokenValidation, refreshToken);
 
 // Google OAuth routes

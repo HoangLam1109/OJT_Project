@@ -137,7 +137,7 @@
             "schema": {
               "type": "object",
               "properties": {
-                "email": {
+                "identifier": {
                   "type": "string",
                   "example": "string"
                 },
