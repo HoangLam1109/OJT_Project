@@ -10,8 +10,11 @@ import { validateCreateUser, validateUpdateUser } from "../../middlewares/valida
 
 const router = express.Router();
 
-router.get('/all', authorize(['read:users']), getAll);
-router.get('/:id', authorize(['read:users']), getUser);
+// Get all users - already authenticated in parent router
+router.get('/all', getAll);
+
+// Get user by ID - already authenticated in parent router  
+router.get('/:id', getUser);
 
 router.post('/create', authorize(['manage:users']), validateCreateUser, createUser);
 router.put('/update/:id', authorize(['manage:users']), validateUpdateUser, updateUser);

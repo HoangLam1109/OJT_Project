@@ -1,0 +1,35 @@
+import type { Request, Response, NextFunction } from "express";
+
+/**
+ * Middleware to authenticate internal API calls from other microservices
+ * Uses X-Internal-API-Key header for authentication
+ */
+export const authenticateInternalApi = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
+  const apiKey = req.headers["x-internal-api-key"] as string;
+  const expectedApiKey = process.env.INTERNAL_API_KEY || "internal-service-secret-key-2025";
+
+  if (!apiKey) {
+    res.status(401).json({ 
+      message: "Internal API key is required",
+      error: "INTERNAL_API_KEY_MISSING" 
+    });
+    return;
+  }
+
+  if (apiKey !== expectedApiKey) {
+    res.status(403).json({ 
+      message: "Invalid internal API key",
+      error: "INVALID_INTERNAL_API_KEY" 
+    });
+    return;
+  }
+
+  // API key is valid, proceed to next middleware/controller
+  next();
+};
+
+export default authenticateInternalApi;
