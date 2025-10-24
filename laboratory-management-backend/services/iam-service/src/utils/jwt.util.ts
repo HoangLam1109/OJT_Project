@@ -49,7 +49,8 @@ const clearJWT = (res: Response) => {
     expires: new Date(0),
     path: "/",
   });
-   res.cookie("refreshToken", "", {
+
+  res.cookie("refreshToken", "", {
     httpOnly: true,
     secure: process.env.NODE_ENV?.toLowerCase() === "production",
     sameSite: "strict",

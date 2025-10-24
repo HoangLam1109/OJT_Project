@@ -71,49 +71,6 @@ const authenticateUser = async (
       return;
     }
 
-    // console.log(`[AUTH MIDDLEWARE] Validating sessions for user: ${user._id}`);
-    // try {
-    //   const sessionService = new SessionService();
-    //   const activeSessions = await sessionService.getUserSessions(
-    //     user._id as string
-    //   );
-    //   console.log(
-    //     `[AUTH MIDDLEWARE] Found ${activeSessions.length} sessions for user ${user._id}`
-    //   );
-
-    //   if (activeSessions.length === 0) {
-    //     console.log(
-    //       `[AUTH MIDDLEWARE] No active sessions found for user ${user._id} - blocking request`
-    //     );
-    //     res.status(401).json({ message: "No active sessions found" });
-    //     return;
-    //   }
-
-    //   const validSession = activeSessions.find(
-    //     (session) => session.isActive && new Date() < session.expiresAt
-    //   );
-
-    //   if (!validSession) {
-    //     console.log(
-    //       `[AUTH MIDDLEWARE] No valid active session found for user ${user._id} - blocking request`
-    //     );
-    //     res.status(401).json({ message: "No valid active session found" });
-    //     return;
-    //   }
-
-    //   req.session = validSession;
-    // } catch (error) {
-    //   console.error(
-    //     `[AUTH MIDDLEWARE] Session validation error for user ${user._id}:`,
-    //     error
-    //   );
-    //   res.status(500).json({ message: "Session validation failed" });
-    //   return;
-    // }
-
-    // console.log(
-    //   `[AUTH MIDDLEWARE] Session validation passed for user ${user._id}`
-    // );
     req.user = user;
 
     next();

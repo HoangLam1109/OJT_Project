@@ -1,0 +1,32 @@
+export interface Instrument {
+  id: string;
+  name: string;
+  model: string;
+  serialNumber: string;
+  manufacturer: string;
+  location: string;
+  status: 'ready' | 'processing' | 'maintenance' | 'error';
+  mode: 'ready' | 'maintenance' | 'inactive';
+  isActive: boolean;
+  isConnected: boolean;
+  lastCalibration: string;
+  nextCalibration: string;
+  lastMaintenanceDate: string;
+  maintenanceInterval: number;
+  firmwareVersion: string;
+  testTypes: string[];
+  throughputPerHour: number;
+  temperature?: number;
+  errorCount: number;
+  qcStatus: 'passed' | 'failed' | 'pending' | 'not_required';
+  lastQcDate?: string;
+  reagentLevel?: number;
+  lastStatusChange?: string;
+  statusChangeReason?: string;
+  statusChangedBy?: string;
+  errorDetails?: string;
+  configurations?: string;
+  createdAt: string;
+  updatedAt: string;
+  deactivatedAt?: string;
+}

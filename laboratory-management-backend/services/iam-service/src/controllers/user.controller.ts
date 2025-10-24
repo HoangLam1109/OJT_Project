@@ -5,6 +5,37 @@ import { errorHandler } from "../utils/error.util.js";
 const userService = new UserService();
 
 const getUser = async (req: Request, res: Response): Promise<void> => {
+  /*
+    #swagger.auto = false
+    #swagger.tags = ['User CRUD']
+    #swagger.description = 'Get user by ID'
+    #swagger.security = [{"apiKeyAuth": []}]
+    #swagger.parameters['id'] = {
+      in: 'path',
+      description: 'User ID',
+      required: true,
+      type: 'string'
+    }
+    #swagger.responses[200] = {
+      description: 'User retrieved successfully',
+      schema: {
+        _id: 'string',
+        email: 'string',
+        fullName: 'string',
+        identityNumber: 'string',
+        gender: 'string',
+        age: 'number',
+        dateOfBirth: 'string',
+        role: 'string',
+        createdAt: 'string',
+        updatedAt: 'string'
+      }
+    }
+    #swagger.responses[400] = { description: 'User ID is required' }
+    #swagger.responses[401] = { description: 'Authentication required' }
+    #swagger.responses[404] = { description: 'User not found' }
+    #swagger.responses[500] = { description: 'Internal server error' }
+  */
   try {
     const userId = req.params.id || req.user?._id;
     if (!userId) {
@@ -25,6 +56,31 @@ const getUser = async (req: Request, res: Response): Promise<void> => {
 };
 
 const getAll = async (req: Request, res: Response): Promise<void> => {
+   /*
+    #swagger.auto = false
+    #swagger.tags = ['User CRUD']
+    #swagger.description = 'Get all users'
+    #swagger.security = [{"apiKeyAuth": []}]
+    #swagger.responses[200] = {
+      description: 'Users retrieved successfully',
+      schema: {
+        items: {
+          _id: 'string',
+          email: 'string',
+          fullName: 'string',
+          identityNumber: 'string',
+          gender: 'string',
+          age: 'number',
+          dateOfBirth: 'string',
+          role: 'string',
+          createdAt: 'string',
+          updatedAt: 'string'
+        }
+      }
+    }
+    #swagger.responses[401] = { description: 'Authentication required' }
+    #swagger.responses[500] = { description: 'Internal server error' }
+  */
   try {
     const users = await userService.getAllUsers();
     res.status(200).json(users);
@@ -34,6 +90,36 @@ const getAll = async (req: Request, res: Response): Promise<void> => {
 }
 
 const createUser = async (req: Request, res: Response): Promise<void> => {
+  /*
+    #swagger.auto = false
+    #swagger.tags = ['User CRUD']
+    #swagger.description = 'Create a new user'
+    #swagger.security = [{"apiKeyAuth": []}]
+    #swagger.parameters['body'] = {
+      in: 'body',
+      description: 'User data',
+      required: true,
+      schema: {
+        email: 'string',
+        fullName: 'string',
+        identityNumber: 'string',
+        gender: 'string',
+        age: 'number',
+        dateOfBirth: 'string',
+        password: 'string'
+      }
+    }
+    #swagger.responses[201] = {
+      description: 'User created successfully',
+      schema: {
+        message: 'User created successfully!',
+        userId: 'string'
+      }
+    }
+    #swagger.responses[400] = { description: 'Bad request or missing required fields' }
+    #swagger.responses[401] = { description: 'Authentication required' }
+    #swagger.responses[500] = { description: 'Internal server error' }
+  */
   try {
     const userData = req.body;
     const newUser = await userService.createUser(userData, req.user?._id);
@@ -47,6 +133,42 @@ const createUser = async (req: Request, res: Response): Promise<void> => {
 };
 
 const updateUser = async (req: Request, res: Response): Promise<void> => {
+  /*
+    #swagger.auto = false
+    #swagger.tags = ['User CRUD']
+    #swagger.description = 'Update user by ID'
+    #swagger.security = [{"apiKeyAuth": []}]
+    #swagger.parameters['id'] = {
+      in: 'path',
+      description: 'User ID',
+      required: true,
+      type: 'string'
+    }
+    #swagger.parameters['body'] = {
+      in: 'body',
+      description: 'User update data',
+      required: false,
+      schema: {
+        email: 'string',
+        fullName: 'string',
+        identityNumber: 'string',
+        gender: 'string',
+        age: 'number',
+        dateOfBirth: 'string'
+      }
+    }
+    #swagger.responses[200] = {
+      description: 'User updated successfully',
+      schema: {
+        message: 'User updated successfully!',
+        userId: 'string'
+      }
+    }
+    #swagger.responses[400] = { description: 'User ID is required' }
+    #swagger.responses[401] = { description: 'Authentication required' }
+    #swagger.responses[404] = { description: 'User not found' }
+    #swagger.responses[500] = { description: 'Internal server error' }
+  */
   try {
     const userId = req.params.id;
     if (!userId) {
@@ -72,6 +194,29 @@ const updateUser = async (req: Request, res: Response): Promise<void> => {
 };
 
 const deleteUser = async (req: Request, res: Response): Promise<void> => {
+  /*
+    #swagger.auto = false
+    #swagger.tags = ['User CRUD']
+    #swagger.description = 'Delete user by ID'
+    #swagger.security = [{"apiKeyAuth": []}]
+    #swagger.parameters['id'] = {
+      in: 'path',
+      description: 'User ID',
+      required: true,
+      type: 'string'
+    }
+    #swagger.responses[200] = {
+      description: 'User deleted successfully',
+      schema: {
+        message: 'User deleted successfully!',
+        userId: 'string'
+      }
+    }
+    #swagger.responses[400] = { description: 'User ID is required' }
+    #swagger.responses[401] = { description: 'Authentication required' }
+    #swagger.responses[404] = { description: 'User not found' }
+    #swagger.responses[500] = { description: 'Internal server error' }
+  */
   try {
     const userId = req.params.id;
     if (!userId) {

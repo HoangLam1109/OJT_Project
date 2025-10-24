@@ -3,6 +3,11 @@ import { getUser, createUser, updateUser, deleteUser, getAll } from "../../contr
 import { authorize } from "../../middlewares/authorize.middleware.js";
 import { validateCreateUser, validateUpdateUser } from "../../middlewares/validate.middleware.js";
 
+/*
+  #swagger.tags = ['User CRUD']
+  #swagger.security = [{"apiKeyAuth": []}]
+*/
+
 const router = express.Router();
 
 router.get('/all', authorize(['read:users']), getAll);

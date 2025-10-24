@@ -150,7 +150,7 @@ export function RegisterForm({ onBackToLogin, onBackToHome }: RegisterFormProps)
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-11 bg-gradient-to-r from-gray-900 to-gray-700 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full h-12 bg-gray-800 text-white rounded-lg active:scale-95 transform transition-all duration-150 hover:bg-gray-800 focus:bg-gray-800 hover:shadow-lg hover:-translate-y-0.5"
               >
                 {isLoading ? 'Đang đăng ký...' : 'Đăng ký tài khoản'}
               </Button>
