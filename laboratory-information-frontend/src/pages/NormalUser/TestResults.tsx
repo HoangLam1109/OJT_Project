@@ -15,8 +15,8 @@ const TestResults: React.FC = () => {
   );
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="mb-4">
+    <div className="space-y-6">
+      <div className="space-y-1">
         <h1 className="text-2xl font-medium text-gray-900 mb-1">
           Kết quả xét nghiệm & Lịch sử
         </h1>

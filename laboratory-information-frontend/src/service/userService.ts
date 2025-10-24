@@ -79,6 +79,17 @@ export class UserService {
     }
   }
 
+  // Get current user's profile
+  async getMyProfile(): Promise<ManagerUser> {
+    try {
+      const response = await apiService.get<BackendUser>('/user/profile');
+      return transformBackendUser(response);
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      throw new Error('Không thể tải hồ sơ người dùng');
+    }
+  }
+
   // Create user
   async createUser(userData: UserFormData): Promise<ManagerUser> {
     try {
