@@ -1,4 +1,5 @@
 import type { LoginAndRegisterType } from '../types/Login.type'; 
+import { useAuthContext } from '../hooks/useAuthContext';
 import {
   HeroSection,
   FeaturesSection,
@@ -15,6 +16,7 @@ import {
 
 
 export function HomeLayout({ onShowLogin, onShowRegister }: LoginAndRegisterType) {
+  const { onLogout } = useAuthContext();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50">
@@ -28,7 +30,7 @@ export function HomeLayout({ onShowLogin, onShowRegister }: LoginAndRegisterType
       <div className="relative z-10">
         <HomeBanner onShowRegister={onShowRegister}/>
 
-        <HomeHeader onShowLogin={onShowLogin} />
+        <HomeHeader onShowLogin={onShowLogin} onLogout={onLogout} />
 
         {/* Main Content Sections */}
         <HeroSection onShowLogin={onShowLogin} onShowRegister={onShowRegister} />
