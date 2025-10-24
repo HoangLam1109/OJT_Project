@@ -20,7 +20,7 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
     role: 'USER',
     phone_number: '',
     identify_number: '',
-    gender: 'Male',
+    gender: 'Male' as 'Male' | 'Female' | 'Other',
     date_of_birth: '',
     address: '',
     active: true,

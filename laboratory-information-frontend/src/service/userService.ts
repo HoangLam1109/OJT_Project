@@ -181,7 +181,6 @@ export class UserService {
         role: 'USER', // Will be filled by backend
         phone_number: '',
         identify_number: '',
-        gender: 'male',
         gender: 'Male' as 'Male' | 'Female' | 'Other',
         date_of_birth: '',
         address: '',
