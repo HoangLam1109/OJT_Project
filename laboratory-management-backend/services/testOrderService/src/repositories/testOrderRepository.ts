@@ -1,11 +1,34 @@
-import TestOrder, { ITestOrder } from "../models/TestOrder";
+import TestOrder, { ITestOrder } from "../db/models/TestOrder.model.js";
 
 export const TestOrderRepository = {
-  create: (data: Partial<ITestOrder>) => new TestOrder(data).save(),
-  findAll: () => TestOrder.find({ is_deleted: false }),
-  findById: (id: string) => TestOrder.findById(id),
-  update: (id: string, data: Partial<ITestOrder>) =>
-    TestOrder.findByIdAndUpdate(id, data, { new: true }),
-  softDelete: (id: string, deletedBy: string) =>
-    TestOrder.findByIdAndUpdate(id, { is_deleted: true, deleted_at: new Date(), deleted_by: deletedBy }, { new: true })
+  // Tạo Test order
+  async create(data: Partial<ITestOrder>): Promise<ITestOrder> {
+    return await new TestOrder(data).save();
+  },
+
+  // Lấy tất cả Test order chưa bị xoá
+ async findAll() {
+  // Lấy tất cả document chưa bị xóa
+  return await TestOrder.find().exec();
+}
+,
+
+  // Tìm Test order theo ID
+  async findById(id: string): Promise<ITestOrder | null> {
+    return await TestOrder.findById(id).exec();
+  },
+
+  // Cập nhật Test order theo ID
+  async update(id: string, data: Partial<ITestOrder>): Promise<ITestOrder | null> {
+    return await TestOrder.findByIdAndUpdate(id, data, { new: true }).exec();
+  },
+
+  // Xoá Test order (soft delete)
+  async softDelete(id: string, deletedBy: string): Promise<ITestOrder | null> {
+    return await TestOrder.findByIdAndUpdate(
+      id,
+      { is_deleted: true, deleted_at: new Date(), deleted_by: deletedBy },
+      { new: true }
+    ).exec();
+  },
 };

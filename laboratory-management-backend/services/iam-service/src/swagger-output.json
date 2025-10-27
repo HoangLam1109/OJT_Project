@@ -566,9 +566,9 @@
           {
             "name": "id",
             "in": "path",
-            "description": "User ID",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "User ID"
           }
         ],
         "responses": {
