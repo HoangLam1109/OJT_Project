@@ -29,7 +29,7 @@ export function ManagerUserManagementPage() {
     toggleUserLock 
   } = useUserManagement();
   const { filters, setFilters, filteredUsers } = useUserFilters(users);
-  const statistics = useUserStatistics(users);
+  const statistics = useUserStatistics(users, pagination.total);
   const { modalState, openCreateModal, openViewModal, openEditModal, closeModal } = useUserModal();
   
   // Local state
