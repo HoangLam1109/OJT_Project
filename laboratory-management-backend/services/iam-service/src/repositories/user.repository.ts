@@ -1,12 +1,19 @@
+import { PaginationOptions } from "../types/pagination.type.js";
+
 // User repository interface
 export interface IUserRepository {
   findById(id: string, fields?: string): Promise<any>;
   findByEmail(email: string): Promise<any>;
-  findByIdentityNumber(identityNumber: string): Promise<any>;
+  findByPhoneNumber(identityNumber: string): Promise<any>;
   create(userData: any): Promise<any>;
   updateById(id: string, userData: any): Promise<any>;
   deleteById(id: string): Promise<any>;
   findAll(fields?: string): Promise<any[]>;
+  findWithPagination(options: PaginationOptions): Promise<{
+    data: any[];
+    hasNextPage: boolean;
+    totalCount?: number;
+  }>;
 }
 
 // User repository implementation
@@ -17,7 +24,7 @@ export class UserRepository implements IUserRepository {
     return await this.userModel.findById(
       id,
       fields ||
-        "_id email fullName phoneNumber identityNumber gender age dateOfBirth address"
+        "_id email fullName phoneNumber identityNumber gender age dateOfBirth phoneNumber address provider providerId"
     );
   }
 
@@ -25,8 +32,12 @@ export class UserRepository implements IUserRepository {
     return await this.userModel.findOne({ email });
   }
 
-  async findByIdentityNumber(identityNumber: string): Promise<any> {
-    return await this.userModel.findOne({ identityNumber });
+  async findByPhoneNumber(phoneNumber: string): Promise<any> {
+    return await this.userModel.findOne({ phoneNumber });
+  }
+
+  async findOne(criteria: any): Promise<any> {
+    return await this.userModel.findOne(criteria);
   }
 
   async create(userData: any): Promise<any> {
@@ -44,5 +55,41 @@ export class UserRepository implements IUserRepository {
 
   async findAll(fields?: string): Promise<any[]> {
     return await this.userModel.find({}, fields);
+  }
+
+  async findWithPagination(
+    options: PaginationOptions
+  ): Promise<{ data: any[]; hasNextPage: boolean; totalCount?: number }> {
+    const { limit, sortBy, sortOrder, cursor, filters } = options;
+    const query: any = { ...filters };
+    const sortDirection = sortOrder === "asc" ? 1 : -1;
+    const sortObj = { [sortBy || "_id"]: sortDirection };
+
+    if (cursor) {
+      const cursorField = sortBy || "_id";
+
+      // For proper cursor pagination, we need to find items that come AFTER the cursor
+      // in the sort order, not just exclude the cursor item
+      if (sortDirection === -1) {
+        // Descending order: get items BEFORE cursor in time (but after in pagination)
+        // We need items where field < cursor to get the next page
+        query[cursorField] = { $lt: cursor };
+      } else {
+        // Ascending order: get items AFTER cursor in time
+        query[cursorField] = { $gt: cursor };
+      }
+    }
+
+    const data = await this.userModel
+      .find(query)
+      .sort(sortObj)
+      .collation({ locale: 'en', strength: 2 })
+      .limit(limit + 1);
+    const hasNextPage = data.length > limit;
+    return {
+      data: data.slice(0, limit),
+      hasNextPage,
+      totalCount: await this.userModel.countDocuments(filters || {}),
+    };
   }
 }

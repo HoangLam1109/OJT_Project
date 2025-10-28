@@ -1,15 +1,12 @@
 import { CardTitle, CardDescription } from '../../components/common/card';
-import { Shield } from 'lucide-react';
+import { TestTube } from 'lucide-react';
 
 export function RegisterHeader() {
 	return (
 		<>
-			<div className="flex justify-center mb-3">
-				<div className="relative">
-					<div className="p-4 bg-gradient-to-br from-gray-900 to-gray-700 rounded-xl shadow-lg">
-						<Shield className="h-7 w-7 text-white" />
-					</div>
-					<div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+			<div className="flex justify-center mb-4">
+				<div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-full flex items-center justify-center shadow-lg">
+					<TestTube className="w-8 h-8 text-white" />
 				</div>
 			</div>
 

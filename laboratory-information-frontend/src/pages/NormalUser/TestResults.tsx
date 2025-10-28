@@ -4,6 +4,7 @@ import { Input } from '../../components/common/input';
 import Button from '../../components/common/button';
 import { Search, Download, ClipboardList } from 'lucide-react';
 import { mockTestResults } from './data/mockTest';
+import { toast } from 'sonner';
 
 const TestResults: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -15,8 +16,8 @@ const TestResults: React.FC = () => {
   );
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="mb-4">
+    <div className="space-y-6">
+      <div className="space-y-1">
         <h1 className="text-2xl font-medium text-gray-900 mb-1">
           Kết quả xét nghiệm & Lịch sử
         </h1>
@@ -46,11 +47,10 @@ const TestResults: React.FC = () => {
                       <span className="text-sm text-gray-500">Mã xét nghiệm: {test.id}</span>
                     </div>
                     <span
-                      className={`px-3 py-1 rounded-full text-sm font-medium ${
-                        test.status === 'hoàn thành'
+                      className={`px-3 py-1 rounded-full text-sm font-medium ${test.status === 'hoàn thành'
                           ? 'bg-blue-100 text-blue-800'
                           : 'bg-yellow-100 text-yellow-800'
-                      }`}
+                        }`}
                     >
                       {test.status}
                     </span>
@@ -90,10 +90,18 @@ const TestResults: React.FC = () => {
                       </div>
                       {test.status === 'hoàn thành' && (
                         <div className="flex justify-end mt-3">
-                          <Button variant="download" size="sm" className="flex items-center gap-2">
+                          <Button
+                            variant="download"
+                            size="sm"
+                            className="flex items-center gap-2"
+                            onClick={() => {
+                              toast.success(`Đã tải xuống báo cáo xét nghiệm: ${test.name}`);
+                            }}
+                          >
                             <Download className="h-4 w-4" />
                             Tải xuống báo cáo
                           </Button>
+
                         </div>
                       )}
                     </>

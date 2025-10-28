@@ -1,14 +1,17 @@
 import mongoose from "mongoose";
-import dotenv from "dotenv";
-dotenv.config();
 
-const connectDB = async () => {
+const connectDB = async (): Promise<void> => {
   try {
-    await mongoose.connect(process.env.MONGO_URI!);
-    console.log("MongoDB is Connected!");
+    // Connect to test_oder_service database
+    await mongoose.connect("mongodb+srv://user:123@cluster0.uevq3rb.mongodb.net/test_oder_service?retryWrites=true&w=majority&appName=Cluster0");
+    
+    console.log(" MongoDB connected to database:", mongoose.connection.db?.databaseName);
+    console.log(" test_orders collection count:", await mongoose.connection.db?.collection('test_oder_service').countDocuments());
   } catch (error) {
-    console.log("MongoDB Connection Error: ", error);
-    process.exit(1);
+    console.error(" MongoDB error:", error);
+    // don't exit the process here; allow the caller to decide how to handle DB failures
+    // rethrow so callers can catch the error if desired
+    throw error;
   }
 };
 

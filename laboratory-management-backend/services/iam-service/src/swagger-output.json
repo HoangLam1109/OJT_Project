@@ -2,8 +2,8 @@
   "swagger": "2.0",
   "info": {
     "version": "v1.0.0",
-    "title": "LexBridge API",
-    "description": "LexBridge is a seamless platform that connects clients with verified legal experts, offering secure communication, easy appointment booking, transparent pricing, and comprehensive legal services all in one place."
+    "title": "Laboratory Information Management System API",
+    "description": "Laboratory Information Management System API"
   },
   "host": "localhost:3000",
   "basePath": "/api",
@@ -72,6 +72,14 @@
                 "password": {
                   "type": "string",
                   "example": "string"
+                },
+                "phoneNumber": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "address": {
+                  "type": "string",
+                  "example": "string"
                 }
               }
             }
@@ -129,7 +137,7 @@
             "schema": {
               "type": "object",
               "properties": {
-                "email": {
+                "identifier": {
                   "type": "string",
                   "example": "string"
                 },
@@ -283,19 +291,368 @@
         ]
       }
     },
+    "/google": {
+      "get": {
+        "tags": [
+          "OAuth Authentication"
+        ],
+        "description": "Initiate Google OAuth login",
+        "responses": {
+          "302": {
+            "description": "Redirect to Google OAuth"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/google/callback": {
+      "get": {
+        "tags": [
+          "OAuth Authentication"
+        ],
+        "description": "Handle Google OAuth callback",
+        "responses": {
+          "200": {
+            "description": "OAuth login successful",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Google login successful!"
+                },
+                "user": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "email": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "fullName": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "role": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "provider": {
+                      "type": "string",
+                      "example": "string"
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "401": {
+            "description": "OAuth authentication failed",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Google authentication failed"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/oauth/status": {
+      "get": {
+        "tags": [
+          "OAuth Authentication"
+        ],
+        "description": "Get current user OAuth status",
+        "responses": {
+          "200": {
+            "description": "OAuth status retrieved",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "isOAuthUser": {
+                  "type": "string",
+                  "example": "boolean"
+                },
+                "provider": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "hasPassword": {
+                  "type": "string",
+                  "example": "boolean"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/oauth/link": {
+      "post": {
+        "tags": [
+          "OAuth Authentication"
+        ],
+        "description": "Link OAuth account to existing local account",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "OAuth linking data",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "provider": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "providerId": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "email": {
+                  "type": "string",
+                  "example": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OAuth account linked successfully"
+          },
+          "400": {
+            "description": "Bad request - missing data or account already linked"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
     "/user/all": {
       "get": {
         "tags": [
           "User CRUD"
         ],
-        "description": "Get all users",
+        "description": "Get users with pagination",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of users per page (1-100)",
+            "required": false,
+            "type": "integer",
+            "default": 10
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Cursor for next page (user ID)",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "description": "Field to sort by",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "createdAt",
+              "_id",
+              "fullName",
+              "email"
+            ],
+            "default": "_id"
+          },
+          {
+            "name": "sortOrder",
+            "in": "query",
+            "description": "Sort order",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "default": "asc"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Users retrieved successfully",
             "schema": {
               "type": "object",
               "properties": {
-                "items": {
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "array"
+                    },
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "_id": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "email": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "fullName": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "identityNumber": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "gender": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "age": {
+                          "type": "string",
+                          "example": "number"
+                        },
+                        "dateOfBirth": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "phoneNumber": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "address": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "role": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "example": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "pagination": {
+                  "type": "object",
+                  "properties": {
+                    "hasNextPage": {
+                      "type": "string",
+                      "example": "boolean"
+                    },
+                    "hasPreviousPage": {
+                      "type": "string",
+                      "example": "boolean"
+                    },
+                    "nextCursor": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "previousCursor": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "totalCount": {
+                      "type": "string",
+                      "example": "number"
+                    },
+                    "limit": {
+                      "type": "string",
+                      "example": "number"
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid pagination parameters"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/user/me": {
+      "get": {
+        "tags": [
+          "User CRUD"
+        ],
+        "description": "Get profile information of the authenticated user",
+        "responses": {
+          "200": {
+            "description": "Authenticated user profile retrieved successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "user": {
                   "type": "object",
                   "properties": {
                     "_id": {
@@ -326,15 +683,15 @@
                       "type": "string",
                       "example": "string"
                     },
+                    "phoneNumber": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "address": {
+                      "type": "string",
+                      "example": "string"
+                    },
                     "role": {
-                      "type": "string",
-                      "example": "string"
-                    },
-                    "createdAt": {
-                      "type": "string",
-                      "example": "string"
-                    },
-                    "updatedAt": {
                       "type": "string",
                       "example": "string"
                     }
@@ -348,6 +705,9 @@
           },
           "401": {
             "description": "Authentication required"
+          },
+          "404": {
+            "description": "User not found"
           },
           "500": {
             "description": "Internal server error"
@@ -409,6 +769,14 @@
                   "type": "string",
                   "example": "string"
                 },
+                "phoneNumber": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "address": {
+                  "type": "string",
+                  "example": "string"
+                },
                 "role": {
                   "type": "string",
                   "example": "string"
@@ -464,7 +832,7 @@
               "properties": {
                 "email": {
                   "type": "string",
-                  "example": "string"
+                  "example": "string@example.com"
                 },
                 "fullName": {
                   "type": "string",
@@ -476,17 +844,25 @@
                 },
                 "gender": {
                   "type": "string",
-                  "example": "string"
+                  "example": "Male"
                 },
                 "age": {
                   "type": "string",
-                  "example": "number"
+                  "example": "12"
                 },
                 "dateOfBirth": {
                   "type": "string",
-                  "example": "string"
+                  "example": "01/01/2002"
                 },
                 "password": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "phoneNumber": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "address": {
                   "type": "string",
                   "example": "string"
                 }
@@ -555,7 +931,7 @@
               "properties": {
                 "email": {
                   "type": "string",
-                  "example": "string"
+                  "example": "string@example.com"
                 },
                 "fullName": {
                   "type": "string",
@@ -567,15 +943,27 @@
                 },
                 "gender": {
                   "type": "string",
-                  "example": "string"
+                  "example": "Male"
                 },
                 "age": {
                   "type": "string",
-                  "example": "number"
+                  "example": "22"
                 },
                 "dateOfBirth": {
                   "type": "string",
+                  "example": "01/01/2002"
+                },
+                "phoneNumber": {
+                  "type": "string",
                   "example": "string"
+                },
+                "address": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "isActive": {
+                  "type": "string",
+                  "example": "boolean"
                 }
               }
             }

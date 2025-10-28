@@ -1,4 +1,4 @@
-import User from "../db/models/User.model.js";
+import UserModel from "../db/models/User.model.js";
 import AuditLog from "../db/models/AuditLog.model.js";
 import PasswordHistory from "../db/models/PasswordHistory.model.js";
 
@@ -21,7 +21,7 @@ export class RepositoryFactory {
 
   static getUserRepository(): UserRepository {
     if (!this.userRepository) {
-      this.userRepository = new UserRepository(User);
+      this.userRepository = new UserRepository(UserModel);
     }
     return this.userRepository;
   }

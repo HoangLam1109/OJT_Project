@@ -1,4 +1,4 @@
-import { User, Lock, Unlock, Edit, Trash2, Eye } from 'lucide-react';
+import { User, Lock, Unlock, Edit, Trash2, Eye, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from 'lucide-react';
 import Button from '../../../components/common/button';
 import type { ManagerUser } from '../types/ManagerTypes';
 
@@ -8,9 +8,17 @@ interface UserTableProps {
   onEdit: (user: ManagerUser) => void;
   onDelete: (user: ManagerUser) => void;
   onToggleLock: (user: ManagerUser) => void;
+  // Pagination controls for cursor-based navigation
+  onFirstPage?: () => void;
+  onPrevPage?: () => void;
+  onNextPage?: () => void;
+  onLastPage?: () => void;
+  hasPrev?: boolean;
+  hasNext?: boolean;
+  pageLabel?: string; // e.g. "Hiển thị 10 người dùng"
 }
 
-export function UserTable({ users, onView, onEdit, onDelete, onToggleLock }: UserTableProps) {
+export function UserTable({ users, onView, onEdit, onDelete, onToggleLock, onFirstPage, onPrevPage, onNextPage, onLastPage, hasPrev, hasNext, pageLabel }: UserTableProps) {
   const getRoleBadgeColor = (role: string) => {
     const colors = {
       ADMIN: 'bg-purple-100 text-purple-800',
@@ -187,6 +195,59 @@ export function UserTable({ users, onView, onEdit, onDelete, onToggleLock }: Use
           ))}
         </tbody>
       </table>
+      {(onFirstPage || onPrevPage || onNextPage || onLastPage) && (
+        <div className="flex items-center justify-between gap-2 py-3 px-2">
+          <div className="text-sm text-gray-600">
+            {pageLabel}
+          </div>
+          <div className="flex items-center gap-1">
+            {onFirstPage && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onFirstPage}
+                title="Trang đầu"
+                disabled={hasPrev === false}
+              >
+                <ChevronsLeft className="w-4 h-4" />
+              </Button>
+            )}
+            {onPrevPage && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onPrevPage}
+                title="Trang trước"
+                disabled={hasPrev === false}
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+            )}
+            {onNextPage && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onNextPage}
+                title="Trang tiếp theo"
+                disabled={hasNext === false}
+              >
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            )}
+            {onLastPage && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onLastPage}
+                title="Trang cuối"
+                disabled={hasNext === false}
+              >
+                <ChevronsRight className="w-4 h-4" />
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

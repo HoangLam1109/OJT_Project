@@ -1,0 +1,31 @@
+import swaggerAutogen from 'swagger-autogen';
+
+const doc = {
+  info: {
+    version: 'v1.0.0',
+    title: 'Patient Service API',
+    description: 'Patient Management Microservice for Laboratory Information Management System. Handles patient demographics, medical records, and access audit logs.'
+  },
+  host: `localhost:${process.env.PATIENT_SERVICE_PORT || 5001}`,
+  basePath: '/api',
+  schemes: ['http', 'https'],
+  tags: [
+    {
+      name: 'Patients',
+      description: 'Patient management operations (requires authentication)'
+    }
+  ],
+  securityDefinitions: {
+    apiKeyAuth: {
+      type: 'apiKey',
+      in: 'cookie',
+      name: 'accessToken',
+      description: 'JWT access token stored in HTTP-only cookie. Set automatically on login from IAM Service.'
+    }
+  }
+};
+
+const outputFile = './swagger-output.json';
+const endpointsFiles = ['./routes/index.ts'];
+
+swaggerAutogen()(outputFile, endpointsFiles, doc);

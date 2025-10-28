@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { HomeLayout } from "../layouts/HomeLayout";
 import { LoginLayout } from "../layouts/LoginLayout";
-import { RegisterForm } from "../pages/register/RegisterForm";
+import { RegisterPage } from "../pages/register/RegisterPage";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { useAuthContext } from "../hooks/useAuthContext";
 import { AdminLayout } from "../layouts/AdminLayout";
@@ -32,6 +32,7 @@ import ServiceEventLogPage from "../pages/service/ServiceEventLogPage";
 import ServiceReagentPage from "../pages/service/ServiceReagentPage";
 import ServiceInstrumentPage from "../pages/service/ServiceInstrumentPage";
 import { ServiceTestPage } from "../pages/service/ServiceTestPage";
+import { GoogleCallbackPage } from "../pages/login/GoogleCallbackPage";
 
 export function AppRoutes() {
   const { user, onLogout } = useAuthContext();
@@ -67,11 +68,13 @@ export function AppRoutes() {
       {/* Trang đăng ký */}
       <Route
         path="/register"
-        element={
-          <RegisterForm
-            onBackToLogin={() => navigate("/login")}
-            onBackToHome={() => navigate("/")}
-          />}
+        element={<RegisterPage />}
+      />
+
+      {/* Google OAuth Callback */}
+      <Route
+        path="/auth/google/callback"
+        element={<GoogleCallbackPage />}
       />
 
       {/* Trang Normal User */}
