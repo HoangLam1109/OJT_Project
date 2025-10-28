@@ -137,7 +137,7 @@
             "schema": {
               "type": "object",
               "properties": {
-                "email": {
+                "identifier": {
                   "type": "string",
                   "example": "string"
                 },
@@ -476,14 +476,183 @@
         "tags": [
           "User CRUD"
         ],
-        "description": "Get all users",
+        "description": "Get users with pagination",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of users per page (1-100)",
+            "required": false,
+            "type": "integer",
+            "default": 10
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Cursor for next page (user ID)",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "description": "Field to sort by",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "createdAt",
+              "_id",
+              "fullName",
+              "email"
+            ],
+            "default": "_id"
+          },
+          {
+            "name": "sortOrder",
+            "in": "query",
+            "description": "Sort order",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "default": "asc"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Users retrieved successfully",
             "schema": {
               "type": "object",
               "properties": {
-                "items": {
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "array"
+                    },
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "_id": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "email": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "fullName": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "identityNumber": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "gender": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "age": {
+                          "type": "string",
+                          "example": "number"
+                        },
+                        "dateOfBirth": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "phoneNumber": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "address": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "role": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "example": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "pagination": {
+                  "type": "object",
+                  "properties": {
+                    "hasNextPage": {
+                      "type": "string",
+                      "example": "boolean"
+                    },
+                    "hasPreviousPage": {
+                      "type": "string",
+                      "example": "boolean"
+                    },
+                    "nextCursor": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "previousCursor": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "totalCount": {
+                      "type": "string",
+                      "example": "number"
+                    },
+                    "limit": {
+                      "type": "string",
+                      "example": "number"
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid pagination parameters"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/user/me": {
+      "get": {
+        "tags": [
+          "User CRUD"
+        ],
+        "description": "Get profile information of the authenticated user",
+        "responses": {
+          "200": {
+            "description": "Authenticated user profile retrieved successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "user": {
                   "type": "object",
                   "properties": {
                     "_id": {
@@ -525,14 +694,6 @@
                     "role": {
                       "type": "string",
                       "example": "string"
-                    },
-                    "createdAt": {
-                      "type": "string",
-                      "example": "string"
-                    },
-                    "updatedAt": {
-                      "type": "string",
-                      "example": "string"
                     }
                   }
                 }
@@ -544,6 +705,9 @@
           },
           "401": {
             "description": "Authentication required"
+          },
+          "404": {
+            "description": "User not found"
           },
           "500": {
             "description": "Internal server error"
