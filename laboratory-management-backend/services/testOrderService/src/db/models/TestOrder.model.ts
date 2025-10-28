@@ -24,10 +24,15 @@ const TestOrderSchema: Schema = new Schema({
   run_at: Date,
   run_by: String,
   updated_at: { type: Date, default: Date.now },
-  updated_by: String,
+  updated_by: String, 
   is_deleted: { type: Boolean, default: false },
   deleted_at: Date,
   deleted_by: String
 });
 
-export default mongoose.model<ITestOrder>("TestOrder", TestOrderSchema);
+export default mongoose.model<ITestOrder>(
+  "TestOrder",
+  TestOrderSchema,
+  "test_orders" // tên collection trong MongoDB
+);
+

@@ -153,7 +153,7 @@ export class UserService {
     eventMessage: string,
     perfomedBy: string
   ): Promise<void> {
-    await auditLogRepository.create({
+    await auditLogRepository.create({ 
       eventCode,
       action,
       eventMessage,

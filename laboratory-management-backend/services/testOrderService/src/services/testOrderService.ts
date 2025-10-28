@@ -1,19 +1,32 @@
-import { TestOrderRepository } from "../repositories/testOrderRepository";
+import { TestOrderRepository } from "../repositories/testOrderRepository.js";
 
 export const TestOrderService = {
-  getAllOrders: () => TestOrderRepository.findAll(),
-
-  getOrderById: (id: string) => TestOrderRepository.findById(id),
-
-  createOrder: async (data: any, userId: string) => {
-    const newOrder = { ...data, created_by: userId, created_at: new Date() };
-    return TestOrderRepository.create(newOrder);
+  // Lấy tất cả Test Orders
+  async getAllOrders() {
+    // Ensure we always return an array (avoid sending `null` to callers)
+    const data = await TestOrderRepository.findAll();
+    return Array.isArray(data) ? data : [];
   },
 
-  updateOrder: async (id: string, data: any, userId: string) => {
+  // Lấy Test Order theo ID
+  async getOrderById(id: string) {
+    return await TestOrderRepository.findById(id);
+  },
+
+  // Tạo Test Order mới
+  async createOrder(data: any, userId: String) {
+    const newOrder = { ...data, created_by:  userId, created_at: new Date() };
+    return await TestOrderRepository.create(newOrder);
+  },
+
+  // Cập nhật Test Order theo ID
+  async updateOrder(id: string, data: any, userId: string) {
     const updatedData = { ...data, updated_by: userId, updated_at: new Date() };
-    return TestOrderRepository.update(id, updatedData);
+    return await TestOrderRepository.update(id, updatedData);
   },
 
-  deleteOrder: (id: string, userId: string) => TestOrderRepository.softDelete(id, userId)
+  // Xoá Test Order (soft delete)
+  async deleteOrder(id: string, userId: string) {
+    return await TestOrderRepository.softDelete(id, userId);
+  },
 };
