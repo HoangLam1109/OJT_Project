@@ -733,6 +733,16 @@
             "required": true,
             "type": "string",
             "description": "User ID"
+          },
+          {
+            "name": "slice(-4",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "x-internal-api-key",
+            "in": "header",
+            "type": "string"
           }
         ],
         "responses": {
@@ -822,6 +832,16 @@
         ],
         "description": "Create a new user",
         "parameters": [
+          {
+            "name": "slice(-4",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "x-internal-api-key",
+            "in": "header",
+            "type": "string"
+          },
           {
             "name": "body",
             "in": "body",
@@ -920,6 +940,16 @@
             "required": true,
             "type": "string",
             "description": "User ID"
+          },
+          {
+            "name": "slice(-4",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "x-internal-api-key",
+            "in": "header",
+            "type": "string"
           },
           {
             "name": "body",
@@ -1022,6 +1052,16 @@
             "required": true,
             "type": "string",
             "description": "User ID"
+          },
+          {
+            "name": "slice(-4",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "x-internal-api-key",
+            "in": "header",
+            "type": "string"
           }
         ],
         "responses": {

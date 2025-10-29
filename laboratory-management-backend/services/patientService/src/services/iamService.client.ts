@@ -1,4 +1,12 @@
+import { fileURLToPath } from "url";
+import { dirname, resolve } from "path";
+import dotenv from "dotenv";
 import HttpClient from "../utils/httpClient.util.js";
+
+// Load patient service .env before reading process.env values
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+dotenv.config({ path: resolve(__dirname, "../../.env") });
 
 // IAM Service User Interface
 export interface IamUser {
@@ -21,6 +29,10 @@ export class IamServiceClient {
     // IAM Service URL from environment or default
     this.baseUrl = process.env.IAM_SERVICE_URL || "http://localhost:3000";
     this.internalApiKey = process.env.INTERNAL_API_KEY || "internal-service-secret-key";
+    
+    console.log('[IamServiceClient] Initialized:');
+    console.log('[IamServiceClient] baseUrl:', this.baseUrl);
+    console.log('[IamServiceClient] internalApiKey:', this.internalApiKey ? '***' + this.internalApiKey.slice(-4) : 'NOT SET');
   }
 
   /**

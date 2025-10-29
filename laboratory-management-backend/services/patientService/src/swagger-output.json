@@ -11,6 +11,10 @@
     {
       "name": "Patients",
       "description": "Patient management operations (requires authentication)"
+    },
+    {
+      "name": "Patient Medical Records",
+      "description": "Sensitive medical record operations for authorized personnel"
     }
   ],
   "schemes": [
@@ -36,6 +40,70 @@
           {
             "name": "page",
             "in": "query",
+            "type": "integer",
+            "default": 1
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "integer",
+            "default": 10
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "isActive",
+            "in": "query",
+            "type": "boolean"
+          },
+          {
+            "name": "populateUser",
+            "in": "query",
+            "type": "boolean",
+            "default": true
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Patients"
+        ],
+        "description": "Create a new patient profile for an existing IAM user",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "internalApiKey": []
+          }
+        ]
+      }
+    },
+    "/patient-medical-records/": {
+      "get": {
+        "tags": [
+          "Patient Medical Records"
+        ],
+        "description": "Get all patient medical records with optional filters and patient details",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
             "description": "Page number",
             "type": "integer",
             "default": 1
@@ -48,32 +116,39 @@
             "default": 10
           },
           {
-            "name": "search",
+            "name": "patientId",
             "in": "query",
-            "description": "Search by patient code, user ID, or test type",
+            "description": "Filter by patient ID",
             "type": "string"
           },
           {
-            "name": "isActive",
+            "name": "recordCode",
             "in": "query",
-            "description": "Filter by active status",
-            "type": "boolean"
+            "description": "Filter by record code",
+            "type": "string"
           },
           {
-            "name": "populateUser",
+            "name": "includePatient",
             "in": "query",
-            "description": "Include user details from IAM Service (default: true)",
+            "description": "Include patient profile details",
             "type": "boolean",
             "default": true
+          },
+          {
+            "name": "includeDeleted",
+            "in": "query",
+            "description": "Include soft-deleted records",
+            "type": "boolean",
+            "default": false
           }
         ],
         "responses": {
           "200": {
-            "description": "Patients retrieved successfully",
+            "description": "Patient medical records retrieved successfully",
             "schema": {
               "type": "object",
               "properties": {
-                "patients": {
+                "records": {
                   "type": "array",
                   "items": {
                     "type": "object",
@@ -82,98 +157,95 @@
                         "type": "string",
                         "example": "uuid"
                       },
-                      "user_id": {
+                      "patient_id": {
                         "type": "string",
-                        "example": "user-uuid-from-iam"
+                        "example": "patient-uuid"
                       },
-                      "user": {
+                      "record_code": {
+                        "type": "string",
+                        "example": "MR202510090001"
+                      },
+                      "blood_type": {
+                        "type": "string",
+                        "example": "A+"
+                      },
+                      "allergies": {
+                        "type": "string",
+                        "example": "Penicillin"
+                      },
+                      "chronic_conditions": {
+                        "type": "string",
+                        "example": "Hypertension"
+                      },
+                      "current_medications": {
+                        "type": "string",
+                        "example": "Atorvastatin"
+                      },
+                      "medical_history": {
+                        "type": "string",
+                        "example": "Appendectomy - 2010"
+                      },
+                      "clinical_notes": {
+                        "type": "string",
+                        "example": "Patient showing good recovery"
+                      },
+                      "recent_test_summary": {
+                        "type": "string",
+                        "example": "CBC normal, HbA1c elevated"
+                      },
+                      "recent_instruments_used": {
+                        "type": "string",
+                        "example": "Sysmex XN-1000"
+                      },
+                      "recent_reagents_info": {
+                        "type": "string",
+                        "example": "Lot# RGT-2025-09-15"
+                      },
+                      "created_at": {
+                        "type": "string",
+                        "example": "2025-10-24T11:00:00Z"
+                      },
+                      "updated_at": {
+                        "type": "string",
+                        "example": "2025-10-24T11:00:00Z"
+                      },
+                      "created_by": {
+                        "type": "string",
+                        "example": "lab-user-uuid"
+                      },
+                      "updated_by": {
+                        "type": "string",
+                        "example": "lab-user-uuid"
+                      },
+                      "is_deleted": {
+                        "type": "boolean",
+                        "example": false
+                      },
+                      "deleted_at": {},
+                      "deleted_by": {},
+                      "patient": {
                         "type": "object",
                         "properties": {
                           "_id": {
                             "type": "string",
-                            "example": "user-uuid-from-iam"
+                            "example": "patient-uuid"
                           },
-                          "email": {
+                          "user_id": {
                             "type": "string",
-                            "example": "user@example.com"
+                            "example": "user-uuid"
                           },
-                          "fullName": {
+                          "patient_code": {
                             "type": "string",
-                            "example": "Nguyen Van A"
-                          },
-                          "identityNumber": {
-                            "type": "string",
-                            "example": "001234567890"
-                          },
-                          "gender": {
-                            "type": "string",
-                            "example": "male"
-                          },
-                          "age": {
-                            "type": "number",
-                            "example": 35
-                          },
-                          "dateOfBirth": {
-                            "type": "string",
-                            "example": "1990-05-15"
-                          },
-                          "isActive": {
-                            "type": "boolean",
-                            "example": true
-                          },
-                          "role": {
-                            "type": "string",
-                            "example": "USER"
+                            "example": "PT202510240001"
                           }
                         }
-                      },
-                      "patient_code": {
-                        "type": "string",
-                        "example": "PT202510240001"
-                      },
-                      "emergency_contact": {
-                        "type": "object",
-                        "properties": {
-                          "name": {
-                            "type": "string",
-                            "example": "Nguyen Van Hung"
-                          },
-                          "phone": {
-                            "type": "string",
-                            "example": "0971234567"
-                          }
-                        }
-                      },
-                      "last_visit_date": {
-                        "type": "string",
-                        "example": "2025-10-20"
-                      },
-                      "last_test_type": {
-                        "type": "string",
-                        "example": "CBC"
-                      },
-                      "is_active": {
-                        "type": "boolean",
-                        "example": true
-                      },
-                      "created_at": {
-                        "type": "string",
-                        "example": "2025-10-22T11:00:00Z"
-                      },
-                      "updated_at": {
-                        "type": "string",
-                        "example": "2025-10-22T11:00:00Z"
-                      },
-                      "created_by": {
-                        "type": "string",
-                        "example": "admin-user-id"
                       }
                     }
                   }
                 },
                 "total": {
                   "type": "number",
-                  "example": 100
+                  "example": 1
                 },
                 "page": {
                   "type": "number",
@@ -181,7 +253,7 @@
                 },
                 "totalPages": {
                   "type": "number",
-                  "example": 10
+                  "example": 1
                 }
               },
               "xml": {
@@ -194,6 +266,178 @@
           },
           "500": {
             "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Patient Medical Records"
+        ],
+        "description": "Create a patient medical record for an existing patient",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "patient_id": {
+                  "type": "string",
+                  "example": "patient-uuid"
+                },
+                "blood_type": {
+                  "type": "string",
+                  "example": "A+"
+                },
+                "allergies": {
+                  "type": "string",
+                  "example": "Penicillin"
+                },
+                "chronic_conditions": {
+                  "type": "string",
+                  "example": "Hypertension"
+                },
+                "current_medications": {
+                  "type": "string",
+                  "example": "Atorvastatin"
+                },
+                "medical_history": {
+                  "type": "string",
+                  "example": "Appendectomy - 2010"
+                },
+                "clinical_notes": {
+                  "type": "string",
+                  "example": "Patient showing good recovery"
+                },
+                "recent_test_summary": {
+                  "type": "string",
+                  "example": "CBC normal, HbA1c elevated"
+                },
+                "recent_instruments_used": {
+                  "type": "string",
+                  "example": "Sysmex XN-1000"
+                },
+                "recent_reagents_info": {
+                  "type": "string",
+                  "example": "Lot# RGT-2025-09-15"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Medical record created successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "record": {
+                  "type": "object",
+                  "properties": {
+                    "_id": {
+                      "type": "string",
+                      "example": "uuid"
+                    },
+                    "patient_id": {
+                      "type": "string",
+                      "example": "patient-uuid"
+                    },
+                    "record_code": {
+                      "type": "string",
+                      "example": "MR202510090001"
+                    },
+                    "blood_type": {
+                      "type": "string",
+                      "example": "A+"
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "example": "2025-10-24T11:00:00Z"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "example": "2025-10-24T11:00:00Z"
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input or business rule violation"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/patient-medical-records/{id}": {
+      "put": {
+        "tags": [
+          "Patient Medical Records"
+        ],
+        "description": "Update a patient medical record by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Medical record ID"
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Patient Medical Records"
+        ],
+        "description": "Soft delete a patient medical record by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Medical record ID"
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
           }
         },
         "security": [
