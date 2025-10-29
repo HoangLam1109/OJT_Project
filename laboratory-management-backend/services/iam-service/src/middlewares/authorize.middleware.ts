@@ -16,6 +16,14 @@ interface AuthenticatedUser {
 
 export const authorize = (requiredPermissions: string[] | string) => {
   return (req: Request, res: Response, next: NextFunction) => {
+
+       // Check Internal API Key first
+    const internalKey = req.header('X-Internal-API-Key');
+    if (internalKey && internalKey === process.env.INTERNAL_API_KEY) {
+      console.log('[IAM] Internal API Key valid, bypassing role check');
+      return next(); // ✅ bypass JWT + role
+    }
+    
     const user = req.user as AuthenticatedUser | undefined;
 
     if (!user || !user.role) {

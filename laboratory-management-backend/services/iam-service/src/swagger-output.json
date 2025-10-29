@@ -489,6 +489,11 @@
             "type": "string"
           },
           {
+            "name": "X-Internal-API-Key",
+            "in": "header",
+            "type": "string"
+          },
+          {
             "name": "limit",
             "in": "query",
             "description": "Number of users per page (1-100)",
@@ -765,6 +770,11 @@
             "name": "x-internal-api-key",
             "in": "header",
             "type": "string"
+          },
+          {
+            "name": "X-Internal-API-Key",
+            "in": "header",
+            "type": "string"
           }
         ],
         "responses": {
@@ -861,6 +871,11 @@
           },
           {
             "name": "x-internal-api-key",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "X-Internal-API-Key",
             "in": "header",
             "type": "string"
           },
@@ -974,6 +989,11 @@
             "type": "string"
           },
           {
+            "name": "X-Internal-API-Key",
+            "in": "header",
+            "type": "string"
+          },
+          {
             "name": "body",
             "in": "body",
             "description": "User update data",
@@ -1082,6 +1102,11 @@
           },
           {
             "name": "x-internal-api-key",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "X-Internal-API-Key",
             "in": "header",
             "type": "string"
           }
