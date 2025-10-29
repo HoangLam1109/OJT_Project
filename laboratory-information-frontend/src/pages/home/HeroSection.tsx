@@ -1,116 +1,79 @@
-
-import Button from '../../components/common/button';
-import { ImageWithFallback } from '../../components/figma/ImageWithFallback';
-import { 
-  Sparkles,
-  ArrowRight,
-  Heart,
-  TrendingUp,
-  Award,
-  Users,
-  Clock,
-  CheckCircle
-} from 'lucide-react';
-import type { LoginAndRegisterType } from '../../types/Login.type';
-
-
-export function HeroSection({ onShowLogin, onShowRegister }: LoginAndRegisterType) {
-  const stats = [
-    { number: "99.9%", label: "Độ tin cậy hệ thống", icon: <Award className="h-5 w-5 text-blue-600" /> },
-    { number: "6", label: "Loại người dùng", icon: <Users className="h-5 w-5 text-green-600" /> },
-    { number: "24/7", label: "Hỗ trợ liên tục", icon: <Clock className="h-5 w-5 text-purple-600" /> },
-    { number: "100%", label: "Tuân thủ quy định", icon: <CheckCircle className="h-5 w-5 text-orange-600" /> }
-  ];
-
+import Button from "@/components/common/button";
+import { ArrowRight, Play } from "lucide-react";
+import heroImage from "@/assets/lab-hero.jpg";
+const HeroSection = () => {
   return (
-    <section className="px-6 py-16">
-      <div className="max-w-7xl mx-auto">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          <div className="space-y-8">
-            <div className="space-y-4">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 rounded-full">
-                <Sparkles className="h-4 w-4 text-blue-600" />
-                <span className="text-sm text-blue-700">Giải pháp LIMS hiện đại</span>
-              </div>
-              <h1 className="text-5xl text-gray-900 leading-tight">
-                Hệ thống quản lý{' '}
-                <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                  phòng thí nghiệm
-                </span>{' '}
-                toàn diện
-              </h1>
-              <p className="text-xl text-gray-600 leading-relaxed">
-                Giải pháp LIMS đầy đủ cho phòng lab đơn lẻ với quản lý bệnh nhân, 
-                theo dõi mẫu bằng mã vạch, đặt hàng xét nghiệm và báo cáo tài chính thông minh.
-              </p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-4">
-              {onShowRegister && (
-                <Button 
-                  onClick={onShowRegister}
-                  size="lg"
-                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
-                >
-                  Đăng ký miễn phí
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-              )}
-              <Button 
-                onClick={onShowLogin}
-                variant="outline" 
-                size="lg"
-                className="border-gray-300 hover:border-gray-400 hover:bg-gray-50 transition-all duration-200"
-              >
-                Đăng nhập
-              </Button>
-            </div>
-
-            {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-8">
-              {stats.map((stat, index) => (
-                <div key={index} className="text-center space-y-2">
-                  <div className="flex items-center justify-center gap-2">
-                    {stat.icon}
-                    <div className="text-2xl text-gray-900">{stat.number}</div>
-                  </div>
-                  <div className="text-sm text-gray-600">{stat.label}</div>
-                </div>
-              ))}
-            </div>
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      {/* Background */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-70"
+        style={{ backgroundImage: `url(${heroImage})` }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-br from-teal-300/40 via-teal-200/20 to-blue-700/40"></div>
+        <div className="absolute inset-0 bg-black/40"></div>
+      </div>
+      
+      {/* Floating elements */}
+      <div className="absolute top-20 left-10 w-20 h-20 bg-primary/10 rounded-full animate-float"></div>
+      <div className="absolute bottom-40 right-20 w-32 h-32 bg-primary-light/10 rounded-full animate-float" style={{ animationDelay: '2s' }}></div>
+      <div className="absolute top-1/3 right-10 w-16 h-16 bg-accent/20 rounded-full animate-pulse-soft"></div>
+      
+      {/* Content */}
+      <div className="relative z-10 container mx-auto px-4 text-center text-white">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-5xl md:text-7xl font-bold mb-6 animate-fade-up">
+            Hệ thống Quản lý
+            <span className="block gradient-text text-white">
+              Phòng thí nghiệm Tiên tiến
+            </span>
+          </h1>
+          
+          <p className="text-xl md:text-2xl text-white/90 mb-8 animate-fade-up" style={{ animationDelay: '0.2s' }}>
+            Tối ưu hóa hoạt động phòng thí nghiệm với máy phân tích huyết học hiện đại, 
+            quản lý bệnh nhân toàn diện và phân tích dữ liệu thời gian thực.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-up" style={{ animationDelay: '0.4s' }}>
+            <Button size="lg" className="group">
+              Dùng thử miễn phí
+              <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
+            </Button>
+            
+            <Button variant="outline" size="lg" className="group bg-white/10 text-white border-white/30 hover:bg-white/20">
+              <Play className="mr-2" />
+              Xem Demo
+            </Button>
           </div>
-
-          <div className="relative">
-            <div className="relative rounded-2xl overflow-hidden shadow-2xl bg-white/80 backdrop-blur-sm">
-              <ImageWithFallback
-                src="https://images.unsplash.com/photo-1576669801838-1b1c52121e6a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBsYWJvcmF0b3J5JTIwbWVkaWNhbCUyMHRlc3Rpbmd8ZW58MXx8fHwxNzU5NDgzMDQ3fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
-                alt="Modern laboratory"
-                className="w-full h-96 object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-blue-900/20 to-transparent"></div>
+          
+          <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-8 text-center animate-fade-up" style={{ animationDelay: '0.6s' }}>
+            <div>
+              <div className="text-3xl font-bold text-white">500+</div>
+              <div className="text-white/80">Phòng thí nghiệm</div>
             </div>
-            {/* Floating cards */}
-            <div className="absolute -top-6 -left-6 p-4 bg-white rounded-xl shadow-lg border border-gray-100">
-              <div className="flex items-center gap-3">
-                <Heart className="h-6 w-6 text-red-500" />
-                <div>
-                  <div className="text-sm text-gray-900">Sức khỏe bệnh nhân</div>
-                  <div className="text-xs text-gray-600">Ưu tiên hàng đầu</div>
-                </div>
-              </div>
+            <div>
+              <div className="text-3xl font-bold text-white">1M+</div>
+              <div className="text-white/80">Xét nghiệm thực hiện</div>
             </div>
-            <div className="absolute -bottom-6 -right-6 p-4 bg-white rounded-xl shadow-lg border border-gray-100">
-              <div className="flex items-center gap-3">
-                <TrendingUp className="h-6 w-6 text-green-500" />
-                <div>
-                  <div className="text-sm text-gray-900">Hiệu quả 99.9%</div>
-                  <div className="text-xs text-gray-600">Độ chính xác cao</div>
-                </div>
-              </div>
+            <div>
+              <div className="text-3xl font-bold text-white">99.9%</div>
+              <div className="text-white/80">Thời gian hoạt động</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-white">24/7</div>
+              <div className="text-white/80">Hỗ trợ</div>
             </div>
           </div>
         </div>
       </div>
+      
+      {/* Scroll indicator */}
+      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+        <div className="w-6 h-10 border-2 border-white/50 rounded-full flex justify-center">
+          <div className="w-1 h-3 bg-white/50 rounded-full mt-2 animate-pulse"></div>
+        </div>
+      </div>
     </section>
   );
-}
+};
+
+export default HeroSection;

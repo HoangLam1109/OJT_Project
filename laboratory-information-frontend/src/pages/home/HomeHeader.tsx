@@ -5,9 +5,10 @@ import type { LoginType } from "../../types/Login.type";
 
 interface HomeHeaderProps extends LoginType {
   onLogout?: () => void;
+  onShowRegister?: () => void;
 }
 
-export function HomeHeader({ onShowLogin, onLogout }: HomeHeaderProps) {
+export function HomeHeader({ onShowLogin, onShowRegister, onLogout }: HomeHeaderProps) {
   const { user } = useAuthContext();
 
   return (
@@ -44,14 +45,22 @@ export function HomeHeader({ onShowLogin, onLogout }: HomeHeaderProps) {
               </Button>
             </div>
           ) : (
-            // User is not logged in - show login button
-            <Button
-              onClick={onShowLogin}
-              className="bg-gradient-to-r from-gray-900 to-gray-700 hover:from-black hover:to-gray-800 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
-            >
-              Đăng nhập
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
+            // User is not logged in - show register and login buttons
+            <div className="flex items-center gap-3">
+              <Button
+                onClick={onShowRegister}
+                className="bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
+              >
+                Đăng ký
+              </Button>
+              <Button
+                onClick={onShowLogin}
+                className="bg-gradient-to-r from-gray-900 to-gray-700 hover:from-black hover:to-gray-800 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
+              >
+                Đăng nhập
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
           )}
         </div>
       </nav>
