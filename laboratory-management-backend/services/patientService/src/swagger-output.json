@@ -27,10 +27,16 @@
       "in": "cookie",
       "name": "accessToken",
       "description": "JWT access token stored in HTTP-only cookie. Set automatically on login from IAM Service."
+    },
+    "internalApiKey": {
+      "type": "apiKey",
+      "in": "header",
+      "name": "x-internal-api-key",
+      "description": "Internal microservice API key. Required for create/update/delete patient endpoints."
     }
   },
   "paths": {
-    "/patients/": {
+    "/patients/getAll/": {
       "get": {
         "tags": [
           "Patients"
@@ -76,12 +82,80 @@
             "apiKeyAuth": []
           }
         ]
-      },
+      }
+    },
+    "/patients/viewDetail/{id}": {
+      "get": {
+        "tags": [
+          "Patients"
+        ],
+        "description": "Get a single patient by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "populateUser",
+            "in": "query",
+            "type": "boolean",
+            "default": true
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/patients/create/": {
       "post": {
         "tags": [
           "Patients"
         ],
         "description": "Create a new patient profile for an existing IAM user",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "example": {
+                  "type": "object",
+                  "properties": {
+                    "user_id": {
+                      "type": "string",
+                      "example": "661fd5f2eecf99292a1a1c1b"
+                    },
+                    "emergency_contact": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "example": "John Doe"
+                        },
+                        "phone": {
+                          "type": "string",
+                          "example": "+84-912345678"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": ""
@@ -90,6 +164,108 @@
         "security": [
           {
             "internalApiKey": []
+          },
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/patients/update/{id}": {
+      "put": {
+        "tags": [
+          "Patients"
+        ],
+        "description": "Update patient details",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "example": "1c9933e3-a5dc-4e94-bcbf-3d634fb87dc3"
+                },
+                "emergency_contact": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "example": "Nguyễn Văn B"
+                    },
+                    "phone": {
+                      "type": "string",
+                      "example": "+84-912345678"
+                    }
+                  }
+                },
+                "last_test_type": {
+                  "type": "string",
+                  "example": "Blood Test"
+                },
+                "is_active": {
+                  "type": "boolean",
+                  "example": true
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "internalApiKey": []
+          },
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/patients/delete/{id}": {
+      "delete": {
+        "tags": [
+          "Patients"
+        ],
+        "description": "Delete a patient (soft delete by default)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "hard",
+            "in": "query",
+            "type": "boolean",
+            "default": false
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "internalApiKey": []
+          },
+          {
+            "apiKeyAuth": []
           }
         ]
       }

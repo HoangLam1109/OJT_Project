@@ -1,13 +1,39 @@
 import express from "express";
-import { createPatient, getAllPatients } from "../../controllers/patient.controller.js";
-import authenticateInternalApi from "../../middlewares/internalApi.middleware.js";
+import {
+	createPatient,
+	deletePatient,
+	getAllPatients,
+	getPatientById,
+	updatePatient,
+} from "../../controllers/patient.controller.js";
+import authenticateUser from "../../middlewares/authenticate.middleware.js";
+import { isInternalApiKeyValid } from "../../middlewares/internalApi.middleware.js";
 
 const router = express.Router();
 
-// Get all patients with pagination and search
-router.get("/", getAllPatients);
+// Allow internal microservice key or fallback to JWT cookies for mutations
+const authorizeWriteAccess = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+	if (isInternalApiKeyValid(req)) {
+		next();
+		return;
+	}
 
-// Create patient (called by IAM Service with internal API key)
-router.post("/", authenticateInternalApi, createPatient);
+	authenticateUser.authenticateUser(req, res, next);
+};
+
+// [GET] List patients with pagination and search
+router.get("/getAll/", getAllPatients);
+
+// [GET] View patient detail
+router.get("/viewDetail/:id", getPatientById);
+
+// [POST] Create patient (IAM internal use)
+router.post("/create/", authorizeWriteAccess, createPatient);
+
+// [PUT] Update patient
+router.put("/update/:id", authorizeWriteAccess, updatePatient);
+
+// [DELETE] Delete patient
+router.delete("/delete/:id", authorizeWriteAccess, deletePatient);
 
 export default router;

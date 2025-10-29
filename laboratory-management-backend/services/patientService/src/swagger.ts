@@ -25,6 +25,12 @@ const doc = {
       in: 'cookie',
       name: 'accessToken',
       description: 'JWT access token stored in HTTP-only cookie. Set automatically on login from IAM Service.'
+    },
+    internalApiKey: {
+      type: 'apiKey',
+      in: 'header',
+      name: 'x-internal-api-key',
+      description: 'Internal microservice API key. Required for create/update/delete patient endpoints.'
     }
   }
 };

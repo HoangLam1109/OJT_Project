@@ -24,6 +24,8 @@ export interface CreatePatientPayload {
 	created_by?: string;
 }
 
+export type PatientDetail = PatientWithUser;
+
 export class PatientService {
 	async getAllPatients(
 		filters: PatientFilters = {},
@@ -74,6 +76,24 @@ export class PatientService {
 		return await Patient.findOne({ _id: id, is_deleted: false }).lean<IPatient | null>();
 	}
 
+	async getPatientDetail(id: string, includeUser: boolean = true): Promise<PatientDetail | null> {
+		const patient = await Patient.findOne({ _id: id, is_deleted: false }).lean<IPatient | null>();
+
+		if (!patient) {
+			return null;
+		}
+
+		if (!includeUser) {
+			return patient as PatientDetail;
+		}
+
+		const user = await iamServiceClient.getUserById(patient.user_id);
+		return {
+			...patient,
+			user: user ?? null,
+		} as PatientDetail;
+	}
+
 	async getPatientByUserId(userId: string): Promise<IPatient | null> {
 		return await Patient.findOne({ user_id: userId, is_deleted: false }).lean<IPatient | null>();
 	}
@@ -91,19 +111,19 @@ export class PatientService {
 		return await Patient.findOneAndUpdate(
 			{ _id: id, is_deleted: false },
 			{ $set: updateData },
-			{ new: true, runValidators: true }
+			{ new: true, runValidators: true, timestamps: true }
 		).lean<IPatient | null>();
 	}
 
-		async softDeletePatient(id: string): Promise<IPatient | null> {
+	async softDeletePatient(id: string): Promise<IPatient | null> {
 		return await Patient.findOneAndUpdate(
 			{ _id: id, is_deleted: false },
-				{
-					$set: {
-						is_deleted: true,
-						deleted_at: new Date(),
-					},
+			{
+				$set: {
+					is_deleted: true,
+					deleted_at: new Date(),
 				},
+			},
 			{ new: true }
 		).lean<IPatient | null>();
 	}
