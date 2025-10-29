@@ -13,8 +13,16 @@
       "description": "User management operations (requires authentication)"
     },
     {
+      "name": "Role CRUD",
+      "description": "Role management operations (requires authentication)"
+    },
+    {
       "name": "Authentication",
       "description": "Authentication and authorization operations"
+    },
+    {
+      "name": "Additional",
+      "description": "Additional functions operations (requires authentication) (use if needed)"
     }
   ],
   "schemes": [
@@ -479,21 +487,6 @@
         "description": "Get users with pagination",
         "parameters": [
           {
-            "name": "slice(-4",
-            "in": "header",
-            "type": "string"
-          },
-          {
-            "name": "x-internal-api-key",
-            "in": "header",
-            "type": "string"
-          },
-          {
-            "name": "X-Internal-API-Key",
-            "in": "header",
-            "type": "string"
-          },
-          {
             "name": "limit",
             "in": "query",
             "description": "Number of users per page (1-100)",
@@ -521,6 +514,25 @@
               "email"
             ],
             "default": "_id"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Search term to filter users",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "searchField",
+            "in": "query",
+            "description": "Fields to search by",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "email",
+              "fullName"
+            ],
+            "default": "fullName"
           },
           {
             "name": "sortOrder",
@@ -655,73 +667,78 @@
         ]
       }
     },
-    "/user/me": {
+    "/user/me/roles": {
       "get": {
         "tags": [
           "User CRUD"
         ],
-        "description": "Get profile information of the authenticated user",
-        "parameters": [
-          {
-            "name": "slice(-4",
-            "in": "header",
-            "type": "string"
-          },
-          {
-            "name": "x-internal-api-key",
-            "in": "header",
-            "type": "string"
-          }
-        ],
+        "description": "Get current authenticated user roles and privileges",
         "responses": {
           "200": {
-            "description": "Authenticated user profile retrieved successfully",
+            "description": "Current user roles and privileges retrieved successfully",
             "schema": {
               "type": "object",
               "properties": {
-                "user": {
-                  "type": "object",
-                  "properties": {
-                    "_id": {
-                      "type": "string",
-                      "example": "string"
-                    },
-                    "email": {
-                      "type": "string",
-                      "example": "string"
-                    },
-                    "fullName": {
-                      "type": "string",
-                      "example": "string"
-                    },
-                    "identityNumber": {
-                      "type": "string",
-                      "example": "string"
-                    },
-                    "gender": {
-                      "type": "string",
-                      "example": "string"
-                    },
-                    "age": {
-                      "type": "string",
-                      "example": "number"
-                    },
-                    "dateOfBirth": {
-                      "type": "string",
-                      "example": "string"
-                    },
-                    "phoneNumber": {
-                      "type": "string",
-                      "example": "string"
-                    },
-                    "address": {
-                      "type": "string",
-                      "example": "string"
-                    },
-                    "role": {
-                      "type": "string",
-                      "example": "string"
+                "userId": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "email": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "fullName": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "roles": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_id": {
+                        "type": "string",
+                        "example": "string"
+                      },
+                      "roleCode": {
+                        "type": "string",
+                        "example": "string"
+                      },
+                      "roleName": {
+                        "type": "string",
+                        "example": "string"
+                      },
+                      "description": {
+                        "type": "string",
+                        "example": "string"
+                      },
+                      "privileges": {
+                        "type": "array",
+                        "example": [
+                          "string"
+                        ],
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "isActive": {
+                        "type": "string",
+                        "example": "boolean"
+                      },
+                      "isSystemRole": {
+                        "type": "string",
+                        "example": "boolean"
+                      }
                     }
+                  }
+                },
+                "aggregatedPrivileges": {
+                  "type": "array",
+                  "example": [
+                    "string"
+                  ],
+                  "items": {
+                    "type": "string"
                   }
                 }
               },
@@ -729,6 +746,115 @@
                 "name": "main"
               }
             }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/user/{id}/roles": {
+      "get": {
+        "tags": [
+          "User CRUD"
+        ],
+        "description": "Get user roles and privileges by user ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "User ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User roles and privileges retrieved successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userId": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "email": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "fullName": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "roles": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_id": {
+                        "type": "string",
+                        "example": "string"
+                      },
+                      "roleCode": {
+                        "type": "string",
+                        "example": "string"
+                      },
+                      "roleName": {
+                        "type": "string",
+                        "example": "string"
+                      },
+                      "description": {
+                        "type": "string",
+                        "example": "string"
+                      },
+                      "privileges": {
+                        "type": "array",
+                        "example": [
+                          "string"
+                        ],
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "isActive": {
+                        "type": "string",
+                        "example": "boolean"
+                      },
+                      "isSystemRole": {
+                        "type": "string",
+                        "example": "boolean"
+                      }
+                    }
+                  }
+                },
+                "aggregatedPrivileges": {
+                  "type": "array",
+                  "example": [
+                    "string"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "User ID is required"
           },
           "401": {
             "description": "Authentication required"
@@ -760,21 +886,6 @@
             "required": true,
             "type": "string",
             "description": "User ID"
-          },
-          {
-            "name": "slice(-4",
-            "in": "header",
-            "type": "string"
-          },
-          {
-            "name": "x-internal-api-key",
-            "in": "header",
-            "type": "string"
-          },
-          {
-            "name": "X-Internal-API-Key",
-            "in": "header",
-            "type": "string"
           }
         ],
         "responses": {
@@ -821,7 +932,7 @@
                 },
                 "role": {
                   "type": "string",
-                  "example": "string"
+                  "example": "string[]"
                 },
                 "createdAt": {
                   "type": "string",
@@ -865,21 +976,6 @@
         "description": "Create a new user",
         "parameters": [
           {
-            "name": "slice(-4",
-            "in": "header",
-            "type": "string"
-          },
-          {
-            "name": "x-internal-api-key",
-            "in": "header",
-            "type": "string"
-          },
-          {
-            "name": "X-Internal-API-Key",
-            "in": "header",
-            "type": "string"
-          },
-          {
             "name": "body",
             "in": "body",
             "description": "User data",
@@ -922,6 +1018,15 @@
                 "address": {
                   "type": "string",
                   "example": "string"
+                },
+                "role": {
+                  "type": "array",
+                  "example": [
+                    "USER"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
                 }
               }
             }
@@ -979,21 +1084,6 @@
             "description": "User ID"
           },
           {
-            "name": "slice(-4",
-            "in": "header",
-            "type": "string"
-          },
-          {
-            "name": "x-internal-api-key",
-            "in": "header",
-            "type": "string"
-          },
-          {
-            "name": "X-Internal-API-Key",
-            "in": "header",
-            "type": "string"
-          },
-          {
             "name": "body",
             "in": "body",
             "description": "User update data",
@@ -1036,6 +1126,15 @@
                 "isActive": {
                   "type": "string",
                   "example": "boolean"
+                },
+                "role": {
+                  "type": "array",
+                  "example": [
+                    ""
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
                 }
               }
             }
@@ -1094,21 +1193,6 @@
             "required": true,
             "type": "string",
             "description": "User ID"
-          },
-          {
-            "name": "slice(-4",
-            "in": "header",
-            "type": "string"
-          },
-          {
-            "name": "x-internal-api-key",
-            "in": "header",
-            "type": "string"
-          },
-          {
-            "name": "X-Internal-API-Key",
-            "in": "header",
-            "type": "string"
           }
         ],
         "responses": {
@@ -1139,6 +1223,828 @@
           },
           "404": {
             "description": "User not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/user/assign-role/{id}": {
+      "put": {
+        "tags": [
+          "Additional"
+        ],
+        "description": "Assign role to user",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "User ID"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Role data",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "role": {
+                  "type": "array",
+                  "example": [
+                    "string"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Role assigned successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Role assigned successfully!"
+                },
+                "userId": {
+                  "type": "string",
+                  "example": "string"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "User ID is required"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/user/lock/{id}": {
+      "put": {
+        "tags": [
+          "Additional"
+        ],
+        "description": "Lock user by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "User ID"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "User active status",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "isActive": {
+                  "type": "string",
+                  "example": "boolean"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User locked successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "User locked successfully!"
+                },
+                "userId": {
+                  "type": "string",
+                  "example": "string"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "User ID is required"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/role/all": {
+      "get": {
+        "tags": [
+          "Role CRUD"
+        ],
+        "description": "Get roles with pagination",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of roles per page (1-100)",
+            "required": false,
+            "type": "integer",
+            "default": 10
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Cursor for next page (role ID)",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "description": "Field to sort by",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "createdAt",
+              "_id",
+              "roleCode",
+              "roleName"
+            ],
+            "default": "_id"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Search term to filter roles",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "searchField",
+            "in": "query",
+            "description": "Fields to search by",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "roleCode",
+              "roleName",
+              "privileges"
+            ],
+            "default": "roleName"
+          },
+          {
+            "name": "sortOrder",
+            "in": "query",
+            "description": "Sort order",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "default": "asc"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Roles retrieved successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "array"
+                    },
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "_id": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "roleCode": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "roleName": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "description": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "isActive": {
+                          "type": "string",
+                          "example": "boolean"
+                        },
+                        "isSystemRole": {
+                          "type": "string",
+                          "example": "boolean"
+                        }
+                      }
+                    }
+                  }
+                },
+                "pagination": {
+                  "type": "object",
+                  "properties": {
+                    "hasNextPage": {
+                      "type": "string",
+                      "example": "boolean"
+                    },
+                    "hasPreviousPage": {
+                      "type": "string",
+                      "example": "boolean"
+                    },
+                    "nextCursor": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "previousCursor": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "totalCount": {
+                      "type": "string",
+                      "example": "number"
+                    },
+                    "limit": {
+                      "type": "string",
+                      "example": "number"
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid pagination parameters"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/role/{id}": {
+      "get": {
+        "tags": [
+          "Role CRUD"
+        ],
+        "description": "Get role by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Role ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Role retrieved successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "_id": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "roleCode": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "roleName": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "description": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "createdAt": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "updatedAt": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "privileges": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "isActive": {
+                  "type": "string",
+                  "example": "boolean"
+                },
+                "isSystemRole": {
+                  "type": "string",
+                  "example": "boolean"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Role ID is required"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "404": {
+            "description": "Role not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/role/create": {
+      "post": {
+        "tags": [
+          "Role CRUD"
+        ],
+        "description": "Create a new role",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Role data",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "roleCode": {
+                  "type": "string",
+                  "example": "USER"
+                },
+                "roleName": {
+                  "type": "string",
+                  "example": "Test Role"
+                },
+                "description": {
+                  "type": "string",
+                  "example": "Test Role"
+                },
+                "privileges": {
+                  "type": "array",
+                  "example": [
+                    ""
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "isActive": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "isSystemRole": {
+                  "type": "boolean",
+                  "example": false
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Role created successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Role created successfully!"
+                },
+                "roleId": {
+                  "type": "string",
+                  "example": "string"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request or missing required fields"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/role/update/{id}": {
+      "put": {
+        "tags": [
+          "Role CRUD"
+        ],
+        "description": "Update role by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Role ID"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Role update data",
+            "required": false,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "roleCode": {
+                  "type": "string",
+                  "example": "USER"
+                },
+                "roleName": {
+                  "type": "string",
+                  "example": "Test Role"
+                },
+                "description": {
+                  "type": "string",
+                  "example": "Test Role"
+                },
+                "privileges": {
+                  "type": "array",
+                  "example": [
+                    ""
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "isActive": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "isSystemRole": {
+                  "type": "boolean",
+                  "example": false
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Role updated successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Role updated successfully!"
+                },
+                "roleId": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "privileges": {
+                  "type": "string",
+                  "example": "array"
+                },
+                "isActive": {
+                  "type": "string",
+                  "example": "boolean"
+                },
+                "isSystemRole": {
+                  "type": "string",
+                  "example": "boolean"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Role ID is required"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "404": {
+            "description": "Role not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/role/delete/{id}": {
+      "delete": {
+        "tags": [
+          "Role CRUD"
+        ],
+        "description": "Delete role by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Role ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Role deleted successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Role deleted successfully!"
+                },
+                "roleId": {
+                  "type": "string",
+                  "example": "string"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Role ID is required"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "404": {
+            "description": "Role not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/role/assign/{id}": {
+      "put": {
+        "tags": [
+          "Additional"
+        ],
+        "description": "Assign privileges to role",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Role ID"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Role update data",
+            "required": false,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "privileges": {
+                  "type": "array",
+                  "example": [
+                    ""
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Role updated successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Role updated successfully!"
+                },
+                "roleId": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "privileges": {
+                  "type": "string",
+                  "example": "array"
+                },
+                "isActive": {
+                  "type": "string",
+                  "example": "boolean"
+                },
+                "isSystemRole": {
+                  "type": "string",
+                  "example": "boolean"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Role ID is required"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "404": {
+            "description": "Role not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/role/remove/{id}": {
+      "put": {
+        "tags": [
+          "Additional"
+        ],
+        "description": "Remove privileges from role",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Role ID"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Role update data",
+            "required": false,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "privileges": {
+                  "type": "array",
+                  "example": [
+                    ""
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Role updated successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Role updated successfully!"
+                },
+                "roleId": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "privileges": {
+                  "type": "string",
+                  "example": "array"
+                },
+                "isActive": {
+                  "type": "string",
+                  "example": "boolean"
+                },
+                "isSystemRole": {
+                  "type": "string",
+                  "example": "boolean"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Role ID is required"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "404": {
+            "description": "Role not found"
           },
           "500": {
             "description": "Internal server error"

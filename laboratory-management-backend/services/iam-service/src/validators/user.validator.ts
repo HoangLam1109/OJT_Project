@@ -41,12 +41,12 @@ export const createUserSchema = Joi.object({
     'string.min': 'Password must be at least 6 characters long',
     'any.required': 'Password is required'
   }),
-  role: Joi.string().custom((value, helpers) => {
+  role: Joi.array().items(Joi.string().custom((value, helpers) => {
     if (!validateRole(value)) {
       return helpers.error('any.invalid');
     }
     return value;
-  }).messages({
+  })).messages({
     'any.invalid': 'Invalid role code'
   })
 });
@@ -79,16 +79,16 @@ export const updateUserSchema = Joi.object({
   address: Joi.string().min(1).messages({
     'string.min': 'Address must be at least 1 character long',
   }),
-  role: Joi.string().custom((value, helpers) => {
-    if (!validateRole(value)) {
-      return helpers.error('any.invalid');
-    }
-    return value;
-  }).messages({
-    'any.invalid': 'Invalid role code'
-  }),
   password: Joi.string().min(6).messages({
     'string.min': 'Password must be at least 6 characters long'
   }),
   isActive: Joi.boolean().default(true),
+  role: Joi.array().items(Joi.string().custom((value, helpers) => {
+    if (!validateRole(value)) {
+      return helpers.error('any.invalid');
+    }
+    return value;
+  })).messages({
+    'any.invalid': 'Invalid role code'
+  })
 }).min(1);

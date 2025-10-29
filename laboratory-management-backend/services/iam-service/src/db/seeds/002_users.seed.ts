@@ -5,7 +5,8 @@ import dotenv from 'dotenv';
 import {
   ROLE_CODES,
 } from '../../constants/roles.constant.js';
-import User from '../../db/models/User.model.js';
+import User from '../models/User.model.js';
+import Role from '../models/Role.model.js';
 import connectDB from '../../config/database.config.js';
 
 dotenv.config();
@@ -76,8 +77,18 @@ const usersSeedData = [
 async function seedDatabase() {
   try {
     await connectDB();
-    console.log('Connected to database for seeding.');
+    console.log('Connected to database for user seeding.');
 
+    // Fetch all roles first
+    const roles = await Role.find({ isSystemRole: true });
+    const roleMap = new Map(roles.map(role => [role.roleCode, role._id]));
+
+    if (roles.length === 0) {
+      console.error('❌ No roles found! Please run 001_roles.seed.ts first.');
+      return;
+    }
+
+    console.log(`Found ${roles.length} system roles`);
     console.log('Seeding users...');
     for (const userData of usersSeedData) {
       const existingUser = await User.findOne({
@@ -90,6 +101,12 @@ async function seedDatabase() {
       if (!existingUser) {
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(userData.password, saltRounds);
+        const roleId = roleMap.get(userData.role);
+
+        if (!roleId) {
+          console.error(`❌ Role ${userData.role} not found for user ${userData.email}`);
+          continue;
+        }
 
         await User.create({
           _id: randomUUID(),
@@ -100,19 +117,25 @@ async function seedDatabase() {
           age: userData.age,
           dateOfBirth: userData.dateOfBirth,
           passwordHash: hashedPassword,
-          role: userData.role,
+          role: [roleId], // Store as array of role IDs
           isActive: true,
           isDeleted: false,
         });
-        console.log(`Created user: ${userData.email} with role: ${userData.role}`);
+        console.log(`✓ Created user: ${userData.email} with role: ${userData.role}`);
       } else {
-        console.log(`User with email ${userData.email} or identity number ${userData.identityNumber} already exists.`);
+        console.log(`⚠ User with email ${userData.email} or identity number ${userData.identityNumber} already exists.`);
       }
     }
 
-    console.log('User seeding completed successfully!');
+    console.log('\n✅ User seeding completed successfully!');
+    console.log('\nUser Summary:');
+    const users = await User.find({}).populate('role');
+    users.forEach(user => {
+      const roleNames = (user.role as any[]).map((r: any) => r?.roleCode || 'Unknown').join(', ');
+      console.log(`  - ${user.email}: ${roleNames}`);
+    });
   } catch (error) {
-    console.error('Error seeding database:', error);
+    console.error('❌ Error seeding users:', error);
   } finally {
     await mongoose.connection.close();
     console.log('Database connection closed.');

@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
-import { ROLE_PERMISSIONS, ROLE_CODES, type RoleCode, isValidRoleCode } from '../constants/roles.constant.js';
 import { errorHandler } from '../utils/error.util.js';
+import RoleModel from '../db/models/Role.model.js';
 
 // Define the type for authenticated user (matches what the authenticate middleware provides)
 interface AuthenticatedUser {
@@ -11,52 +11,54 @@ interface AuthenticatedUser {
   gender: string;
   age: number;
   dateOfBirth: Date;
-  role: string;
+  role: string[];
+  isActive: boolean;
+  isDeleted: boolean;
 }
 
 export const authorize = (requiredPermissions: string[] | string) => {
-  return (req: Request, res: Response, next: NextFunction) => {
-    const internalApiKey = req.headers['x-internal-api-key'];
-    const expectedKey = process.env.INTERNAL_API_KEY;
+  return async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const user = req.user as AuthenticatedUser | undefined;
 
-    if (internalApiKey && expectedKey && internalApiKey === expectedKey) {
-      if (!req.user) {
-        req.user = {
-          _id: 'internal-service-user',
-          email: 'internal@system.local',
-          fullName: 'Internal Service',
-          identityNumber: 'INTERNAL',
-          gender: 'N/A',
-          age: 0,
-          dateOfBirth: new Date(0),
-          role: ROLE_CODES.ADMIN,
-        } as AuthenticatedUser;
+      if (!user || !user.role) {
+        return errorHandler(res, { message: 'Unauthorized: User or role missing', status: 401 });
       }
 
-      return next();
+      if (!user.isActive || user.isDeleted) {
+        return errorHandler(res, { message: 'Unauthorized: User is not active or deleted', status: 401 });
+      }
+
+      // Fetch user roles with privileges
+      const userRoles = await RoleModel.find({ 
+        roleCode: { $in: user.role },
+        isActive: true  // Only fetch active roles
+      }).select('privileges isActive');
+
+      if (userRoles.length === 0) {
+        return errorHandler(res, { message: 'Unauthorized: No valid roles found', status: 401 });
+      }
+
+      // Aggregate all privileges from all user roles
+      const permsArray = Array.isArray(requiredPermissions) ? requiredPermissions : [requiredPermissions];
+      const userPermissions = new Set<string>();
+      userRoles.forEach(role => {
+        role.privileges.forEach(priv => userPermissions.add(priv));
+      });
+
+      // Check if user has required permissions
+      const hasPermission = permsArray.some((perm) =>
+        userPermissions.has('*') || userPermissions.has(perm)
+      );
+
+      if (!hasPermission) {
+        return errorHandler(res, { message: 'Forbidden: Insufficient permissions', status: 403 });
+      }
+
+      next();
+    } catch (error) {
+      console.error('Authorization error:', error);
+      return errorHandler(res, { message: 'Authorization failed', status: 500 });
     }
-
-    const user = req.user as AuthenticatedUser | undefined;
-
-    if (!user || !user.role) {
-      return errorHandler(res, { message: 'Unauthorized: User or role missing', status: 401 });
-    }
-
-    if (!isValidRoleCode(user.role)) {
-      return errorHandler(res, { message: 'Unauthorized: Invalid role', status: 401 });
-    }
-
-    const permsArray = Array.isArray(requiredPermissions) ? requiredPermissions : [requiredPermissions];
-    const userPermissions = ROLE_PERMISSIONS[user.role as RoleCode] || [];
-
-    const hasPermission = permsArray.some((perm) =>
-      userPermissions.includes('*') || userPermissions.includes(perm)
-    );
-
-    if (!hasPermission) {
-      return errorHandler(res, { message: 'Forbidden: Insufficient permissions', status: 403 });
-    }
-
-    next();
   };
 };
