@@ -18,19 +18,21 @@ import { ManagerLayout } from "../layouts/ManagerLayout";
 import NormalUserLayout from "../layouts/NormalUserLayout";
 import Dashboard from "../pages/NormalUser/Dashboard";
 import TestResults from "../pages/NormalUser/TestResults";
-import Profile from "../pages/NormalUser/Profile";
+import Profile from "../layouts/Profile";
 import { LabUserLayout } from "../layouts/LabUserLayout";
 import LabUserDashboard from "../pages/LabUser/Dashboard";
 import TestOrdersPage from "../pages/LabUser/TestOrdersPage";
 import TestResultsPage from "../pages/LabUser/TestResultsPage";
 import LabUserPatientManagementPage from "../pages/LabUser/PatientManagementPage";
-import LabUserProfile from "../pages/LabUser/Profile";
+import InstrumentManagementPage from "../pages/LabUser/InstrumentManagementPage";
+import ReagentManagementPage from "../pages/LabUser/ReagentManagementPage";
 import { ServiceLayout } from "../layouts/ServiceLayout";
 import ServiceDashboardPage from "../pages/service/ServiceDashboardPage";
 import ServiceEventLogPage from "../pages/service/ServiceEventLogPage";
 import ServiceReagentPage from "../pages/service/ServiceReagentPage";
 import ServiceInstrumentPage from "../pages/service/ServiceInstrumentPage";
 import { ServiceTestPage } from "../pages/service/ServiceTestPage";
+import { GoogleCallbackPage } from "../pages/login/GoogleCallbackPage";
 
 export function AppRoutes() {
   const { user, onLogout } = useAuthContext();
@@ -69,6 +71,12 @@ export function AppRoutes() {
         element={<RegisterPage />}
       />
 
+      {/* Google OAuth Callback */}
+      <Route
+        path="/auth/google/callback"
+        element={<GoogleCallbackPage />}
+      />
+
       {/* Trang Normal User */}
       <Route
         path="/user"
@@ -82,7 +90,7 @@ export function AppRoutes() {
             >
               {normalUserPage === "dashboard" && <Dashboard />}
               {normalUserPage === "test-results" && <TestResults />}
-              {normalUserPage === "profile" && <Profile />}
+              {normalUserPage === "profile" && <Profile currentUser={user!} />}
             </NormalUserLayout>
           </ProtectedRoute>
         }
@@ -134,6 +142,7 @@ export function AppRoutes() {
                   <p className="text-gray-500 mt-2">Trang cài đặt đang được phát triển</p>
                 </div>
               )}
+              {managerPage === "profile" && <Profile currentUser={user!} />}
             </ManagerLayout>
           </ProtectedRoute>
         }
@@ -154,25 +163,15 @@ export function AppRoutes() {
               {labUserPage === "patients" && <LabUserPatientManagementPage />}
               {labUserPage === "test-orders" && <TestOrdersPage />}
               {labUserPage === "test-results" && <TestResultsPage />}
-              {labUserPage === "instruments" && (
-                <div className="text-center py-12">
-                  <h2 className="text-2xl font-bold text-gray-900">Quản lý Thiết bị</h2>
-                  <p className="text-gray-500 mt-2">Trang quản lý thiết bị đang được phát triển</p>
-                </div>
-              )}
-              {labUserPage === "reagents" && (
-                <div className="text-center py-12">
-                  <h2 className="text-2xl font-bold text-gray-900">Quản lý Thuốc thử</h2>
-                  <p className="text-gray-500 mt-2">Trang quản lý thuốc thử đang được phát triển</p>
-                </div>
-              )}
+              {labUserPage === "instruments" && <InstrumentManagementPage />}
+              {labUserPage === "reagents" && <ReagentManagementPage />}
               {labUserPage === "reports" && (
                 <div className="text-center py-12">
                   <h2 className="text-2xl font-bold text-gray-900">Báo cáo</h2>
                   <p className="text-gray-500 mt-2">Trang báo cáo đang được phát triển</p>
                 </div>
               )}
-              {labUserPage === "profile" && <LabUserProfile />}
+              {labUserPage === "profile" && <Profile currentUser={user!} />}
             </LabUserLayout>
           </ProtectedRoute>
         }
@@ -195,6 +194,7 @@ export function AppRoutes() {
               {servicePage === "reagents" && <ServiceReagentPage />}
               {servicePage === "instruments" && <ServiceInstrumentPage />}
               {servicePage === "blood-testing" && <ServiceTestPage />}
+              {servicePage === "profile" && <Profile currentUser={user!} />}
             </ServiceLayout>
           </ProtectedRoute>
         }

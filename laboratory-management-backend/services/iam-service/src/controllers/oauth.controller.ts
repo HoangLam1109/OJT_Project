@@ -85,7 +85,9 @@ const googleCallback = async (req: Request, res: Response): Promise<void> => {
         console.warn('Failed to decode OAuth state:', stateError);
       }
 
-      res.status(200).json({
+      // Redirect về frontend với user data
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+      const userData = {
         message: 'Google login successful!',
         user: {
           id: user._id,
@@ -96,7 +98,10 @@ const googleCallback = async (req: Request, res: Response): Promise<void> => {
           avatar: user.avatar,
         },
         redirectTo: returnTo,
-      });
+      };
+      
+      const encodedData = encodeURIComponent(JSON.stringify(userData));
+      res.redirect(`${frontendUrl}/auth/google/callback?data=${encodedData}`);
     })(req, res);
   } catch (error) {
     errorHandler(res, error);
