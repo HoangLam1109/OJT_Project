@@ -6,6 +6,9 @@ import { UserRepository } from "./user.repository.js";
 import { AuditLogRepository } from "./auditLog.repository.js";
 import { PasswordHistoryRepository } from "./passwordHistory.repository.js";
 
+import Role from "../db/models/Role.model.js";
+import { RoleRepository } from "./role.repository.js";
+
 
 // Repository factory
 export class RepositoryFactory {
@@ -13,6 +16,8 @@ export class RepositoryFactory {
 
   private static auditLogRepository: AuditLogRepository;
   private static passwordHistoryRepository: PasswordHistoryRepository;
+
+  private static roleRepository: RoleRepository;
 
   static async initializeRepositories(): Promise<void> {
     // Redis is disabled - using mock client, no initialization needed
@@ -39,9 +44,17 @@ export class RepositoryFactory {
     }
     return this.passwordHistoryRepository;
   }
+
+  static getRoleRepository(): RoleRepository {
+    if (!this.roleRepository) {
+      this.roleRepository = new RoleRepository(Role);
+    }
+    return this.roleRepository;
+  }
 }
 
 // Export individual repositories for convenience
 export const userRepository = RepositoryFactory.getUserRepository();
 export const auditLogRepository = RepositoryFactory.getAuditLogRepository();
 export const passwordHistoryRepository = RepositoryFactory.getPasswordHistoryRepository();
+export const roleRepository = RepositoryFactory.getRoleRepository();
