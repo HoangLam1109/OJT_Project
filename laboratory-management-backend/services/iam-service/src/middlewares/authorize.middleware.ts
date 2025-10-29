@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { ROLE_PERMISSIONS, type RoleCode, isValidRoleCode } from '../constants/roles.constant.js';
+import { ROLE_PERMISSIONS, ROLE_CODES, type RoleCode, isValidRoleCode } from '../constants/roles.constant.js';
 import { errorHandler } from '../utils/error.util.js';
 
 // Define the type for authenticated user (matches what the authenticate middleware provides)
@@ -16,6 +16,26 @@ interface AuthenticatedUser {
 
 export const authorize = (requiredPermissions: string[] | string) => {
   return (req: Request, res: Response, next: NextFunction) => {
+    const internalApiKey = req.headers['x-internal-api-key'];
+    const expectedKey = process.env.INTERNAL_API_KEY;
+
+    if (internalApiKey && expectedKey && internalApiKey === expectedKey) {
+      if (!req.user) {
+        req.user = {
+          _id: 'internal-service-user',
+          email: 'internal@system.local',
+          fullName: 'Internal Service',
+          identityNumber: 'INTERNAL',
+          gender: 'N/A',
+          age: 0,
+          dateOfBirth: new Date(0),
+          role: ROLE_CODES.ADMIN,
+        } as AuthenticatedUser;
+      }
+
+      return next();
+    }
+
     const user = req.user as AuthenticatedUser | undefined;
 
     if (!user || !user.role) {

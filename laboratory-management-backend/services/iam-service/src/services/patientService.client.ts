@@ -7,23 +7,32 @@ interface CreatePatientRequest {
 }
 
 class PatientServiceClient {
-  private baseUrl: string;
-  private internalApiKey: string;
+  private baseUrl: string | null = null;
+  private internalApiKey: string | null = null;
 
-  constructor() {
+  private initialize() {
+    if (this.baseUrl !== null) {
+      return;
+    }
+
     this.baseUrl = process.env.PATIENT_SERVICE_URL || 'http://localhost:5001';
     this.internalApiKey = process.env.INTERNAL_API_KEY || '';
+
+    console.log('[PatientServiceClient] Configured baseUrl:', this.baseUrl);
+    console.log('[PatientServiceClient] INTERNAL_API_KEY:', this.internalApiKey ? '***' + this.internalApiKey.slice(-4) : 'NOT SET');
   }
 
   async createPatientForUser(userId: string): Promise<void> {
+    this.initialize();
+    
     try {
-      const url = `${this.baseUrl}/api/patients`;
+      const url = `${this.baseUrl}/api/patients/create`;
       
       const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Internal-API-Key': this.internalApiKey,
+          'X-Internal-API-Key': this.internalApiKey || '',
         },
         body: JSON.stringify({
           user_id: userId,
@@ -32,7 +41,8 @@ class PatientServiceClient {
       });
 
       if (!response.ok) {
-        console.error(`[IAM] Failed to create patient for user ${userId}`);
+        const message = await response.text();
+        console.error(`[IAM] Failed to create patient for user ${userId}: ${response.status} ${response.statusText} - ${message}`);
         return;
       }
 

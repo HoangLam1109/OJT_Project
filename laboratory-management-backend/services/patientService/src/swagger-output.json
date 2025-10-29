@@ -193,24 +193,24 @@
               "properties": {
                 "id": {
                   "type": "string",
-                  "example": "1c9933e3-a5dc-4e94-bcbf-3d634fb87dc3"
+                  "example": ""
                 },
                 "emergency_contact": {
                   "type": "object",
                   "properties": {
                     "name": {
                       "type": "string",
-                      "example": "Nguyễn Văn B"
+                      "example": ""
                     },
                     "phone": {
                       "type": "string",
-                      "example": "+84-912345678"
+                      "example": ""
                     }
                   }
                 },
                 "last_test_type": {
                   "type": "string",
-                  "example": "Blood Test"
+                  "example": ""
                 },
                 "is_active": {
                   "type": "boolean",
