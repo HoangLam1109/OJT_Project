@@ -76,9 +76,11 @@ const userSchema = new mongoose.Schema<IUser>(
     },
     phoneNumber: {
       type: String,
-      required: [true, "Phone number is required!"],
       trim: true,
       unique: true,
+      required: function (this: IUser) {
+      return this.provider === 'local' || !this.provider;
+    },
     },
     role: {
       type: String,
