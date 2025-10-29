@@ -2,6 +2,8 @@ import type { Request, Response } from "express";
 import type { IUser } from "../db/models/User.model.js";
 import { UserService } from "../services/user.service.js";
 import { errorHandler } from "../utils/error.util.js";
+import patientServiceClient from "../services/patientService.client.js";
+import { ROLE_CODES } from "../constants/roles.constant.js";
 
 // Define the type for authenticated user (matches what the middleware provides)
 interface AuthenticatedUser {
@@ -145,6 +147,14 @@ const createUser = async (req: Request, res: Response): Promise<void> => {
   try {
     const userData = req.body;
     const newUser = await userService.createUser(userData, (req.user as AuthenticatedUser)?._id);
+    console.log('[UserController] Created user role:', newUser.role);
+    
+    // Auto-create patient record only for normal users
+    if (!newUser.role || newUser.role === ROLE_CODES.USER) {
+      console.log('[UserController] Auto-creating patient for user role USER');
+      await patientServiceClient.createPatientForUser(newUser._id);
+    }
+    
     res.status(201).json({
       message: "User created successfully!",
       userId: newUser._id

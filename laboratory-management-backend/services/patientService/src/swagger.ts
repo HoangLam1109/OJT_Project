@@ -13,6 +13,10 @@ const doc = {
     {
       name: 'Patients',
       description: 'Patient management operations (requires authentication)'
+    },
+    {
+      name: 'Patient Medical Records',
+      description: 'Sensitive medical record operations for authorized personnel'
     }
   ],
   securityDefinitions: {

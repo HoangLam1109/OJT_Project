@@ -1,14 +1,24 @@
+// MUST load env FIRST before any other imports that use process.env
+import dotenv from "dotenv";
+import { fileURLToPath } from "url";
+import { dirname, resolve } from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const envPath = resolve(__dirname, '../.env');
+dotenv.config({ path: envPath });
+
+console.log('[Patient Service] Env loaded from:', envPath);
+console.log('[Patient Service] INTERNAL_API_KEY:', process.env.INTERNAL_API_KEY ? '***' + process.env.INTERNAL_API_KEY.slice(-4) : 'NOT SET');
+
+// Now import other modules (they will see the env vars)
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import dotenv from "dotenv";
 import swaggerUi from "swagger-ui-express";
 import { readFileSync } from "fs";
 import connectDB from "./config/database.config.js";
-import patientRoutes from "./routes/v1/patient.routes.js";
-
-// Load environment variables
-dotenv.config({ path: "./services/patientService/.env" });
+import apiRoutes from "./routes/index.js";
 
 const app = express();
 
@@ -28,7 +38,7 @@ const swaggerDocument = JSON.parse(
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Routes
-app.use("/api/patients", patientRoutes);
+app.use("/api", apiRoutes);
 
 // Health check
 app.get("/", (req, res) => {
@@ -47,7 +57,7 @@ app.listen(PORT, () => {
   console.log(`${"=".repeat(60)}`);
   console.log(`📍 Server URL:     http://localhost:${PORT}`);
   console.log(`📚 Swagger UI:     http://localhost:${PORT}/api-docs`);
-  console.log(`🔗 API Endpoint:   http://localhost:${PORT}/api/patients`);
+  console.log(`🔗 API Endpoint:   http://localhost:${PORT}/api`);
   console.log(`💾 Database:       patientService`);
   console.log(`${"=".repeat(60)}\n`);
 });
