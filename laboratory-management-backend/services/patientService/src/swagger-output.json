@@ -270,7 +270,7 @@
         ]
       }
     },
-    "/patient-medical-records/": {
+    "/patient-medical-records/getAll/": {
       "get": {
         "tags": [
           "Patient Medical Records"
@@ -449,7 +449,126 @@
             "apiKeyAuth": []
           }
         ]
-      },
+      }
+    },
+    "/patient-medical-records/viewDetail/{id}": {
+      "get": {
+        "tags": [
+          "Patient Medical Records"
+        ],
+        "description": "Get a patient medical record by record code or ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Medical record code or ID"
+          },
+          {
+            "name": "includePatient",
+            "in": "query",
+            "description": "Include patient profile details",
+            "type": "boolean",
+            "default": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Patient medical record retrieved successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "record": {
+                  "type": "object",
+                  "properties": {
+                    "_id": {
+                      "type": "string",
+                      "example": "uuid"
+                    },
+                    "patient_id": {
+                      "type": "string",
+                      "example": "patient-uuid"
+                    },
+                    "record_code": {
+                      "type": "string",
+                      "example": "MR202510240001"
+                    },
+                    "blood_type": {
+                      "type": "string",
+                      "example": "A+"
+                    },
+                    "allergies": {
+                      "type": "string",
+                      "example": "Penicillin"
+                    },
+                    "chronic_conditions": {
+                      "type": "string",
+                      "example": "Hypertension"
+                    },
+                    "current_medications": {
+                      "type": "string",
+                      "example": "Atorvastatin"
+                    },
+                    "medical_history": {
+                      "type": "string",
+                      "example": "Appendectomy - 2010"
+                    },
+                    "clinical_notes": {
+                      "type": "string",
+                      "example": "Patient showing good recovery"
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "example": "2025-10-24T11:00:00Z"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "example": "2025-10-24T11:00:00Z"
+                    },
+                    "patient": {
+                      "type": "object",
+                      "properties": {
+                        "_id": {
+                          "type": "string",
+                          "example": "patient-uuid"
+                        },
+                        "user_id": {
+                          "type": "string",
+                          "example": "user-uuid"
+                        },
+                        "patient_code": {
+                          "type": "string",
+                          "example": "PT202510240001"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "404": {
+            "description": "Patient medical record not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/patient-medical-records/create/": {
       "post": {
         "tags": [
           "Patient Medical Records"
@@ -565,19 +684,65 @@
         ]
       }
     },
-    "/patient-medical-records/{id}": {
+    "/patient-medical-records/update/{id}": {
       "put": {
         "tags": [
           "Patient Medical Records"
         ],
-        "description": "Update a patient medical record by ID",
+        "description": "Update a patient medical record by record code or ID",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
             "type": "string",
-            "description": "Medical record ID"
+            "description": "Medical record code or ID"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "blood_type": {
+                  "type": "string",
+                  "example": "O+"
+                },
+                "allergies": {
+                  "type": "string",
+                  "example": "Penicillin"
+                },
+                "chronic_conditions": {
+                  "type": "string",
+                  "example": "Diabetes"
+                },
+                "current_medications": {
+                  "type": "string",
+                  "example": "Metformin"
+                },
+                "medical_history": {
+                  "type": "string",
+                  "example": "Surgery 2020"
+                },
+                "clinical_notes": {
+                  "type": "string",
+                  "example": "Patient stable"
+                },
+                "recent_test_summary": {
+                  "type": "string",
+                  "example": "Normal results"
+                },
+                "recent_instruments_used": {
+                  "type": "string",
+                  "example": "XN-1000"
+                },
+                "recent_reagents_info": {
+                  "type": "string",
+                  "example": "Lot# XYZ"
+                }
+              }
+            }
           }
         ],
         "responses": {
@@ -593,19 +758,21 @@
             "apiKeyAuth": []
           }
         ]
-      },
+      }
+    },
+    "/patient-medical-records/delete/{id}": {
       "delete": {
         "tags": [
           "Patient Medical Records"
         ],
-        "description": "Soft delete a patient medical record by ID",
+        "description": "Soft delete a patient medical record by record code or ID",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
             "type": "string",
-            "description": "Medical record ID"
+            "description": "Medical record code or ID"
           }
         ],
         "responses": {
