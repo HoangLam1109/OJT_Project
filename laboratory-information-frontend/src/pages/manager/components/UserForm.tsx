@@ -4,6 +4,7 @@ import Button from '../../../components/common/button';
 import { Input } from '../../../components/common/input';
 import { Label } from '../../../components/common/label';
 import type { UserFormData, ValidationErrors, ManagerUser } from '../types/ManagerTypes';
+import { validateUserForm } from '../types/validators';
 
 interface UserFormProps {
   mode: 'create' | 'edit' | 'view';
@@ -31,8 +32,9 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
   useEffect(() => {
     if (user && (mode === 'edit' || mode === 'view')) {
       setFormData({
-        fullName: user.name|| '',
+        fullName: user.name || '',
         email: user.email,
+        password: '',
         role: user.role,
         phone_number: user.phone_number || '',
         identify_number: user.identify_number || '',
@@ -45,66 +47,43 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
     }
   }, [user, mode]);
 
-  const validateForm = (): boolean => {
-    // Skip validation for edit mode
-    if (mode === 'edit') {
-      return true;
-    }
-
-    const newErrors: ValidationErrors = {};
-
-    if (!formData.fullName.trim()) {
-      newErrors.fullName = 'Họ tên là bắt buộc';
-    }
-
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email là bắt buộc';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Email không hợp lệ';
-    }
-
-    if (mode === 'create' && !formData.password) {
-      newErrors.password = 'Mật khẩu là bắt buộc';
-    } else if (formData.password && formData.password.length < 6) {
-      newErrors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
-    }
-
-    if (!formData.phone_number.trim()) {
-      newErrors.phone_number = 'Số điện thoại là bắt buộc';
-    } else if (!/^[0-9+\-\s()]+$/.test(formData.phone_number)) {
-      newErrors.phone_number = 'Số điện thoại không hợp lệ';
-    }
-
-    if (!formData.identify_number.trim()) {
-      newErrors.identify_number = 'Số CMND/CCCD là bắt buộc';
-    }
-
-    if (!formData.date_of_birth) {
-      newErrors.date_of_birth = 'Ngày sinh là bắt buộc';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (mode === 'view') return;
 
-    if (validateForm()) {
-      onSubmit(formData);
+    try {
+  const validationErrors = await validateUserForm(formData, mode, user?.id);
+      setErrors(validationErrors);
+
+      if (Object.keys(validationErrors).length === 0) {
+        try {
+          await onSubmit(formData);
+        } catch (error) {
+          if (error instanceof Error) {
+            // Kiểm tra lỗi từ MongoDB (E11000 duplicate key error)
+            if (error.message.includes('E11000')) {
+              if (error.message.includes('email_1 dup key')) {
+                setErrors(prev => ({ ...prev, email: 'Email đã đăng kí' }));
+              } else if (error.message.includes('identityNumber')) {
+                setErrors(prev => ({ ...prev, identify_number: 'CMND/CCCD đã đăng kí' }));
+              }
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Validation error:', error);
     }
   };
 
   const handleChange = (field: keyof UserFormData, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    // Clear error for this field
+
     if (errors[field]) {
       setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[field];
-        return newErrors;
+        const updated = { ...prev };
+        delete updated[field];
+        return updated;
       });
     }
   };
@@ -113,14 +92,10 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
 
   const getTitle = () => {
     switch (mode) {
-      case 'create':
-        return 'Tạo người dùng mới';
-      case 'edit':
-        return 'Chỉnh sửa người dùng';
-      case 'view':
-        return 'Chi tiết người dùng';
-      default:
-        return '';
+      case 'create': return 'Tạo người dùng mới';
+      case 'edit': return 'Chỉnh sửa người dùng';
+      case 'view': return 'Chi tiết người dùng';
+      default: return '';
     }
   };
 
@@ -129,9 +104,7 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
       <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-900">
-            {getTitle()}
-          </h2>
+          <h2 className="text-2xl font-bold text-gray-900">{getTitle()}</h2>
           <Button variant="ghost" size="icon" onClick={onCancel}>
             <X className="w-5 h-5" />
           </Button>
@@ -142,9 +115,7 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Full Name */}
             <div className="md:col-span-2">
-              <Label htmlFor="fullName">
-                Họ và tên {mode !== 'edit'}
-              </Label>
+              <Label htmlFor="fullName">Họ và tên</Label>
               <Input
                 id="fullName"
                 value={formData.fullName}
@@ -153,16 +124,12 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
                 disabled={isReadOnly}
                 aria-invalid={!!errors.fullName}
               />
-              {errors.fullName && mode !== 'edit' && (
-                <p className="text-red-500 text-sm mt-1">{errors.fullName}</p>
-              )}
+              {errors.fullName && <p className="mt-2 text-sm text-red-500">{errors.fullName}</p>}
             </div>
 
             {/* Email */}
             <div>
-              <Label htmlFor="email">
-                Email {mode !== 'edit'}
-              </Label>
+              <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -172,17 +139,13 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
                 disabled={isReadOnly || mode === 'edit'}
                 aria-invalid={!!errors.email}
               />
-              {errors.email && mode !== 'edit' && (
-                <p className="text-red-500 text-sm mt-1">{errors.email}</p>
-              )}
+              {errors.email && <p className="mt-2 text-sm text-red-500">{errors.email}</p>}
             </div>
 
             {/* Password */}
             {mode !== 'view' && (
               <div>
-                <Label htmlFor="password">
-                  Mật khẩu {mode === 'create'}
-                </Label>
+                <Label htmlFor="password">Mật khẩu</Label>
                 <Input
                   id="password"
                   type="password"
@@ -191,23 +154,19 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
                   placeholder={mode === 'edit' ? 'Để trống nếu không đổi' : '••••••••'}
                   aria-invalid={!!errors.password}
                 />
-                {errors.password && mode !== 'edit' && (
-                  <p className="text-red-500 text-sm mt-1">{errors.password}</p>
-                )}
+                {errors.password && <p className="mt-2 text-sm text-red-500">{errors.password}</p>}
               </div>
             )}
 
             {/* Role */}
             <div>
-              <Label htmlFor="role">
-                Vai trò {mode !== 'edit'}
-              </Label>
+              <Label htmlFor="role">Vai trò</Label>
               <select
                 id="role"
                 value={formData.role}
                 onChange={(e) => handleChange('role', e.target.value)}
                 disabled={isReadOnly}
-                className="flex h-9 w-full rounded-md border border-input bg-input-background px-3 py-1 text-base transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30"
+                className="flex h-9 w-full rounded-md border border-input bg-input-background px-3 py-1"
               >
                 <option value="USER">Người dùng</option>
                 <option value="LAB_USER">Nhân viên Lab</option>
@@ -217,11 +176,9 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
               </select>
             </div>
 
-            {/* Phone Number */}
+            {/* Phone */}
             <div>
-              <Label htmlFor="phone_number">
-                Số điện thoại {mode !== 'edit'}
-              </Label>
+              <Label htmlFor="phone_number">Số điện thoại</Label>
               <Input
                 id="phone_number"
                 value={formData.phone_number}
@@ -230,16 +187,12 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
                 disabled={isReadOnly}
                 aria-invalid={!!errors.phone_number}
               />
-              {errors.phone_number && mode !== 'edit' && (
-                <p className="text-red-500 text-sm mt-1">{errors.phone_number}</p>
-              )}
+              {errors.phone_number && <p className="mt-2 text-sm text-red-500">{errors.phone_number}</p>}
             </div>
 
-            {/* Identify Number */}
+            {/* Identify */}
             <div>
-              <Label htmlFor="identify_number">
-                CMND/CCCD {mode !== 'edit'}
-              </Label>
+              <Label htmlFor="identify_number">CMND/CCCD</Label>
               <Input
                 id="identify_number"
                 value={formData.identify_number}
@@ -248,22 +201,18 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
                 disabled={isReadOnly}
                 aria-invalid={!!errors.identify_number}
               />
-              {errors.identify_number && mode !== 'edit' && (
-                <p className="text-red-500 text-sm mt-1">{errors.identify_number}</p>
-              )}
+              {errors.identify_number && <p className="mt-2 text-sm text-red-500">{errors.identify_number}</p>}
             </div>
 
             {/* Gender */}
             <div>
-              <Label htmlFor="gender">
-                Giới tính {mode !== 'edit'}
-              </Label>
+              <Label htmlFor="gender">Giới tính</Label>
               <select
                 id="gender"
                 value={formData.gender}
                 onChange={(e) => handleChange('gender', e.target.value)}
                 disabled={isReadOnly}
-                className="flex h-9 w-full rounded-md border border-input bg-input-background px-3 py-1 text-base transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30"
+                className="flex h-9 w-full rounded-md border border-input bg-input-background px-3 py-1"
               >
                 <option value="Male">Nam</option>
                 <option value="Female">Nữ</option>
@@ -271,11 +220,9 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
               </select>
             </div>
 
-            {/* Date of Birth */}
+            {/* Date */}
             <div>
-              <Label htmlFor="date_of_birth">
-                Ngày sinh {mode !== 'edit'}
-              </Label>
+              <Label htmlFor="date_of_birth">Ngày sinh</Label>
               <Input
                 id="date_of_birth"
                 type="date"
@@ -284,9 +231,7 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
                 disabled={isReadOnly}
                 aria-invalid={!!errors.date_of_birth}
               />
-              {errors.date_of_birth && mode !== 'edit' && (
-                <p className="text-red-500 text-sm mt-1">{errors.date_of_birth}</p>
-              )}
+              {errors.date_of_birth && <p className="mt-2 text-sm text-red-500">{errors.date_of_birth}</p>}
             </div>
 
             {/* Address */}
@@ -298,10 +243,12 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
                 onChange={(e) => handleChange('address', e.target.value)}
                 placeholder="123 Đường ABC, Quận XYZ, TP. Hà Nội"
                 disabled={isReadOnly}
+                aria-invalid={!!errors.address}
               />
+              {errors.address && <p className="mt-2 text-sm text-red-500">{errors.address}</p>}
             </div>
 
-            {/* Active Status */}
+            {/* Active */}
             {mode !== 'create' && (
               <div className="md:col-span-2 flex items-center gap-2">
                 <input
@@ -310,11 +257,8 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
                   checked={formData.active}
                   onChange={(e) => handleChange('active', e.target.checked)}
                   disabled={isReadOnly}
-                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
                 />
-                <Label htmlFor="active" className="cursor-pointer">
-                  Tài khoản hoạt động
-                </Label>
+                <Label htmlFor="active">Tài khoản hoạt động</Label>
               </div>
             )}
           </div>
@@ -335,4 +279,3 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
     </div>
   );
 }
-

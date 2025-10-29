@@ -167,7 +167,13 @@ export const apiUtils = {
   // Extract error message from axios error
   getErrorMessage: (error: unknown): string => {
     if (axios.isAxiosError(error)) {
-      return error.response?.data?.message || error.message || 'Có lỗi xảy ra';
+      // Prefer explicit message from backend; fall back to any 'error' field or axios message
+      return (
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        'Có lỗi xảy ra'
+      );
     }
     if (error instanceof Error) {
       return error.message;

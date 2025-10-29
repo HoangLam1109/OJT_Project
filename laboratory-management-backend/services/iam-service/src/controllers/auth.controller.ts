@@ -5,6 +5,8 @@ import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
 import { errorHandler } from "../utils/error.util.js";
 import { clearJWT, generateJWT, refreshJWT } from "../utils/jwt.util.js";
+import patientServiceClient from "../services/patientService.client.js";
+import { ROLE_CODES } from "../constants/roles.constant.js";
 dotenv.config();
 
 const userService = new UserService();
@@ -51,9 +53,9 @@ const registerUser = async (req: Request, res: Response): Promise<void> => {
       identityNumber,
       gender,
       age,
+      phoneNumber,
       dateOfBirth,
       password,
-      phoneNumber,
       address,
     } = req.body;
 
@@ -63,6 +65,7 @@ const registerUser = async (req: Request, res: Response): Promise<void> => {
       !identityNumber ||
       !gender ||
       !age ||
+      !phoneNumber ||
       !dateOfBirth ||
       !password ||
       !phoneNumber ||
@@ -73,14 +76,14 @@ const registerUser = async (req: Request, res: Response): Promise<void> => {
     }
 
     const existingEmail = await userService.getUserByEmail(email);
-    const existingIdentityNumber = await userService.getUserByIdentityNumber(
+    const existingPhoneNumber = await userService.getUserByPhoneNumber(
       identityNumber
     );
-    if (existingEmail || existingIdentityNumber) {
+    if (existingEmail || existingPhoneNumber) {
       res.status(400).json({
         message: existingEmail
           ? "Email already exists!"
-          : "Identity number already exists!",
+          : "Phone number already exists!",
       });
       return;
     }
@@ -100,6 +103,13 @@ const registerUser = async (req: Request, res: Response): Promise<void> => {
       undefined
     );
 
+    console.log('[AuthController] Created user role:', newUser.role);
+    // Auto-create patient record only for normal users
+    if (!newUser.role || newUser.role === ROLE_CODES.USER) {
+      console.log('[AuthController] Auto-creating patient for user role USER');
+      await patientServiceClient.createPatientForUser(newUser._id);
+    }
+
     res.status(200).json({
       message: "User created successfully!",
     });
@@ -118,7 +128,7 @@ const loginUser = async (req: Request, res: Response): Promise<void> => {
       description: 'Login credentials',
       required: true,
       schema: {
-        email: 'string',
+        identifier: 'string',
         password: 'string'
       }
     }
@@ -143,15 +153,20 @@ const loginUser = async (req: Request, res: Response): Promise<void> => {
     #swagger.responses[500] = { description: 'Internal server error' }
   */
   try {
-    const { email, password } = req.body;
+    const { identifier, password } = req.body;
 
-    if (!email || !password) {
+    if (!identifier || !password) {
       res.status(400).json({ message: "Missing credentials" });
       return;
     }
 
-    const user: IUser | null = await userService.getUserByEmail(email);
+    // ✅ Kiểm tra là email hay số điện thoại
+    const isEmail = /\S+@\S+\.\S+/.test(identifier);
 
+    // ✅ Tìm user theo email hoặc phoneNumber
+    const user: IUser | null = isEmail
+      ? await userService.getUserByEmail(identifier)
+      : await userService.getUserByPhoneNumber(identifier);
     if (!user) {
       res.status(400).json({ message: "User not found!" });
       return;
@@ -170,6 +185,7 @@ const loginUser = async (req: Request, res: Response): Promise<void> => {
       user: {
         id: user._id,
         email: user.email,
+        phoneNumber: user.phoneNumber,
         fullName: user.fullName,
         role: user.role,
       },

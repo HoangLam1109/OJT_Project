@@ -1,9 +1,13 @@
 import type { Response } from "express";
 
 export const errorHandler = (res: Response, error: any) => {
+  const status = typeof error?.status === "number" ? error.status : 500;
+  const message = error?.message ?? "Server Error!";
+
   console.error('Error details:', error);
-  res.status(500).json({
-    message: "Server Error!",
-    error: error.message
+
+  res.status(status).json({
+    message,
+    error: error?.error ?? message
   });
 };

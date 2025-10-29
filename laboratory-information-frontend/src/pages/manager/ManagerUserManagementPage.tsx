@@ -13,15 +13,23 @@ import { useUserStatistics } from './hooks/useUserStatistics';
 import { useUserModal } from './hooks/useUserModal';
 import type { ManagerUser, UserFormData } from './types/ManagerTypes';
 
-// interface ManagerUserManagementPageProps {
-//   currentUser?: ManagerUser;
-// }
 
 export function ManagerUserManagementPage() {
   // Custom hooks
-  const { users, createUser, updateUser, deleteUser, toggleUserLock } = useUserManagement();
+  const { 
+    users, 
+    pagination, 
+    loadNextPage, 
+    loadPrevPage,
+    loadFirstPage, 
+    loadLastPage,
+    createUser, 
+    updateUser, 
+    deleteUser, 
+    toggleUserLock 
+  } = useUserManagement();
   const { filters, setFilters, filteredUsers } = useUserFilters(users);
-  const statistics = useUserStatistics(users);
+  const statistics = useUserStatistics(users, pagination.total);
   const { modalState, openCreateModal, openViewModal, openEditModal, closeModal } = useUserModal();
   
   // Local state
@@ -71,11 +79,16 @@ export function ManagerUserManagementPage() {
       {/* Users Table */}
       <UsersTableCard
         users={filteredUsers}
-        totalUsers={users.length}
+        totalUsers={pagination.total}
+        pagination={pagination}
         onView={openViewModal}
         onEdit={openEditModal}
         onDelete={setDeleteUserState}
         onToggleLock={handleToggleLock}
+        onPrevPage={loadPrevPage}
+        onNextPage={loadNextPage}
+        onFirstPage={loadFirstPage}
+        onLastPage={loadLastPage}
       />
 
       {/* User Form Modal */}
@@ -129,19 +142,33 @@ function PageHeader({ onCreate }: PageHeaderProps) {
 interface UsersTableCardProps {
   users: ManagerUser[];
   totalUsers: number;
+  pagination: {
+    hasNext: boolean;
+    hasPrev: boolean;
+    total: number;
+  };
   onView: (user: ManagerUser) => void;
   onEdit: (user: ManagerUser) => void;
   onDelete: (user: ManagerUser) => void;
   onToggleLock: (user: ManagerUser) => void;
+  onPrevPage: () => void;
+  onNextPage: () => void;
+  onFirstPage: () => void;
+  onLastPage: () => void;
 }
 
 function UsersTableCard({
   users,
   totalUsers,
+  pagination,
   onView,
   onEdit,
   onDelete,
   onToggleLock,
+  onPrevPage,
+  onNextPage,
+  onFirstPage,
+  onLastPage,
 }: UsersTableCardProps) {
   return (
     <Card>
@@ -158,6 +185,13 @@ function UsersTableCard({
             onEdit={onEdit}
             onDelete={onDelete}
             onToggleLock={onToggleLock}
+            onFirstPage={onFirstPage}
+            onPrevPage={onPrevPage}
+            onNextPage={onNextPage}
+            onLastPage={onLastPage}
+            hasPrev={pagination.hasPrev}
+            hasNext={pagination.hasNext}
+            pageLabel={`Trang hiện tại - ${users.length} người dùng`}
           />
       </CardContent>
     </Card>

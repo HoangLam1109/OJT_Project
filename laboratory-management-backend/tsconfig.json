@@ -4,25 +4,25 @@
     // File Layout
     // "rootDir": "./src",
     // "outDir": "./dist",
-
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "target": "esnext",
     // For nodejs:
-    "lib": ["esnext"],
-    "types": ["node"],
-
+    "lib": [
+      "esnext"
+    ],
+    "types": [
+      "node"
+    ],
     // Other Outputs
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,
-
     // Stricter Typechecking Options
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
-
     // Style Options
     // "noImplicitReturns": true,
     // "noImplicitOverride": true,
@@ -31,7 +31,6 @@
     // "noFallthroughCasesInSwitch": true,
     // "noPropertyAccessFromIndexSignature": true,
     "noImplicitAny": true,
-
     // Recommended Options
     "strict": true,
     "jsx": "react-jsx",
@@ -44,7 +43,11 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true
   },
-  "include": ["services/iam-service/src/**/*"],
+  "include": [
+    "services/iam-service/src/**/*",
+    "services/patientService/src/**/*",
+    "services/testOrderService/src/**/*"
+ ],
   "ts-node": {
     "esm": true,
     "experimentalSpecifierResolution": "node",

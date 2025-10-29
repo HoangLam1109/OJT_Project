@@ -5,6 +5,7 @@ import authRoutes from "./v1/auth.routes.js";
 import roleRoutes from "./v1/role.routes.js";
 
 import authenticateUser from "../middlewares/authenticate.middleware.js";
+import { ROLE_CODES } from "../constants/roles.constant.js";
 
 const router = express.Router();
 

@@ -2,8 +2,11 @@ import type { Request, Response } from "express";
 import type { IUser } from "../db/models/User.model.js";
 import { UserService } from "../services/user.service.js";
 import { errorHandler } from "../utils/error.util.js";
+import patientServiceClient from "../services/patientService.client.js";
+import { ROLE_CODES } from "../constants/roles.constant.js";
 import { PaginationUtils } from "../utils/pagination.util.js";
 import { PaginationOptions } from "../types/pagination.type.js";
+import { getAll } from "./role.controller.js";
 
 // Define the type for authenticated user (matches what the middleware provides)
 interface AuthenticatedUser {
@@ -22,6 +25,52 @@ interface AuthenticatedUser {
 }
 
 const userService = new UserService();
+
+const getCurrentUser = async (req: Request, res: Response): Promise<void> => {
+  /*
+    #swagger.auto = false
+    #swagger.tags = ['User CRUD']
+    #swagger.description = 'Get profile information of the authenticated user'
+    #swagger.security = [{"apiKeyAuth": []}]
+    #swagger.responses[200] = {
+      description: 'Authenticated user profile retrieved successfully',
+      schema: {
+        user: {
+          _id: 'string',
+          email: 'string',
+          fullName: 'string',
+          identityNumber: 'string',
+          gender: 'string',
+          age: 'number',
+          dateOfBirth: 'string',
+          phoneNumber: 'string',
+          address: 'string',
+          role: 'string'
+        }
+      }
+    }
+    #swagger.responses[401] = { description: 'Authentication required' }
+    #swagger.responses[404] = { description: 'User not found' }
+    #swagger.responses[500] = { description: 'Internal server error' }
+  */
+  try {
+    const currentUser = req.user as AuthenticatedUser | undefined;
+    if (!currentUser?._id) {
+      res.status(401).json({ message: "Not authorized" });
+      return;
+    }
+
+    const user = await userService.getUser(currentUser._id);
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    res.status(200).json({ user });
+  } catch (error) {
+    errorHandler(res, error);
+  }
+};
 
 const getUser = async (req: Request, res: Response): Promise<void> => {
   /*
@@ -70,7 +119,8 @@ const getUser = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    res.status(200).json(user);
+    // Return in consistent format for internal API calls
+    res.status(200).json({ user });
   } catch (error) {
     errorHandler(res, error);
   }
@@ -207,10 +257,15 @@ const createUser = async (req: Request, res: Response): Promise<void> => {
   */
   try {
     const userData = req.body;
-    const newUser = await userService.createUser(
-      userData,
-      (req.user as AuthenticatedUser)?._id
-    );
+    const newUser = await userService.createUser(userData, (req.user as AuthenticatedUser)?._id);
+    console.log('[UserController] Created user role:', newUser.role);
+    
+    // Auto-create patient record only for normal users
+    if (!newUser.role || newUser.role === ROLE_CODES.USER) {
+      console.log('[UserController] Auto-creating patient for user role USER');
+      await patientServiceClient.createPatientForUser(newUser._id);
+    }
+    
     res.status(201).json({
       message: "User created successfully!",
       userId: newUser._id,

@@ -260,3 +260,67 @@ html {
 .bg-destructive:hover {
   background-color: hsl(var(--destructive) / 0.9) !important;
 }
+
+/* Modal animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-in {
+  animation-fill-mode: both;
+}
+
+.fade-in {
+  animation: fadeIn 200ms ease-out;
+}
+
+.slide-in-from-bottom-4 {
+  animation: slideInFromBottom 300ms ease-out;
+}
+
+/* Enhanced backdrop blur for modals */
+.backdrop-blur-md {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Ensure modal background is properly blurred without dark overlay */
+.modal-backdrop {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Fallback for browsers that don't support backdrop-filter */
+@supports not (backdrop-filter: blur(8px)) {
+  .backdrop-blur-md {
+    background: rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Ensure the main page content is still visible but blurred */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 50;
+}
