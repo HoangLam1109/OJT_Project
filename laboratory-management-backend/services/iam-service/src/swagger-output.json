@@ -479,6 +479,16 @@
         "description": "Get users with pagination",
         "parameters": [
           {
+            "name": "slice(-4",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "x-internal-api-key",
+            "in": "header",
+            "type": "string"
+          },
+          {
             "name": "limit",
             "in": "query",
             "description": "Number of users per page (1-100)",
@@ -646,6 +656,18 @@
           "User CRUD"
         ],
         "description": "Get profile information of the authenticated user",
+        "parameters": [
+          {
+            "name": "slice(-4",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "x-internal-api-key",
+            "in": "header",
+            "type": "string"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Authenticated user profile retrieved successfully",
