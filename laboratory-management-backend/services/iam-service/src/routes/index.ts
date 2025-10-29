@@ -2,6 +2,7 @@ import express from "express";
 import userRoutes from "./v1/user.routes.js";
 import authRoutes from "./v1/auth.routes.js";
 import authenticateUser from "../middlewares/authenticate.middleware.js";
+import { ROLE_CODES } from "../constants/roles.constant.js";
 
 const router = express.Router();
 
@@ -19,6 +20,18 @@ router.use("/user", (req, res, next) => {
   if (internalApiKey && internalApiKey === process.env.INTERNAL_API_KEY) {
     // Internal API key is valid, skip JWT check
     console.log('[IAM Routes] ✅ Internal API key valid, bypassing JWT');
+    req.user = {
+      _id: 'internal-service-user',
+      email: 'internal@system.local',
+      fullName: 'Internal Service',
+      identityNumber: 'INTERNAL',
+      gender: 'N/A',
+      age: 0,
+      dateOfBirth: new Date(0),
+      role: ROLE_CODES.ADMIN,
+      isActive: true,
+      isDeleted: false,
+    } as any;
     return next();
   }
   
