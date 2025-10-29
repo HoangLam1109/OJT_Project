@@ -1,6 +1,5 @@
 import { PaginationOptions, PaginationResponse } from '../types/pagination.type.js';
 export class PaginationUtils {
-  // Parse and validate pagination query params
   static parseQuery(query: any): PaginationOptions {
     const limit = parseInt(query.limit) || 10;
 
@@ -12,26 +11,13 @@ export class PaginationUtils {
       limit,
       cursor: query.cursor,
       sortBy: query.sortBy || "_id",
+      search: query.search,
+      searchField: query.searchField,
       sortOrder: query.sortOrder || "asc",
       filters: query.filters,
     };
   }
 
-  // Build MongoDB query from pagination options
-  static buildMongoQuery(options: PaginationOptions): any {
-    return {
-      limit: options.limit,
-      sort: { [options.sortBy]: options.sortOrder === "asc" ? 1 : -1 },
-      cursor: options.cursor,
-    };
-  }
-
-  // Extract cursor from document for next page
-  static getCursor(doc: any, sortBy: string): string {
-    return doc[sortBy];
-  }
-
-  // Format API response
   static formatResponse<T>(
     data: T[],
     hasNextPage: boolean,

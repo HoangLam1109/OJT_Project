@@ -1,30 +1,29 @@
-import { randomUUID, type UUID } from "crypto"
-import mongoose, { Document } from "mongoose"
-import type { RoleCode } from "../../constants/roles.constant.js"
+import { randomUUID, type UUID } from "crypto";
+import mongoose, { Document } from "mongoose";
 
 export interface IUser extends Document {
-  _id: UUID
-  email: string
-  fullName: string
-  identityNumber: string
-  phoneNumber:String
-  gender: string
-  age: number
-  dateOfBirth: Date
-  passwordHash: string
-  address: string
-  createdAt: Date
-  updatedAt: Date
-  isActive?: boolean
-  isDeleted?: boolean
-  role?: RoleCode
+  _id: UUID;
+  email: string;
+  fullName: string;
+  identityNumber: string;
+  gender: string;
+  age: number;
+  dateOfBirth: Date;
+  passwordHash: string;
+  phoneNumber: string;
+  address: string;
+  createdAt: Date;
+  updatedAt: Date;
+  isActive?: boolean;
+  isDeleted?: boolean;
+  role?: string[];
 
   // OAuth fields
-  provider?: 'google' | 'facebook' | 'local'
-  providerId?: string
-  avatar?: string
+  provider?: "google" | "facebook" | "local";
+  providerId?: string;
+  avatar?: string;
 
-  // Future fields (commented out for now)
+  // Additional fields (commented out for now)
 
   // lastLogin?: Date
   // lastPasswordChange?: Date
@@ -52,8 +51,8 @@ const userSchema = new mongoose.Schema<IUser>(
       lowercase: true,
       validate: {
         validator: function (value: string): boolean {
-          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-          return emailRegex.test(value)
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          return emailRegex.test(value);
         },
         message: "Invalid email format!",
       },
@@ -67,8 +66,8 @@ const userSchema = new mongoose.Schema<IUser>(
     },
     identityNumber: {
       type: String,
-      required: function(this: IUser) {
-        return this.provider === 'local' || !this.provider;
+      required: function (this: IUser) {
+        return this.provider === "local" || !this.provider;
       },
       trim: true,
       unique: true,
@@ -82,11 +81,13 @@ const userSchema = new mongoose.Schema<IUser>(
       return this.provider === 'local' || !this.provider;
     },
     },
-    role: {
+    role: [{
       type: String,
+      ref: 'Role',
       trim: true,
-      default: 'USER'
-    },
+      required: [true, "User need a role!"],
+      default: ["USER"],
+    }],
     gender: {
       type: String,
       trim: true,
@@ -100,38 +101,38 @@ const userSchema = new mongoose.Schema<IUser>(
       type: Number,
       min: [1, "Age must be at least 1!"],
       max: [150, "Age cannot exceed 150!"],
-      required: function(this: IUser) {
-        return this.provider === 'local' || !this.provider;
+      required: function (this: IUser) {
+        return this.provider === "local" || !this.provider;
       },
     },
     dateOfBirth: {
       type: Date,
       format: "MM/DD/YYYY",
-      required: function(this: IUser) {
-        return this.provider === 'local' || !this.provider;
+      required: function (this: IUser) {
+        return this.provider === "local" || !this.provider;
       },
     },
     passwordHash: {
       type: String,
-      required: function(this: IUser) {
-        return this.provider === 'local' || !this.provider;
+      required: function (this: IUser) {
+        return this.provider === "local" || !this.provider;
       },
     },
     address: {
       type: String,
-      required: function(this: IUser) {
-        return this.provider === 'local' || !this.provider;
+      required: function (this: IUser) {
+        return this.provider === "local" || !this.provider;
       },
     },
     provider: {
       type: String,
-      enum: ['google', 'facebook', 'local'],
-      default: 'local'
+      enum: ["google", "facebook", "local"],
+      default: "local",
     },
     providerId: {
       type: String,
-      required: function(this: IUser) {
-        return !!this.provider && this.provider !== 'local';
+      required: function (this: IUser) {
+        return !!this.provider && this.provider !== "local";
       },
     },
     avatar: {
@@ -152,22 +153,21 @@ const userSchema = new mongoose.Schema<IUser>(
     timestamps: true,
     collection: "users",
   }
-)
+);
 
-userSchema.index({ isActive: 1 })
-userSchema.index({ isDeleted: 1 })
-userSchema.index({ provider: 1 })
-userSchema.index({ providerId: 1 })
-userSchema.index({ email: 1, provider: 1 }, { unique: true, sparse: true })
+userSchema.index({ isActive: 1 });
+userSchema.index({ isDeleted: 1 });
+userSchema.index({ provider: 1 });
+userSchema.index({ providerId: 1 });
+userSchema.index({ email: 1, provider: 1 }, { unique: true, sparse: true });
 
-
-userSchema.pre("save", function(next) {
+userSchema.pre("save", function (next) {
   if (!this._id) {
     this._id = randomUUID();
   }
   next();
 });
 
-const UserModel = mongoose.model<IUser>("User", userSchema)
+const UserModel = mongoose.model<IUser>("User", userSchema);
 
-export default UserModel
+export default UserModel;

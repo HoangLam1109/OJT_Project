@@ -1,12 +1,12 @@
 import { PaginationOptions } from "../types/pagination.type.js";
 
-// User repository interface
-export interface IUserRepository {
+// Role repository interface
+export interface IRoleRepository {
   findById(id: string, fields?: string): Promise<any>;
-  findByEmail(email: string): Promise<any>;
-  findByPhoneNumber(identityNumber: string): Promise<any>;
-  create(userData: any): Promise<any>;
-  updateById(id: string, userData: any): Promise<any>;
+  findOne(criteria: any): Promise<any>;
+  findByPrivileges(privileges: string[]): Promise<any>;
+  create(roleData: any): Promise<any>;
+  updateById(id: string, roleData: any): Promise<any>;
   deleteById(id: string): Promise<any>;
   findAll(fields?: string): Promise<any[]>;
   findWithPagination(options: PaginationOptions): Promise<{
@@ -16,45 +16,41 @@ export interface IUserRepository {
   }>;
 }
 
-// User repository implementation
-export class UserRepository implements IUserRepository {
-  constructor(private userModel: any) {}
+// Role repository implementation
+export class RoleRepository implements IRoleRepository {
+  constructor(private roleModel: any) {}
 
   async findById(id: string, fields?: string): Promise<any> {
-    return await this.userModel.findById(
+    return await this.roleModel.findById(
       id,
       fields ||
-        "_id email fullName phoneNumber identityNumber gender age dateOfBirth phoneNumber address isActive isDeleted provider providerId"
+        "_id roleCode roleName description isSystemRole isActive createdBy updatedBy privileges"
     );
   }
 
-  async findByEmail(email: string): Promise<any> {
-    return await this.userModel.findOne({ email });
-  }
-
-  async findByPhoneNumber(phoneNumber: string): Promise<any> {
-    return await this.userModel.findOne({ phoneNumber });
-  }
-
   async findOne(criteria: any): Promise<any> {
-    return await this.userModel.findOne(criteria);
+    return await this.roleModel.findOne(criteria);
   }
 
-  async create(userData: any): Promise<any> {
-    const user = new this.userModel(userData);
-    return await user.save();
+  async findByPrivileges(privileges: string[]): Promise<any> {
+    return await this.roleModel.find({ privileges: { $in: privileges } });
   }
 
-  async updateById(id: string, userData: any): Promise<any> {
-    return await this.userModel.findByIdAndUpdate(id, userData, { new: true });
+  async create(roleData: any): Promise<any> {
+    const role = new this.roleModel(roleData);
+    return await role.save();
+  }
+
+  async updateById(id: string, roleData: any): Promise<any> {
+    return await this.roleModel.findByIdAndUpdate(id, roleData, { new: true });
   }
 
   async deleteById(id: string): Promise<any> {
-    return await this.userModel.findByIdAndDelete(id);
+    return await this.roleModel.findByIdAndDelete(id);
   }
 
   async findAll(fields?: string): Promise<any[]> {
-    return await this.userModel.find({}, fields);
+    return await this.roleModel.find({}, fields);
   }
 
   async findWithPagination(
@@ -86,7 +82,7 @@ export class UserRepository implements IUserRepository {
       }
     }
 
-    const data = await this.userModel
+    const data = await this.roleModel
       .find(query)
       .sort(sortObj)
       .collation({ locale: 'en', strength: 2 })
@@ -95,7 +91,7 @@ export class UserRepository implements IUserRepository {
     return {
       data: data.slice(0, limit),
       hasNextPage,
-      totalCount: await this.userModel.countDocuments(query),
+      totalCount: await this.roleModel.countDocuments(query),
     };
   }
 }
