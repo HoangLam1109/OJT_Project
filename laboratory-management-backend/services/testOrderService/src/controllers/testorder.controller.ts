@@ -1,23 +1,103 @@
 import { Request, Response } from "express";
 import { TestOrderService } from "../services/testOrderService.js";
-
+import patientServiceClient from "../services/patientServiceClient.js";
+import iamServiceClient from "../services/iamServiceClient.js";
 export const getAllTestOrders = async (req: Request, res: Response) => {
   try {
+    // 1️⃣ Lấy danh sách test order
     const orders = await TestOrderService.getAllOrders();
-    res.json(orders);
+
+    // 1.1️⃣ Lọc bỏ những order đã soft-delete
+    const activeOrders = orders.filter((o) => !o.is_deleted);
+
+    // 2️⃣ Lấy các patientId duy nhất
+    const patientIds = [...new Set(activeOrders.map((o) => o.patient_id))];
+
+    // 3️⃣ Lấy thông tin patient (để biết user_id)
+    const patientsMap = await patientServiceClient.getPatientsByIds(patientIds);
+
+    // 4️⃣ Lấy danh sách userId từ patients
+    const userIds = [...new Set(Array.from(patientsMap.values()).map((p) => p.user_id))];
+    const usersMap = await iamServiceClient.getUsersByIds(userIds);
+
+    // 5️⃣ Kết hợp dữ liệu TestOrder + User
+    const enrichedOrders = activeOrders.map((order) => {
+      const patient = patientsMap.get(order.patient_id);
+      const user = patient ? usersMap.get(patient.user_id) : null;
+
+      return {
+        _id: order._id,
+        patient_id: order.patient_id,
+        barcode: order.barcode,
+        status: order.status,
+        created_at: order.created_at,
+        created_by: order.created_by,
+        run_at: order.run_at,
+        run_by: order.run_by,
+        updated_at: order.updated_at,
+        updated_by: order.updated_by,
+        is_deleted: order.is_deleted,
+        deleted_at: order.deleted_at,
+        deleted_by: order.deleted_by,
+
+        user: user
+          ? {
+              fullName: user.fullName,
+              email: user.email,
+              phoneNumber: user.phoneNumber,
+              age: user.age,
+            }
+          : null,
+      };
+    });
+
+    res.json(enrichedOrders);
   } catch (err) {
-    console.error(err);
+    console.error("[TestOrderController] Error fetching orders:", err);
     res.status(500).json({ message: "Internal server error" });
   }
 };
 
+
+/**
+ * Lấy chi tiết 1 test order + thông tin user
+ */
 export const getTestOrderById = async (req: Request<{ id: string }>, res: Response) => {
   try {
     const order = await TestOrderService.getOrderById(req.params.id);
     if (!order) return res.status(404).json({ message: "Test order not found" });
-    res.json(order);
+
+    const patient = await patientServiceClient.getPatientById(order.patient_id);
+    const user = patient ? await iamServiceClient.getUserById(patient.user_id) : null;
+
+    const enrichedOrder = {
+      _id: order._id,
+      patient_id: order.patient_id,
+      barcode: order.barcode,
+      status: order.status,
+      created_at: order.created_at,
+      created_by: order.created_by,
+      run_at: order.run_at,
+      run_by: order.run_by,
+      updated_at: order.updated_at,
+      updated_by: order.updated_by,
+      is_deleted: order.is_deleted,
+      deleted_at: order.deleted_at,
+      deleted_by: order.deleted_by,
+
+      user: user
+        ? {
+            fullName: user.fullName,
+            email: user.email,
+            phoneNumber: user.phoneNumber,
+            age: user.age,
+          }
+        : null,
+    };
+
+    res.json(enrichedOrder);
   } catch (err) {
-    console.error(err);
+    console.error("[TestOrderController] Error fetching order by ID:", err);
     res.status(500).json({ message: "Internal server error" });
   }
 };
