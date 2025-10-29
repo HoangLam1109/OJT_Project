@@ -18,6 +18,13 @@ const getAllPatients = async (req: Request, res: Response): Promise<void> => {
   */
   try {
     const { page = "1", limit = "10", search, isActive, populateUser = "true" } = req.query;
+    const userId = (req as any).userId;
+
+    console.log(`\n📋 [LIST PATIENTS] User: ${userId}`);
+    console.log(`   └─ Page: ${page}, Limit: ${limit}`);
+    if (search) console.log(`   └─ Search: ${search}`);
+    if (isActive) console.log(`   └─ Filter Active: ${isActive}`);
+    console.log(`   └─ Include User: ${populateUser}`);
 
     const filters: Record<string, unknown> = {};
 
@@ -43,8 +50,11 @@ const getAllPatients = async (req: Request, res: Response): Promise<void> => {
       shouldPopulateUser
     );
 
+    console.log(`   ✅ Found ${result.total} total patients, returned ${result.patients.length} patients (Page ${result.page}/${result.totalPages})`);
     res.status(200).json(result);
   } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    console.log(`   ⚠️  Error: ${errorMsg}`);
     errorHandler(res, error);
   }
 };
@@ -61,8 +71,14 @@ const getPatientById = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     const { populateUser = "true" } = req.query;
+    const userId = (req as any).userId;
+
+    console.log(`\n📖 [GET PATIENT DETAIL] User: ${userId}`);
+    console.log(`   └─ Patient ID: ${id}`);
+    console.log(`   └─ Include User: ${populateUser}`);
 
     if (!id) {
+      console.log(`   ❌ Missing patient ID`);
       res.status(400).json({ message: "Patient ID is required" });
       return;
     }
@@ -71,12 +87,16 @@ const getPatientById = async (req: Request, res: Response): Promise<void> => {
     const patient = await patientService.getPatientDetail(id, includeUser);
 
     if (!patient) {
+      console.log(`   ❌ Patient not found: ${id}`);
       res.status(404).json({ message: "Patient not found" });
       return;
     }
 
+    console.log(`   ✅ Found patient: ${patient.patient_code} (User: ${patient.user_id})`);
     res.status(200).json({ patient });
   } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    console.log(`   ⚠️  Error: ${errorMsg}`);
     errorHandler(res, error);
   }
 };
@@ -103,14 +123,21 @@ const createPatient = async (req: Request, res: Response): Promise<void> => {
   */
   try {
     const { user_id, emergency_contact } = req.body ?? {};
+    const userId = (req as any).userId;
+
+    console.log(`\n➕ [CREATE PATIENT] User: ${userId}`);
+    console.log(`   └─ New User ID: ${user_id}`);
+    console.log(`   └─ Emergency Contact: ${JSON.stringify(emergency_contact)}`);
 
     if (!user_id) {
+      console.log(`   ❌ Missing user_id`);
       res.status(400).json({ message: "user_id is required" });
       return;
     }
 
     const existingPatient = await patientService.getPatientByUserId(user_id);
     if (existingPatient) {
+      console.log(`   ℹ️  Patient already exists: ${existingPatient.patient_code}`);
       res.status(200).json({ message: "Patient already exists", patient: existingPatient });
       return;
     }
@@ -122,8 +149,11 @@ const createPatient = async (req: Request, res: Response): Promise<void> => {
       created_by: "system",
     });
 
+    console.log(`   ✅ Patient created: ${patient.patient_code} (ID: ${patient._id})`);
     res.status(201).json({ message: "Patient created", patient });
   } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    console.log(`   ⚠️  Error: ${errorMsg}`);
     errorHandler(res, error);
   }
 };
@@ -154,8 +184,14 @@ const updatePatient = async (req: Request, res: Response): Promise<void> => {
     const idFromParams = req.params?.id;
     const idFromBody = typeof payload.id === "string" ? payload.id : undefined;
     const id = idFromParams || idFromBody;
+    const userId = (req as any).userId;
+
+    console.log(`\n✏️  [UPDATE PATIENT] User: ${userId}`);
+    console.log(`   └─ Patient ID: ${id}`);
+    console.log(`   └─ Updates: ${JSON.stringify(payload).substring(0, 100)}...`);
 
     if (!id) {
+      console.log(`   ❌ Missing patient ID`);
       res.status(400).json({ message: "Patient ID is required" });
       return;
     }
@@ -190,6 +226,7 @@ const updatePatient = async (req: Request, res: Response): Promise<void> => {
     }
 
     if (Object.keys(updateData).length === 0) {
+      console.log(`   ⚠️  No valid fields provided`);
       res.status(400).json({ message: "No valid fields provided for update" });
       return;
     }
@@ -197,12 +234,16 @@ const updatePatient = async (req: Request, res: Response): Promise<void> => {
     const updatedPatient = await patientService.updatePatient(id, updateData);
 
     if (!updatedPatient) {
+      console.log(`   ❌ Patient not found: ${id}`);
       res.status(404).json({ message: "Patient not found" });
       return;
     }
 
+    console.log(`   ✅ Patient updated: ${updatedPatient.patient_code}`);
     res.status(200).json({ message: "Patient updated", patient: updatedPatient });
   } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    console.log(`   ⚠️  Error: ${errorMsg}`);
     errorHandler(res, error);
   }
 };
@@ -219,8 +260,14 @@ const deletePatient = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     const { hard = "false" } = req.query;
+    const userId = (req as any).userId;
+
+    console.log(`\n🗑️  [DELETE PATIENT] User: ${userId}`);
+    console.log(`   └─ Patient ID: ${id}`);
+    console.log(`   └─ Hard Delete: ${hard}`);
 
     if (!id) {
+      console.log(`   ❌ Missing patient ID`);
       res.status(400).json({ message: "Patient ID is required" });
       return;
     }
@@ -230,10 +277,12 @@ const deletePatient = async (req: Request, res: Response): Promise<void> => {
     if (shouldHardDelete) {
       const deleted = await patientService.hardDeletePatient(id);
       if (!deleted) {
+        console.log(`   ❌ Patient not found: ${id}`);
         res.status(404).json({ message: "Patient not found" });
         return;
       }
 
+      console.log(`   ✅ Patient permanently deleted (hard delete): ${id}`);
       res.status(200).json({ message: "Patient permanently deleted" });
       return;
     }
@@ -241,12 +290,16 @@ const deletePatient = async (req: Request, res: Response): Promise<void> => {
     const patient = await patientService.softDeletePatient(id);
 
     if (!patient) {
+      console.log(`   ❌ Patient not found: ${id}`);
       res.status(404).json({ message: "Patient not found" });
       return;
     }
 
+    console.log(`   ✅ Patient soft deleted: ${patient.patient_code}`);
     res.status(200).json({ message: "Patient deleted", patient });
   } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    console.log(`   ⚠️  Error: ${errorMsg}`);
     errorHandler(res, error);
   }
 };
