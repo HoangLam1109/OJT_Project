@@ -54,7 +54,6 @@ const patientMedicalRecordSchema = new mongoose.Schema<IPatientMedicalRecord>(
     patient_id: {
       type: String,
       required: [true, "Patient ID is required!"],
-      unique: true,
       ref: "Patient",
       trim: true,
     },
@@ -132,8 +131,7 @@ const patientMedicalRecordSchema = new mongoose.Schema<IPatientMedicalRecord>(
   }
 );
 
-patientMedicalRecordSchema.index({ patient_id: 1 }, { unique: true });
-patientMedicalRecordSchema.index({ record_code: 1 }, { unique: true });
+patientMedicalRecordSchema.index({ patient_id: 1 });
 patientMedicalRecordSchema.index({ updated_at: -1 });
 patientMedicalRecordSchema.index({ is_deleted: 1, updated_at: -1 });
 

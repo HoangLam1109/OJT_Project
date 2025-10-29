@@ -21,13 +21,23 @@ export class PatientMedicalRecordService {
       throw new Error("Patient not found");
     }
 
-    const existingRecord = await PatientMedicalRecord.findOne({ patient_id: patientId, is_deleted: false }).lean();
-    if (existingRecord) {
-      throw new Error("Patient medical record already exists for this patient");
-    }
+    // Generate record_code automatically
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    const prefix = `MR${year}${month}${day}`;
+
+    const count = await PatientMedicalRecord.countDocuments({
+      record_code: new RegExp(`^${prefix}`),
+    });
+
+    const sequence = String(count + 1).padStart(4, "0");
+    const recordCode = `${prefix}${sequence}`;
 
     const recordData = {
       patient_id: patientId,
+      record_code: recordCode,
       blood_type: payload.blood_type,
       allergies: payload.allergies,
       chronic_conditions: payload.chronic_conditions,
@@ -135,11 +145,11 @@ export class PatientMedicalRecordService {
   }
 
   async updatePatientRecord(
-    recordId: string,
+    recordIdOrCode: string,
     updates: Partial<PatientMedicalRecordDTO>,
     updatedBy?: string
   ): Promise<PatientMedicalRecordDTO | null> {
-    const trimmedId = recordId?.trim();
+    const trimmedId = recordIdOrCode?.trim();
     if (!trimmedId) {
       throw new Error("recordId is required");
     }
@@ -172,13 +182,19 @@ export class PatientMedicalRecordService {
     }
 
     if (Object.keys(payload).length === 0) {
-      return await PatientMedicalRecord.findOne({ _id: trimmedId, is_deleted: false }).lean<
-        PatientMedicalRecordDTO | null
-      >();
+      // Find by _id or record_code
+      return await PatientMedicalRecord.findOne(
+        {
+          $or: [{ _id: trimmedId, is_deleted: false }, { record_code: trimmedId, is_deleted: false }],
+        }
+      ).lean<PatientMedicalRecordDTO | null>();
     }
 
+    // Update by _id or record_code
     const updatedRecord = await PatientMedicalRecord.findOneAndUpdate(
-      { _id: trimmedId, is_deleted: false },
+      {
+        $or: [{ _id: trimmedId, is_deleted: false }, { record_code: trimmedId, is_deleted: false }],
+      },
       { $set: payload },
       { new: true, runValidators: true }
     ).lean<PatientMedicalRecordDTO | null>();
@@ -186,8 +202,8 @@ export class PatientMedicalRecordService {
     return updatedRecord;
   }
 
-  async deletePatientRecord(recordId: string, deletedBy?: string): Promise<PatientMedicalRecordDTO | null> {
-    const trimmedId = recordId?.trim();
+  async deletePatientRecord(recordIdOrCode: string, deletedBy?: string): Promise<PatientMedicalRecordDTO | null> {
+    const trimmedId = recordIdOrCode?.trim();
     if (!trimmedId) {
       throw new Error("recordId is required");
     }
@@ -203,11 +219,56 @@ export class PatientMedicalRecordService {
     }
 
     const deletedRecord = await PatientMedicalRecord.findOneAndUpdate(
-      { _id: trimmedId, is_deleted: false },
+      {
+        $or: [{ _id: trimmedId, is_deleted: false }, { record_code: trimmedId, is_deleted: false }],
+      },
       { $set: updatePayload },
       { new: true }
     ).lean<PatientMedicalRecordDTO | null>();
 
     return deletedRecord;
+  }
+
+  async getPatientRecordDetail(
+    recordIdOrCode: string,
+    includePatient: boolean = false
+  ): Promise<PatientMedicalRecordWithPatient | null> {
+    const trimmedId = recordIdOrCode?.trim();
+    if (!trimmedId) {
+      throw new Error("recordId is required");
+    }
+
+    const record = await PatientMedicalRecord.findOne(
+      {
+        $or: [{ _id: trimmedId, is_deleted: false }, { record_code: trimmedId, is_deleted: false }],
+      }
+    ).lean<PatientMedicalRecordDTO | null>();
+
+    if (!record) {
+      return null;
+    }
+
+    if (!includePatient) {
+      return record;
+    }
+
+    const patient = await Patient.findOne({ _id: record.patient_id })
+      .select({
+        _id: 1,
+        user_id: 1,
+        patient_code: 1,
+        emergency_contact: 1,
+        last_visit_date: 1,
+        last_test_type: 1,
+        is_active: 1,
+        created_at: 1,
+        updated_at: 1,
+      })
+      .lean<IPatient | null>();
+
+    return {
+      ...record,
+      patient: patient ?? null,
+    };
   }
 }
