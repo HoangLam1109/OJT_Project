@@ -14,7 +14,7 @@ interface AuthenticatedUser {
   role: string;
 }
 
-export const authorize = (requiredPermissions: string[] | string) => {
+export const authorize = (requiredPermissions: string[] | string) => {  
   return (req: Request, res: Response, next: NextFunction) => {
     const internalApiKey = req.headers['x-internal-api-key'];
     const expectedKey = process.env.INTERNAL_API_KEY;

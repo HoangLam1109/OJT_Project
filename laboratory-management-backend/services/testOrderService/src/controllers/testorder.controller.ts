@@ -4,23 +4,23 @@ import patientServiceClient from "../services/patientServiceClient.js";
 import iamServiceClient from "../services/iamServiceClient.js";
 export const getAllTestOrders = async (req: Request, res: Response) => {
   try {
-    // 1️⃣ Lấy danh sách test order
+    //  Lấy danh sách test order
     const orders = await TestOrderService.getAllOrders();
 
-    // 1.1️⃣ Lọc bỏ những order đã soft-delete
+    //  Lọc bỏ những order đã soft-delete
     const activeOrders = orders.filter((o) => !o.is_deleted);
 
-    // 2️⃣ Lấy các patientId duy nhất
+    //  Lấy các patientId duy nhất
     const patientIds = [...new Set(activeOrders.map((o) => o.patient_id))];
 
-    // 3️⃣ Lấy thông tin patient (để biết user_id)
+    //  Lấy thông tin patient
     const patientsMap = await patientServiceClient.getPatientsByIds(patientIds);
 
-    // 4️⃣ Lấy danh sách userId từ patients
+    //  Lấy danh sách userId từ patients
     const userIds = [...new Set(Array.from(patientsMap.values()).map((p) => p.user_id))];
     const usersMap = await iamServiceClient.getUsersByIds(userIds);
 
-    // 5️⃣ Kết hợp dữ liệu TestOrder + User
+    //  Kết hợp dữ liệu TestOrder + User
     const enrichedOrders = activeOrders.map((order) => {
       const patient = patientsMap.get(order.patient_id);
       const user = patient ? usersMap.get(patient.user_id) : null;
@@ -42,11 +42,11 @@ export const getAllTestOrders = async (req: Request, res: Response) => {
 
         user: user
           ? {
-              fullName: user.fullName,
-              email: user.email,
-              phoneNumber: user.phoneNumber,
-              age: user.age,
-            }
+            fullName: user.fullName,
+            email: user.email,
+            phoneNumber: user.phoneNumber,
+            age: user.age,
+          }
           : null,
       };
     });
@@ -59,9 +59,6 @@ export const getAllTestOrders = async (req: Request, res: Response) => {
 };
 
 
-/**
- * Lấy chi tiết 1 test order + thông tin user
- */
 export const getTestOrderById = async (req: Request<{ id: string }>, res: Response) => {
   try {
     const order = await TestOrderService.getOrderById(req.params.id);
@@ -87,11 +84,11 @@ export const getTestOrderById = async (req: Request<{ id: string }>, res: Respon
 
       user: user
         ? {
-            fullName: user.fullName,
-            email: user.email,
-            phoneNumber: user.phoneNumber,
-            age: user.age,
-          }
+          fullName: user.fullName,
+          email: user.email,
+          phoneNumber: user.phoneNumber,
+          age: user.age,
+        }
         : null,
     };
 
