@@ -44,7 +44,7 @@ const TestOrdersPage: React.FC = () => {
   
   // Role validation
   useEffect(() => {
-    if (user && user.role !== 'LAB_USER') {
+    if (user && user.role[0] !== 'LAB_USER') {
       navigate('/unauthorized');
     }
   }, [user, navigate]);

@@ -33,7 +33,7 @@ export function ManagerLayout({
     <div className="min-h-screen bg-gray-50 flex">
       <Sidebar
         currentUserName={currentUser.name}
-        currentUserRole={currentUser.role}
+        currentUserRole="Quản lý"
         currentPage={currentPage}
         sidebarCollapsed={sidebarCollapsed}
         setSidebarCollapsed={setSidebarCollapsed}

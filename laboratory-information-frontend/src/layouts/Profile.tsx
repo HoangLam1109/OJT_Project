@@ -12,7 +12,7 @@ interface UserProfile {
   username: string;
   email: string;
   phone: string;
-  role: "ADMIN" | "MANAGER" | "LAB_USER" | "SERVICE" | "USER";
+  role: "ADMIN" | "MANAGER" | "LAB_USER" | "SERVICE" | "USER" ;
   department?: string;
   identifyNumber?: string;
   address?: string;

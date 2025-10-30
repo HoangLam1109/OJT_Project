@@ -22,7 +22,7 @@ export function AdminLayout({ children, currentUser, onLogout, currentPage, onNa
     <div className="min-h-screen bg-gray-50 flex">
       <Sidebar
         currentUserName={currentUser.name}
-        currentUserRole={currentUser.role}
+        currentUserRole="Quản trị viên"
         currentPage={currentPage}
         sidebarCollapsed={sidebarCollapsed}
         setSidebarCollapsed={setSidebarCollapsed}
