@@ -1,4 +1,4 @@
-import  { useState } from 'react';
+import  { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/common/card';
 import  Button  from '../../components/common/button';
 import  Badge  from '../../components/common/badge';
@@ -11,126 +11,75 @@ import { toast } from 'sonner';
 import { TestTube, PlayCircle, Monitor, Search, CheckCircle, Clock, AlertCircle, Pause, XCircle } from 'lucide-react';
 import { mockInstrument } from './data/mockInstrument';
 import type { Instrument } from './types/Instrument';
-
-interface Sample {
-  id: string;
-  barcode: string;
-  patientId: string;
-  patientName: string;
-  testType: string;
-  priority: 'urgent' | 'normal' | 'routine';
-  status: 'pending' | 'processing' | 'completed' | 'failed';
-  progress?: number;
-  assignedInstrument?: string;
-  startTime?: string;
-  estimatedCompletion?: string;
-}
-
-
+import type { TestOrder } from '../LabUser/types/TestOrderTypes';
+import { testOrderService } from '../../service/testOrderService';
 
 export function ServiceTestPage() {
-  const [samples, setSamples] = useState<Sample[]>([
-    {
-      id: 'S001',
-      barcode: 'BC-2024-001',
-      patientId: 'P001',
-      patientName: 'Nguyễn Văn A',
-      testType: 'CBC',
-      priority: 'urgent',
-      status: 'pending'
-    },
-    {
-      id: 'S002',
-      barcode: 'BC-2024-002',
-      patientId: 'P002',
-      patientName: 'Trần Thị B',
-      testType: 'Glucose',
-      priority: 'normal',
-      status: 'processing',
-      progress: 45,
-      assignedInstrument: 'INS001',
-      startTime: '14:30',
-      estimatedCompletion: '14:45'
-    },
-    {
-      id: 'S003',
-      barcode: 'BC-2024-003',
-      patientId: 'P003',
-      patientName: 'Lê Văn C',
-      testType: 'Blood Count',
-      priority: 'routine',
-      status: 'pending'
-    },
-    {
-      id: 'S004',
-      barcode: 'BC-2024-004',
-      patientId: 'P004',
-      patientName: 'Phạm Minh D',
-      testType: 'CBC',
-      priority: 'urgent',
-      status: 'processing',
-      progress: 75,
-      assignedInstrument: 'INS001',
-      startTime: '14:15',
-      estimatedCompletion: '14:30'
-    },
-    {
-      id: 'S005',
-      barcode: 'BC-2024-005',
-      patientId: 'P005',
-      patientName: 'Hoàng Thị E',
-      testType: 'Cholesterol',
-      priority: 'normal',
-      status: 'completed',
-      progress: 100,
-      assignedInstrument: 'INS002',
-      startTime: '13:45',
-      estimatedCompletion: '14:00'
-    }
-  ]);
+  const [orders, setOrders] = useState<TestOrder[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const [instruments] = useState<Instrument[]>(mockInstrument);
   const [showStartTestDialog, setShowStartTestDialog] = useState(false);
-  const [selectedSample, setSelectedSample] = useState<Sample | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<TestOrder | null>(null);
   const [selectedInstrument, setSelectedInstrument] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
+  // Load orders from API
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setLoading(true);
+        // Use backend route /api/testOrder/all
+        const data = await testOrderService.getAllTestOrders();
+        setOrders(data);
+      } catch (error) {
+        toast.error('Không thể tải danh sách lệnh xét nghiệm');
+        // eslint-disable-next-line no-console
+        console.error('Error loading test orders (service):', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
+
   const availableInstruments = instruments.filter(i => i.status === 'ready' && i.isActive);
 
-  const handleStartTest = () => {
-    if (!selectedSample || !selectedInstrument) {
+  const handleStartTest = async () => {
+    if (!selectedOrder || !selectedInstrument) {
       toast.error('Vui lòng chọn đầy đủ thông tin');
       return;
     }
-
-    setSamples(samples.map(s => 
-      s.id === selectedSample.id 
+    // Cập nhật cục bộ giống LabUser
+    setOrders(orders.map(o => 
+      o.id === selectedOrder.id 
         ? {
-            ...s,
-            status: 'processing',
+            ...o,
+            status: 'Processing',
             progress: 0,
             assignedInstrument: selectedInstrument,
             startTime: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
             estimatedCompletion: new Date(Date.now() + 15 * 60000).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
           }
-        : s
+        : o
     ));
-
     toast.success('Đã bắt đầu xét nghiệm');
     setShowStartTestDialog(false);
-    setSelectedSample(null);
+    setSelectedOrder(null);
     setSelectedInstrument('');
   };
 
-  const handlePauseTest = (sampleId: string) => {
-    setSamples(samples.map(s => 
-      s.id === sampleId ? { ...s, status: 'pending' as const } : s
+  const handlePauseTest = async (orderId: string) => {
+    // Cập nhật cục bộ giống LabUser
+    setOrders(orders.map(o => 
+      o.id === orderId ? { ...o, status: 'Pending' as const } : o
     ));
     toast.info('Đã tạm dừng xét nghiệm');
   };
 
-  const handleCompleteTest = (sampleId: string) => {
-    setSamples(samples.map(s => 
-      s.id === sampleId ? { ...s, status: 'completed' as const, progress: 100 } : s
+  const handleCompleteTest = async (orderId: string) => {
+    // Cập nhật cục bộ giống LabUser
+    setOrders(orders.map(o => 
+      o.id === orderId ? { ...o, status: 'Completed' as const, progress: 100 } : o
     ));
     toast.success('Xét nghiệm hoàn thành');
   };
@@ -163,18 +112,28 @@ export function ServiceTestPage() {
     }
   };
 
-  const filteredSamples = samples.filter(s => 
-    s.barcode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    s.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    s.testType.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredOrders = orders.filter(o => 
+    (o.barcode || o.id).toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (o.patientName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (o.testType || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const stats = {
-    pending: samples.filter(s => s.status === 'pending').length,
-    processing: samples.filter(s => s.status === 'processing').length,
-    completed: samples.filter(s => s.status === 'completed').length,
-    failed: samples.filter(s => s.status === 'failed').length
+    pending: orders.filter(o => o.status === 'Pending' || o.status === 'pending').length,
+    processing: orders.filter(o => o.status === 'Processing' || o.status === 'processing').length,
+    completed: orders.filter(o => o.status === 'Completed' || o.status === 'completed').length,
+    failed: orders.filter(o => o.status === 'Cancelled' || o.status === 'failed').length,
   };
+
+  if (loading) {
+    return (
+      <div className="p-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -245,7 +204,7 @@ export function ServiceTestPage() {
         </Card>
       </div>
 
-      {/* Sample Queue */}
+      {/* Orders Queue */}
       <Card className="glass-strong hover-lift">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -257,38 +216,38 @@ export function ServiceTestPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {filteredSamples.length > 0 ? (
+          {filteredOrders.length > 0 ? (
             <div className="space-y-4">
-              {filteredSamples.map((sample) => (
+              {filteredOrders.map((order) => (
                 <div 
-                  key={sample.id} 
+                  key={order.id} 
                   className="p-4 border rounded-lg bg-white/50 hover:bg-white/80 transition-colors"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <h4 className="font-mono">{sample.barcode}</h4>
-                        {getPriorityBadge(sample.priority)}
-                        {getStatusBadge(sample.status)}
+                        <h4 className="font-mono">{order.barcode || order.id}</h4>
+                        {getPriorityBadge(String(order.priority).toLowerCase())}
+                        {getStatusBadge(String(order.status).toLowerCase())}
                       </div>
                       <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
-                        <p>Bệnh nhân: <span className="text-gray-900">{sample.patientName}</span></p>
-                        <p>Loại xét nghiệm: <span className="text-gray-900">{sample.testType}</span></p>
-                        {sample.assignedInstrument && (
+                        <p>Bệnh nhân: <span className="text-gray-900">{order.patientName}</span></p>
+                        <p>Loại xét nghiệm: <span className="text-gray-900">{order.testType}</span></p>
+                        {order.assignedInstrument && (
                           <>
-                            <p>Thiết bị: <span className="text-gray-900">{sample.assignedInstrument}</span></p>
-                            <p>Bắt đầu: <span className="text-gray-900">{sample.startTime}</span></p>
+                            <p>Thiết bị: <span className="text-gray-900">{order.assignedInstrument}</span></p>
+                            <p>Bắt đầu: <span className="text-gray-900">{order.startTime}</span></p>
                           </>
                         )}
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      {sample.status === 'pending' && (
+                      {(order.status === 'Pending' || order.status === 'pending') && (
                         <Button 
                           size="sm"
                           className="flex items-center gap-2 px-3 py-1"
                           onClick={() => {
-                            setSelectedSample(sample);
+                            setSelectedOrder(order);
                             setShowStartTestDialog(true);
                           }}
                         >
@@ -296,13 +255,13 @@ export function ServiceTestPage() {
                           <span>Bắt đầu</span>
                         </Button>
                       )}
-                      {sample.status === 'processing' && (
+                      {(order.status === 'Processing' || order.status === 'processing') && (
                         <>
                           <Button 
                             size="sm" 
                             variant="outline"
                             className="flex items-center gap-2 px-3 py-1"
-                            onClick={() => handlePauseTest(sample.id)}
+                            onClick={() => handlePauseTest(order.id)}
                           >
                             <Pause className="w-4 h-4" />
                             <span>Tạm dừng</span>
@@ -310,7 +269,7 @@ export function ServiceTestPage() {
                           <Button 
                             size="sm"
                             className="flex items-center gap-2 px-3 py-1"
-                            onClick={() => handleCompleteTest(sample.id)}
+                            onClick={() => handleCompleteTest(order.id)}
                           >
                             <CheckCircle className="w-4 h-4" />
                             <span>Hoàn thành</span>
@@ -320,16 +279,16 @@ export function ServiceTestPage() {
                     </div>
                   </div>
 
-                  {sample.status === 'processing' && sample.progress !== undefined && (
+                  {(order.status === 'Processing' || order.status === 'processing') && order.progress !== undefined && (
                     <div>
                       <div className="flex items-center justify-between text-sm mb-1">
                         <span className="text-gray-600">Tiến độ</span>
-                        <span className="text-blue-600">{sample.progress}%</span>
+                        <span className="text-blue-600">{order.progress}%</span>
                       </div>
-                      <Progress value={sample.progress} className="h-2" />
-                      {sample.estimatedCompletion && (
+                      <Progress value={order.progress} className="h-2" />
+                      {order.estimatedCompletion && (
                         <p className="text-xs text-gray-500 mt-1">
-                          Dự kiến hoàn thành: {sample.estimatedCompletion}
+                          Dự kiến hoàn thành: {order.estimatedCompletion}
                         </p>
                       )}
                     </div>
@@ -404,7 +363,8 @@ export function ServiceTestPage() {
         </CardContent>
       </Card>
 
-      {/* Start Test Dialog */}
+      {/* Start Test Dialog */
+      }
       <Dialog open={showStartTestDialog} onOpenChange={setShowStartTestDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
@@ -414,52 +374,72 @@ export function ServiceTestPage() {
             </DialogDescription>
           </DialogHeader>
 
-          {selectedSample && (
+          {selectedOrder && (
             <div className="space-y-4">
               <div className="p-3 bg-gray-50 rounded-lg space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Mã mẫu:</span>
-                  <span className="font-mono">{selectedSample.barcode}</span>
+                  <span className="font-mono">{selectedOrder.barcode || selectedOrder.id}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Bệnh nhân:</span>
-                  <span>{selectedSample.patientName}</span>
+                  <span>{selectedOrder.patientName}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Loại xét nghiệm:</span>
-                  <span>{selectedSample.testType}</span>
+                  <span>{selectedOrder.testType}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Ưu tiên:</span>
-                  {getPriorityBadge(selectedSample.priority)}
+                  {getPriorityBadge(String(selectedOrder.priority).toLowerCase())}
                 </div>
               </div>
 
-              <div>
-                <Label htmlFor="instrument" className="mb-2">Chọn thiết bị *</Label>
+              <div className="mb-4">
+                <Label htmlFor="instrument" className="mb-2 text-sm font-medium">Chọn thiết bị *</Label>
                 <Select value={selectedInstrument} onValueChange={setSelectedInstrument}>
-                  <SelectTrigger className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-left">
-                    <SelectValue placeholder="Chọn thiết bị..." />
+                  <SelectTrigger 
+                    id="instrument"
+                    className="w-full bg-white border-2 border-gray-300 rounded-lg px-4 py-3 text-left h-auto min-h-[48px] focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-gray-400 transition-colors"
+                  >
+                    <SelectValue placeholder="Chọn thiết bị..." className="text-gray-700" />
                   </SelectTrigger>
-                  <SelectContent className="w-full">
-                    {availableInstruments
-                      .filter(i => i.testTypes?.includes(selectedSample.testType))
-                      .map((instrument) => (
-                        <SelectItem key={instrument.id} value={instrument.id} className="px-3 py-2 hover:bg-gray-100">
-                          <div className="flex items-center gap-2">
-                            <Monitor className="w-4 h-4 text-blue-500" />
-                            <div className="text-sm">
-                              <div className="font-medium">{instrument.name}</div>
-                              <div className="text-xs text-gray-500">{instrument.location}</div>
+                  <SelectContent className="w-full max-h-[300px] overflow-y-auto bg-white border-2 border-gray-200 rounded-lg shadow-lg mt-1">
+                    {availableInstruments.length > 0 ? (
+                      availableInstruments.map((instrument) => {
+                        const isCompatible = selectedOrder?.testType && selectedOrder?.testType !== 'Chưa xác định' 
+                          ? instrument.testTypes?.includes(selectedOrder.testType) 
+                          : true;
+                        return (
+                          <SelectItem 
+                            key={instrument.id} 
+                            value={instrument.id} 
+                            className="px-3 py-2 hover:bg-gray-50 cursor-pointer focus:bg-gray-50"
+                          >
+                            <div className="flex items-center gap-2">
+                              <Monitor className={`w-4 h-4 flex-shrink-0 ${isCompatible ? 'text-green-600' : 'text-gray-400'}`} />
+                              <span className="font-medium text-sm text-gray-900">{instrument.name}</span>
                             </div>
-                          </div>
-                        </SelectItem>
-                      ))}
+                          </SelectItem>
+                        );
+                      })
+                    ) : (
+                      <div className="px-3 py-4 text-center text-sm text-gray-500">
+                        Không có thiết bị khả dụng
+                      </div>
+                    )}
                   </SelectContent>
                 </Select>
-                {availableInstruments.filter(i => i.testTypes?.includes(selectedSample.testType)).length === 0 && (
-                  <p className="text-xs text-red-600 mt-1">
-                    Không có thiết bị nào hỗ trợ loại xét nghiệm này
+                {availableInstruments.length === 0 && (
+                  <p className="text-xs text-red-600 mt-1.5">
+                    Không có thiết bị khả dụng. Vui lòng kiểm tra lại sau.
+                  </p>
+                )}
+                {availableInstruments.length > 0 && selectedOrder?.testType && selectedOrder?.testType !== 'Chưa xác định' && 
+                  availableInstruments.filter(i => i.testTypes?.includes(String(selectedOrder?.testType))).length === 0 && (
+                  <p className="text-xs text-yellow-600 mt-1.5 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    <span>Không có thiết bị nào hỗ trợ loại xét nghiệm "{selectedOrder?.testType}". Vui lòng chọn thiết bị thủ công.</span>
                   </p>
                 )}
               </div>
