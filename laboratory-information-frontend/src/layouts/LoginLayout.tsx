@@ -21,7 +21,6 @@ export const LoginLayout = () => {
       const firstRole = user.role[0];
       switch (firstRole) {
         case "ADMIN":
-             console.log("🚀 Navigating to /admin...");
           navigate("/admin");
           break;
         case "MANAGER":

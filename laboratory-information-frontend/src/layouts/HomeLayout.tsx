@@ -84,3 +84,5 @@ export function HomeLayout({ onShowLogin, onShowRegister }: LoginAndRegisterType
     </div>
   );
 }
+
+
