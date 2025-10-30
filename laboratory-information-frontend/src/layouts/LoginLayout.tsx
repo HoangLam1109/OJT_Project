@@ -4,38 +4,44 @@ import { TestTube } from "lucide-react";
 import { LoginForm } from "../pages/login/LoginForm";
 import { BubbleBackground } from "@/components/common/bubble-background";
 import { useAuthContext } from "../hooks/useAuthContext";
+import { useEffect } from "react";
 import type { User } from "../types/User";
-
-export function LoginLayout() {
+export const LoginLayout = () => {
   const navigate = useNavigate();
-  const { onLogin } = useAuthContext();
+  const { user, onLogin } = useAuthContext(); // ✅ lấy onLogin từ context
 
-  const handleLogin = (user: User) => {
-    toast.success(`Chào mừng, ${user.name}!`);
-    onLogin(user); 
-
-    // Phân quyền điều hướng
-    switch (user.role) {
-      case 'ADMIN':
-        navigate('/admin');
-        break;
-      case 'MANAGER':
-        navigate('/manager');
-        break;
-      case 'SERVICE':
-        navigate('/service');
-        break;
-      case 'LAB_USER':
-        navigate('/labuser');
-        break;
-      case 'USER':
-        navigate('/user');
-        break;
-      default:
-        navigate('/home');
-        break;
-    }
+  // ✅ định nghĩa hàm login
+  const handleLogin = (userData: User) => {
+    onLogin(userData); // lưu vào context và localStorage
+    toast.success("Đăng nhập thành công!");
   };
+
+  useEffect(() => {
+    if (user && user.role?.length > 0) {
+      const firstRole = user.role[0];
+      switch (firstRole) {
+        case "ADMIN":
+             console.log("🚀 Navigating to /admin...");
+          navigate("/admin");
+          break;
+        case "MANAGER":
+          navigate("/manager");
+          break;
+        case "SERVICE":
+          navigate("/service");
+          break;
+        case "LAB_USER":
+          navigate("/labuser");
+          break;
+        case "USER":
+          navigate("/user");
+          break;
+        default:
+          navigate("/home");
+          break;
+      }
+    }
+  }, [user]);
 
   return (
     <div className="min-h-screen flex">
