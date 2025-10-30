@@ -14,6 +14,23 @@ const testOrderApiClient: AxiosInstance = axios.create({
   },
 });
 
+// Attach Authorization header like the global apiClient
+testOrderApiClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      config.headers = config.headers || {};
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 const TEST_ORDER_API_BASE_URL = '/api/testOrder';
 
 // Backend API response type
@@ -87,6 +104,17 @@ export const testOrderService = {
       return response.data.map(transformBackendOrder);
     } catch (error) {
       console.error('Error fetching test orders:', error);
+      throw new Error(apiUtils.getErrorMessage(error));
+    }
+  },
+
+  // Get all test orders via Swagger path (/testOrder/all)
+  async getAllTestOrdersDirect(): Promise<TestOrder[]> {
+    try {
+      const response = await testOrderApiClient.get<BackendTestOrder[]>(`/testOrder/all`);
+      return response.data.map(transformBackendOrder);
+    } catch (error) {
+      console.error('Error fetching test orders (direct):', error);
       throw new Error(apiUtils.getErrorMessage(error));
     }
   },
