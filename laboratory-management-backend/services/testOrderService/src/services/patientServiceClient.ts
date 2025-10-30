@@ -26,6 +26,7 @@ class PatientServiceClient {
 
   constructor() {
     this.baseUrl = process.env.PATIENT_SERVICE_URL || "http://localhost:5001";
+    // Use the same default internal key as IAM service so local dev works without .env
     this.internalApiKey = process.env.INTERNAL_API_KEY || "internal-service-secret-key-2025";
   }
 
