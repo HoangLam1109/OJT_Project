@@ -1,10 +1,17 @@
 import express from "express";
+import { authenticateInternalApi } from "../middlewares/internalApi.middleware.js";
+import { getUser, createUser } from "../controllers/user.controller.js";
 import userRoutes from "./v1/user.routes.js";
 import authRoutes from "./v1/auth.routes.js";
 import authenticateUser from "../middlewares/authenticate.middleware.js";
 import { ROLE_CODES } from "../constants/roles.constant.js";
+import { validateCreateUser } from "../middlewares/validate.middleware.js";
 
 const router = express.Router();
+
+// ✅ Internal routes (không yêu cầu JWT)
+router.get("/internal/:id", authenticateInternalApi, getUser);
+router.post("/internal/user/create", authenticateInternalApi, validateCreateUser, createUser);
 
 router.use("/", authRoutes);
 
