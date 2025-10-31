@@ -133,13 +133,15 @@ export const testOrderService = {
   // Create new test order
   async createTestOrder(orderData: Partial<TestOrder>): Promise<TestOrder> {
     try {
+      // Generate barcode if not provided
+      const barcode = orderData.barcode || `BC${Date.now()}${Math.floor(Math.random() * 1000)}`;
+      
       // Transform frontend data to backend format
       const backendData = {
         patient_id: orderData.patientId,
-        barcode: orderData.barcode || orderData.id,
+        barcode: barcode,
         status: orderData.status?.toLowerCase() || 'pending',
-        created_by: orderData.createdBy,
-        // Add other fields as needed
+        created_by: orderData.createdBy || 'Lab User',
       };
 
       const response = await testOrderApiClient.post<BackendTestOrder>(
