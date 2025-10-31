@@ -18,7 +18,7 @@ router.get("/testOrder/:id", getTestOrderById);
 router.post("/testOrder/create",createTestOrder);
 
 
-router.put("/testOrder/update/:id", updateTestOrder);
+router.put("/testOrder/update", updateTestOrder);
 router.delete("/testOrder/delete/:id", deleteTestOrder);
 
 export default router;

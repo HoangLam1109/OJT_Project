@@ -19,8 +19,8 @@ export const TestOrderRepository = {
   },
 
   // Cập nhật Test order theo ID
-  async update(id: string, data: Partial<ITestOrder>): Promise<ITestOrder | null> {
-    return await TestOrder.findByIdAndUpdate(id, data, { new: true }).exec();
+  async updateById(id: string, data: Partial<ITestOrder>): Promise<ITestOrder | null> {
+    return await TestOrder.findByIdAndUpdate(id, data, { new: true });
   },
 
   // Xoá Test order (soft delete)
@@ -31,4 +31,10 @@ export const TestOrderRepository = {
       { new: true }
     ).exec();
   },
+  //Tìm TestOrder theo id và đảm bảo chưa bị xóa mềm
+  async findActiveById(id: string): Promise<ITestOrder | null> {
+    return await TestOrder.findOne({ _id: id, isDeleted: false });
+  },
 };
+
+

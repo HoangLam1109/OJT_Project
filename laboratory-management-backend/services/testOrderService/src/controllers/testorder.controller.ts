@@ -103,7 +103,11 @@ export const createTestOrder = async (req: Request, res: Response) => {
   try {
     const { patientId, ...orderData } = req.body;
     const userId = req.userId || "system";
-
+    if (!userId) {
+      return res.status(401).json({
+        message: 'Không thể xác định người tạo đơn. Vui lòng đăng nhập lại.',
+      });
+    }
     const order = await TestOrderService.createOrder(orderData, userId, patientId);
     res.status(201).json({ message: "Test order created successfully", order });
   } catch (error: any) {
@@ -113,13 +117,20 @@ export const createTestOrder = async (req: Request, res: Response) => {
 
 export const updateTestOrder = async (req: Request<{ id: string }>, res: Response) => {
   try {
-    const userId = (req as any).user?.id as string | undefined;
-    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+    const { id, ...updateData } = req.body; // lấy id từ body
+    console.log("id", id);
+    console.log("body", updateData);
 
-    const updated = await TestOrderService.updateOrder(req.params.id, req.body, userId);
-    if (!updated) return res.status(404).json({ message: "Test order not found" });
+    if (!id) {
+      return res.status(400).json({ message: "Missing id" });
+    }
 
-    res.json(updated);
+    const updated = await TestOrderService.updateOrder(id, updateData);
+    if (!updated) {
+      return res.status(404).json({ message: "TestOrder not found" });
+    }
+
+    res.status(200).json(updated);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Internal server error" });

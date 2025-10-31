@@ -38,9 +38,19 @@ export const TestOrderService = {
   },
 
   // Cập nhật Test Order theo ID
-  async updateOrder(id: string, data: any, userId: string) {
-    const updatedData = { ...data, updated_by: userId, updated_at: new Date() };
-    return await TestOrderRepository.update(id, updatedData);
+ async updateOrder(id: string, data: any, userId: string) {
+    // Tìm test order chưa bị xóa
+    const existing = await TestOrderRepository.findActiveById(id);
+    if (!existing) return null;
+
+    // Cập nhật dữ liệu
+    const updated = await TestOrderRepository.updateById(id, {
+      ...data,
+      updated_by: userId,
+      updated_at: new Date(),
+    });
+
+    return updated;
   },
 
   // Xoá Test Order (soft delete)

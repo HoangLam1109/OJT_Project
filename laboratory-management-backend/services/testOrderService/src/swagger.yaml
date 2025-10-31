@@ -27,12 +27,12 @@ paths:
                   status: "pending"
                   created_at: "2025-10-30T10:00:00.000Z"
                   created_by: "usr_001"
-                  run_at: "null"
-                  run_by: "null"
+                  run_at: null
+                  run_by: null
                   updated_at: "2025-10-30T10:00:00.000Z"
                   updated_by: "usr_001"
-                  deleted_at:  "null"
-                  deleted_by:  "null"
+                  deleted_at:  null
+                  deleted_by:  null
       responses:
         '201':
           description: Tạo thành công
@@ -84,6 +84,56 @@ paths:
                     example: "Test order not found"
         '500':
           description: Lỗi server
+    # ==================== PUT: Cập nhật Test Order ====================
+   # ==================== PUT: Cập nhật Test Order ====================
+  /testOrder/update:
+    put:
+      summary: Cập nhật thông tin Test Order
+      description: Cập nhật dữ liệu của một Test Order dựa trên ID (lấy từ body). Chỉ cập nhật các bản ghi có isDeleted = false.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTestOrderRequest'
+            examples:
+              default:
+                summary: Ví dụ cập nhật Test Order
+                value:
+                  id: "68f89ca5abc36901ef4d6fd1"
+                  patientId: "9f886139-ebf3-4b22-a277-4384de12bfab"
+                  barcode: "BC98765"
+                  status: "processing"
+                  run_at: "2025-10-31T10:00:00.000Z"
+                  run_by: "usr_002"
+                  updated_at: "2025-10-31T10:05:00.000Z"
+                  updated_by: "usr_001"
+                  created_at: "2025-10-30T10:00:00.000Z"
+                  created_by: "usr_001"
+                  deleted_at: null
+                  deleted_by: null
+                  isDeleted: false
+      responses:
+        '200':
+          description: Cập nhật thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestOrder'
+        '404':
+          description: Không tìm thấy Test Order hoặc đã bị xóa
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Test order not found or deleted"
+        '500':
+          description: Lỗi server
+
+
 
 components:
   schemas:
@@ -139,7 +189,9 @@ components:
         created_by:
           type: string
         run_at:
-          type: date-time
+          type: string
+          format: date-time
+          nullable: true
         run_by:
           type: string
         updated_at:
@@ -151,6 +203,62 @@ components:
           type: boolean
           example: false
         deleted_at:
-          type: date-time
+          type: string
+          format: date-time
+          nullable: true
+
         deleted_by:
           type: string
+
+          
+    UpdateTestOrderRequest:
+      type: object
+      description: Dữ liệu cần cập nhật cho Test Order
+      properties:
+        id:
+          type: string
+          example: "68f89ca5abc36901ef4d6fd1"
+        patientId:
+          type: string
+          example: "9f886139-ebf3-4b22-a277-4384de12bfab"
+        barcode:
+          type: string
+          example: "BC98765"
+        status:
+          type: string
+          description: Trạng thái mới của order
+          enum: [pending, processing, completed, cancelled]
+          example: "processing"
+        run_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2025-10-31T10:00:00.000Z"
+        run_by:
+          type: string
+          example: "usr_002"
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-10-30T10:00:00.000Z"
+        created_by:
+          type: string
+          example: "usr_001"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2025-10-31T10:05:00.000Z"
+        updated_by:
+          type: string
+          example: "usr_001"
+        deleted_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: null
+        deleted_by:
+          type: string
+          example: null
+        isDeleted:
+          type: boolean
+          example: false
