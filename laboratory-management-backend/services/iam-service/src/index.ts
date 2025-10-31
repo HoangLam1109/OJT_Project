@@ -12,6 +12,8 @@ import cookieParser from "cookie-parser";
 import swaggerUi from "swagger-ui-express";
 import swaggerDocument from "./swagger-output.json" with { type: "json"};
 
+import { errorHandler, notFoundHandler } from "./middlewares/error.middleware.js";
+
 // Import OAuth config to initialize Passport strategies
 import "./config/oauth.config.js";
 
@@ -60,6 +62,9 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.get("/", (req, res) => {
   res.send("JWT Authentication System is running!");
 });
+
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 app.listen(process.env.PORT, () => {
   console.log(`Server is running on http://localhost:${process.env.PORT}`);

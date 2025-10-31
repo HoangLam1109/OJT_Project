@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { errorHandler } from '../utils/error.util.js';
+import { AppError } from '../utils/error.util.js';
 import RoleModel from '../db/models/Role.model.js';
 
 // Define the type for authenticated user (matches what the authenticate middleware provides)
@@ -22,11 +22,11 @@ export const authorize = (requiredPermissions: string[] | string) => {
       const user = req.user as AuthenticatedUser | undefined;
 
       if (!user || !user.role) {
-        return errorHandler(res, { message: 'Unauthorized: User or role missing', status: 401 });
+        throw new AppError(401, 'Unauthorized: User or role missing');
       }
 
       if (!user.isActive || user.isDeleted) {
-        return errorHandler(res, { message: 'Unauthorized: User is not active or deleted', status: 401 });
+        throw new AppError(401, 'Unauthorized: User is not active or deleted');
       }
 
       // Fetch user roles with privileges
@@ -36,7 +36,7 @@ export const authorize = (requiredPermissions: string[] | string) => {
       }).select('privileges isActive');
 
       if (userRoles.length === 0) {
-        return errorHandler(res, { message: 'Unauthorized: No valid roles found', status: 401 });
+        throw new AppError(401, 'Unauthorized: No valid roles found');
       }
 
       // Aggregate all privileges from all user roles
@@ -52,13 +52,16 @@ export const authorize = (requiredPermissions: string[] | string) => {
       );
 
       if (!hasPermission) {
-        return errorHandler(res, { message: 'Forbidden: Insufficient permissions', status: 403 });
-      }
+      throw new AppError(403, 'Forbidden: Insufficient permissions', 'INSUFFICIENT_PERMISSIONS', {
+        required: permsArray,
+        has: Array.from(userPermissions)
+      });
+    }
 
       next();
     } catch (error) {
       console.error('Authorization error:', error);
-      return errorHandler(res, { message: 'Authorization failed', status: 500 });
+      next(error);
     }
   };
 };

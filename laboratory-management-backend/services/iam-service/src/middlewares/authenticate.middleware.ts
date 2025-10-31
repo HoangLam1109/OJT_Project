@@ -1,4 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
+import { AppError } from "../utils/error.util.js";
 import jwt from "jsonwebtoken";
 import UserModel from "../db/models/User.model.js";
 
@@ -9,7 +10,7 @@ const refreshTokenValidation = (
 ) => {
   const refreshToken = req.cookies.refreshToken;
   if (!refreshToken) {
-    return res.status(401).json({ message: "No refresh token provided" });
+    throw new AppError(401, "No refresh token provided");
   }
 
   try {
@@ -24,8 +25,7 @@ const refreshTokenValidation = (
     next();
   } catch (error) {
     console.error("Refresh Token authentication failed:", error);
-
-    return res.status(401).json({ message: "Invalid or expired refresh token" });
+    next(error);
   }
 };
 
@@ -37,13 +37,11 @@ const authenticateUser = async (
   try {
     const token = req.cookies.accessToken;
     if (!token) {
-      res.status(401).json({ message: "Not authorized, no token" });
-      return;
+      throw new AppError(401, "Not authorized, no token");
     }
 
     if (!process.env.JWT_SECRET_KEY) {
-      res.status(500).json({ message: "JWT secret is not defined" });
-      return;
+      throw new AppError(500, "JWT secret is not defined");
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY) as {
@@ -56,32 +54,18 @@ const authenticateUser = async (
     );
 
     if (!user) {
-      res.status(401).json({ message: "Not authorized, user not found" });
-      return;
+      throw new AppError(401, "Not authorized, user not found");
     }
 
     if (!user.isActive || user.isDeleted) {
-      res.status(401).json({ message: "Not authorized, user is not active or deleted" });
-      return;
+      throw new AppError(401, "Not authorized, user is not active or deleted");
     }
 
     req.user = user;
 
     next();
   } catch (error) {
-    if (error instanceof jwt.TokenExpiredError) {
-      res.status(401).json({ message: "Token expired" });
-      return;
-    }
-    if (error instanceof jwt.JsonWebTokenError) {
-      console.log(error.message);
-      res.status(401).json({ message: "Invalid token" });
-      return;
-    }
-
-    console.error("Authentication error:", error);
-    res.status(500).json({ message: "Server error during authentication" });
-    return;
+    next(error);
   }
 };
 

@@ -1,12 +1,9 @@
-import type { Request, Response } from "express";
-import type { IUser } from "../db/models/User.model.js";
+import type { Request, Response, NextFunction } from "express";
 import { UserService } from "../services/user.service.js";
-import { errorHandler } from "../utils/error.util.js";
+import { AppError } from "../utils/error.util.js";
 import patientServiceClient from "../services/patientService.client.js";
 import { ROLE_CODES } from "../constants/roles.constant.js";
 import { PaginationUtils } from "../utils/pagination.util.js";
-import { PaginationOptions } from "../types/pagination.type.js";
-import { getAll } from "./role.controller.js";
 
 // Define the type for authenticated user (matches what the middleware provides)
 interface AuthenticatedUser {
@@ -26,7 +23,7 @@ interface AuthenticatedUser {
 
 const userService = new UserService();
 
-const getCurrentUser = async (req: Request, res: Response): Promise<void> => {
+const getCurrentUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   /*
     #swagger.auto = false
     #swagger.tags = ['User CRUD']
@@ -56,23 +53,21 @@ const getCurrentUser = async (req: Request, res: Response): Promise<void> => {
   try {
     const currentUser = req.user as AuthenticatedUser | undefined;
     if (!currentUser?._id) {
-      res.status(401).json({ message: "Not authorized" });
-      return;
+      throw new AppError(401, 'Unauthorized: User not found');
     }
 
     const user = await userService.getUser(currentUser._id);
     if (!user) {
-      res.status(404).json({ message: "User not found" });
-      return;
+      throw new AppError(404, 'User not found');
     }
 
-    res.status(200).json({ user });
+    res.json({ user });
   } catch (error) {
-    errorHandler(res, error);
+    next(error);
   }
 };
 
-const getUser = async (req: Request, res: Response): Promise<void> => {
+const getUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   /*
     #swagger.auto = false
     #swagger.tags = ['User CRUD']
@@ -109,26 +104,25 @@ const getUser = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = req.params.id || (req.user as AuthenticatedUser)?._id;
     if (!userId) {
-      res.status(400).json({ message: "User ID is required" });
-      return;
+      throw new AppError(400, 'User ID is required');
     }
 
     const user = await userService.getUser(userId);
     if (!user) {
-      res.status(404).json({ message: "User not found" });
-      return;
+      throw new AppError(404, 'User not found');
     }
 
     // Return in consistent format for internal API calls
-    res.status(200).json({ user });
+    res.json({ user });
   } catch (error) {
-    errorHandler(res, error);
+    next(error);
   }
 };
 
 const getUsersWithPagination = async (
   req: Request,
-  res: Response
+  res: Response,
+  next: NextFunction
 ): Promise<void> => {
   /*
     #swagger.auto = false
@@ -215,13 +209,13 @@ const getUsersWithPagination = async (
   try {
     const options = PaginationUtils.parseQuery(req.query);
     const users = await userService.getUsersWithPagination(options);
-    res.status(200).json(users);
+    res.json(users);
   } catch (error) {
-    errorHandler(res, error);
+    next(error);
   }
 };
 
-const createUser = async (req: Request, res: Response): Promise<void> => {
+const createUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   /*
     #swagger.auto = false
     #swagger.tags = ['User CRUD']
@@ -234,12 +228,12 @@ const createUser = async (req: Request, res: Response): Promise<void> => {
       schema: {
         email: 'string@example.com',
         fullName: 'string',
-        identityNumber: 'string',
+        identityNumber: '123456789',
         gender: 'Male',
         age: '12',
         dateOfBirth: '01/01/2002',
         password: 'string',
-        phoneNumber: 'string',
+        phoneNumber: '1234567890',
         address: 'string',
         role: ['USER']
       }
@@ -271,11 +265,11 @@ const createUser = async (req: Request, res: Response): Promise<void> => {
       userId: newUser._id,
     });
   } catch (error) {
-    errorHandler(res, error);
+    next(error);
   }
 };
 
-const updateUser = async (req: Request, res: Response): Promise<void> => {
+const updateUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   /*
     #swagger.auto = false
     #swagger.tags = ['User CRUD']
@@ -294,11 +288,11 @@ const updateUser = async (req: Request, res: Response): Promise<void> => {
       schema: {
         email: 'string@example.com',
         fullName: 'string',
-        identityNumber: 'string',
+        identityNumber: '123456789',
         gender: 'Male',
         age: '22',
         dateOfBirth: '01/01/2002',
-        phoneNumber: 'string',
+        phoneNumber: '1234567890',
         address: 'string',
         isActive: 'boolean',
         role: ['']
@@ -319,8 +313,7 @@ const updateUser = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = req.params.id;
     if (!userId) {
-      res.status(400).json({ message: "User ID is required" });
-      return;
+      throw new AppError(400, 'User ID is required');
     }
 
     const userData = req.body;
@@ -331,20 +324,19 @@ const updateUser = async (req: Request, res: Response): Promise<void> => {
     );
 
     if (!updatedUser) {
-      res.status(404).json({ message: "User not found" });
-      return;
+      throw new AppError(404, 'User not found');
     }
 
-    res.status(200).json({
+    res.status(201).json({
       message: "User updated successfully!",
       userId: updatedUser._id,
     });
   } catch (error) {
-    errorHandler(res, error);
+    next(error);
   }
 };
 
-const deleteUser = async (req: Request, res: Response): Promise<void> => {
+const deleteUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   /*
     #swagger.auto = false
     #swagger.tags = ['User CRUD']
@@ -371,8 +363,7 @@ const deleteUser = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = req.params.id;
     if (!userId) {
-      res.status(400).json({ message: "User ID is required" });
-      return;
+      throw new AppError(400, 'User ID is required');
     }
 
     const deletedUser = await userService.deleteUser(
@@ -380,8 +371,7 @@ const deleteUser = async (req: Request, res: Response): Promise<void> => {
       (req.user as AuthenticatedUser)?._id
     );
     if (!deletedUser) {
-      res.status(404).json({ message: "User not found" });
-      return;
+      throw new AppError(404, 'User not found');
     }
 
     res.status(200).json({
@@ -389,13 +379,14 @@ const deleteUser = async (req: Request, res: Response): Promise<void> => {
       userId: deletedUser._id,
     });
   } catch (error) {
-    errorHandler(res, error);
+    next(error);
   }
 };
 
 const getUserRolesAndPrivileges = async (
   req: Request,
-  res: Response
+  res: Response,
+  next: NextFunction
 ): Promise<void> => {
   /*
     #swagger.auto = false
@@ -434,25 +425,24 @@ const getUserRolesAndPrivileges = async (
   try {
     const userId = req.params.id;
     if (!userId) {
-      res.status(400).json({ message: "User ID is required" });
-      return;
+      throw new AppError(400, 'User ID is required');
     }
 
     const result = await userService.getUserRolesAndPrivileges(userId);
     if (!result) {
-      res.status(404).json({ message: "User not found" });
-      return;
+      throw new AppError(404, 'User not found');
     }
 
     res.status(200).json(result);
   } catch (error) {
-    errorHandler(res, error);
+    next(error);
   }
 };
 
 const getCurrentUserRolesAndPrivileges = async (
   req: Request,
-  res: Response
+  res: Response,
+  next: NextFunction
 ): Promise<void> => {
   /*
     #swagger.auto = false
@@ -484,23 +474,21 @@ const getCurrentUserRolesAndPrivileges = async (
   try {
     const currentUser = req.user as AuthenticatedUser;
     if (!currentUser) {
-      res.status(401).json({ message: "Not authenticated" });
-      return;
+      throw new AppError(401, 'Not authenticated');
     }
 
     const result = await userService.getUserRolesAndPrivileges(currentUser._id);
     if (!result) {
-      res.status(404).json({ message: "User not found" });
-      return;
+      throw new AppError(404, 'User not found');
     }
 
     res.status(200).json(result);
   } catch (error) {
-    errorHandler(res, error);
+    next(error);
   }
 };
 
-const assignRoleToUser = async (req: Request, res: Response): Promise<void> => {
+const assignRoleToUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   /*
     #swagger.auto = false
     #swagger.tags = ['Additional']
@@ -535,20 +523,17 @@ const assignRoleToUser = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = req.params.id;
     if (!userId) {
-      res.status(400).json({ message: "User ID is required" });
-      return;
+      throw new AppError(400, 'User ID is required');
     }
 
     const role = req.body.role;
     if (!role) {
-      res.status(400).json({ message: "Role is required" });
-      return;
+      throw new AppError(400, 'Role is required');
     }
 
     const result = await userService.assignRoleToUser(userId, role, (req.user as AuthenticatedUser)?._id);
     if (!result) {
-      res.status(404).json({ message: "User not found" });
-      return;
+      throw new AppError(404, 'User not found');
     }
 
     res.status(200).json({
@@ -556,11 +541,11 @@ const assignRoleToUser = async (req: Request, res: Response): Promise<void> => {
       userId: result._id,
     });
   } catch (error) {
-    errorHandler(res, error);
+    next(error);
   }
 };
 
-const lockUser = async (req: Request, res: Response): Promise<void> => {
+const lockUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   /*
     #swagger.auto = false
     #swagger.tags = ['Additional']
@@ -595,15 +580,13 @@ const lockUser = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = req.params.id;
     if (!userId) {
-      res.status(400).json({ message: "User ID is required" });
-      return;
+      throw new AppError(400, 'User ID is required');
     }
 
     const isActive = req.body.isActive;
     const result = await userService.lockUser(userId, isActive , (req.user as AuthenticatedUser)?._id);
     if (!result) {
-      res.status(404).json({ message: "User not found" });
-      return;
+      throw new AppError(404, 'User not found');
     }
 
     res.status(200).json({
@@ -611,7 +594,7 @@ const lockUser = async (req: Request, res: Response): Promise<void> => {
       userId: result._id,
     });
   } catch (error) {
-    errorHandler(res, error);
+    next(error);
   }
 };
 
