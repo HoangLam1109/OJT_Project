@@ -4,7 +4,10 @@ import { Label } from '../../../../components/common/label';
 import Button from '../../../../components/common/button';
 import { TestTube2, X, Save } from 'lucide-react';
 import type { TestOrder, Sample } from '../../types/TestOrderTypes';
-import { mockPatients, mockTestTypes, mockSampleTypes } from '../../data/mockTestOrdersData';
+import { mockTestTypes, mockSampleTypes } from '../../data/mockTestOrdersData';
+import { useAuthContext } from '../../../../hooks/useAuthContext';
+import { patientService, type PatientOption } from '../../../../service/patientService';
+import { toast } from 'sonner';
 
 interface TestOrderFormModalProps {
   order: TestOrder | null;
@@ -15,6 +18,8 @@ interface TestOrderFormModalProps {
 }
 
 const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({ order, isOpen, onClose, onSubmit, isEdit }) => {
+  const { user } = useAuthContext();
+  
   const [formData, setFormData] = useState({
     patientId: '',
     patientName: '',
@@ -25,23 +30,41 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({ order, isOpen, 
     priority: 'Normal' as 'Normal' | 'Urgent' | 'Emergency',
     status: 'Pending' as 'Pending' | 'Processing' | 'Completed' | 'Cancelled',
     notes: '',
-    createdBy: 'Lab User'
+    createdBy: user?.id || user?.name || 'Lab User'
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [patients, setPatients] = useState<PatientOption[]>([]);
+  const [loadingPatients, setLoadingPatients] = useState(false);
 
   useEffect(() => {
     if (order && isEdit) {
+      // Normalize priority and status to match formData types
+      const normalizeStatus = (status: string): 'Pending' | 'Processing' | 'Completed' | 'Cancelled' => {
+        const lower = status.toLowerCase();
+        if (lower === 'processing') return 'Processing';
+        if (lower === 'completed') return 'Completed';
+        if (lower === 'cancelled') return 'Cancelled';
+        return 'Pending';
+      };
+
+      const normalizePriority = (priority: string): 'Normal' | 'Urgent' | 'Emergency' => {
+        const lower = priority.toLowerCase();
+        if (lower === 'urgent') return 'Urgent';
+        if (lower === 'emergency') return 'Emergency';
+        return 'Normal';
+      };
+
       setFormData({
         patientId: order.patientId,
         patientName: order.patientName,
         testType: order.testType,
-        testName: order.testName,
-        sampleType: order.sampleType,
-        collectionDate: order.collectionDate,
-        priority: order.priority,
-        status: order.status,
+        testName: order.testName || '',
+        sampleType: order.sampleType || '',
+        collectionDate: order.collectionDate || new Date().toISOString().split('T')[0],
+        priority: normalizePriority(order.priority),
+        status: normalizeStatus(order.status),
         notes: order.notes || '',
         createdBy: order.createdBy
       });
@@ -56,10 +79,31 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({ order, isOpen, 
         priority: 'Normal',
         status: 'Pending',
         notes: '',
-        createdBy: 'Lab User'
+        createdBy: user?.id || user?.name || 'Lab User'
       });
     }
-  }, [order, isEdit]);
+  }, [order, isEdit, user]);
+
+  // Load patients when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      loadPatients();
+    }
+  }, [isOpen]);
+
+  const loadPatients = async () => {
+    try {
+      setLoadingPatients(true);
+      const patientsData = await patientService.getAllPatientsForDropdown();
+      setPatients(patientsData);
+    } catch (error) {
+      console.error('Error loading patients:', error);
+      toast.error('Không thể tải danh sách bệnh nhân');
+      setPatients([]);
+    } finally {
+      setLoadingPatients(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,10 +122,19 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({ order, isOpen, 
       return;
     }
 
-    const selectedPatient = mockPatients.find(p => p.id === formData.patientId);
+    const selectedPatient = patients.find(p => p.id === formData.patientId);
+    
+    // Generate barcode if creating new order
+    const generateBarcode = (): string => {
+      const timestamp = Date.now();
+      const random = Math.floor(Math.random() * 1000);
+      return `BC${timestamp}${random}`;
+    };
+
     const orderData = {
       ...formData,
       patientName: selectedPatient?.fullName || formData.patientName,
+      barcode: isEdit ? order?.barcode : generateBarcode(),
       createdAt: isEdit ? order?.createdAt : new Date().toISOString().split('T')[0],
       samples: (isEdit ? order?.samples : [{
         id: `S${Date.now()}`,
@@ -101,7 +154,7 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({ order, isOpen, 
   };
 
   const handlePatientChange = (patientId: string) => {
-    const patient = mockPatients.find(p => p.id === patientId);
+    const patient = patients.find(p => p.id === patientId);
     setFormData(prev => ({
       ...prev,
       patientId,
@@ -140,7 +193,7 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({ order, isOpen, 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="patient" className="text-sm font-medium">
+                <Label htmlFor="patient" className="text-sm font-medium mb-2 block">
                   Bệnh nhân <span className="text-red-500">*</span>
                 </Label>
                 <select
@@ -152,10 +205,12 @@ focus:border-blue-500 focus:ring-blue-500 hover:border-gray-400 transition-color
 ${errors.patientId ? 'border-red-500 bg-red-50' : ''}`}
 
                 >
-                  <option value="">Chọn bệnh nhân</option>
-                  {mockPatients.map((patient) => (
+                  <option value="">
+                    {loadingPatients ? 'Đang tải danh sách bệnh nhân...' : 'Chọn bệnh nhân'}
+                  </option>
+                  {patients.map((patient) => (
                     <option key={patient.id} value={patient.id}>
-                      {patient.fullName} ({patient.id})
+                      {patient.fullName} {patient.patientCode ? `(${patient.patientCode})` : ''}
                     </option>
                   ))}
                 </select>
@@ -165,7 +220,7 @@ ${errors.patientId ? 'border-red-500 bg-red-50' : ''}`}
               </div>
 
               <div>
-                <Label htmlFor="testType" className="text-sm font-medium">
+                <Label htmlFor="testType" className="text-sm font-medium mb-2 block">
                   Loại xét nghiệm <span className="text-red-500">*</span>
                 </Label>
                 <select
@@ -190,7 +245,7 @@ ${errors.patientId ? 'border-red-500 bg-red-50' : ''}`}
               </div>
 
               <div>
-                <Label htmlFor="testName" className="text-sm font-medium">
+                <Label htmlFor="testName" className="text-sm font-medium mb-2 block">
                   Tên xét nghiệm <span className="text-red-500">*</span>
                 </Label>
                 <Input
@@ -206,7 +261,7 @@ ${errors.patientId ? 'border-red-500 bg-red-50' : ''}`}
               </div>
 
               <div>
-                <Label htmlFor="sampleType" className="text-sm font-medium">
+                <Label htmlFor="sampleType" className="text-sm font-medium mb-2 block">
                   Loại mẫu <span className="text-red-500">*</span>
                 </Label>
                 <select
@@ -231,7 +286,7 @@ ${errors.patientId ? 'border-red-500 bg-red-50' : ''}`}
               </div>
 
               <div>
-                <Label htmlFor="collectionDate" className="text-sm font-medium">
+                <Label htmlFor="collectionDate" className="text-sm font-medium mb-2 block">
                   Ngày lấy mẫu <span className="text-red-500">*</span>
                 </Label>
                 <Input
@@ -248,7 +303,7 @@ ${errors.patientId ? 'border-red-500 bg-red-50' : ''}`}
               </div>
 
               <div>
-                <Label htmlFor="priority" className="text-sm font-medium">
+                <Label htmlFor="priority" className="text-sm font-medium mb-2 block">
                   Độ ưu tiên
                 </Label>
                 <select
@@ -268,14 +323,14 @@ ${errors.patientId ? 'border-red-500 bg-red-50' : ''}`}
 
               {isEdit && (
                 <div>
-                  <Label htmlFor="status" className="text-sm font-medium">
+                  <Label htmlFor="status" className="text-sm font-medium mb-2 block">
                     Trạng thái
                   </Label>
                   <select
                     id="status"
                     value={formData.status}
                     onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as any }))}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-2 text-sm transition-colors hover:border-gray-400"
                   >
                     <option value="Pending">Đang chờ</option>
                     <option value="Processing">Đang xử lý</option>
@@ -287,7 +342,7 @@ ${errors.patientId ? 'border-red-500 bg-red-50' : ''}`}
             </div>
 
             <div>
-              <Label htmlFor="notes" className="text-sm font-medium">
+              <Label htmlFor="notes" className="text-sm font-medium mb-2 block">
                 Ghi chú
               </Label>
               <textarea
