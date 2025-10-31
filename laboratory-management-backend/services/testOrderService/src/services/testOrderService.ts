@@ -1,4 +1,5 @@
 import { TestOrderRepository } from "../repositories/testOrderRepository.js";
+import patientServiceClient from "../services/patientServiceClient.js";
 
 export const TestOrderService = {
   // Lấy tất cả Test Orders
@@ -14,9 +15,26 @@ export const TestOrderService = {
   },
 
   // Tạo Test Order mới
-  async createOrder(data: any, userId: String) {
-    const newOrder = { ...data, created_by:  userId, created_at: new Date() };
-    return await TestOrderRepository.create(newOrder);
+ async createOrder(data: any, userId: string, patientId: string) {
+    const patient = await patientServiceClient.getPatientById(patientId);
+    if (!patient) {
+      throw new Error("Patient not found");
+    }
+    const barcode = data.barcode || `BC${Date.now().toString().slice(-5)}`;
+    const now = new Date();
+    const newOrder = {
+      patient_id: patientId,
+      barcode,
+      status: "pending",
+      created_at: now,
+      created_by: userId,
+      updated_at: now,
+      updated_by: userId,
+      is_deleted: false,
+      ...data, 
+    };
+    const createdOrder = await TestOrderRepository.create(newOrder);
+    return createdOrder;
   },
 
   // Cập nhật Test Order theo ID

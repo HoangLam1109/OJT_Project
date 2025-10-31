@@ -6,7 +6,8 @@ import swaggerUi from "swagger-ui-express";
 import { readFileSync } from "fs";
 import connectDB from "./config/database.config.js";
 import testOrderRoutes from "./routes/testOrder.routes.js";
-
+import { writeFileSync } from "fs";
+import yaml from 'js-yaml';
 // Load environment variables
 dotenv.config({ path: "./services/testOrderService/.env" });
 
@@ -20,13 +21,10 @@ app.use(cookieParser());
 
 // Database connection
 connectDB();
-
-// Swagger documentation
-const swaggerDocument = JSON.parse(
-  readFileSync("./services/testOrderService/src/swagger-output.json", "utf-8")
-);
+// Đọc và parse YAML
+const swaggerYaml = readFileSync("./services/testOrderService/src/swagger.yaml", "utf-8");
+const swaggerDocument = yaml.load(swaggerYaml) as Record<string, any>;
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-
 // Routes
 app.use("/api", testOrderRoutes);
 
