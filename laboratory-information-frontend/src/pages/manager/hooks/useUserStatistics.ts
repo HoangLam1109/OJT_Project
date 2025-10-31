@@ -41,7 +41,8 @@ export function useUserStatistics(users: ManagerUser[], totalCount?: number): Us
       active: source.filter(u => u.active).length,
       inactive: source.filter(u => !u.active).length,
       byRole: source.reduce((acc, user) => {
-        acc[user.role] = (acc[user.role] || 0) + 1;
+        const roleKey = Array.isArray(user.role) ? user.role[0] : user.role;
+        acc[roleKey] = (acc[roleKey] || 0) + 1;
         return acc;
       }, {} as Record<string, number>),
     };
