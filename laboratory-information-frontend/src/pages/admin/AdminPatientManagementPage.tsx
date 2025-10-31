@@ -1,20 +1,68 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/common/card';
-import { Users, Plus, Search, Eye, Edit, Trash2, Phone, Mail, MapPin, Heart, AlertTriangle } from 'lucide-react';
+import { Users, Plus, Search, Eye, Edit, Trash2, Phone, Mail, MapPin, Heart, ChevronLeft, ChevronRight } from 'lucide-react';
 import Button from '../../components/common/button';
 import { Input } from '../../components/common/input';
-import { mockPatients } from './data/mockPatients';
 import type { Patient } from './data/mockPatients';
+import { fetchPatients as fetchPatientsFromApi, deletePatient as deletePatientApi, updatePatient as updatePatientApi } from '../../service/patientService';
+import { usePatientModal } from './hooks/usePatientModal';
+import { PatientModal } from './components/PatientModal';
+import { DeleteConfirmDialog } from './components/DeleteConfirmDialog';
+import { toast } from 'sonner';
+
 
 export function AdminPatientManagementPage() {
-  const [patients] = useState<Patient[]>(mockPatients);
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [page, setPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name?: string } | null>(null);
+
+
+
+
+  const { modalState, openCreateModal, openViewModal, openEditModal, closeModal } = usePatientModal();
+
+
+  // render pagination controls
+  const renderPagination = () => (
+
+    <div className="flex justify-center items-center gap-2 mt-4">
+      <button
+        className="px-2 py-1 rounded border disabled:opacity-50"
+        onClick={() => setPage((p) => Math.max(1, p - 1))}
+        disabled={page === 1}
+        aria-label="Trang trước"
+      >
+        <ChevronLeft className="w-4 h-4" />
+      </button>
+      {Array.from({ length: totalPages }, (_, i) => (
+        <button
+          key={i + 1}
+          className={`px-3 py-1 rounded border ${page === i + 1 ? 'bg-blue-600 text-white' : 'bg-white text-blue-600'}`}
+          onClick={() => setPage(i + 1)}
+        >
+          {i + 1}
+        </button>
+      ))}
+      <button
+        className="px-2 py-1 rounded border disabled:opacity-50"
+        onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+        disabled={page === totalPages}
+        aria-label="Trang sau"
+      >
+        <ChevronRight className="w-4 h-4" />
+      </button>
+    </div>
+  );
 
   const filteredPatients = patients.filter(patient => {
     const matchesSearch = patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         patient.phone.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         patient.identifyNumber.toLowerCase().includes(searchTerm.toLowerCase());
+      patient.phone.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      patient.identifyNumber.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = selectedStatus === 'all' || patient.status === selectedStatus;
     return matchesSearch && matchesStatus;
   });
@@ -37,9 +85,82 @@ export function AdminPatientManagementPage() {
     }
   };
 
+  // Return color classes for blood type badge (kept simple)
+  // const getBloodTypeColor = (bloodType?: string) => {
+  //   // You can adjust colors per bloodType if needed
+  //   return 'bg-blue-100 text-blue-800';
+  // };
   const getBloodTypeColor = () => {
     return 'bg-blue-100 text-blue-800';
   };
+
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      setLoading(true);
+      try {
+        const backend = await fetchPatientsFromApi(page, 10);
+        console.log("API:", backend);
+        const backendArr = backend.patients ?? [];
+        const mapped: Patient[] = backendArr.map((b: any) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const bb: any = b;
+          const user = bb.user ?? {};
+          const getFrom = (key: string) => user[key] ?? bb[key] ?? bb[key.replace(/([A-Z])/g, '_$1').toLowerCase()];
+          const rawGender = String(getFrom('gender') || getFrom('gender') || 'male').toLowerCase();
+          const gender = rawGender === 'female' ? 'female' : rawGender === 'other' ? 'other' : 'male';
+          const bloodTypeRaw = String(getFrom('bloodType') || 'O+');
+          const allowed = ['O+', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O-'];
+          const bloodType = (allowed.includes(bloodTypeRaw) ? bloodTypeRaw : 'O+') as Patient['bloodType'];
+
+          const id = String(bb._id ?? bb.id ?? bb.patientId ?? '');
+          const name = String(user.fullName ?? user.name ?? bb.fullName ?? bb.name ?? '');
+          const email = String(user.email ?? bb.email ?? '');
+          const phone = String(user.phoneNumber ?? user.phone ?? bb.phone ?? '');
+          const identifyNumber = String(user.identityNumber ?? user.identifyNumber ?? bb.identityNumber ?? '');
+          const dateOfBirth = String(user.dateOfBirth ?? bb.dateOfBirth ?? bb.date_of_birth ?? '');
+          const age = Number(user.age ?? bb.age ?? 0);
+          const address = String(user.address ?? bb.address ?? '');
+          const emergencyObj = (bb.emergency_contact ?? bb.emergencyContact ?? {}) as Record<string, unknown>;
+          const medicalHistory = Array.isArray(bb.medicalHistory) ? bb.medicalHistory as string[] : (bb.medicalHistory ? [String(bb.medicalHistory)] : []);
+          const allergies = Array.isArray(bb.allergies) ? bb.allergies as string[] : [];
+          const status = String(bb.is_active === false ? 'inactive' : (bb.is_deleted ? 'deceased' : (bb.status ?? 'active')));
+          const createdAt = String(bb.created_at ?? bb.createdAt ?? '');
+          const updatedAt = String(bb.updated_at ?? bb.updatedAt ?? '');
+          const lastVisit = String(bb.last_visit_date ?? bb.lastVisit ?? '');
+
+          return {
+            id,
+            name,
+            email,
+            phone,
+            identifyNumber,
+            gender,
+            dateOfBirth,
+            age,
+            address,
+            emergencyContact: { name: String(emergencyObj['name'] ?? ''), phone: String(emergencyObj['phone'] ?? ''), relationship: String(emergencyObj['relationship'] ?? '') },
+            medicalHistory,
+            allergies,
+            bloodType,
+            status: status as Patient['status'],
+            createdAt,
+            updatedAt,
+            lastVisit,
+          } as Patient;
+        });
+        if (mounted) setPatients(mapped);
+        if (backend.totalPages) setTotalPages(Number(backend.totalPages));
+      } catch (err) {
+        console.error('Error loading patients:', err);
+        if (mounted) setError('Không thể tải danh sách bệnh nhân');
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+    load();
+    return () => { mounted = false; };
+  }, [page]);
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -49,7 +170,7 @@ export function AdminPatientManagementPage() {
           <p className="text-gray-600 mt-1">Quản lý thông tin bệnh nhân và hồ sơ y tế</p>
         </div>
         <div className="flex space-x-3">
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+          <Button onClick={openCreateModal} className="bg-blue-600 hover:bg-blue-700 text-white">
             <Plus className="h-4 w-4 mr-2" />
             Thêm bệnh nhân
           </Button>
@@ -92,7 +213,7 @@ export function AdminPatientManagementPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        {/* <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -106,9 +227,9 @@ export function AdminPatientManagementPage() {
               </div>
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
 
-        <Card>
+        {/* <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -122,7 +243,7 @@ export function AdminPatientManagementPage() {
               </div>
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
       </div>
 
       {/* Filters */}
@@ -163,6 +284,8 @@ export function AdminPatientManagementPage() {
           <CardDescription>Quản lý thông tin bệnh nhân trong hệ thống</CardDescription>
         </CardHeader>
         <CardContent>
+          {loading && <div className="text-center text-gray-500 py-4">Đang tải dữ liệu...</div>}
+          {error && <div className="text-center text-red-600 py-4">{error}</div>}
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
@@ -224,13 +347,29 @@ export function AdminPatientManagementPage() {
                     </td>
                     <td className="py-3 px-4">
                       <div className="flex items-center justify-end gap-1">
-                        <Button variant="ghost" size="icon" title="Xem chi tiết">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          title="Xem chi tiết"
+                          onClick={() => openViewModal(patient.id)}
+                        >
                           <Eye className="w-4 h-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" title="Chỉnh sửa">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          title="Chỉnh sửa"
+                          onClick={() => openEditModal(patient.id)}
+                        >
                           <Edit className="w-4 h-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" title="Xóa" className="text-red-600 hover:text-red-700">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          title="Xóa"
+                          className="text-red-600 hover:text-red-700"
+                          onClick={() => setDeleteTarget({ id: patient.id, name: patient.name })}
+                        >
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
@@ -242,6 +381,101 @@ export function AdminPatientManagementPage() {
           </div>
         </CardContent>
       </Card>
+      {renderPagination()}
+      {/* Patient modal and delete confirm */}
+      <PatientModal
+        isOpen={modalState.isOpen}
+        mode={modalState.mode}
+        patient={modalState.patient}
+        onClose={closeModal}
+        onSubmit={async (data) => {
+          // Only update emergency contact fields
+          if (!modalState.patient) {
+            console.error('Missing patient for update');
+            toast.error('Cập nhật thất bại');
+            return;
+          }
+
+          const patientId = modalState.patient._id ?? modalState.patient.id;
+          if (!patientId) {
+            console.error('Missing patient ID for update');
+            toast.error('Cập nhật thất bại');
+            return;
+          }
+
+          try {
+            const d = data as Record<string, unknown>;
+            const name = String(d['emergency_name'] ?? '');
+            const phone = String(d['emergency_phone'] ?? '');
+
+            const payload = {
+              id: patientId,
+              emergency_contact: { name, phone }
+            };
+
+            console.log('Updating patient', { id: patientId, payload });
+
+            // Gọi API cập nhật
+            const updated = await updatePatientApi(patientId, payload);
+
+            if (updated) {
+              console.log('Update successful', updated);
+
+              // Cập nhật danh sách local
+              setPatients((prev) =>
+                prev.map((p) => {
+                  if (p.id === patientId) {
+                    return {
+                      ...p,
+                      emergencyContact: {
+                        name: payload.emergency_contact.name,
+                        phone: payload.emergency_contact.phone,
+                        relationship: p.emergencyContact?.relationship ?? ''
+                      }
+                    };
+                  }
+                  return p;
+                })
+              );
+
+              toast.success('Cập nhật người dùng thành công ');
+              closeModal();
+            } else {
+              console.error('Update failed - no response from server');
+              toast.error('Cập nhật thất bại');
+            }
+          } catch (err) {
+            console.error('Failed to update patient:', err);
+            toast.error('Cập nhật thất bại');
+          }
+        }}
+      />
+
+
+      <DeleteConfirmDialog
+        open={Boolean(deleteTarget)}
+        itemName={deleteTarget?.name}
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={async () => {
+          if (!deleteTarget) return;
+          try {
+            const ok = await deletePatientApi(deleteTarget.id);
+            if (ok) {
+              // remove locally
+              setPatients((prev) => prev.filter((p) => p.id !== deleteTarget.id));
+              toast.success('Xóa bệnh nhân thành công');
+            } else {
+              console.error('Failed to delete patient', deleteTarget.id);
+              toast.error('Xóa bệnh nhân thất bại');
+            }
+          } catch (err) {
+            console.error('Failed to delete patient', deleteTarget.id, err);
+            toast.error('Xóa bệnh nhân thất bại');
+          } finally {
+            setDeleteTarget(null);
+          }
+        }}
+      />
     </div>
   );
 }
