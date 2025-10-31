@@ -1,14 +1,17 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/common/card';
 import { TestTube2, Plus, Search, Eye, Edit, Trash2, Clock, CheckCircle, DollarSign } from 'lucide-react';
 import Button from '../../components/common/button';
 import { Input } from '../../components/common/input';
 import { mockTestOrders } from './data/mockTestOrders';
 import type { TestOrder } from './data/mockTestOrders';
+import { Skeleton } from '@/components/common/skeleton';
 
 export function AdminTestOrderManagementPage() {
   const [testOrders] = useState<TestOrder[]>(mockTestOrders);
   const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
+
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
@@ -89,6 +92,61 @@ export function AdminTestOrderManagementPage() {
       default: return status;
     }
   };
+  useEffect(() => {
+  const timer = setTimeout(() => setLoading(false), 1500);
+  return () => clearTimeout(timer);
+}, []);
+if (loading) {
+  return (
+    <div className="p-6 space-y-6">
+      {/* Header Skeleton */}
+      <div className="space-y-3">
+        <Skeleton className="h-8 w-1/4" />
+        <Skeleton className="h-4 w-1/3" />
+      </div>
+
+      {/* Statistics cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {[...Array(4)].map((_, i) => (
+          <Card key={i}>
+            <CardContent className="p-6 space-y-4">
+              <Skeleton className="h-4 w-1/2" />
+              <Skeleton className="h-8 w-1/3" />
+              <Skeleton className="h-10 w-10 rounded-full" />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Filters */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex flex-col lg:flex-row gap-4">
+            <Skeleton className="h-10 w-full lg:w-1/2" />
+            <Skeleton className="h-10 w-48" />
+            <Skeleton className="h-10 w-48" />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Table skeleton */}
+      <Card>
+        <CardHeader>
+          <CardTitle><Skeleton className="h-5 w-1/4" /></CardTitle>
+          <CardDescription><Skeleton className="h-4 w-1/3" /></CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="space-y-2 p-6">
+            {[...Array(8)].map((_, i) => (
+              <Skeleton key={i} className="h-10 w-full rounded-md" />
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
   return (
     <div className="space-y-6">
       {/* Page Header */}

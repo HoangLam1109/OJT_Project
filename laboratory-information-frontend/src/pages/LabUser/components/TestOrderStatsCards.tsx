@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, CardContent } from '../../../components/common/card';
 import { Clock, PlayCircle, CheckCircle, AlertCircle } from 'lucide-react';
+import { Skeleton } from '@/components/common/skeleton';
 
 interface TestOrderStatsCardsProps {
   stats: {
@@ -9,9 +10,22 @@ interface TestOrderStatsCardsProps {
     completed: number;
     failed: number;
   };
+  loading?: boolean;
 }
 
-const TestOrderStatsCards: React.FC<TestOrderStatsCardsProps> = ({ stats }) => {
+const TestOrderStatsCards: React.FC<TestOrderStatsCardsProps> = ({ stats,loading }) => {
+   if (loading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        {[...Array(4)].map((_, i) => (
+          <Card key={i} className="p-6">
+            <Skeleton className="h-4 w-24 mb-2" />
+            <Skeleton className="h-6 w-12" />
+          </Card>
+        ))}
+      </div>
+    );
+  }
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
       <Card className="glass-strong hover-lift">

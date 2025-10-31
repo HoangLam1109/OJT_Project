@@ -16,6 +16,8 @@ import ReviewResultModal from './components/modals/ReviewResultModal';
 import DeleteConfirmModal from './components/modals/DeleteConfirmModal';
 import TestOrderDetailModal from './components/modals/TestOrderDetailModal';
 import { calculateStats, filterTestOrders } from './utils/testOrderUtils';
+import { Card, CardContent, CardHeader } from '@/components/common/card';
+import { Skeleton } from '@/components/common/skeleton';
 
 const TestOrdersPage: React.FC = () => {
   const { user } = useAuthContext();
@@ -168,14 +170,75 @@ const TestOrdersPage: React.FC = () => {
   const availableInstruments = instruments.filter(i => i.status === 'ready' && i.isActive);
 
   if (loading) {
-    return (
-      <div className="p-6">
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+  return (
+    <div className="space-y-6 p-4">
+      {/* Toolbar skeleton */}
+      <div className="flex justify-between items-center">
+        <div className="space-y-2">
+          <Skeleton className="h-6 w-40" />
+          <Skeleton className="h-4 w-64" />
+        </div>
+        <div className="flex items-center space-x-4">
+          <Skeleton className="h-10 w-80 rounded-md" />
+          <Skeleton className="h-10 w-60 rounded-md" />
         </div>
       </div>
-    );
-  }
+
+      {/* Stats cards skeleton */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        {[...Array(4)].map((_, i) => (
+          <Card key={i} className="p-6">
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-6 w-12" />
+            </div>
+          </Card>
+        ))}
+      </div>
+
+      {/* TestOrderList skeleton */}
+      <Card className="glass-strong hover-lift">
+        <CardHeader>
+          <Skeleton className="h-5 w-32 mb-2" />
+          <Skeleton className="h-4 w-1/2" />
+        </CardHeader>
+        <CardContent>
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="p-4 border rounded-lg bg-white/50 mb-3">
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-1/3" />
+                <Skeleton className="h-3 w-2/3" />
+                <Skeleton className="h-3 w-1/2" />
+              </div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
+      {/* AvailableInstruments skeleton */}
+      <Card className="glass-strong hover-lift">
+        <CardHeader>
+          <Skeleton className="h-5 w-48 mb-2" />
+          <Skeleton className="h-4 w-2/3" />
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="p-4 border rounded-lg bg-white/50 space-y-3">
+                <Skeleton className="h-4 w-40" />
+                <Skeleton className="h-3 w-28" />
+                <Skeleton className="h-3 w-36" />
+                <Skeleton className="h-3 w-24" />
+                <Skeleton className="h-2 w-full rounded-full" />
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 
   const stats = calculateStats(orders);
 
@@ -187,7 +250,7 @@ const TestOrdersPage: React.FC = () => {
         onCreateClick={handleCreate}
       />
 
-      <TestOrderStatsCards stats={stats} />
+      <TestOrderStatsCards stats={stats} loading={loading} />
 
       <TestOrderList
         orders={filteredOrders}
