@@ -169,7 +169,7 @@ export function AdminPatientManagementPage() {
           <h1 className="text-3xl font-bold text-gray-900">Quản lý bệnh nhân</h1>
           <p className="text-gray-600 mt-1">Quản lý thông tin bệnh nhân và hồ sơ y tế</p>
         </div>
-        <div className="flex space-x-3">
+        {/* <div className="flex space-x-3">
           <Button onClick={openCreateModal} className="bg-blue-600 hover:bg-blue-700 text-white">
             <Plus className="h-4 w-4 mr-2" />
             Thêm bệnh nhân
@@ -178,7 +178,7 @@ export function AdminPatientManagementPage() {
             <Search className="h-4 w-4 mr-2" />
             Xuất báo cáo
           </Button>
-        </div>
+        </div> */}
       </div>
 
       {/* Statistics Cards */}
