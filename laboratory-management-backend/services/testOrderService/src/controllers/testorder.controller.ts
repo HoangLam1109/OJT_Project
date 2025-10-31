@@ -101,14 +101,13 @@ export const getTestOrderById = async (req: Request<{ id: string }>, res: Respon
 
 export const createTestOrder = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user?.id as string | undefined;
-    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+    const { patientId, ...orderData } = req.body;
+    const userId = req.userId || "system";
 
-    const order = await TestOrderService.createOrder(req.body, userId);
-    res.status(201).json(order);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Internal server error" });
+    const order = await TestOrderService.createOrder(orderData, userId, patientId);
+    res.status(201).json({ message: "Test order created successfully", order });
+  } catch (error: any) {
+    res.status(400).json({ message: error.message });
   }
 };
 
