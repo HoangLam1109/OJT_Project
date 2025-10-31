@@ -244,7 +244,7 @@ const refreshToken = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).userId;
     const refreshToken = req.cookies.refreshToken;
-
+    console.log("Xác nhận có userID được truyền vào refreshToken không:",userId)
     if (!refreshToken) {
       return res.status(401).json({ message: "No refresh token provided" });
     }

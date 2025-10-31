@@ -18,7 +18,7 @@ const getAllPatients = async (req: Request, res: Response): Promise<void> => {
   */
   try {
     const { page = "1", limit = "10", search, isActive, populateUser = "true" } = req.query;
-    const userId = (req as any).userId;
+    const userId = (req as any).userId; 
 
     console.log(`\n📋 [LIST PATIENTS] User: ${userId}`);
     console.log(`   └─ Page: ${page}, Limit: ${limit}`);
