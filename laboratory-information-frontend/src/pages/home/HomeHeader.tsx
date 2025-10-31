@@ -2,6 +2,7 @@ import { Microscope, ArrowRight, LogOut, User } from "lucide-react";
 import Button from "../../components/common/button";
 import { useAuthContext } from "../../hooks/useAuthContext";
 import type { LoginType } from "../../types/Login.type";
+import { useEffect, useRef, useState } from "react";
 
 interface HomeHeaderProps extends LoginType {
   onLogout?: () => void;
@@ -10,10 +11,44 @@ interface HomeHeaderProps extends LoginType {
 
 export function HomeHeader({ onShowLogin, onShowRegister, onLogout }: HomeHeaderProps) {
   const { user } = useAuthContext();
+  const [scrolled, setScrolled] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const lastYRef = useRef(0);
+
+  useEffect(() => {
+    let ticking = false;
+    const threshold = 8; // px before we react to direction
+
+    const onScroll = () => {
+      const currentY = window.scrollY;
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setScrolled(currentY > 20);
+          const delta = currentY - lastYRef.current;
+          if (Math.abs(delta) > threshold) {
+            if (delta > 0 && currentY > 60) {
+              setHidden(true); // scrolling down
+            } else {
+              setHidden(false); // scrolling up
+            }
+          }
+          lastYRef.current = currentY;
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
-    <header className="px-6 py-4">
-      <nav className="max-w-7xl mx-auto flex items-center justify-between">
+    <header className={`px-6 py-3 transition-transform duration-300 will-change-transform ${hidden ? "-translate-y-full" : "translate-y-0"}`}>
+      <nav
+        className="max-w-7xl mx-auto flex items-center justify-between rounded-xl transition-all duration-300 bg-transparent"
+      >
         {/* Logo */}
         <div className="flex items-center gap-3">
           <div className="p-2 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl shadow-lg">
