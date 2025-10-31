@@ -18,7 +18,7 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
     fullName: '',
     email: '',
     password: '',
-    role: 'USER',
+    role: ['USER'],
     phone_number: '',
     identify_number: '',
     gender: 'Male',
@@ -163,8 +163,18 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
               <Label htmlFor="role">Vai trò</Label>
               <select
                 id="role"
-                value={formData.role}
-                onChange={(e) => handleChange('role', e.target.value)}
+                value={Array.isArray(formData.role) ? formData.role[0] : 'USER'}
+                onChange={(e) => {
+                  const selectedRole = e.target.value as 'ADMIN' | 'MANAGER' | 'SERVICE' | 'LAB_USER' | 'USER';
+                  setFormData((prev) => ({ ...prev, role: [selectedRole] }));
+                  if (errors.role) {
+                    setErrors((prev) => {
+                      const updated = { ...prev };
+                      delete updated.role;
+                      return updated;
+                    });
+                  }
+                }}
                 disabled={isReadOnly}
                 className="flex h-9 w-full rounded-md border border-input bg-input-background px-3 py-1"
               >

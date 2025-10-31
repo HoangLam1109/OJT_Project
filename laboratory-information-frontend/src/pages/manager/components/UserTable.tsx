@@ -115,10 +115,10 @@ export function UserTable({ users, onView, onEdit, onDelete, onToggleLock, onFir
               <td className="py-3 px-4">
                 <span
                   className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleBadgeColor(
-                    user.role
+                    Array.isArray(user.role) ? user.role[0] : user.role
                   )}`}
                 >
-                  {getRoleLabel(user.role)}
+                  {getRoleLabel(Array.isArray(user.role) ? user.role[0] : user.role)}
                 </span>
               </td>
               <td className="py-3 px-4">
@@ -208,6 +208,7 @@ export function UserTable({ users, onView, onEdit, onDelete, onToggleLock, onFir
                 onClick={onFirstPage}
                 title="Trang đầu"
                 disabled={hasPrev === false}
+                className="hover:bg-blue-100 hover:text-blue-700 transition-colors"
               >
                 <ChevronsLeft className="w-4 h-4" />
               </Button>
@@ -219,6 +220,7 @@ export function UserTable({ users, onView, onEdit, onDelete, onToggleLock, onFir
                 onClick={onPrevPage}
                 title="Trang trước"
                 disabled={hasPrev === false}
+                className="hover:bg-blue-100 hover:text-blue-700 transition-colors"
               >
                 <ChevronLeft className="w-4 h-4" />
               </Button>
@@ -230,6 +232,7 @@ export function UserTable({ users, onView, onEdit, onDelete, onToggleLock, onFir
                 onClick={onNextPage}
                 title="Trang tiếp theo"
                 disabled={hasNext === false}
+                className="hover:bg-blue-100 hover:text-blue-700 transition-colors"
               >
                 <ChevronRight className="w-4 h-4" />
               </Button>
@@ -241,6 +244,7 @@ export function UserTable({ users, onView, onEdit, onDelete, onToggleLock, onFir
                 onClick={onLastPage}
                 title="Trang cuối"
                 disabled={hasNext === false}
+                className="hover:bg-blue-100 hover:text-blue-700 transition-colors"
               >
                 <ChevronsRight className="w-4 h-4" />
               </Button>

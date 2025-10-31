@@ -55,8 +55,12 @@ export class PatientService {
 		let patientsWithUser = patients as PatientWithUser[];
 
 		if (populateUser && patients.length > 0) {
+			console.log(`[PatientService.getAllPatients] populateUser=true, fetching ${patients.length} patients`);
 			const userIds = [...new Set(patients.map((patient) => patient.user_id).filter(Boolean))];
+			console.log(`[PatientService.getAllPatients] Unique user IDs to fetch: ${userIds.length}`, userIds.slice(0, 3));
+			
 			const userMap = await iamServiceClient.getUsersByIds(userIds);
+			console.log(`[PatientService.getAllPatients] Retrieved ${userMap.size} users from IAM`);
 
 			patientsWithUser = patients.map((patient) => ({
 				...patient,
@@ -77,17 +81,24 @@ export class PatientService {
 	}
 
 	async getPatientDetail(id: string, includeUser: boolean = true): Promise<PatientDetail | null> {
+		console.log(`[PatientService.getPatientDetail] Patient ID: ${id}, includeUser: ${includeUser}`);
+		
 		const patient = await Patient.findOne({ _id: id, is_deleted: false }).lean<IPatient | null>();
 
 		if (!patient) {
+			console.log(`[PatientService.getPatientDetail] Patient not found`);
 			return null;
 		}
 
 		if (!includeUser) {
+			console.log(`[PatientService.getPatientDetail] Returning without user data`);
 			return patient as PatientDetail;
 		}
 
+		console.log(`[PatientService.getPatientDetail] Fetching user ${patient.user_id} from IAM`);
 		const user = await iamServiceClient.getUserById(patient.user_id);
+		console.log(`[PatientService.getPatientDetail] User fetch result:`, user ? 'SUCCESS' : 'NULL');
+		
 		return {
 			...patient,
 			user: user ?? null,
