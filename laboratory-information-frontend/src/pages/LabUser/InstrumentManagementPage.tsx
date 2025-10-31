@@ -7,6 +7,7 @@ import InstrumentFormModal from './components/modals/InstrumentFormModal';
 import InstrumentDetailModal from './components/modals/InstrumentDetailModal';
 import ExecuteTestModal from './components/modals/ExecuteTestModal';
 import { getStatusBadge, formatDate, filterInstruments } from './utils/instrumentUtils';
+import { Skeleton } from '@/components/common/skeleton';
 
 const InstrumentManagementPage: React.FC = () => {
   const { user } = useAuthContext();
@@ -21,6 +22,14 @@ const InstrumentManagementPage: React.FC = () => {
   const [selectedInstrument, setSelectedInstrument] = useState<Instrument | null>(null);
   const [editingInstrument, setEditingInstrument] = useState<Partial<Instrument>>({});
   const [selectedTestOrder, setSelectedTestOrder] = useState('');
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+  const timer = setTimeout(() => {
+    setLoading(false);
+  }, 1500); // Giả lập tải 1.5s
+  return () => clearTimeout(timer);
+}, []);
+
 
   const isLabUser = user?.role[0] === 'LAB_USER';
 
@@ -141,6 +150,53 @@ const InstrumentManagementPage: React.FC = () => {
     setIsEditModalOpen(false);
     setEditingInstrument({});
   };
+  if (loading) {
+  return (
+    <div className="p-6 space-y-6 animate-pulse">
+      {/* Skeleton Header */}
+      <div>
+        <Skeleton className="h-8 w-80 mb-2" />
+        <Skeleton className="h-4 w-64" />
+      </div>
+
+      {/* Skeleton Toolbar */}
+      <div className="flex flex-wrap items-center gap-4">
+        <Skeleton className="h-10 w-80" />
+        <Skeleton className="h-10 w-48" />
+        <Skeleton className="h-10 w-40 ml-auto" />
+      </div>
+
+      {/* Skeleton Table */}
+      <div className="border rounded-lg overflow-hidden">
+        <div className="grid grid-cols-7 bg-gray-100 px-4 py-3 font-medium text-gray-600 text-sm">
+          <Skeleton className="h-4 w-16" />
+          <Skeleton className="h-4 w-32" />
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-4 w-16" />
+        </div>
+
+        {[...Array(6)].map((_, i) => (
+          <div
+            key={i}
+            className="grid grid-cols-7 px-4 py-3 border-t text-sm text-gray-700"
+          >
+            <Skeleton className="h-4 w-16" />
+            <Skeleton className="h-4 w-40" />
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-4 w-20" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 
   return (
     <div className="p-6">

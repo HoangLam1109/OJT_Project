@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/common/card';
-import { Users, Plus, Search, Eye, Edit, Trash2, Phone, Mail, MapPin, Heart, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Users, Plus, Search, Eye, Edit, Trash2, Phone, Mail, MapPin, Heart, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
 import Button from '../../components/common/button';
 import { Input } from '../../components/common/input';
 import type { Patient } from './data/mockPatients';
@@ -9,6 +9,7 @@ import { usePatientModal } from './hooks/usePatientModal';
 import { PatientModal } from './components/PatientModal';
 import { DeleteConfirmDialog } from './components/DeleteConfirmDialog';
 import { toast } from 'sonner';
+import { Skeleton } from '@/components/common/skeleton';
 
 
 export function AdminPatientManagementPage() {
@@ -22,14 +23,10 @@ export function AdminPatientManagementPage() {
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name?: string } | null>(null);
 
 
-
-
   const { modalState, openCreateModal, openViewModal, openEditModal, closeModal } = usePatientModal();
-
 
   // render pagination controls
   const renderPagination = () => (
-
     <div className="flex justify-center items-center gap-2 mt-4">
       <button
         className="px-2 py-1 rounded border disabled:opacity-50"
@@ -61,8 +58,8 @@ export function AdminPatientManagementPage() {
 
   const filteredPatients = patients.filter(patient => {
     const matchesSearch = patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      patient.phone.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      patient.identifyNumber.toLowerCase().includes(searchTerm.toLowerCase());
+                         patient.phone.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         patient.identifyNumber.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = selectedStatus === 'all' || patient.status === selectedStatus;
     return matchesSearch && matchesStatus;
   });
@@ -86,11 +83,8 @@ export function AdminPatientManagementPage() {
   };
 
   // Return color classes for blood type badge (kept simple)
-  // const getBloodTypeColor = (bloodType?: string) => {
-  //   // You can adjust colors per bloodType if needed
-  //   return 'bg-blue-100 text-blue-800';
-  // };
-  const getBloodTypeColor = () => {
+  const getBloodTypeColor = (bloodType?: string) => {
+    // You can adjust colors per bloodType if needed
     return 'bg-blue-100 text-blue-800';
   };
 
@@ -100,7 +94,6 @@ export function AdminPatientManagementPage() {
       setLoading(true);
       try {
         const backend = await fetchPatientsFromApi(page, 10);
-        console.log("API:", backend);
         const backendArr = backend.patients ?? [];
         const mapped: Patient[] = backendArr.map((b: any) => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -110,7 +103,7 @@ export function AdminPatientManagementPage() {
           const rawGender = String(getFrom('gender') || getFrom('gender') || 'male').toLowerCase();
           const gender = rawGender === 'female' ? 'female' : rawGender === 'other' ? 'other' : 'male';
           const bloodTypeRaw = String(getFrom('bloodType') || 'O+');
-          const allowed = ['O+', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O-'];
+          const allowed = ['O+','A+','A-','B+','B-','AB+','AB-','O-'];
           const bloodType = (allowed.includes(bloodTypeRaw) ? bloodTypeRaw : 'O+') as Patient['bloodType'];
 
           const id = String(bb._id ?? bb.id ?? bb.patientId ?? '');
@@ -162,8 +155,15 @@ export function AdminPatientManagementPage() {
     return () => { mounted = false; };
   }, [page]);
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
+  <div className="space-y-6">
+
+    {/* 🔹 Header hiển thị hoặc Skeleton */}
+    {loading ? (
+      <div className="space-y-1">
+        <Skeleton className="h-8 w-1/4 mb-2" />
+        <Skeleton className="h-4 w-1/2" />
+      </div>
+    ) : (
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Quản lý bệnh nhân</h1>
@@ -180,9 +180,58 @@ export function AdminPatientManagementPage() {
           </Button>
         </div> */}
       </div>
+    )}
 
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+    {/* 🔹 Nếu loading thì hiển thị skeleton table & cards */}
+    {loading ? (
+      <>
+        {/* Skeleton cho thống kê */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-6 space-y-3">
+                <div className="flex justify-between items-center">
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-6 w-16" />
+                  </div>
+                  <Skeleton className="h-10 w-10 rounded-lg" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Skeleton cho bảng */}
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-1/4 mb-2" />
+            <Skeleton className="h-4 w-1/2" />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="flex items-center space-x-4">
+                  <Skeleton className="h-10 w-10 rounded-full" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-1/3" />
+                    <Skeleton className="h-3 w-1/4" />
+                  </div>
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-8 w-16 rounded-md" />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </>
+    ) : (
+      <>
+       
+        {/* Statistics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -284,8 +333,6 @@ export function AdminPatientManagementPage() {
           <CardDescription>Quản lý thông tin bệnh nhân trong hệ thống</CardDescription>
         </CardHeader>
         <CardContent>
-          {loading && <div className="text-center text-gray-500 py-4">Đang tải dữ liệu...</div>}
-          {error && <div className="text-center text-red-600 py-4">{error}</div>}
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
@@ -381,75 +428,75 @@ export function AdminPatientManagementPage() {
           </div>
         </CardContent>
       </Card>
-      {renderPagination()}
-      {/* Patient modal and delete confirm */}
+  {renderPagination()}
+  {/* Patient modal and delete confirm */}
       <PatientModal
-        isOpen={modalState.isOpen}
-        mode={modalState.mode}
-        patient={modalState.patient}
-        onClose={closeModal}
-        onSubmit={async (data) => {
-          // Only update emergency contact fields
-          if (!modalState.patient) {
-            console.error('Missing patient for update');
-            toast.error('Cập nhật thất bại');
-            return;
-          }
+  isOpen={modalState.isOpen}
+  mode={modalState.mode}
+  patient={modalState.patient}
+  onClose={closeModal}
+  onSubmit={async (data) => {
+    // Only update emergency contact fields
+    if (!modalState.patient) {
+      console.error('Missing patient for update');
+      toast.error('Cập nhật thất bại');
+      return;
+    }
 
-          const patientId = modalState.patient._id ?? modalState.patient.id;
-          if (!patientId) {
-            console.error('Missing patient ID for update');
-            toast.error('Cập nhật thất bại');
-            return;
-          }
+    const patientId = modalState.patient._id ?? modalState.patient.id;
+    if (!patientId) {
+      console.error('Missing patient ID for update');
+      toast.error('Cập nhật thất bại');
+      return;
+    }
 
-          try {
-            const d = data as Record<string, unknown>;
-            const name = String(d['emergency_name'] ?? '');
-            const phone = String(d['emergency_phone'] ?? '');
+    try {
+      const d = data as Record<string, unknown>;
+      const name = String(d['emergency_name'] ?? '');
+      const phone = String(d['emergency_phone'] ?? '');
 
-            const payload = {
-              id: patientId,
-              emergency_contact: { name, phone }
-            };
+      const payload = {
+        id: patientId,
+        emergency_contact: { name, phone }
+      };
 
-            console.log('Updating patient', { id: patientId, payload });
+      console.log('Updating patient', { id: patientId, payload });
 
-            // Gọi API cập nhật
-            const updated = await updatePatientApi(patientId, payload);
+      // Gọi API cập nhật
+      const updated = await updatePatientApi(patientId, payload);
 
-            if (updated) {
-              console.log('Update successful', updated);
+      if (updated) {
+        console.log('Update successful', updated);
 
-              // Cập nhật danh sách local
-              setPatients((prev) =>
-                prev.map((p) => {
-                  if (p.id === patientId) {
-                    return {
-                      ...p,
-                      emergencyContact: {
-                        name: payload.emergency_contact.name,
-                        phone: payload.emergency_contact.phone,
-                        relationship: p.emergencyContact?.relationship ?? ''
-                      }
-                    };
-                  }
-                  return p;
-                })
-              );
-
-              toast.success('Cập nhật người dùng thành công ');
-              closeModal();
-            } else {
-              console.error('Update failed - no response from server');
-              toast.error('Cập nhật thất bại');
+        // Cập nhật danh sách local
+        setPatients((prev) =>
+          prev.map((p) => {
+            if (p.id === patientId) {
+              return {
+                ...p,
+                emergencyContact: {
+                  name: payload.emergency_contact.name,
+                  phone: payload.emergency_contact.phone,
+                  relationship: p.emergencyContact?.relationship ?? ''
+                }
+              };
             }
-          } catch (err) {
-            console.error('Failed to update patient:', err);
-            toast.error('Cập nhật thất bại');
-          }
-        }}
-      />
+            return p;
+          })
+        );
+
+        toast.success('Cập nhật người dùng thành công ');
+        closeModal();
+      } else {
+        console.error('Update failed - no response from server');
+        toast.error('Cập nhật thất bại');
+      }
+    } catch (err) {
+      console.error('Failed to update patient:', err);
+      toast.error('Cập nhật thất bại');
+    }
+  }}
+/>
 
 
       <DeleteConfirmDialog
@@ -458,24 +505,18 @@ export function AdminPatientManagementPage() {
         onCancel={() => setDeleteTarget(null)}
         onConfirm={async () => {
           if (!deleteTarget) return;
-          try {
-            const ok = await deletePatientApi(deleteTarget.id);
-            if (ok) {
-              // remove locally
-              setPatients((prev) => prev.filter((p) => p.id !== deleteTarget.id));
-              toast.success('Xóa bệnh nhân thành công');
-            } else {
-              console.error('Failed to delete patient', deleteTarget.id);
-              toast.error('Xóa bệnh nhân thất bại');
-            }
-          } catch (err) {
-            console.error('Failed to delete patient', deleteTarget.id, err);
-            toast.error('Xóa bệnh nhân thất bại');
-          } finally {
-            setDeleteTarget(null);
+          const ok = await deletePatientApi(deleteTarget.id);
+          if (ok) {
+            // remove locally
+            setPatients((prev) => prev.filter((p) => p.id !== deleteTarget.id));
+          } else {
+            console.error('Failed to delete patient', deleteTarget.id);
           }
+          setDeleteTarget(null);
         }}
       />
+      </>
+    )}
     </div>
   );
 }

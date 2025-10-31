@@ -4,12 +4,36 @@ import Badge from '../../../components/common/badge';
 import { Progress } from '../../../components/common/progress';
 import { Monitor } from 'lucide-react';
 import type { Instrument } from '../../../service/types/Instrument';
+import { Skeleton } from '@/components/common/skeleton';
 
 interface AvailableInstrumentsCardProps {
   instruments: Instrument[];
+  loading?: boolean;
 }
 
-const AvailableInstrumentsCard: React.FC<AvailableInstrumentsCardProps> = ({ instruments }) => {
+const AvailableInstrumentsCard: React.FC<AvailableInstrumentsCardProps> = ({ instruments,loading }) => {
+    if (loading) {
+    return (
+      <Card className="glass-strong hover-lift">
+        <CardHeader>
+          <Skeleton className="h-5 w-40 mb-2" />
+          <Skeleton className="h-4 w-64" />
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="p-4 border rounded-lg bg-white/50 space-y-3">
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-3 w-1/4" />
+                <Skeleton className="h-3 w-1/3" />
+                <Skeleton className="h-2 w-full rounded-full" />
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
   return (
     <Card className="glass-strong hover-lift">
       <CardHeader>
