@@ -142,6 +142,7 @@ export function AppRoutes() {
                   <p className="text-gray-500 mt-2">Trang cài đặt đang được phát triển</p>
                 </div>
               )}
+              {managerPage === "instruments" && <InstrumentManagementPage />}
               {managerPage === "profile" && <Profile currentUser={user!} />}
             </ManagerLayout>
           </ProtectedRoute>
