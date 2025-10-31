@@ -23,7 +23,7 @@ import { LabUserLayout } from "../layouts/LabUserLayout";
 import LabUserDashboard from "../pages/LabUser/Dashboard";
 import TestOrdersPage from "../pages/LabUser/TestOrdersPage";
 import TestResultsPage from "../pages/LabUser/TestResultsPage";
-import LabUserPatientManagementPage from "../pages/LabUser/PatientManagementPage";
+// import LabUserPatientManagementPage from "../pages/LabUser/PatientManagementPage";
 import InstrumentManagementPage from "../pages/LabUser/InstrumentManagementPage";
 import ReagentManagementPage from "../pages/LabUser/ReagentManagementPage";
 import { ServiceLayout } from "../layouts/ServiceLayout";
@@ -160,7 +160,7 @@ export function AppRoutes() {
               onNavigate={(page) => setLabUserPage(page)}
             >
               {labUserPage === "dashboard" && <LabUserDashboard />}
-              {labUserPage === "patients" && <LabUserPatientManagementPage />}
+              {labUserPage === "patients" && <AdminPatientManagementPage />}
               {labUserPage === "test-orders" && <TestOrdersPage />}
               {labUserPage === "test-results" && <TestResultsPage />}
               {labUserPage === "instruments" && <InstrumentManagementPage />}

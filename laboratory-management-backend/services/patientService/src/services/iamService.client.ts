@@ -40,15 +40,16 @@ export class IamServiceClient {
    */
   async getUserById(userId: string): Promise<IamUser | null> {
     try {
-      const url = `${this.baseUrl}/api/user/${userId}`;
+      const url = `${this.baseUrl}/api/internal/${userId}`;
       const headers = {
         'X-Internal-API-Key': this.internalApiKey, // Internal service authentication
       };
 
       const response = await HttpClient.get<{ user: IamUser }>(url, headers);
+      console.log(`[IamServiceClient] Successfully fetched user ${userId}`);
       return response.user;
     } catch (error: any) {
-      console.error(`[IAM Service] Error fetching user ${userId}:`, error.message);
+      console.error(`[IamServiceClient] Error fetching user ${userId}:`, error.message);
       return null; // Return null if user not found or service unavailable
     }
   }

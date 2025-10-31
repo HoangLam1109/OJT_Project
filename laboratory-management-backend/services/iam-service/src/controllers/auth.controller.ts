@@ -179,7 +179,6 @@ const loginUser = async (req: Request, res: Response): Promise<void> => {
     }
 
     generateJWT(res, user._id as string);
-   
 
     res.status(200).json({
       message: "Login successful!",

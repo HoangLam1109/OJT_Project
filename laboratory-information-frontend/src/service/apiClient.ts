@@ -1,8 +1,32 @@
 import axios, { AxiosError } from 'axios';
-import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 
 // API Configuration
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+// Token refresh state management
+let isRefreshing = false;
+let failedQueue: Array<{
+  resolve: (value?: unknown) => void;
+  reject: (reason?: unknown) => void;
+  config: InternalAxiosRequestConfig;
+}> = [];
+
+const processQueue = (error: AxiosError | null, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      // Update token in request config and retry
+      if (token && prom.config.headers) {
+        prom.config.headers.Authorization = `Bearer ${token}`;
+      }
+      prom.resolve();
+    }
+  });
+  
+  failedQueue = [];
+};
 
 // Default axios instance configuration
 const createApiClient = (): AxiosInstance => {
@@ -30,18 +54,97 @@ const createApiClient = (): AxiosInstance => {
     }
   );
 
-  // Response interceptor - Handle common errors
+  // Response interceptor - Handle common errors and token refresh
   client.interceptors.response.use(
     (response: AxiosResponse) => {
       return response;
     },
-    (error: AxiosError) => {
-      // Handle common HTTP errors
-      if (error.response?.status === 401) {
-        // Unauthorized - redirect to login or clear auth
-        localStorage.removeItem('authToken');
-        window.location.href = '/login';
-      } else if (error.response?.status === 403) {
+    async (error: AxiosError) => {
+      const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+
+      // Handle 401 Unauthorized - Try to refresh token
+      if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+        const requestUrl = originalRequest.url || '';
+        const fullUrl = originalRequest.baseURL 
+          ? `${originalRequest.baseURL}${requestUrl}` 
+          : requestUrl;
+        
+        // Skip refresh for auth endpoints to avoid infinite loop
+        if (
+          fullUrl.includes('/login') ||
+          fullUrl.includes('/refresh-token') ||
+          fullUrl.includes('/logout') ||
+          fullUrl.includes('/register') ||
+          requestUrl.includes('/login') ||
+          requestUrl.includes('/refresh-token') ||
+          requestUrl.includes('/logout') ||
+          requestUrl.includes('/register')
+        ) {
+          // If auth endpoint failed, redirect to login
+          localStorage.removeItem('authToken');
+          if (typeof window !== 'undefined') {
+            window.location.href = '/login';
+          }
+          return Promise.reject(error);
+        }
+
+        if (isRefreshing) {
+          // If already refreshing, queue this request
+          return new Promise((resolve, reject) => {
+            failedQueue.push({ resolve, reject, config: originalRequest });
+          })
+            .then(() => {
+              // Retry the original request after token refresh
+              return client(originalRequest);
+            })
+            .catch((err) => {
+              return Promise.reject(err);
+            });
+        }
+
+        originalRequest._retry = true;
+        isRefreshing = true;
+
+        try {
+          // Try to refresh the token
+          const refreshResponse = await axios.post(
+            `${API_BASE_URL}/refresh-token`,
+            {},
+            {
+              withCredentials: true, // Important: send cookies (refreshToken)
+            }
+          );
+
+          if (refreshResponse.status === 200) {
+            // Token refreshed successfully
+            // New access token is set in cookies by backend, no need to update localStorage
+            // But if you have a token in localStorage, you might want to update it
+            // However, since backend uses httpOnly cookies, we might not need localStorage token
+            
+            // Process queued requests
+            processQueue(null, null);
+            isRefreshing = false;
+
+            // Retry the original request (new token will be in cookies)
+            return client(originalRequest);
+          } else {
+            throw new Error('Token refresh failed');
+          }
+        } catch (refreshError) {
+          // Refresh failed - clear auth and redirect to login
+          processQueue(refreshError as AxiosError, null);
+          isRefreshing = false;
+          
+          localStorage.removeItem('authToken');
+          if (typeof window !== 'undefined') {
+            window.location.href = '/login';
+          }
+          return Promise.reject(refreshError);
+        }
+      }
+
+      // Handle other HTTP errors
+      if (error.response?.status === 403) {
         // Forbidden - show access denied message
         console.error('Access denied:', error.response?.data);
       } else if (error.response?.status && error.response.status >= 500) {
