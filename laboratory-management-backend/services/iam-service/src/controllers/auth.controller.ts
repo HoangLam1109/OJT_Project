@@ -105,7 +105,7 @@ const registerUser = async (req: Request, res: Response): Promise<void> => {
 
     console.log('[AuthController] Created user role:', newUser.role);
     // Auto-create patient record only for normal users
-    if (!newUser.role || newUser.role === ROLE_CODES.USER) {
+    if (!newUser.role || newUser.role[0] === ROLE_CODES.USER) {
       console.log('[AuthController] Auto-creating patient for user role USER');
       await patientServiceClient.createPatientForUser(newUser._id);
     }

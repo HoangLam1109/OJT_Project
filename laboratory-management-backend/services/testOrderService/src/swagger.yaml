@@ -1,0 +1,156 @@
+# ./services/testOrderService/src/swagger.yaml
+openapi: 3.0.3
+info:
+  title: TestOrder Service API
+  version: 1.0.0
+  description: API cho dịch vụ Test Order
+servers:
+  - url: http://localhost:5002/api
+    description: Local server
+
+paths:
+  /testOrder/create:
+    post:
+      summary: Tạo Test Order mới
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTestOrderRequest'
+            examples:
+              default:
+                summary: Ví dụ tạo order
+                value:
+                  patientId: "pat_123"
+                  barcode: "BC98765"
+                  status: "pending"
+                  created_at: "2025-10-30T10:00:00.000Z"
+                  created_by: "usr_001"
+                  run_at: "null"
+                  run_by: "null"
+                  updated_at: "2025-10-30T10:00:00.000Z"
+                  updated_by: "usr_001"
+                  deleted_at:  "null"
+                  deleted_by:  "null"
+      responses:
+        '201':
+          description: Tạo thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  order:
+                    type: object
+        '400':
+          description: Lỗi dữ liệu đầu vào
+# ==================== GET: Lấy tất cả ====================
+  /testOrder/all:
+    get:
+      summary: Lấy danh sách tất cả Test Orders
+      responses:
+        '200':
+          description: Danh sách Test Orders
+        '500':
+          description: Lỗi server
+
+  # ==================== GET: Lấy theo ID ====================
+  /testOrder/{id}:
+    get:
+      summary: Lấy Test Order theo ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID của Test Order
+          example: "ord_123"
+      responses:
+        '200':
+          description: Test Order tìm thấy
+        '404':
+          description: Không tìm thấy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Test order not found"
+        '500':
+          description: Lỗi server
+
+components:
+  schemas:
+    # ==================== REQUEST: Dữ liệu gửi lên ====================
+    CreateTestOrderRequest:
+      type: object
+      required:
+        - patientId
+      properties:
+        patientId:
+          type: string
+          description: ID bệnh nhân
+          example: "pat_123"
+        barcode:
+          type: string
+          description: Mã vạch (tự sinh nếu không gửi)
+          example: "BC98765"
+
+    # ==================== RESPONSE: TestOrder trả về ====================
+    TestOrder:
+      type: object
+      required:
+        - id
+        - patient_id
+        - barcode
+        - status
+        - created_at
+        - created_by
+        - updated_at
+        - updated_by
+        - run_at
+        - run_by
+        - is_deleted
+        - deleted_at
+        - deleted_by
+      properties:
+        id:
+          type: string
+          example: "ord_123"
+        patient_id:
+          type: string
+          example: "pat_123"
+        barcode:
+          type: string
+          example: "BC98765"
+        status:
+          type: string
+          enum: [pending, processing, completed, cancelled]
+          example: "pending"
+        created_at:
+          type: string
+          format: date-time
+        created_by:
+          type: string
+        run_at:
+          type: date-time
+        run_by:
+          type: string
+        updated_at:
+          type: string
+          format: date-time
+        updated_by:
+          type: string
+        is_deleted:
+          type: boolean
+          example: false
+        deleted_at:
+          type: date-time
+        deleted_by:
+          type: string

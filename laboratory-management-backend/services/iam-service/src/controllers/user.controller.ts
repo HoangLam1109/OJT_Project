@@ -6,6 +6,7 @@ import patientServiceClient from "../services/patientService.client.js";
 import { ROLE_CODES } from "../constants/roles.constant.js";
 import { PaginationUtils } from "../utils/pagination.util.js";
 import { PaginationOptions } from "../types/pagination.type.js";
+import { getAll } from "./role.controller.js";
 
 // Define the type for authenticated user (matches what the middleware provides)
 interface AuthenticatedUser {
@@ -18,7 +19,9 @@ interface AuthenticatedUser {
   dateOfBirth: Date;
   phoneNumber: string;
   address: string;
-  role: string;
+  role: string[];
+  isActive: boolean;
+  isDeleted: boolean;
 }
 
 const userService = new UserService();
@@ -93,7 +96,7 @@ const getUser = async (req: Request, res: Response): Promise<void> => {
         dateOfBirth: 'string',
         phoneNumber: 'string',
         address: 'string',
-        role: 'string',
+        role: 'string[]',
         createdAt: 'string',
         updatedAt: 'string'
       }
@@ -123,7 +126,10 @@ const getUser = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-const getUsersWithPagination = async (req: Request, res: Response): Promise<void> => {
+const getUsersWithPagination = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   /*
     #swagger.auto = false
     #swagger.tags = ['User CRUD']
@@ -149,6 +155,20 @@ const getUsersWithPagination = async (req: Request, res: Response): Promise<void
       type: 'string',
       enum: ['createdAt', '_id', 'fullName', 'email'],
       default: '_id'
+    }
+    #swagger.parameters['search'] = {
+      in: 'query',
+      description: 'Search term to filter users',
+      required: false,
+      type: 'string'
+    }
+    #swagger.parameters['searchField'] = {
+      in: 'query',
+      description: 'Fields to search by',
+      required: false,
+      type: 'string',
+      enum: ['email', 'fullName'],
+      default: 'fullName'
     }
     #swagger.parameters['sortOrder'] = {
       in: 'query',
@@ -199,43 +219,7 @@ const getUsersWithPagination = async (req: Request, res: Response): Promise<void
   } catch (error) {
     errorHandler(res, error);
   }
-}
-
-const getAll = async (req: Request, res: Response): Promise<void> => {
-   /*
-    #swagger.auto = false
-    #swagger.tags = ['User CRUD']
-    #swagger.description = 'Get all users'
-    #swagger.security = [{"apiKeyAuth": []}]
-    #swagger.responses[200] = {
-      description: 'Users retrieved successfully',
-      schema: {
-        items: {
-          _id: 'string',
-          email: 'string',
-          fullName: 'string',
-          identityNumber: 'string',
-          gender: 'string',
-          age: 'number',
-          dateOfBirth: 'string',
-          phoneNumber: 'string',
-          address: 'string',
-          role: 'string',
-          createdAt: 'string',
-          updatedAt: 'string'
-        }
-      }
-    }
-    #swagger.responses[401] = { description: 'Authentication required' }
-    #swagger.responses[500] = { description: 'Internal server error' }
-  */
-  try {
-    const users = await userService.getAllUsers();
-    res.status(200).json(users);
-  } catch (error) {
-    errorHandler(res, error);
-  }
-}
+};
 
 const createUser = async (req: Request, res: Response): Promise<void> => {
   /*
@@ -256,7 +240,8 @@ const createUser = async (req: Request, res: Response): Promise<void> => {
         dateOfBirth: '01/01/2002',
         password: 'string',
         phoneNumber: 'string',
-        address: 'string'
+        address: 'string',
+        role: ['USER']
       }
     }
     #swagger.responses[201] = {
@@ -276,14 +261,14 @@ const createUser = async (req: Request, res: Response): Promise<void> => {
     console.log('[UserController] Created user role:', newUser.role);
     
     // Auto-create patient record only for normal users
-    if (!newUser.role || newUser.role === ROLE_CODES.USER) {
+    if (!newUser.role || newUser.role.includes(ROLE_CODES.USER)) {
       console.log('[UserController] Auto-creating patient for user role USER');
       await patientServiceClient.createPatientForUser(newUser._id);
     }
     
     res.status(201).json({
       message: "User created successfully!",
-      userId: newUser._id
+      userId: newUser._id,
     });
   } catch (error) {
     errorHandler(res, error);
@@ -315,7 +300,8 @@ const updateUser = async (req: Request, res: Response): Promise<void> => {
         dateOfBirth: '01/01/2002',
         phoneNumber: 'string',
         address: 'string',
-        isActive: 'boolean'
+        isActive: 'boolean',
+        role: ['']
       }
     }
     #swagger.responses[200] = {
@@ -338,7 +324,11 @@ const updateUser = async (req: Request, res: Response): Promise<void> => {
     }
 
     const userData = req.body;
-    const updatedUser = await userService.updateUser(userId, userData, (req.user as AuthenticatedUser)?._id);
+    const updatedUser = await userService.updateUser(
+      userId,
+      userData,
+      (req.user as AuthenticatedUser)?._id
+    );
 
     if (!updatedUser) {
       res.status(404).json({ message: "User not found" });
@@ -348,7 +338,6 @@ const updateUser = async (req: Request, res: Response): Promise<void> => {
     res.status(200).json({
       message: "User updated successfully!",
       userId: updatedUser._id,
-      role: updatedUser.role
     });
   } catch (error) {
     errorHandler(res, error);
@@ -386,7 +375,10 @@ const deleteUser = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const deletedUser = await userService.deleteUser(userId, (req.user as AuthenticatedUser)?._id);
+    const deletedUser = await userService.deleteUser(
+      userId,
+      (req.user as AuthenticatedUser)?._id
+    );
     if (!deletedUser) {
       res.status(404).json({ message: "User not found" });
       return;
@@ -394,11 +386,243 @@ const deleteUser = async (req: Request, res: Response): Promise<void> => {
 
     res.status(200).json({
       message: "User deleted successfully!",
-      userId: deletedUser._id
+      userId: deletedUser._id,
     });
   } catch (error) {
-    errorHandler(res, error); 
+    errorHandler(res, error);
   }
 };
 
-export { getCurrentUser, getUser, getAll, createUser, updateUser, deleteUser, getUsersWithPagination};
+const getUserRolesAndPrivileges = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  /*
+    #swagger.auto = false
+    #swagger.tags = ['User CRUD']
+    #swagger.description = 'Get user roles and privileges by user ID'
+    #swagger.security = [{"apiKeyAuth": []}]
+    #swagger.parameters['id'] = {
+      in: 'path',
+      description: 'User ID',
+      required: true,
+      type: 'string'
+    }
+    #swagger.responses[200] = {
+      description: 'User roles and privileges retrieved successfully',
+      schema: {
+        userId: 'string',
+        email: 'string',
+        fullName: 'string',
+        roles: [{
+          _id: 'string',
+          roleCode: 'string',
+          roleName: 'string',
+          description: 'string',
+          privileges: ['string'],
+          isActive: 'boolean',
+          isSystemRole: 'boolean'
+        }],
+        aggregatedPrivileges: ['string']
+      }
+    }
+    #swagger.responses[400] = { description: 'User ID is required' }
+    #swagger.responses[401] = { description: 'Authentication required' }
+    #swagger.responses[404] = { description: 'User not found' }
+    #swagger.responses[500] = { description: 'Internal server error' }
+  */
+  try {
+    const userId = req.params.id;
+    if (!userId) {
+      res.status(400).json({ message: "User ID is required" });
+      return;
+    }
+
+    const result = await userService.getUserRolesAndPrivileges(userId);
+    if (!result) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    res.status(200).json(result);
+  } catch (error) {
+    errorHandler(res, error);
+  }
+};
+
+const getCurrentUserRolesAndPrivileges = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  /*
+    #swagger.auto = false
+    #swagger.tags = ['User CRUD']
+    #swagger.description = 'Get current authenticated user roles and privileges'
+    #swagger.security = [{"apiKeyAuth": []}]
+    #swagger.responses[200] = {
+      description: 'Current user roles and privileges retrieved successfully',
+      schema: {
+        userId: 'string',
+        email: 'string',
+        fullName: 'string',
+        roles: [{
+          _id: 'string',
+          roleCode: 'string',
+          roleName: 'string',
+          description: 'string',
+          privileges: ['string'],
+          isActive: 'boolean',
+          isSystemRole: 'boolean'
+        }],
+        aggregatedPrivileges: ['string']
+      }
+    }
+    #swagger.responses[401] = { description: 'Authentication required' }
+    #swagger.responses[404] = { description: 'User not found' }
+    #swagger.responses[500] = { description: 'Internal server error' }
+  */
+  try {
+    const currentUser = req.user as AuthenticatedUser;
+    if (!currentUser) {
+      res.status(401).json({ message: "Not authenticated" });
+      return;
+    }
+
+    const result = await userService.getUserRolesAndPrivileges(currentUser._id);
+    if (!result) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    res.status(200).json(result);
+  } catch (error) {
+    errorHandler(res, error);
+  }
+};
+
+const assignRoleToUser = async (req: Request, res: Response): Promise<void> => {
+  /*
+    #swagger.auto = false
+    #swagger.tags = ['Additional']
+    #swagger.description = 'Assign role to user'
+    #swagger.security = [{"apiKeyAuth": []}]
+    #swagger.parameters['id'] = {
+      in: 'path',
+      description: 'User ID',
+      required: true,
+      type: 'string'
+    }
+    #swagger.parameters['body'] = {
+      in: 'body',
+      description: 'Role data',
+      required: true,
+      schema: {
+        role: ['string']
+      }
+    }
+    #swagger.responses[200] = {
+      description: 'Role assigned successfully',
+      schema: {
+        message: 'Role assigned successfully!',
+        userId: 'string'
+      }
+    }
+    #swagger.responses[400] = { description: 'User ID is required' }
+    #swagger.responses[401] = { description: 'Authentication required' }
+    #swagger.responses[404] = { description: 'User not found' }
+    #swagger.responses[500] = { description: 'Internal server error' }
+  */
+  try {
+    const userId = req.params.id;
+    if (!userId) {
+      res.status(400).json({ message: "User ID is required" });
+      return;
+    }
+
+    const role = req.body.role;
+    if (!role) {
+      res.status(400).json({ message: "Role is required" });
+      return;
+    }
+
+    const result = await userService.assignRoleToUser(userId, role, (req.user as AuthenticatedUser)?._id);
+    if (!result) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    res.status(200).json({
+      message: "Role assigned successfully!",
+      userId: result._id,
+    });
+  } catch (error) {
+    errorHandler(res, error);
+  }
+};
+
+const lockUser = async (req: Request, res: Response): Promise<void> => {
+  /*
+    #swagger.auto = false
+    #swagger.tags = ['Additional']
+    #swagger.description = 'Lock user by ID'
+    #swagger.security = [{"apiKeyAuth": []}]
+    #swagger.parameters['id'] = {
+      in: 'path',
+      description: 'User ID',
+      required: true,
+      type: 'string'
+    }
+    #swagger.parameters['body'] = {
+      in: 'body',
+      description: 'User active status',
+      required: true,
+      schema: {
+        isActive: 'boolean'
+      }
+    }
+    #swagger.responses[200] = {
+      description: 'User locked successfully',
+      schema: {
+        message: 'User locked successfully!',
+        userId: 'string'
+      }
+    }
+    #swagger.responses[400] = { description: 'User ID is required' }
+    #swagger.responses[401] = { description: 'Authentication required' }
+    #swagger.responses[404] = { description: 'User not found' }
+    #swagger.responses[500] = { description: 'Internal server error' }
+  */
+  try {
+    const userId = req.params.id;
+    if (!userId) {
+      res.status(400).json({ message: "User ID is required" });
+      return;
+    }
+
+    const isActive = req.body.isActive;
+    const result = await userService.lockUser(userId, isActive , (req.user as AuthenticatedUser)?._id);
+    if (!result) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    res.status(200).json({
+      message: "User locked successfully!",
+      userId: result._id,
+    });
+  } catch (error) {
+    errorHandler(res, error);
+  }
+};
+
+export {
+  getUser,
+  createUser,
+  updateUser,
+  deleteUser,
+  getUsersWithPagination,
+  getUserRolesAndPrivileges,
+  getCurrentUserRolesAndPrivileges,
+  lockUser,
+  assignRoleToUser,
+};

@@ -18,7 +18,7 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
     fullName: '',
     email: '',
     password: '',
-    role: 'USER',
+    role: ['USER'],
     phone_number: '',
     identify_number: '',
     gender: 'Male',
@@ -47,15 +47,32 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
     }
   }, [user, mode]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (mode === 'view') return;
 
-    const validationErrors = validateUserForm(formData, mode);
-    setErrors(validationErrors);
+    try {
+  const validationErrors = await validateUserForm(formData, mode, user?.id);
+      setErrors(validationErrors);
 
-    if (Object.keys(validationErrors).length === 0) {
-      onSubmit(formData);
+      if (Object.keys(validationErrors).length === 0) {
+        try {
+          await onSubmit(formData);
+        } catch (error) {
+          if (error instanceof Error) {
+            // Kiểm tra lỗi từ MongoDB (E11000 duplicate key error)
+            if (error.message.includes('E11000')) {
+              if (error.message.includes('email_1 dup key')) {
+                setErrors(prev => ({ ...prev, email: 'Email đã đăng kí' }));
+              } else if (error.message.includes('identityNumber')) {
+                setErrors(prev => ({ ...prev, identify_number: 'CMND/CCCD đã đăng kí' }));
+              }
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Validation error:', error);
     }
   };
 
@@ -107,7 +124,7 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
                 disabled={isReadOnly}
                 aria-invalid={!!errors.fullName}
               />
-              {errors.fullName && <p className="text-red-500 text-sm mt-1">{errors.fullName}</p>}
+              {errors.fullName && <p className="mt-2 text-sm text-red-500">{errors.fullName}</p>}
             </div>
 
             {/* Email */}
@@ -122,7 +139,7 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
                 disabled={isReadOnly || mode === 'edit'}
                 aria-invalid={!!errors.email}
               />
-              {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+              {errors.email && <p className="mt-2 text-sm text-red-500">{errors.email}</p>}
             </div>
 
             {/* Password */}
@@ -137,7 +154,7 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
                   placeholder={mode === 'edit' ? 'Để trống nếu không đổi' : '••••••••'}
                   aria-invalid={!!errors.password}
                 />
-                {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
+                {errors.password && <p className="mt-2 text-sm text-red-500">{errors.password}</p>}
               </div>
             )}
 
@@ -146,8 +163,18 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
               <Label htmlFor="role">Vai trò</Label>
               <select
                 id="role"
-                value={formData.role}
-                onChange={(e) => handleChange('role', e.target.value)}
+                value={Array.isArray(formData.role) ? formData.role[0] : 'USER'}
+                onChange={(e) => {
+                  const selectedRole = e.target.value as 'ADMIN' | 'MANAGER' | 'SERVICE' | 'LAB_USER' | 'USER';
+                  setFormData((prev) => ({ ...prev, role: [selectedRole] }));
+                  if (errors.role) {
+                    setErrors((prev) => {
+                      const updated = { ...prev };
+                      delete updated.role;
+                      return updated;
+                    });
+                  }
+                }}
                 disabled={isReadOnly}
                 className="flex h-9 w-full rounded-md border border-input bg-input-background px-3 py-1"
               >
@@ -170,7 +197,7 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
                 disabled={isReadOnly}
                 aria-invalid={!!errors.phone_number}
               />
-              {errors.phone_number && <p className="text-red-500 text-sm mt-1">{errors.phone_number}</p>}
+              {errors.phone_number && <p className="mt-2 text-sm text-red-500">{errors.phone_number}</p>}
             </div>
 
             {/* Identify */}
@@ -184,7 +211,7 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
                 disabled={isReadOnly}
                 aria-invalid={!!errors.identify_number}
               />
-              {errors.identify_number && <p className="text-red-500 text-sm mt-1">{errors.identify_number}</p>}
+              {errors.identify_number && <p className="mt-2 text-sm text-red-500">{errors.identify_number}</p>}
             </div>
 
             {/* Gender */}
@@ -214,7 +241,7 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
                 disabled={isReadOnly}
                 aria-invalid={!!errors.date_of_birth}
               />
-              {errors.date_of_birth && <p className="text-red-500 text-sm mt-1">{errors.date_of_birth}</p>}
+              {errors.date_of_birth && <p className="mt-2 text-sm text-red-500">{errors.date_of_birth}</p>}
             </div>
 
             {/* Address */}
@@ -226,7 +253,9 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
                 onChange={(e) => handleChange('address', e.target.value)}
                 placeholder="123 Đường ABC, Quận XYZ, TP. Hà Nội"
                 disabled={isReadOnly}
+                aria-invalid={!!errors.address}
               />
+              {errors.address && <p className="mt-2 text-sm text-red-500">{errors.address}</p>}
             </div>
 
             {/* Active */}

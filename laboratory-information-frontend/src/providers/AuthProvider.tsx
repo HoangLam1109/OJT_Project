@@ -41,11 +41,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const safeUser: SafeUser = {
     id: user.id,
     name: user.name,
-    role: user.role,
+    role: Array.isArray(user.role) ? user.role.flat() : [user.role],
     active: user.active,
     permissions: user.permissions,
   };
-
+  
   localStorage.setItem("limsUser", JSON.stringify(safeUser));
 };
 

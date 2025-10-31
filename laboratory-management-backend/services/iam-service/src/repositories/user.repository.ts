@@ -24,7 +24,7 @@ export class UserRepository implements IUserRepository {
     return await this.userModel.findById(
       id,
       fields ||
-        "_id email fullName phoneNumber identityNumber gender age dateOfBirth phoneNumber address provider providerId"
+        "_id email fullName phoneNumber identityNumber gender age dateOfBirth phoneNumber address isActive isDeleted provider providerId"
     );
   }
 
@@ -60,10 +60,16 @@ export class UserRepository implements IUserRepository {
   async findWithPagination(
     options: PaginationOptions
   ): Promise<{ data: any[]; hasNextPage: boolean; totalCount?: number }> {
-    const { limit, sortBy, sortOrder, cursor, filters } = options;
+    const { limit, sortBy, sortOrder, cursor, filters, search, searchField } = options;
     const query: any = { ...filters };
     const sortDirection = sortOrder === "asc" ? 1 : -1;
     const sortObj = { [sortBy || "_id"]: sortDirection };
+
+    if (search && searchField) {
+      query.$or = [searchField].map(field => ({
+        [field]: { $regex: search, $options: 'i' }
+      }));
+    }
 
     if (cursor) {
       const cursorField = sortBy || "_id";
@@ -89,7 +95,7 @@ export class UserRepository implements IUserRepository {
     return {
       data: data.slice(0, limit),
       hasNextPage,
-      totalCount: await this.userModel.countDocuments(filters || {}),
+      totalCount: await this.userModel.countDocuments(query),
     };
   }
 }

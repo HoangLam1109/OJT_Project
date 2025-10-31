@@ -2,7 +2,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'ADMIN' | 'MANAGER' | 'SERVICE' | 'LAB_USER' | 'USER' ;
+  role: ('ADMIN' | 'MANAGER' | 'SERVICE' | 'LAB_USER' | 'USER')[];
   active: boolean;
   lastLogin?: string;
   permissions: string[];

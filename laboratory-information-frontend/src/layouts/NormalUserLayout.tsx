@@ -51,7 +51,7 @@ export const NormalUserLayout: React.FC<NormalUserLayoutProps> = ({
       <Sidebar 
         navigationItems={navigationItems}
         currentUserName={currentUser.name}
-        currentUserRole="Người dùng"
+        currentUserRole="Người dùng thường"
         currentPage={currentPage}
         sidebarCollapsed={sidebarCollapsed}
         setSidebarCollapsed={setSidebarCollapsed}

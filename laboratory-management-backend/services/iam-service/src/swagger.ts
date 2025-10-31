@@ -15,8 +15,16 @@ const doc = {
       description: 'User management operations (requires authentication)'
     },
     {
+      name: 'Role CRUD',
+      description: 'Role management operations (requires authentication)'
+    },
+    {
       name: 'Authentication',
       description: 'Authentication and authorization operations'
+    },
+    {
+      name: 'Additional',
+      description: 'Additional functions operations (requires authentication) (use if needed)'
     }
   ],
   securityDefinitions: {

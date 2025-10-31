@@ -24,7 +24,7 @@ export const LogoutButton: React.FC<LogoutButtonProps> = ({ collapsed = false })
       if (success) {
         onLogout(); 
         toast.success("Đăng xuất thành công!");
-        navigate("/login");
+        navigate("/");
       } else {
         toast.error("Đăng xuất thất bại!");
       }

@@ -27,7 +27,7 @@ const InstrumentManagementPage: React.FC = () => {
   const [editingInstrument, setEditingInstrument] = useState<Partial<Instrument>>({});
   const [selectedTestOrder, setSelectedTestOrder] = useState('');
 
-  const isLabUser = user?.role === 'LAB_USER';
+  const isLabUser = user?.role[0] === 'LAB_USER';
 
   // Filter instruments based on search and status
   useEffect(() => {

@@ -1,5 +1,6 @@
 import { apiService } from './apiClient';
 import type { ManagerUser, UserFormData } from '../pages/manager/types/ManagerTypes';
+import axios from 'axios';
 
 interface BackendUser {
   _id: string;
@@ -12,7 +13,7 @@ interface BackendUser {
   phoneNumber?: string;
   address?: string;
   isActive: boolean;
-  role?: string;
+  role?: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -52,7 +53,9 @@ const transformBackendUser = (backendUser: BackendUser): ManagerUser => {
     id: backendUser._id || '',
     name: backendUser.fullName || 'N/A',
     email: backendUser.email || 'N/A',
-    role: (backendUser.role as ManagerUser['role']) || 'USER',
+    role: Array.isArray(backendUser.role) && backendUser.role.length > 0
+      ? (backendUser.role as ManagerUser['role'])
+      : ['USER'],
     active: backendUser.isActive ?? true,
     lastLogin: new Date().toISOString(), 
     permissions: [], 
@@ -96,7 +99,9 @@ const transformFrontendUser = (frontendUser: UserFormData) => {
     phoneNumber: frontendUser.phone_number,
     address: frontendUser.address,
     // isActive: frontendUser.active, // Temporarily commented out - API doesn't accept this field for user creation
-    role: frontendUser.role,
+    role: Array.isArray(frontendUser.role) && frontendUser.role.length > 0 
+      ? frontendUser.role 
+      : ['USER'],
     ...(frontendUser.password && { password: frontendUser.password }),
   };
   
@@ -186,6 +191,29 @@ export class UserService {
     }
   }
 
+  async checkEmailExists(email: string, excludeUserId?: string): Promise<boolean> {
+    try {
+      const { users } = await this.getUsersWithPagination({ limit: 100 });
+      return users.some(user =>
+        user.email.toLowerCase() === email.toLowerCase() &&
+        user.id !== excludeUserId
+      );
+    } catch (error) {
+      console.error('Error checking email:', error);
+      return false;
+    }
+  }
+
+  async checkIdentityNumberExists(identityNumber: string, excludeUserId?: string): Promise<boolean> {
+    try {
+      const { users } = await this.getUsersWithPagination({ limit: 100 });
+      return users.some(user => user.identify_number === identityNumber && user.id !== excludeUserId);
+    } catch (error) {
+      console.error('Error checking identity number:', error);
+      return false;
+    }
+  }
+
   
   async createUser(userData: UserFormData): Promise<ManagerUser> {
     try {
@@ -194,8 +222,17 @@ export class UserService {
       console.log('Sending to API:', backendData);
       const response = await apiService.post<BackendUser>('/user/create', backendData);
       return transformBackendUser(response);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error creating user:', error);
+      if (axios.isAxiosError(error)) {
+        const errorData = error.response?.data;
+        // Kiểm tra lỗi duplicate key từ MongoDB (E11000)
+        if (errorData?.message?.includes('E11000') && errorData?.message?.includes('email_1 dup key')) {
+          throw new Error('Email đã đăng kí');
+        } else if (errorData?.message?.includes('E11000') && errorData?.message?.includes('identityNumber_1 dup key')) {
+          throw new Error('CMND/CCCD đã đăng kí');
+        }
+      }
       throw new Error('Không thể tạo người dùng');
     }
   }
@@ -205,8 +242,16 @@ export class UserService {
       const backendData = transformFrontendUser(userData);
       const response = await apiService.put<BackendUser>(`/user/update/${userId}`, backendData);
       return transformBackendUser(response);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error updating user:', error);
+      if (axios.isAxiosError(error) && error.response?.status === 409) {
+        const errorMessage = error.response.data?.message || '';
+        if (errorMessage.includes('email')) {
+          throw new Error('Email đã đăng kí');
+        } else if (errorMessage.includes('identityNumber')) {
+          throw new Error('CMND/CCCD đã đăng kí');
+        }
+      }
       throw new Error('Không thể cập nhật người dùng');
     }
   }
@@ -232,7 +277,7 @@ export class UserService {
       const userData: UserFormData = {
         fullName: '',
         email: '', 
-        role: 'USER', 
+        role: ['USER'], 
         phone_number: '',
         identify_number: '',
         gender: 'Male' as 'Male' | 'Female' | 'Other',

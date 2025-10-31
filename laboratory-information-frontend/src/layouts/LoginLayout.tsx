@@ -2,45 +2,51 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { TestTube } from "lucide-react";
 import { LoginForm } from "../pages/login/LoginForm";
+import { BubbleBackground } from "@/components/common/bubble-background";
 import { useAuthContext } from "../hooks/useAuthContext";
+import { useEffect } from "react";
 import type { User } from "../types/User";
-
-export function LoginLayout() {
+export const LoginLayout = () => {
   const navigate = useNavigate();
-  const { onLogin } = useAuthContext();
+  const { user, onLogin } = useAuthContext(); // ✅ lấy onLogin từ context
 
-  const handleLogin = (user: User) => {
-    toast.success(`Chào mừng, ${user.name}!`);
-    onLogin(user); 
-
-    // Phân quyền điều hướng
-    switch (user.role) {
-      case 'ADMIN':
-        navigate('/admin');
-        break;
-      case 'MANAGER':
-        navigate('/manager');
-        break;
-      case 'SERVICE':
-        navigate('/service');
-        break;
-      case 'LAB_USER':
-        navigate('/labuser');
-        break;
-      case 'USER':
-        navigate('/user');
-        break;
-      default:
-        navigate('/home');
-        break;
-    }
+  // ✅ định nghĩa hàm login
+  const handleLogin = (userData: User) => {
+    onLogin(userData); // lưu vào context và localStorage
+    toast.success("Đăng nhập thành công!");
   };
+
+  useEffect(() => {
+    if (user && user.role?.length > 0) {
+      const firstRole = user.role[0];
+      switch (firstRole) {
+        case "ADMIN":
+          navigate("/admin");
+          break;
+        case "MANAGER":
+          navigate("/manager");
+          break;
+        case "SERVICE":
+          navigate("/service");
+          break;
+        case "LAB_USER":
+          navigate("/labuser");
+          break;
+        case "USER":
+          navigate("/user");
+          break;
+        default:
+          navigate("/home");
+          break;
+      }
+    }
+  }, [user]);
 
   return (
     <div className="min-h-screen flex">
-      {/* Left Side - Medical Image */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 relative overflow-hidden">
-        <div className="absolute inset-0 bg-black/20"></div>
+      {/* Left Side - Bubble Background */}
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
+        <BubbleBackground className="absolute inset-0" />
         <div className="relative z-10 flex flex-col justify-center items-center text-white p-12">
           {/* Medical Icons and Content */}
           <div className="text-center space-y-8">
@@ -76,10 +82,7 @@ export function LoginLayout() {
             </div>
           </div>
           
-          {/* Decorative Elements */}
-          <div className="absolute top-10 left-10 w-32 h-32 bg-white/10 rounded-full blur-xl"></div>
-          <div className="absolute bottom-10 right-10 w-24 h-24 bg-blue-300/20 rounded-full blur-lg"></div>
-          <div className="absolute top-1/2 right-20 w-16 h-16 bg-white/5 rounded-full blur-md"></div>
+          {/* Decorative Elements - removed, handled by BubbleBackground */}
         </div>
       </div>
 

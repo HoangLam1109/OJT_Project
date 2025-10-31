@@ -10,6 +10,8 @@ export interface PaginationOptions {
   limit: number;
   sortBy: string;
   sortOrder: 'asc' | 'desc';
+  search?: string;
+  searchField?: string;
   cursor?: any;
   filters?: Record<string, any>;
 }

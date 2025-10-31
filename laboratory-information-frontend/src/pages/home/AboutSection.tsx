@@ -36,8 +36,12 @@ export function AboutSection({ onShowLogin }: LoginType) {
   ];
 
   return (
-    <section className="px-6 py-20">
-      <div className="max-w-7xl mx-auto">
+    <section className="px-6 py-20 relative">
+      {/* Animated gradient background for About Section */}
+      {/* <div className="absolute inset-0 bg-gradient-to-b from-sky-200 via-blue-300 to-sky-500 animate-gradient-move">
+        <div className="absolute inset-0 bg-white/30"></div>
+      </div> */}
+      <div className="relative max-w-7xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <div className="space-y-8">
             <div className="space-y-4">

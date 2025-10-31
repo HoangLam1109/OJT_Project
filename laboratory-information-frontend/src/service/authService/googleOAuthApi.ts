@@ -57,7 +57,7 @@ export async function handleGoogleCallback(): Promise<User | null> {
         id: googleUser.id,
         name: googleUser.fullName,
         email: googleUser.email,
-        role: googleUser.role as User['role'],
+        role: Array.isArray(googleUser.role) ? googleUser.role.flat() : [googleUser.role],
         active: true,
         permissions: [], // Google OAuth users có thể cần permissions mặc định
       };
@@ -80,16 +80,14 @@ export function handleGoogleCallbackFromData(responseData: GoogleOAuthResponse):
   try {
     if (responseData?.user) {
       const googleUser = responseData.user;
-      
       const user: User = {
         id: googleUser.id,
         name: googleUser.fullName,
         email: googleUser.email,
-        role: googleUser.role as User['role'],
+        role: Array.isArray(googleUser.role) ? googleUser.role.flat() : [googleUser.role],
         active: true,
-        permissions: [], // Google OAuth users có thể cần permissions mặc định
+        permissions: [], 
       };
-
       return user;
     }
     

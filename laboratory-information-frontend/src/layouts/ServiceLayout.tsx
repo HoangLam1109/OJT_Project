@@ -44,7 +44,7 @@ export function ServiceLayout({
     <div className="min-h-screen bg-gray-50 flex">
       <Sidebar
         currentUserName={currentUser.name}
-        currentUserRole={currentUser.role}
+        currentUserRole="Dịch vụ"
         currentPage={currentPage}
         sidebarCollapsed={sidebarCollapsed}
         setSidebarCollapsed={setSidebarCollapsed}
