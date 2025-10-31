@@ -63,9 +63,9 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({ order, isOpen, 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (isSubmitting) return;
-    
+
     const newErrors: Record<string, string> = {};
     if (!formData.patientId) newErrors.patientId = 'Vui lòng chọn bệnh nhân';
     if (!formData.testType) newErrors.testType = 'Vui lòng chọn loại xét nghiệm';
@@ -83,11 +83,11 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({ order, isOpen, 
       ...formData,
       patientName: selectedPatient?.fullName || formData.patientName,
       createdAt: isEdit ? order?.createdAt : new Date().toISOString().split('T')[0],
-      samples: (isEdit ? order?.samples : [{ 
-        id: `S${Date.now()}`, 
-        type: formData.sampleType, 
-        receivedDate: formData.collectionDate, 
-        status: 'Received' 
+      samples: (isEdit ? order?.samples : [{
+        id: `S${Date.now()}`,
+        type: formData.sampleType,
+        receivedDate: formData.collectionDate,
+        status: 'Received'
       }]) as Sample[]
     };
 
@@ -147,9 +147,10 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({ order, isOpen, 
                   id="patient"
                   value={formData.patientId}
                   onChange={(e) => handlePatientChange(e.target.value)}
-                  className={`mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors ${
-                    errors.patientId ? 'border-red-500 bg-red-50' : 'hover:border-gray-400'
-                  }`}
+                  className={`mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 shadow-sm 
+focus:border-blue-500 focus:ring-blue-500 hover:border-gray-400 transition-colors 
+${errors.patientId ? 'border-red-500 bg-red-50' : ''}`}
+
                 >
                   <option value="">Chọn bệnh nhân</option>
                   {mockPatients.map((patient) => (
@@ -171,9 +172,10 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({ order, isOpen, 
                   id="testType"
                   value={formData.testType}
                   onChange={(e) => setFormData(prev => ({ ...prev, testType: e.target.value }))}
-                  className={`mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors ${
-                    errors.testType ? 'border-red-500 bg-red-50' : 'hover:border-gray-400'
-                  }`}
+                  className={`mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 shadow-sm 
+focus:border-blue-500 focus:ring-blue-500 hover:border-gray-400 transition-colors 
+${errors.patientId ? 'border-red-500 bg-red-50' : ''}`}
+
                 >
                   <option value="">Chọn loại xét nghiệm</option>
                   {mockTestTypes.map((type) => (
@@ -195,7 +197,7 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({ order, isOpen, 
                   id="testName"
                   value={formData.testName}
                   onChange={(e) => setFormData(prev => ({ ...prev, testName: e.target.value }))}
-                  className={`rounded-lg transition-colors ${errors.testName ? 'border-red-500 bg-red-50' : 'hover:border-gray-400'}`}
+                  className={`mt-2 rounded-lg transition-colors ${errors.testName ? 'border-red-500 bg-red-50' : 'hover:border-gray-400'}`}
                   placeholder="Nhập tên xét nghiệm"
                 />
                 {errors.testName && (
@@ -211,9 +213,10 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({ order, isOpen, 
                   id="sampleType"
                   value={formData.sampleType}
                   onChange={(e) => setFormData(prev => ({ ...prev, sampleType: e.target.value }))}
-                  className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
-                    errors.sampleType ? 'border-red-500' : ''
-                  }`}
+                  className={`mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 shadow-sm 
+focus:border-blue-500 focus:ring-blue-500 hover:border-gray-400 transition-colors 
+${errors.patientId ? 'border-red-500 bg-red-50' : ''}`}
+
                 >
                   <option value="">Chọn loại mẫu</option>
                   {mockSampleTypes.map((type) => (
@@ -236,7 +239,8 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({ order, isOpen, 
                   type="date"
                   value={formData.collectionDate}
                   onChange={(e) => setFormData(prev => ({ ...prev, collectionDate: e.target.value }))}
-                  className={errors.collectionDate ? 'border-red-500' : ''}
+                  className={`mt-2 rounded-lg transition-colors ${errors.testName ? 'border-red-500 bg-red-50' : 'hover:border-gray-400'}`}
+
                 />
                 {errors.collectionDate && (
                   <p className="mt-1 text-sm text-red-600">{errors.collectionDate}</p>
@@ -251,7 +255,10 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({ order, isOpen, 
                   id="priority"
                   value={formData.priority}
                   onChange={(e) => setFormData(prev => ({ ...prev, priority: e.target.value as any }))}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className={`mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 shadow-sm 
+focus:border-blue-500 focus:ring-blue-500 hover:border-gray-400 transition-colors 
+${errors.patientId ? 'border-red-500 bg-red-50' : ''}`}
+
                 >
                   <option value="Normal">Bình thường</option>
                   <option value="Urgent">Khẩn cấp</option>
@@ -287,7 +294,7 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({ order, isOpen, 
                 id="notes"
                 value={formData.notes}
                 onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 hover:border-gray-400 transition-colors resize-none"
+                className="p-2 mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 hover:border-gray-400 transition-colors resize-none"
                 rows={3}
                 placeholder="Nhập ghi chú..."
               />
@@ -302,8 +309,8 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({ order, isOpen, 
               >
                 Hủy
               </Button>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={isSubmitting}
                 className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white"
               >

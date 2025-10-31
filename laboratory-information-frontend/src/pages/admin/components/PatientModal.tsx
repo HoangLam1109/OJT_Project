@@ -92,7 +92,7 @@ export const PatientModal: React.FC<PatientModalProps> = ({ isOpen, mode, patien
           </Button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
+        <form onSubmit={handleSubmit} className="p-6 overflow-y-auto max-h-[calc(90vh-140px)] [&_label]:mb-2">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="md:col-span-2">
               <Label htmlFor="fullName">Họ và tên</Label>
