@@ -1,5 +1,4 @@
 import type { Request, Response, NextFunction } from "express";
-import { AppError } from "../utils/error.util.js";
 import jwt from "jsonwebtoken";
 import UserModel from "../db/models/User.model.js";
 
@@ -10,7 +9,7 @@ const refreshTokenValidation = (
 ) => {
   const refreshToken = req.cookies.refreshToken;
   if (!refreshToken) {
-    throw new AppError(401, "No refresh token provided");
+    return res.status(401).json({ message: "No refresh token provided" });
   }
 
   try {
@@ -25,7 +24,8 @@ const refreshTokenValidation = (
     next();
   } catch (error) {
     console.error("Refresh Token authentication failed:", error);
-    next(error);
+
+    return res.status(401).json({ message: "Invalid or expired refresh token" });
   }
 };
 
@@ -37,11 +37,13 @@ const authenticateUser = async (
   try {
     const token = req.cookies.accessToken;
     if (!token) {
-      throw new AppError(401, "Not authorized, no token");
+      res.status(401).json({ message: "Not authorized, no token" });
+      return;
     }
 
     if (!process.env.JWT_SECRET_KEY) {
-      throw new AppError(500, "JWT secret is not defined");
+      res.status(500).json({ message: "JWT secret is not defined" });
+      return;
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY) as {
@@ -54,18 +56,32 @@ const authenticateUser = async (
     );
 
     if (!user) {
-      throw new AppError(401, "Not authorized, user not found");
+      res.status(401).json({ message: "Not authorized, user not found" });
+      return;
     }
 
     if (!user.isActive || user.isDeleted) {
-      throw new AppError(401, "Not authorized, user is not active or deleted");
+      res.status(401).json({ message: "Not authorized, user is not active or deleted" });
+      return;
     }
 
     req.user = user;
 
     next();
   } catch (error) {
-    next(error);
+    if (error instanceof jwt.TokenExpiredError) {
+      res.status(401).json({ message: "Token expired" });
+      return;
+    }
+    if (error instanceof jwt.JsonWebTokenError) {
+      console.log(error.message);
+      res.status(401).json({ message: "Invalid token" });
+      return;
+    }
+
+    console.error("Authentication error:", error);
+    res.status(500).json({ message: "Server error during authentication" });
+    return;
   }
 };
 

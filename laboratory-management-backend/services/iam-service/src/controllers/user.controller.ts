@@ -228,12 +228,12 @@ const createUser = async (req: Request, res: Response, next: NextFunction): Prom
       schema: {
         email: 'string@example.com',
         fullName: 'string',
-        identityNumber: '123456789',
+        identityNumber: 'string',
         gender: 'Male',
         age: '12',
         dateOfBirth: '01/01/2002',
         password: 'string',
-        phoneNumber: '1234567890',
+        phoneNumber: 'string',
         address: 'string',
         role: ['USER']
       }
@@ -288,11 +288,11 @@ const updateUser = async (req: Request, res: Response, next: NextFunction): Prom
       schema: {
         email: 'string@example.com',
         fullName: 'string',
-        identityNumber: '123456789',
+        identityNumber: 'string',
         gender: 'Male',
         age: '22',
         dateOfBirth: '01/01/2002',
-        phoneNumber: '1234567890',
+        phoneNumber: 'string',
         address: 'string',
         isActive: 'boolean',
         role: ['']
