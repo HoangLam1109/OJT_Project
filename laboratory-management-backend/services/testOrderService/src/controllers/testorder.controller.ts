@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { TestOrderService } from "../services/testOrderService.js";
+import { TestOrderRepository } from "../repositories/testOrderRepository.js";
 import patientServiceClient from "../services/patientServiceClient.js";
 import iamServiceClient from "../services/iamServiceClient.js";
 export const getAllTestOrders = async (req: Request, res: Response) => {
@@ -32,14 +33,15 @@ export const getAllTestOrders = async (req: Request, res: Response) => {
         status: order.status,
         created_at: order.created_at,
         created_by: order.created_by,
-        run_at: order.run_at,
-        run_by: order.run_by,
+        due_date: order.due_date,
         updated_at: order.updated_at,
         updated_by: order.updated_by,
         is_deleted: order.is_deleted,
         deleted_at: order.deleted_at,
         deleted_by: order.deleted_by,
-
+        testType:order.test_type,
+        processing:order.processing,
+        notes:order.notes,
         user: user
           ? {
             fullName: user.fullName,
@@ -50,7 +52,7 @@ export const getAllTestOrders = async (req: Request, res: Response) => {
           : null,
       };
     });
-
+      console.log("enrichedOrders",enrichedOrders);
     res.json(enrichedOrders);
   } catch (err) {
     console.error("[TestOrderController] Error fetching orders:", err);
@@ -74,14 +76,15 @@ export const getTestOrderById = async (req: Request<{ id: string }>, res: Respon
       status: order.status,
       created_at: order.created_at,
       created_by: order.created_by,
-      run_at: order.run_at,
-      run_by: order.run_by,
+      due_date: order.due_date,
       updated_at: order.updated_at,
       updated_by: order.updated_by,
       is_deleted: order.is_deleted,
       deleted_at: order.deleted_at,
       deleted_by: order.deleted_by,
-
+      testType:order.test_type,
+      processing:order.processing,
+      notes:order.notes,
       user: user
         ? {
           fullName: user.fullName,
@@ -91,7 +94,7 @@ export const getTestOrderById = async (req: Request<{ id: string }>, res: Respon
         }
         : null,
     };
-
+    console.log("enrichedOrder",enrichedOrder);
     res.json(enrichedOrder);
   } catch (err) {
     console.error("[TestOrderController] Error fetching order by ID:", err);
@@ -101,53 +104,86 @@ export const getTestOrderById = async (req: Request<{ id: string }>, res: Respon
 
 export const createTestOrder = async (req: Request, res: Response) => {
   try {
-    const { patientId, ...orderData } = req.body;
-    const userId = req.userId || "system";
-    if (!userId) {
-      return res.status(401).json({
-        message: 'Không thể xác định người tạo đơn. Vui lòng đăng nhập lại.',
-      });
-    }
-    const order = await TestOrderService.createOrder(orderData, userId, patientId);
+    const {  ...orderData } = req.body;
+    const order = await TestOrderService.createOrder(orderData);
     res.status(201).json({ message: "Test order created successfully", order });
   } catch (error: any) {
     res.status(400).json({ message: error.message });
   }
 };
 
-export const updateTestOrder = async (req: Request<{ id: string }>, res: Response) => {
+export const updateTestOrder = async (req: Request, res: Response) => {
   try {
-    const { id, ...updateData } = req.body; // lấy id từ body
-    console.log("id", id);
-    console.log("body", updateData);
+    const id = req.params.id as string;
+    const data = req.body;
+    const updatedBy = data.updated_by;
+    const updated = await TestOrderService.updateOrder(id, data, updatedBy);
 
-    if (!id) {
-      return res.status(400).json({ message: "Missing id" });
-    }
-
-    const updated = await TestOrderService.updateOrder(id, updateData);
-    if (!updated) {
-      return res.status(404).json({ message: "TestOrder not found" });
-    }
-
-    res.status(200).json(updated);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Internal server error" });
+    return res.json({
+      success: true,
+      data: updated,
+    });
+  } catch (error: any) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-export const deleteTestOrder = async (req: Request<{ id: string }>, res: Response) => {
+export const softDeleteTestOrder = async (req:Request, res:Response) => {
   try {
-    const userId = (req as any).user?.id as string | undefined;
-    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+    const _id = req.params.id as string;
+    const { deleted_by } = req.body; 
+    const deletedBy = deleted_by || (req as any).user?.name || 'system';
 
-    const deleted = await TestOrderService.deleteOrder(req.params.id, userId);
-    if (!deleted) return res.status(404).json({ message: "Test order not found" });
-
-    res.json({ message: "Test order deleted", data: deleted });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Internal server error" });
+    const deletedOrder = await TestOrderService.softDelete(_id, deletedBy);
+    if (!deletedOrder) {
+      return res.status(404).json({ message: 'Test order not found' });
+    }
+    res.status(200).json({
+      message: 'Đã xóa (soft delete) lệnh xét nghiệm thành công',
+      order: deletedOrder,
+    });
+  } catch (error) {
+    console.error('❌ Lỗi khi soft delete test order:', error);
+    res.status(500).json({ message: 'Lỗi server khi xóa test order' });
   }
 };
+
+export const updateTestOrderStatus = async (req: Request, res: Response) => {
+  try {
+   const id = req.params.id as string;
+    const { status, updated_by } = req.body;
+
+    if (!updated_by) {
+      return res.status(400).json({
+        success: false,
+        message: 'Thiếu thông tin người cập nhật',
+      });
+    }
+
+    const validStatuses = ['Pending', 'Processing', 'Completed'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Trạng thái không hợp lệ',
+      });
+    }
+
+    const processing = status === 'Processing' ? 10 : status === 'Completed' ? 100 : 0;
+    const updated = await TestOrderService.updateStatus(id, status, updated_by);
+
+    return res.json({
+      success: true,
+      data: updated,
+    });
+  } catch (error: any) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+

@@ -54,12 +54,12 @@ const TestOrderTable: React.FC<TestOrderTableProps> = ({
             </TableCell>
             <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
               <div>
-                <div className="font-medium">{order.patientName}</div>
-                <div className="text-gray-500">{order.patientId}</div>
+                <div className="font-medium">{order.patient_name}</div>
+                <div className="text-gray-500">{order.patient_id}</div>
               </div>
             </TableCell>
             <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              {order.createdAt}
+              {order.created_at}
             </TableCell>
             <TableCell className="px-6 py-4 whitespace-nowrap">
               <StatusBadge status={order.status} />
@@ -67,11 +67,10 @@ const TestOrderTable: React.FC<TestOrderTableProps> = ({
             <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
               <div>
                 <div className="font-medium">{order.testType}</div>
-                <div className="text-gray-500">{order.testName}</div>
               </div>
             </TableCell>
             <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              {order.createdBy}
+              {order.created_by}
             </TableCell>
             <TableCell className="px-6 py-4 whitespace-nowrap text-sm font-medium">
               <div className="flex space-x-2">

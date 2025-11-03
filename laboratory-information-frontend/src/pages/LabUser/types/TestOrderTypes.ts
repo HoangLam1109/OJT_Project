@@ -9,37 +9,34 @@ export interface Sample {
 export interface TestOrderSample {
   id: string;
   barcode: string;
-  patientId: string;
-  patientName: string;
+  patient_id: string;
+  patient_name: string;
   testType: string;
-  priority: 'urgent' | 'normal' | 'routine';
-  status: 'pending' | 'processing' | 'completed' | 'failed';
+  status: 'pending' | 'processing' | 'completed' ;
   progress?: number;
-  assignedInstrument?: string;
   startTime?: string;
-  estimatedCompletion?: string;
+  processing?:number;
 }
 
 export interface TestOrder {
   id: string;
-  barcode?: string; // Mã vạch/mã mẫu (tương tự ServiceTestPage)
-  patientName: string;
-  patientId: string;
+  barcode?: string;
+  patient_id: string;
   testType: string;
-  testName?: string;
-  createdAt: string;
-  status: 'Pending' | 'Processing' | 'Completed' | 'Cancelled' | 'pending' | 'processing' | 'completed' | 'failed';
-  priority: 'Normal' | 'Urgent' | 'Emergency' | 'urgent' | 'normal' | 'routine';
-  assignedTo?: string;
-  assignedInstrument?: string; // Thiết bị được gán để xử lý (như ServiceTestPage)
-  progress?: number; // Tiến độ xét nghiệm (%)
-  startTime?: string; // Thời gian bắt đầu xử lý
-  estimatedCompletion?: string; // Thời gian dự kiến hoàn thành
+  patient_name: string
+  status: 'Pending' | 'Processing' | 'Completed'  ;
+  progress?: number; 
+  created_at?:string;
+  created_by?:string;
+  due_date?: string; 
+  updated_at?:string;
+  updated_by?:string;
+  is_deleted?:boolean;
+  deleted_at?:string;
+  deleted_by?:string;
   notes?: string;
-  createdBy: string;
-  collectionDate?: string;
-  sampleType?: string;
-  samples?: Sample[];
+  processing?:number;
+  assignedInstrument?:string
 }
 
 export interface TestResult {
