@@ -146,6 +146,120 @@
         ]
       }
     },
+    "/internal/user/create": {
+      "post": {
+        "tags": [
+          "User CRUD"
+        ],
+        "description": "Create a new user",
+        "parameters": [
+          {
+            "name": "x-internal-api-key",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "X-Internal-API-Key",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "User data",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "example": "string@example.com"
+                },
+                "fullName": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "identityNumber": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "gender": {
+                  "type": "string",
+                  "example": "Male"
+                },
+                "age": {
+                  "type": "string",
+                  "example": "12"
+                },
+                "dateOfBirth": {
+                  "type": "string",
+                  "example": "01/01/2002"
+                },
+                "password": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "phoneNumber": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "address": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "role": {
+                  "type": "array",
+                  "example": [
+                    "USER"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "User created successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "User created successfully!"
+                },
+                "userId": {
+                  "type": "string",
+                  "example": "string"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request or missing required fields"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
     "/register": {
       "post": {
         "tags": [

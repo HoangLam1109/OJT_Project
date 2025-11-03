@@ -47,6 +47,8 @@ const registerUser = async (req: Request, res: Response): Promise<void> => {
     #swagger.responses[500] = { description: 'Internal server error' }
   */
   try {
+    console.log('[AuthController] POST /api/auth/register called');
+    console.log('[AuthController] Body keys:', Object.keys(req.body || {}));
     const {
       email,
       fullName,

@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import { userRepository } from "../repositories/index.js";
 import { auditLogRepository } from "../repositories/index.js";
 import { passwordHistoryRepository } from "../repositories/index.js";
+import patientServiceClient from "./patientService.client.js";
 
 import type { IUser } from "../db/models/User.model.js";
 import RoleModel from "../db/models/Role.model.js";
@@ -10,6 +11,7 @@ import {
   PaginationOptions,
 } from "../types/pagination.type.js";
 import { PaginationUtils } from "../utils/pagination.util.js";
+import { ROLE_CODES } from "../constants/roles.constant.js";
 
 export interface CreateUserData {
   email: string;
@@ -50,12 +52,14 @@ export class UserService {
     userData: CreateUserData,
     performedBy?: string
   ): Promise<IUser> {
+    console.log("\n[UserService] ====== CREATE USER START ======");
+    console.log("[UserService] Input userData:", JSON.stringify(userData));
     const newUser = await this._passwordCheck("", userData, performedBy);
     if(!userData.role){
       newUser.role = ["USER"];
     }
     const createdUser = await userRepository.create(newUser);
-    console.log(createdUser);
+    console.log("[UserService] User created in DB:", createdUser);
 
     await this._logEvent(
       "E_00001",
@@ -63,6 +67,18 @@ export class UserService {
       "User created successfully!",
       performedBy || createdUser._id
     );
+
+    // Automatically create patient profile for normal users
+    try {
+      if (!createdUser.role || createdUser.role.includes(ROLE_CODES.USER)) {
+        console.log('[UserService] Triggering PatientServiceClient for user:', createdUser._id);
+        await patientServiceClient.createPatientForUser(createdUser._id);
+      }
+    } catch (err) {
+      console.error('[UserService] Error creating patient for user:', createdUser._id, err);
+    }
+
+    console.log("[UserService] ====== CREATE USER END ======\n");
     return createdUser;
   }
 
@@ -88,13 +104,28 @@ export class UserService {
     userId: string,
     performedBy?: string
   ): Promise<IUser | null> {
+    // Get user info before deleting
+    const user = await userRepository.findById(userId);
+    
+    if (!user) {
+      return null;
+    }
+
     const deletedUser = await userRepository.deleteById(userId);
+    
     await this._logEvent(
       "E_00003",
       "DELETE",
       "User deleted successfully!",
       performedBy || userId
     );
+
+    // Soft delete associated patient record if user had USER role
+    if (user.role && user.role.includes(ROLE_CODES.USER)) {
+      console.log('[UserService] Soft deleting patient for user role USER');
+      await patientServiceClient.softDeletePatientByUserId(userId);
+    }
+
     return deletedUser;
   }
 
@@ -131,7 +162,16 @@ export class UserService {
   async getUsersWithPagination(
     options: PaginationOptions
   ): Promise<PaginationResponse<IUser>> {
-    const result = await userRepository.findWithPagination(options);
+    const filters = { ...(options.filters ?? {}) };
+
+    if (typeof filters.isDeleted === "undefined") {
+      filters.isDeleted = false;
+    }
+
+    const result = await userRepository.findWithPagination({
+      ...options,
+      filters,
+    });
     return PaginationUtils.formatResponse(
       result.data,
       result.hasNextPage,
