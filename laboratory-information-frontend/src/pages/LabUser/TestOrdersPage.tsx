@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useAuthContext } from '../../hooks/useAuthContext';
-import { useNavigate } from 'react-router-dom';
 import type { TestOrder, TestResult } from './types/TestOrderTypes';
 import { testOrderService } from '../../service/testOrderService';
 import { mockInstrument } from '../service/data/mockInstrument';
@@ -21,13 +20,7 @@ import { Skeleton } from '@/components/common/skeleton';
 
 const TestOrdersPage: React.FC = () => {
   const { user } = useAuthContext();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (user && user.role[0] !== 'LAB_USER') {
-      navigate('/unauthorized');
-    }
-  }, [user, navigate]);
+  
 
   const [orders, setOrders] = useState<TestOrder[]>([]);
   const [filteredOrders, setFilteredOrders] = useState<TestOrder[]>([]);
