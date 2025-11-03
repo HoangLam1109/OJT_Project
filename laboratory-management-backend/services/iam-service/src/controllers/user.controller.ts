@@ -2,8 +2,6 @@ import type { Request, Response } from "express";
 import type { IUser } from "../db/models/User.model.js";
 import { UserService } from "../services/user.service.js";
 import { errorHandler } from "../utils/error.util.js";
-import patientServiceClient from "../services/patientService.client.js";
-import { ROLE_CODES } from "../constants/roles.constant.js";
 import { PaginationUtils } from "../utils/pagination.util.js";
 import { PaginationOptions } from "../types/pagination.type.js";
 import { getAll } from "./role.controller.js";
@@ -256,15 +254,11 @@ const createUser = async (req: Request, res: Response): Promise<void> => {
     #swagger.responses[500] = { description: 'Internal server error' }
   */
   try {
+    console.log('[UserController] POST /api/v1/user/create called');
+    console.log('[UserController] Body keys:', Object.keys(req.body || {}));
     const userData = req.body;
     const newUser = await userService.createUser(userData, (req.user as AuthenticatedUser)?._id);
     console.log('[UserController] Created user role:', newUser.role);
-    
-    // Auto-create patient record only for normal users
-    if (!newUser.role || newUser.role.includes(ROLE_CODES.USER)) {
-      console.log('[UserController] Auto-creating patient for user role USER');
-      await patientServiceClient.createPatientForUser(newUser._id);
-    }
     
     res.status(201).json({
       message: "User created successfully!",

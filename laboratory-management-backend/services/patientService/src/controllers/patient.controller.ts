@@ -122,8 +122,35 @@ const createPatient = async (req: Request, res: Response): Promise<void> => {
       }
   */
   try {
-    const { user_id, emergency_contact } = req.body ?? {};
+
+    console.log(`   └─ Headers:`, JSON.stringify(req.headers));
+    console.log(`   └─ Raw body type: ${typeof req.body}`);
+    console.log(`   └─ Body:`, req.body);
+
+    // Nếu body là string (PowerShell hoặc client gửi sai), parse lại
+    let body = req.body;
+    if (typeof body === "string") {
+      try {
+        body = JSON.parse(body);
+        console.log("   [DEBUG] Parsed body from string:", body);
+      } catch (err) {
+        console.log("   [ERROR] Cannot parse body string:", err);
+      }
+    }
+    // Nếu body có thuộc tính example (gửi từ Swagger UI), lấy từ example
+    if (body && typeof body === 'object' && body.example) {
+      body = body.example;
+    }
+    let { user_id, emergency_contact } = (body ?? {}) as any;
     const userId = (req as any).userId;
+
+    // Fallback: accept user_id from query string or JWT when body missing
+    if (!user_id) {
+      user_id = (typeof req.query.user_id === 'string' ? req.query.user_id : undefined) || userId;
+      if (user_id) {
+        console.log(`   [DEBUG] Using fallback user_id: ${user_id}`);
+      }
+    }
 
     console.log(`\n➕ [CREATE PATIENT] User: ${userId}`);
     console.log(`   └─ New User ID: ${user_id}`);
@@ -304,4 +331,41 @@ const deletePatient = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-export { getAllPatients, getPatientById, createPatient, updatePatient, deletePatient };
+const softDeletePatientByUserId = async (req: Request, res: Response): Promise<void> => {
+  /*
+    #swagger.auto = false
+    #swagger.tags = ['Patients']
+    #swagger.description = 'Soft delete patient by user ID (Internal API only)'
+    #swagger.security = [{"internalApiKey": []}]
+    #swagger.parameters['userId'] = { in: 'path', type: 'string', required: true }
+  */
+  try {
+    const { userId } = req.params;
+
+    console.log(`\n🗑️  [SOFT DELETE PATIENT BY USER ID]`);
+    console.log(`   └─ User ID: ${userId}`);
+
+    if (!userId) {
+      console.log(`   ❌ Missing user ID`);
+      res.status(400).json({ message: "User ID is required" });
+      return;
+    }
+
+    const patient = await patientService.softDeletePatientByUserId(userId);
+
+    if (!patient) {
+      console.log(`   ❌ Patient not found for user: ${userId}`);
+      res.status(404).json({ message: "Patient not found for user" });
+      return;
+    }
+
+    console.log(`   ✅ Patient soft deleted: ${patient.patient_code} (User: ${userId})`);
+    res.status(200).json({ message: "Patient deleted for user", patient });
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    console.log(`   ⚠️  Error: ${errorMsg}`);
+    errorHandler(res, error);
+  }
+};
+
+export { getAllPatients, getPatientById, createPatient, updatePatient, deletePatient, softDeletePatientByUserId };

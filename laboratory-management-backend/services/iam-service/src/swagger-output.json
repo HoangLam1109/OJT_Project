@@ -154,6 +154,11 @@
             "type": "string"
           },
           {
+            "name": "X-Internal-API-Key",
+            "in": "header",
+            "type": "string"
+          },
+          {
             "name": "body",
             "in": "body",
             "description": "User data",

@@ -270,6 +270,32 @@
         ]
       }
     },
+    "/patients/soft-delete-by-user/{userId}": {
+      "delete": {
+        "tags": [
+          "Patients"
+        ],
+        "description": "Soft delete patient by user ID (Internal API only)",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "internalApiKey": []
+          }
+        ]
+      }
+    },
     "/patient-medical-records/getAll/": {
       "get": {
         "tags": [
