@@ -57,8 +57,8 @@ const TestOrdersPage: React.FC = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setOrders(prev => prev.map(order => {
-        if (order.status === 'Processing' && order.processing < 95) {
-          return { ...order, processing: order.processing + 5 };
+        if (order.status === 'Processing' && (order.processing ?? 0) < 95) {
+          return { ...order, processing: (order.processing ?? 0) + 5 };
         }
         return order;
       }));

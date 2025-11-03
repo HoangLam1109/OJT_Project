@@ -12,7 +12,7 @@ export interface TestOrderSample {
   patient_id: string;
   patient_name: string;
   testType: string;
-  status: 'pending' | 'processing' | 'completed' ;
+  status: 'Pending' | 'processing' | 'Completed' ;
   progress?: number;
   startTime?: string;
   processing?:number;

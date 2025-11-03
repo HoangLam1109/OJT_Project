@@ -42,7 +42,7 @@ export interface UpdateTestOrderDto {
   patient_name?: string;
   barcode?: string;
   test_type?: string;
-  status?: 'pending' | 'processing' | 'completed' | 'cancelled';
+  status?: 'Pending' | 'Processing' | 'Completed';
   processing?: number;
   created_by?: string;
   due_date?: Date | null;
@@ -59,7 +59,7 @@ const TestOrderSchema: Schema = new Schema(
     patient_name: { type: String, default: '' },
     barcode: { type: String, required: true, unique: true },
     test_type: { type: String,   required: true  },
-    status: { type: String, required: true, default: 'pending' },
+    status: { type: String, required: true, default: 'Pending' },
     processing: { type: Number, default: 0 },
     created_at: { type: Date, default: Date.now },
     created_by: { type: String, required: true },
@@ -71,7 +71,7 @@ const TestOrderSchema: Schema = new Schema(
     is_deleted: { type: Boolean, default: false },
     deleted_at: { type: Date, default: null },
     deleted_by: { type: String, default: null },
-    notes: {type: String, default: 'have no comment'}
+    notes: {type: String, default: 'Have no comment'}
   },
   {
     timestamps: false, // We're handling created_at/updated_at manually
@@ -96,7 +96,7 @@ export const UpdateTestOrderSchema = z.object({
   patient_name: z.string().optional(),
   barcode: z.string().optional(),
   test_type: z.string().optional(),
-  status: z.enum(['pending', 'processing', 'completed', 'cancelled']).optional(),
+  status: z.enum(['Pending', 'Processing', 'Completed']).optional(),
   processing: z.number().min(0).max(100).optional(),
   due_date: z.string().datetime().optional().nullable(),
   isDeleted: z.boolean().optional(),

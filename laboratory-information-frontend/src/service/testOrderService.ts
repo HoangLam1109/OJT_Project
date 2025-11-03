@@ -15,10 +15,10 @@ const testOrderApiClient: AxiosInstance = axios.create({
 });
 
 // testOrderService.ts
-const VALID_STATUSES = ['pending', 'processing', 'completed', 'cancelled'] as const;
+const VALID_STATUSES = ['Pending', 'Processing', 'Completed'] as const;
 
 const isValidStatus = (status: any): status is typeof VALID_STATUSES[number] => {
-  return typeof status === 'string' && VALID_STATUSES.includes(status.toLowerCase() as any);
+  return typeof status === 'string' && VALID_STATUSES.includes(status as any);
 };
 
 // Attach Authorization header like the global apiClient
@@ -154,8 +154,8 @@ export const testOrderService = {
         ...orderData,  //  từ submitData ở trang TestOrderForm
 
         status: (orderData.status && isValidStatus(orderData.status))
-          ? orderData.status.toLowerCase()
-          : 'pending',
+          ? orderData.status
+          : 'Pending',
         // created_by: orderData.created_by || 'Lab User',
         // updated_by: orderData.updated_by || orderData.created_by || 'Lab User',
       };
