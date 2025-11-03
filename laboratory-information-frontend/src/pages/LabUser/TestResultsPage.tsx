@@ -20,6 +20,7 @@ import { testResultsAPI } from './data/mockTestResultsData';
 // Import components
 import TestResultTable from './components/TestResultTable';
 import TestResultDetailModal from './components/modals/TestResultDetailModal';
+import { Skeleton } from '@/components/common/skeleton';
 
 
 // Simplified ReviewResultModal (keeping inline for now)
@@ -176,14 +177,46 @@ const TestResultsPage: React.FC = () => {
   };
 
   if (loading) {
-    return (
-      <div className="p-6">
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        </div>
+  return (
+    <div className="p-6 space-y-6">
+      {/* Header Skeleton */}
+      <div className="space-y-3">
+        <Skeleton className="h-6 w-1/4" />
+        <Skeleton className="h-4 w-1/3" />
       </div>
-    );
-  }
+
+      {/* Filter section skeleton */}
+      <Card>
+        <CardContent className="p-6 space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="space-y-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Table skeleton */}
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            <Skeleton className="h-5 w-1/5" />
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="space-y-2 p-6">
+            {[...Array(8)].map((_, i) => (
+              <Skeleton key={i} className="h-10 w-full rounded-md" />
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
 
   return (
     <div className="p-6 space-y-6">

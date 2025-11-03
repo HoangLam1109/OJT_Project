@@ -37,7 +37,8 @@ export function HomeLayout({ onShowLogin, onShowRegister }: LoginAndRegisterType
   }, []);
 
   return (
-    <div className="relative min-h-screen overflow-hidden">
+    <div className="relative min-h-screen">
+
       {/* Background */}
       <div className="absolute inset-0 bg-gradient-to-b from-teal-200 via-teal-300 to-blue-600 animate-gradient-move">
         <div className="absolute inset-0 bg-white/30"></div>
@@ -52,32 +53,29 @@ export function HomeLayout({ onShowLogin, onShowRegister }: LoginAndRegisterType
 
       <div className="relative z-10">
 
-        <div data-animate className="opacity-0 translate-y-8 transition-all duration-700 ease-out" style={{ transitionDelay: '75ms' }}>
+        <div className="fixed top-0 w-full z-50 bg-transparent transition-all duration-300">
           <HomeHeader onShowLogin={onShowLogin} onShowRegister={onShowRegister} onLogout={onLogout} />
         </div>
 
-        {/* Main Content Sections */}
-        <div data-animate className="opacity-0 translate-y-8 transition-all duration-700 ease-out" style={{ transitionDelay: '100ms' }}>
+        <div className="pt-0" data-aos="fade-down">
           <HeroSection />
         </div>
-        <div data-animate className="opacity-0 translate-y-8 transition-all duration-700 ease-out" style={{ transitionDelay: '125ms' }}>
+        <div className="pt-2" data-aos="fade-down" >
           <FeaturesSection />
         </div>
-        <div data-animate className="opacity-0 translate-y-8 transition-all duration-700 ease-out" style={{ transitionDelay: '150ms' }}>
+        <div className="pt-2" data-aos="fade-down" >
           <AboutSection onShowLogin={onShowLogin} />
         </div>
-        <div data-animate className="opacity-0 translate-y-8 transition-all duration-700 ease-out" style={{ transitionDelay: '175ms' }}>
+        <div className="pt-2" data-aos="fade-down">
           <ServicesSection />
         </div>
-        <div data-animate className="opacity-0 translate-y-8 transition-all duration-700 ease-out" style={{ transitionDelay: '225ms' }}>
+        <div className="pt-2" data-aos="fade-down">
           <FAQSection />
         </div>
-        <div data-animate className="opacity-0 translate-y-8 transition-all duration-700 ease-out" style={{ transitionDelay: '250ms' }}>
+        <div className="pt-2" data-aos="fade-down">
           <ContactSection />
         </div>
-        
-
-        <div data-animate className="opacity-0 translate-y-8 transition-all duration-700 ease-out" style={{ transitionDelay: '300ms' }}>
+        <div className="pt-2" data-aos="fade-down">
           <Footer />
         </div>
       </div>
