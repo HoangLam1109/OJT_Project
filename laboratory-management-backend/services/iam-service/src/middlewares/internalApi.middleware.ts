@@ -12,12 +12,6 @@ export const authenticateInternalApi = (
   // Express lower-cases incoming header keys; use req.get which is case-insensitive
   const apiKey = (req.get("X-Internal-API-Key") || req.headers["x-internal-api-key"]) as string | undefined;
   const expectedApiKey = process.env.INTERNAL_API_KEY || "internal-service-secret-key-2025";
-console.log("🔑 Internal API middleware triggered");
-console.log("Header key:", req.headers["X-Internal-API-Key"]);
-console.log("Expected key:", expectedApiKey);
-console.log("ENV INTERNAL_API_KEY =", process.env.INTERNAL_API_KEY);
-
-
   if (!apiKey) {
     res.status(401).json({ 
       message: "Internal API key is required",

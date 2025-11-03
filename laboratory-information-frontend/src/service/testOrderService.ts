@@ -14,6 +14,13 @@ const testOrderApiClient: AxiosInstance = axios.create({
   },
 });
 
+// testOrderService.ts
+const VALID_STATUSES = ['Pending', 'Processing', 'Completed'] as const;
+
+const isValidStatus = (status: any): status is typeof VALID_STATUSES[number] => {
+  return typeof status === 'string' && VALID_STATUSES.includes(status as any);
+};
+
 // Attach Authorization header like the global apiClient
 testOrderApiClient.interceptors.request.use(
   (config) => {
@@ -39,9 +46,15 @@ interface BackendTestOrder {
   patient_id: string;
   barcode: string;
   status: string;
+  testType: string
   created_at: string;
   created_by: string;
-  run_by?: string;
+  due_date?: string;
+  is_deleted?: boolean;
+  deleted_at?: string;
+  deleted_by?: string;
+  processing?: number;
+  notes?: string;
   user?: {
     fullName: string;
     email: string;
@@ -62,36 +75,37 @@ const transformBackendOrder = (backendOrder: BackendTestOrder): TestOrder => {
     }
   };
 
-  const mapStatus = (status: string): TestOrder['status'] => {
-    const statusLower = status.toLowerCase();
-    if (statusLower.includes('pending') || statusLower === 'pending') return 'Pending';
-    if (statusLower.includes('processing') || statusLower.includes('in_progress')) return 'Processing';
-    if (statusLower.includes('completed') || statusLower === 'completed') return 'Completed';
-    if (statusLower.includes('cancelled') || statusLower === 'cancelled') return 'Cancelled';
-    if (statusLower.includes('failed') || statusLower === 'failed') return 'failed';
-    return 'Pending';
+  const mapStatus = (status?: string): TestOrder['status'] => {
+    if (!status) return 'Pending';
+
+    const lower = status.toLowerCase();
+    switch (lower) {
+      case 'pending':
+        return 'Pending';
+      case 'processing':
+        return 'Processing';
+      case 'completed':
+        return 'Completed';
+      default:
+        return 'Pending';
+    }
   };
 
   return {
-    id: backendOrder.barcode || backendOrder._id,
+    id: backendOrder._id,
     barcode: backendOrder.barcode,
-    patientName: backendOrder.user?.fullName || 'N/A',
-    patientId: backendOrder.patient_id,
-    testType: 'Chưa xác định', // Backend doesn't have this field yet
-    testName: 'Xét nghiệm', // Backend doesn't have this field yet
-    createdAt: formatDate(backendOrder.created_at),
+    patient_name: backendOrder.user?.fullName || 'N/A',
+    patient_id: backendOrder.patient_id,
+    testType: backendOrder.testType,
+    created_at: formatDate(backendOrder.created_at),
+    created_by: backendOrder.created_by,
     status: mapStatus(backendOrder.status),
-    priority: 'Normal', // Backend doesn't have this field yet
-    assignedTo: backendOrder.run_by || undefined,
-    assignedInstrument: undefined, // Will be set when processing
-    progress: undefined, // Will be set when processing
-    startTime: undefined, // Will be set when processing
-    estimatedCompletion: undefined, // Will be set when processing
-    notes: undefined, // Backend doesn't have this field yet
-    createdBy: backendOrder.created_by,
-    collectionDate: formatDate(backendOrder.created_at),
-    sampleType: 'Chưa xác định', // Backend doesn't have this field yet
-    samples: undefined, // Backend doesn't have this field yet
+    due_date: formatDate(backendOrder.due_date),
+    is_deleted: backendOrder.is_deleted || undefined,
+    deleted_at: backendOrder.deleted_at,
+    deleted_by: backendOrder.deleted_by,
+    progress: backendOrder.processing,
+    notes: backendOrder.notes,
   };
 };
 
@@ -123,6 +137,7 @@ export const testOrderService = {
   async getTestOrderById(id: string): Promise<TestOrder | null> {
     try {
       const response = await testOrderApiClient.get<BackendTestOrder>(`${TEST_ORDER_API_BASE_URL}/${id}`);
+      console.log("response", response.data)
       return transformBackendOrder(response.data);
     } catch (error) {
       console.error('Error fetching test order:', error);
@@ -131,23 +146,26 @@ export const testOrderService = {
   },
 
   // Create new test order
+  // testOrderService.ts
   async createTestOrder(orderData: Partial<TestOrder>): Promise<TestOrder> {
     try {
-      // Generate barcode if not provided
-      const barcode = orderData.barcode || `BC${Date.now()}${Math.floor(Math.random() * 1000)}`;
-      
-      // Transform frontend data to backend format
+
       const backendData = {
-        patient_id: orderData.patientId,
-        barcode: barcode,
-        status: orderData.status?.toLowerCase() || 'pending',
-        created_by: orderData.createdBy || 'Lab User',
+        ...orderData,  //  từ submitData ở trang TestOrderForm
+
+        status: (orderData.status && isValidStatus(orderData.status))
+          ? orderData.status
+          : 'Pending',
+        // created_by: orderData.created_by || 'Lab User',
+        // updated_by: orderData.updated_by || orderData.created_by || 'Lab User',
       };
+      console.log('Sending to backend:', backendData); // DEBUG
 
       const response = await testOrderApiClient.post<BackendTestOrder>(
         `${TEST_ORDER_API_BASE_URL}/create`,
         backendData
       );
+
       return transformBackendOrder(response.data);
     } catch (error) {
       console.error('Error creating test order:', error);
@@ -159,13 +177,12 @@ export const testOrderService = {
   async updateTestOrder(id: string, orderData: Partial<TestOrder>): Promise<TestOrder> {
     try {
       // Transform frontend data to backend format
-      const backendData: Partial<BackendTestOrder> = {};
-      
+      const backendData: Partial<BackendTestOrder> = {
+        ...orderData
+      };
+
       if (orderData.status) {
         backendData.status = orderData.status.toLowerCase();
-      }
-      if (orderData.assignedTo) {
-        backendData.run_by = orderData.assignedTo;
       }
       //by Add other fields as needed
 
@@ -180,13 +197,31 @@ export const testOrderService = {
     }
   },
 
-  // Delete test order
-  async deleteTestOrder(id: string): Promise<void> {
+
+  async deleteTestOrder(id: string, deletedBy: string): Promise<void> {
     try {
-      await testOrderApiClient.delete(`${TEST_ORDER_API_BASE_URL}/delete/${id}`);
+      await testOrderApiClient.delete(
+        `${TEST_ORDER_API_BASE_URL}/delete/${id}`,
+        {
+          data: { deleted_by: deletedBy },
+        }
+      );
     } catch (error) {
       console.error('Error deleting test order:', error);
-      throw new Error(apiUtils.getErrorMessage(error));
+      throw new Error('Lỗi server khi xóa test order');
     }
   },
+
+  async changeStatus(
+    id: string,
+    status: 'Pending' | 'Processing' | 'Completed',
+    updated_by: string
+  ) {
+    const response = await testOrderApiClient.patch(`api/testOrder/${id}/status`, {
+      status,
+      updated_by,
+    });
+    return response.data.data;
+  }
+
 };

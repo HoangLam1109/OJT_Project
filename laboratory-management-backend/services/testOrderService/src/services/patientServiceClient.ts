@@ -39,7 +39,7 @@ async getPatientById(patientId: string): Promise<Patient | null> {
     if (patient?.user_id) {
       patient.user = await iamServiceClient.getUserById(patient.user_id);
     }
-
+    console.log("Patient",patient)
     return patient;
   } catch (err: any) {
     console.error(`[PatientService] Error fetching patient ${patientId}:`, err.message);

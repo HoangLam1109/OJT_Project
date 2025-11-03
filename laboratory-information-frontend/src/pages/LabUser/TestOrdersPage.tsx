@@ -22,7 +22,7 @@ import { Skeleton } from '@/components/common/skeleton';
 const TestOrdersPage: React.FC = () => {
   const { user } = useAuthContext();
   const navigate = useNavigate();
-  
+
   useEffect(() => {
     if (user && user.role[0] !== 'LAB_USER') {
       navigate('/unauthorized');
@@ -52,11 +52,41 @@ const TestOrdersPage: React.FC = () => {
     setFilteredOrders(filtered);
   }, [orders, searchTerm]);
 
+
+  // Tự động tăng % khi đang Processing
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setOrders(prev => prev.map(order => {
+        if (order.status === 'Processing' && (order.processing ?? 0) < 95) {
+          return { ...order, processing: (order.processing ?? 0) + 5 };
+        }
+        return order;
+      }));
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
   const loadTestOrders = async () => {
     try {
       setLoading(true);
       const data = await testOrderService.getAllTestOrders();
-      setOrders(data);
+
+      // ⚙️ Chuẩn hóa field từ backend về đúng định dạng interface
+      const normalized = data.map((o: TestOrder) => ({
+        id: o.id,
+        barcode: o.barcode,
+        patient_id: o.patient_id,
+        patient_name: o.patient_name,
+        testType: o.testType,
+        status: o.status,
+        created_at: o.created_at,
+        updated_at: o.updated_at,
+        due_date: o.due_date,
+        processing: o.processing ?? o.progress ?? 0,
+        notes: o.notes,
+      }));
+
+      setOrders(normalized);
     } catch (error) {
       toast.error('Không thể tải danh sách lệnh xét nghiệm');
       console.error('Error loading test orders:', error);
@@ -64,6 +94,7 @@ const TestOrdersPage: React.FC = () => {
       setLoading(false);
     }
   };
+
 
   const handleCreate = () => {
     setSelectedOrder(null);
@@ -89,11 +120,34 @@ const TestOrdersPage: React.FC = () => {
     }
   };
 
+const handleStatusChange = async (
+  orderId: string,
+  newStatus: 'Pending' | 'Processing' | 'Completed'
+) => {
+  try {
+    await testOrderService.changeStatus(orderId, newStatus, user?.name ?? 'system');
+    toast.success(`Đã chuyển sang ${newStatus}`);
+
+    // Optimistic UI – cập nhật ngay, không cần reload
+    setOrders(prev => prev.map(o =>
+      o.id === orderId
+        ? {
+            ...o,
+            status: newStatus,
+            processing: newStatus === 'Processing' ? 10 : newStatus === 'Completed' ? 100 : 0
+          }
+        : o
+    ));
+  } catch (error: any) {
+    toast.error(error.response?.data?.message || 'Cập nhật thất bại');
+    console.error('Status change error:', error.response?.data);
+  }
+};
+
   const handleDeleteConfirm = async () => {
     if (!selectedOrder) return;
-    
     try {
-      await testOrderService.deleteTestOrder(selectedOrder.id);
+      await testOrderService.deleteTestOrder(selectedOrder.id, user?.name ?? 'system');
       toast.success(`Đã xóa lệnh xét nghiệm ${selectedOrder.id} thành công`);
       setDeleteModalOpen(false);
       await loadTestOrders();
@@ -114,53 +168,35 @@ const TestOrdersPage: React.FC = () => {
     }
   };
 
-  const handleStartTest = () => {
+  const handleStartTest = async () => {
     if (!selectedOrder || !selectedInstrument) {
       toast.error('Vui lòng chọn đầy đủ thông tin');
       return;
     }
 
-    setOrders(orders.map(o => 
-      o.id === selectedOrder.id 
-        ? {
-            ...o,
-            status: 'Processing' as const,
-            progress: 0,
-            assignedInstrument: selectedInstrument,
-            startTime: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
-            estimatedCompletion: new Date(Date.now() + 15 * 60000).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
-          }
-        : o
-    ));
+    try {
+      // GỌI API ĐỔI STATUS + CẬP NHẬT INSTRUMENT
+      await testOrderService.changeStatus(selectedOrder.id, 'Processing', user?.name ??'');
 
-    toast.success('Đã bắt đầu xét nghiệm');
-    setShowStartTestDialog(false);
-    setSelectedOrder(null);
-    setSelectedInstrument('');
+      // Cập nhật UI tức thì (optimistic)
+      setOrders(prev => prev.map(o =>
+        o.id === selectedOrder.id
+          ? { ...o, status: 'Processing', processing: 10 }
+          : o
+      ));
+
+      toast.success('Đã bắt đầu xét nghiệm');
+    } catch (error: any) {
+      toast.error('Không thể bắt đầu xét nghiệm');
+      console.error(error);
+      return;
+    } finally {
+      setShowStartTestDialog(false);
+      setSelectedOrder(null);
+      setSelectedInstrument('');
+    }
   };
 
-  const handleStartTestClick = (order: TestOrder) => {
-    setSelectedOrder(order);
-    setShowStartTestDialog(true);
-  };
-
-  const handlePauseTest = (orderId: string) => {
-    setOrders(orders.map(o => 
-      o.id === orderId 
-        ? { ...o, status: 'Pending' as const }
-        : o
-    ));
-    toast.info('Đã tạm dừng xét nghiệm');
-  };
-
-  const handleCompleteTest = (orderId: string) => {
-    setOrders(orders.map(o => 
-      o.id === orderId 
-        ? { ...o, status: 'Completed' as const, progress: 100 }
-        : o
-    ));
-    toast.success('Xét nghiệm hoàn thành');
-  };
 
   const handleOrderClick = (order: TestOrder) => {
     setSelectedOrder(order);
@@ -255,9 +291,7 @@ const TestOrdersPage: React.FC = () => {
       <TestOrderList
         orders={filteredOrders}
         onOrderClick={handleOrderClick}
-        onStartTest={handleStartTestClick}
-        onPauseTest={handlePauseTest}
-        onCompleteTest={handleCompleteTest}
+        onStatusChange={handleStatusChange}
       />
 
       <AvailableInstrumentsCard instruments={availableInstruments} />
@@ -280,7 +314,15 @@ const TestOrdersPage: React.FC = () => {
         order={selectedOrder}
         isOpen={showDetailDialog}
         onClose={() => setShowDetailDialog(false)}
-        onStartTest={handleStartTestClick}
+        onDelete={(order) => {
+          setSelectedOrder(order);
+          setDeleteModalOpen(true);
+        }}
+        onEdit={(order) => {
+          setSelectedOrder(order);
+          setIsEdit(true);
+          setFormModalOpen(true);
+        }}
       />
 
       <TestOrderFormModal

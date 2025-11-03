@@ -56,11 +56,6 @@
             "name": "x-internal-api-key",
             "in": "header",
             "type": "string"
-          },
-          {
-            "name": "X-Internal-API-Key",
-            "in": "header",
-            "type": "string"
           }
         ],
         "responses": {

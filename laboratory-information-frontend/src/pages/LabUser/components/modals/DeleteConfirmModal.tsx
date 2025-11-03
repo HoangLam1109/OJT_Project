@@ -29,7 +29,7 @@ const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({ order, isOpen, 
           
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
             <p className="text-gray-700">
-              Bạn có chắc chắn muốn xóa lệnh xét nghiệm <strong className="text-red-600">{order.id}</strong> của bệnh nhân <strong className="text-red-600">{order.patientName}</strong>?
+              Bạn có chắc chắn muốn xóa lệnh xét nghiệm <strong className="text-red-600">{order.id}</strong> của bệnh nhân <strong className="text-red-600">{order.patient_name}</strong>?
             </p>
           </div>
 

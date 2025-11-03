@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent } from '../../../components/common/card';
-import { Clock, PlayCircle, CheckCircle, AlertCircle } from 'lucide-react';
+import { Clock, PlayCircle, CheckCircle } from 'lucide-react';
 import { Skeleton } from '@/components/common/skeleton';
 
 interface TestOrderStatsCardsProps {
@@ -8,7 +8,6 @@ interface TestOrderStatsCardsProps {
     pending: number;
     processing: number;
     completed: number;
-    failed: number;
   };
   loading?: boolean;
 }
@@ -60,18 +59,6 @@ const TestOrderStatsCards: React.FC<TestOrderStatsCardsProps> = ({ stats,loading
               <p className="text-2xl text-green-600">{stats.completed}</p>
             </div>
             <CheckCircle className="w-8 h-8 text-green-600" />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="glass-strong hover-lift">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 mb-1">Thất bại</p>
-              <p className="text-2xl text-red-600">{stats.failed}</p>
-            </div>
-            <AlertCircle className="w-8 h-8 text-red-600" />
           </div>
         </CardContent>
       </Card>

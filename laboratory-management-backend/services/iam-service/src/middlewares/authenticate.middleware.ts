@@ -13,6 +13,7 @@ const refreshTokenValidation = (
   }
 
   try {
+    console.log("[DEBUG] Cookie refreshToken:", refreshToken?.slice(0, 20), "...");
 
     const decodedToken = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET as string) as {
       userId: string;
