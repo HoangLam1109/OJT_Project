@@ -177,8 +177,8 @@ const getPatientById = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const includeUser = typeof populateUser === "string" ? populateUser.toLowerCase() === "true" : true;
-    const patient = await patientService.getPatientById(id);
+  const includeUser = typeof populateUser === "string" ? populateUser.toLowerCase() === "true" : true;
+  const patient = await patientService.getPatientById(id, includeUser);
 
     if (!patient) {
       console.log(`   ❌ Patient not found: ${id}`);
@@ -187,7 +187,10 @@ const getPatientById = async (req: Request, res: Response): Promise<void> => {
     }
 
     console.log(`   ✅ Found patient: ${patient.patient_code} (User: ${patient.user_id})`);
-    res.status(200).json({ patient });
+    res.status(200).json({
+      patient,
+      ...(includeUser ? { user: (patient as any).user ?? null } : {}),
+    });
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error);
     console.log(`   ⚠️  Error: ${errorMsg}`);
