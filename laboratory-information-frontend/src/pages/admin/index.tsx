@@ -1,7 +1,7 @@
 
 export { AdminDashboardPage } from './AdminDashboardPage';
 export { AdminPatientManagementPage } from './AdminPatientManagementPage';
-export { AdminTestOrderManagementPage } from './AdminTestOrderManagementPage';
+// export { AdminTestOrderManagementPage } from './AdminTestOrderManagementPage';
 export { AdminAuditReportsPage } from './AdminAuditReportsPage';
 export { AdminProfilePage } from './AdminProfilePage';
 export type { 

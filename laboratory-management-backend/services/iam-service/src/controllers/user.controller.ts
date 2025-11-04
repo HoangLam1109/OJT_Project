@@ -262,6 +262,8 @@ const createUser = async (
     #swagger.responses[500] = { description: 'Internal server error' }
   */
   try {
+    console.log('[UserController] POST /api/v1/user/create called');
+    console.log('[UserController] Body keys:', Object.keys(req.body || {}));
     const userData = req.body;
     const newUser = await userService.createUser(
       userData,

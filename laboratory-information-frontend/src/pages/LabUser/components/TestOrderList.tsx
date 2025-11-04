@@ -4,48 +4,21 @@ import Button from '../../../components/common/button';
 import { Progress } from '../../../components/common/progress';
 import { TestTube, PlayCircle, Pause, CheckCircle } from 'lucide-react';
 import type { TestOrder } from '../types/TestOrderTypes';
-import { getPriorityBadge, getStatusBadge } from '../utils/testOrderUtils';
-import { Skeleton } from '@/components/common/skeleton';
+import { getStatusBadge } from '../utils/testOrderUtils';
 
 interface TestOrderListProps {
   orders: TestOrder[];
   onOrderClick: (order: TestOrder) => void;
-  onStartTest: (order: TestOrder) => void;
-  onPauseTest: (orderId: string) => void;
-  onCompleteTest: (orderId: string) => void;
-  loading?: boolean;
+  onStatusChange: (orderId: string, newStatus: 'Pending' | 'Processing' | 'Completed') => void;
 }
 
 const TestOrderList: React.FC<TestOrderListProps> = ({
   orders,
   onOrderClick,
-  onStartTest,
-  onPauseTest,
-  onCompleteTest,
-  loading,
+  onStatusChange
 }) => {
-  if (loading) {
-    return (
-      <Card className="glass-strong hover-lift">
-        <CardHeader>
-          <Skeleton className="h-6 w-48 mb-2" />
-          <Skeleton className="h-4 w-64" />
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="p-4 border rounded-lg bg-white/50 space-y-3">
-                <Skeleton className="h-5 w-1/3" />
-                <Skeleton className="h-4 w-1/2" />
-                <Skeleton className="h-3 w-2/3" />
-                <Skeleton className="h-2 w-full rounded-full" />
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+
+
   return (
     <Card className="glass-strong hover-lift">
       <CardHeader>
@@ -61,8 +34,8 @@ const TestOrderList: React.FC<TestOrderListProps> = ({
         {orders.length > 0 ? (
           <div className="space-y-4">
             {orders.map((order) => (
-              <div 
-                key={order.id} 
+              <div
+                key={order.id}
                 className="p-4 border rounded-lg bg-white/50 hover:bg-white/80 transition-colors cursor-pointer"
                 onClick={() => onOrderClick(order)}
               >
@@ -70,78 +43,69 @@ const TestOrderList: React.FC<TestOrderListProps> = ({
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
                       <h4 className="font-mono">{order.barcode || order.id}</h4>
-                      {getPriorityBadge(order.priority)}
+
                       {getStatusBadge(order.status)}
                     </div>
                     <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
-                      <p>Bệnh nhân: <span className="text-gray-900">{order.patientName}</span></p>
+                      <p>Bệnh nhân: <span className="text-gray-900">{order.patient_name}</span></p>
                       <p>Loại xét nghiệm: <span className="text-gray-900">{order.testType}</span></p>
-                      {order.assignedInstrument && (
-                        <>
-                          <p>Thiết bị: <span className="text-gray-900">{order.assignedInstrument}</span></p>
-                          <p>Bắt đầu: <span className="text-gray-900">{order.startTime}</span></p>
-                        </>
-                      )}
+                      <p>Hạn hoàn thành: <span className="text-gray-900">{order.due_date}</span></p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    {(order.status === 'Pending' || order.status === 'pending') && (
-                      <Button 
+                    {order.status === 'Pending' && (
+                      <Button
                         size="sm"
-                        className="flex items-center gap-2 px-3 py-1"
                         onClick={(e) => {
                           e.stopPropagation();
-                          onStartTest(order);
+                          onStatusChange(order.id, 'Processing');
                         }}
                       >
                         <PlayCircle className="w-4 h-4" />
-                        <span>Bắt đầu</span>
+                        Bắt đầu
                       </Button>
                     )}
-                    {(order.status === 'Processing' || order.status === 'processing') && (
+                    {order.status === 'Processing' && (
                       <>
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           variant="outline"
-                          className="flex items-center gap-2 px-3 py-1"
                           onClick={(e) => {
                             e.stopPropagation();
-                            onPauseTest(order.id);
+                            onStatusChange(order.id, 'Pending');
                           }}
                         >
                           <Pause className="w-4 h-4" />
-                          <span>Tạm dừng</span>
+                          Tạm dừng
                         </Button>
-                        <Button 
+                        <Button
                           size="sm"
-                          className="flex items-center gap-2 px-3 py-1"
                           onClick={(e) => {
                             e.stopPropagation();
-                            onCompleteTest(order.id);
+                            onStatusChange(order.id, 'Completed');
                           }}
-                        >
+                        > 
                           <CheckCircle className="w-4 h-4" />
-                          <span>Hoàn thành</span>
+                          Hoàn thành
                         </Button>
                       </>
                     )}
                   </div>
                 </div>
-
-                {(order.status === 'Processing' || order.status === 'processing') && order.progress !== undefined && (
-                  <div>
+                {order.status?.toLowerCase() === "processing" && order.processing !== undefined && (
+                  <div className="mt-2">
                     <div className="flex items-center justify-between text-sm mb-1">
                       <span className="text-gray-600">Tiến độ</span>
-                      <span className="text-blue-600">{order.progress}%</span>
+                      <span className={order.processing === 100 ? "text-green-600" : "text-blue-600"}>
+                        {order.processing}%
+                      </span>
                     </div>
-                    <Progress value={order.progress} className="h-2" />
-                    {order.estimatedCompletion && (
-                      <p className="text-xs text-gray-500 mt-1">
-                        Dự kiến hoàn thành: {order.estimatedCompletion}
-                      </p>
-                    )}
+                    <Progress value={order.processing} className="h-2" />
                   </div>
                 )}
+
+
+
               </div>
             ))}
           </div>

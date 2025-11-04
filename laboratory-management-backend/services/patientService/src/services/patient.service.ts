@@ -27,85 +27,82 @@ export interface CreatePatientPayload {
 export type PatientDetail = PatientWithUser;
 
 export class PatientService {
-	async getAllPatients(
-		filters: PatientFilters = {},
-		page: number = 1,
-		limit: number = 10,
-		populateUser: boolean = true
-	): Promise<GetAllPatientsResult> {
-		const refinedFilters: PatientFilters = { ...filters };
 
-		if (typeof refinedFilters.is_deleted === "undefined") {
-			refinedFilters.is_deleted = false;
-		}
-
-		const safePage = Number.isFinite(page) && page > 0 ? Math.floor(page) : 1;
-		const safeLimit = Number.isFinite(limit) && limit > 0 ? Math.floor(limit) : 10;
-		const skip = (safePage - 1) * safeLimit;
-
-		const [patients, total] = await Promise.all([
-			Patient.find(refinedFilters)
-				.sort({ updated_at: -1 })
-				.skip(skip)
-				.limit(safeLimit)
-				.lean<IPatient[]>(),
-			Patient.countDocuments(refinedFilters),
-		]);
-
-		let patientsWithUser = patients as PatientWithUser[];
-
-		if (populateUser && patients.length > 0) {
-			const userIds = [...new Set(patients.map((patient) => patient.user_id).filter(Boolean))];
-			const userMap = await iamServiceClient.getUsersByIds(userIds);
-
-			patientsWithUser = patients.map((patient) => ({
-				...patient,
-				user: userMap.get(patient.user_id) ?? null,
-			})) as PatientWithUser[];
-		}
-
-		return {
-			patients: patientsWithUser,
-			total,
-			page: safePage,
-			totalPages: Math.max(Math.ceil(total / safeLimit), 1),
-		};
+	async createPatient(payload: CreatePatientPayload): Promise<IPatient> {
+		// Tạo mới patient, trả về document đã lưu
+		const patient = new Patient({
+			...payload,
+			is_deleted: false,
+		});
+		await patient.save();
+		return patient.toObject();
 	}
 
-	async getPatientById(id: string): Promise<IPatient | null> {
-		return await Patient.findOne({ _id: id, is_deleted: false }).lean<IPatient | null>();
+	async getPatientByUserId(user_id: string): Promise<IPatient | null> {
+		return await Patient.findOne({ user_id, is_deleted: false }).lean<IPatient | null>();
 	}
 
-	async getPatientDetail(id: string, includeUser: boolean = true): Promise<PatientDetail | null> {
+	async getPatientById(id: string, includeUser: boolean = false): Promise<PatientWithUser | null> {
 		const patient = await Patient.findOne({ _id: id, is_deleted: false }).lean<IPatient | null>();
-
 		if (!patient) {
 			return null;
 		}
 
-		if (!includeUser) {
-			return patient as PatientDetail;
+		if (!includeUser || !patient.user_id) {
+			return patient as PatientWithUser;
 		}
 
 		const user = await iamServiceClient.getUserById(patient.user_id);
 		return {
 			...patient,
 			user: user ?? null,
-		} as PatientDetail;
+		} as PatientWithUser;
 	}
+       async getAllPatients(
+	       filters: PatientFilters = {},
+	       page: number = 1,
+	       limit: number = 10,
+	       populateUser: boolean = true
+       ): Promise<GetAllPatientsResult> {
+	       console.log("\n[PatientService] ====== GET ALL PATIENTS START ======");
+	       console.log("[PatientService] Input filters:", JSON.stringify(filters));
+	       console.log("[PatientService] page:", page, "limit:", limit, "populateUser:", populateUser);
+	       const refinedFilters: PatientFilters = { ...filters };
 
-	async getPatientByUserId(userId: string): Promise<IPatient | null> {
-		return await Patient.findOne({ user_id: userId, is_deleted: false }).lean<IPatient | null>();
-	}
+	       if (typeof refinedFilters.is_deleted === "undefined") {
+		       refinedFilters.is_deleted = false;
+	       }
 
-	async createPatient(payload: CreatePatientPayload): Promise<IPatient> {
-		const patient = await Patient.create({
-			...payload,
-			is_deleted: false,
-		});
+	       const safePage = Number.isFinite(page) && page > 0 ? Math.floor(page) : 1;
+	       const safeLimit = Number.isFinite(limit) && limit > 0 ? Math.floor(limit) : 10;
+	       const skip = (safePage - 1) * safeLimit;
 
-		return patient.toObject() as IPatient;
-	}
+	       const [patients, total] = await Promise.all([
+		       Patient.find(refinedFilters)
+			       .sort({ updated_at: -1 })
+			       .skip(skip)
+			       .limit(safeLimit)
+			       .lean<IPatient[]>(),
+		       Patient.countDocuments(refinedFilters),
+	       ]);
+
+	       let patientsWithUser = patients as PatientWithUser[];
+	       if (populateUser && patients.length > 0) {
+		       const userIds = [...new Set(patients.map((patient) => patient.user_id).filter(Boolean))];
+		       const userMap = await iamServiceClient.getUsersByIds(userIds);
+		       patientsWithUser = patients.map((patient) => ({
+			       ...patient,
+			       user: userMap.get(patient.user_id) ?? null,
+		       })) as PatientWithUser[];
+	       }
+
+	       return {
+		       patients: patientsWithUser,
+		       total,
+		       page: safePage,
+		       totalPages: Math.max(Math.ceil(total / safeLimit), 1),
+	       };
+       }
 
 	async updatePatient(id: string, updateData: Partial<CreatePatientPayload>): Promise<IPatient | null> {
 		return await Patient.findOneAndUpdate(
@@ -121,6 +118,21 @@ export class PatientService {
 			{
 				$set: {
 					is_deleted: true,
+					is_active: false,
+					deleted_at: new Date(),
+				},
+			},
+			{ new: true }
+		).lean<IPatient | null>();
+	}
+
+	async softDeletePatientByUserId(userId: string): Promise<IPatient | null> {
+		return await Patient.findOneAndUpdate(
+			{ user_id: userId, is_deleted: false },
+			{
+				$set: {
+					is_deleted: true,
+					is_active: false,
 					deleted_at: new Date(),
 				},
 			},

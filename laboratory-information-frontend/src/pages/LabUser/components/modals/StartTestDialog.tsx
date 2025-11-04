@@ -5,8 +5,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import Button from '../../../../components/common/button';
 import { PlayCircle, Monitor, AlertCircle } from 'lucide-react';
 import type { TestOrder } from '../../types/TestOrderTypes';
-import type { Instrument } from '../../../../service/types/Instrument';
-import { getPriorityBadge } from '../../utils/testOrderUtils';
+import type { Instrument } from '@/pages/service/types/Instrument';
+// import { getPriorityBadge } from '../../utils/testOrderUtils';
 
 interface StartTestDialogProps {
   isOpen: boolean;
@@ -46,15 +46,11 @@ const StartTestDialog: React.FC<StartTestDialogProps> = ({
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Bệnh nhân:</span>
-                <span>{order.patientName}</span>
+                <span>{order.patient_name}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Loại xét nghiệm:</span>
                 <span>{order.testType}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Ưu tiên:</span>
-                {getPriorityBadge(order.priority)}
               </div>
             </div>
 
