@@ -41,6 +41,10 @@ export class PatientService {
 	async getPatientByUserId(user_id: string): Promise<IPatient | null> {
 		return await Patient.findOne({ user_id, is_deleted: false }).lean<IPatient | null>();
 	}
+
+	async getPatientById(id: string): Promise<IPatient | null> {
+		return await Patient.findOne({ _id: id, is_deleted: false }).lean<IPatient | null>();
+	}
        async getAllPatients(
 	       filters: PatientFilters = {},
 	       page: number = 1,
@@ -143,10 +147,6 @@ export class PatientService {
 			.limit(limit)
 			.lean<IPatient[]>();
 	}
-	async getPatientById(id: string): Promise<IPatient | null> {
-  return await Patient.findOne({ _id: id, is_deleted: false }).lean<IPatient | null>();
-}
-
 }
 
 export default PatientService;

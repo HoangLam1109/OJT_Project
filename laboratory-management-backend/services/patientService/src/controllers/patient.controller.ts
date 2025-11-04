@@ -1,8 +1,102 @@
 import type { Request, Response } from "express";
-import  PatientService, {type CreatePatientPayload } from "../services/patient.service.js";
+import { PatientService, type CreatePatientPayload } from "../services/patient.service.js";
 import { errorHandler } from "../utils/error.util.js";
+import patientAuditLogService, { type CreateAuditLogPayload } from "../services/patientAuditLog.service.js";
+import iamServiceClient from "../services/iamService.client.js";
 
 const patientService = new PatientService();
+
+const fetchUserEmail = async (userId: string | null | undefined): Promise<string | null> => {
+  if (!userId || typeof userId !== "string") {
+    return null;
+  }
+  try {
+    const user = await iamServiceClient.getUserById(userId);
+    if (user?.email) {
+      return user.email;
+    }
+  } catch (error) {
+    console.warn(`[PatientController] Unable to resolve email for user ${userId}`, error);
+  }
+  return null;
+};
+
+const resolvePerformedBy = async (req: Request, fallback?: string): Promise<string> => {
+  const headerEmailRaw = req.headers["x-user-email"];
+  const headerEmail = Array.isArray(headerEmailRaw) ? headerEmailRaw[0] : headerEmailRaw;
+  if (typeof headerEmail === "string" && headerEmail.length > 0) {
+    (req as any).userEmail = headerEmail;
+    return headerEmail;
+  }
+
+  const cachedEmail = (req as any).userEmail;
+  if (typeof cachedEmail === "string" && cachedEmail.length > 0) {
+    return cachedEmail;
+  }
+
+  const headerUserIdRaw = req.headers["x-user-id"];
+  const headerUserId = Array.isArray(headerUserIdRaw) ? headerUserIdRaw[0] : headerUserIdRaw;
+  const userId = (req as any).userId ?? (typeof headerUserId === "string" ? headerUserId : undefined);
+  if (typeof userId === "string" && userId.length > 0) {
+    const email = await fetchUserEmail(userId);
+    if (email) {
+      (req as any).userEmail = email;
+      return email;
+    }
+  }
+
+  if (fallback) {
+    if (fallback.includes("@")) {
+      return fallback;
+    }
+    if (fallback === "system") {
+      return fallback;
+    }
+    const fallbackEmail = await fetchUserEmail(fallback);
+    if (fallbackEmail) {
+      return fallbackEmail;
+    }
+    return fallback;
+  }
+
+  return "system";
+};
+
+const extractChangedFields = (payload: Record<string, unknown> | null | undefined): string[] => {
+  if (!payload) {
+    return [];
+  }
+  return Object.keys(payload).filter((key) => key !== "__v");
+};
+
+const pickFields = (
+  source: Record<string, unknown> | null | undefined,
+  fields: string[]
+): Record<string, unknown> => {
+  const result: Record<string, unknown> = {};
+  if (!source) {
+    return result;
+  }
+  for (const field of fields) {
+    if (field in source) {
+      result[field] = source[field];
+    }
+  }
+  return result;
+};
+
+const appendRequestMetadata = (
+  req: Request,
+  target: { ip_address?: string; user_agent?: string }
+): void => {
+  if (req.ip) {
+    target.ip_address = req.ip;
+  }
+  const userAgent = req.get("user-agent");
+  if (userAgent) {
+    target.user_agent = userAgent;
+  }
+};
 
 const getAllPatients = async (req: Request, res: Response): Promise<void> => {
   /*
@@ -169,14 +263,32 @@ const createPatient = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    const actorEmail = await resolvePerformedBy(req, "system");
+
     const patient = await patientService.createPatient({
       user_id,
       emergency_contact: emergency_contact ?? { name: "", phone: "" },
       is_active: true,
-      created_by: "system",
+      created_by: actorEmail,
     });
 
     console.log(`   ✅ Patient created: ${patient.patient_code} (ID: ${patient._id})`);
+
+    const createAuditPayload: CreateAuditLogPayload = {
+      patient_id: patient._id,
+      action: "CREATE",
+      event_message: "Patient record created",
+      old_values: null,
+      new_values: patient as unknown as Record<string, unknown>,
+      performed_by: actorEmail,
+    };
+    appendRequestMetadata(req, createAuditPayload);
+    try {
+      await patientAuditLogService.createAuditLog(createAuditPayload);
+    } catch (logError) {
+      console.error("[PatientAuditLog] Failed to record create event", logError);
+    }
+
     res.status(201).json({ message: "Patient created", patient });
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error);
@@ -223,6 +335,13 @@ const updatePatient = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    const existingPatient = await patientService.getPatientById(id);
+    if (!existingPatient) {
+      console.log(`   ❌ Patient not found: ${id}`);
+      res.status(404).json({ message: "Patient not found" });
+      return;
+    }
+
     const updateData: Partial<CreatePatientPayload> = {};
 
     if (idFromBody) {
@@ -266,6 +385,46 @@ const updatePatient = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    const fallbackActor = (() => {
+      const createdBy = existingPatient.created_by;
+      if (typeof createdBy === "string" && createdBy.length > 0 && createdBy !== "system") {
+        return createdBy;
+      }
+      return existingPatient.user_id;
+    })();
+
+    const actorEmail = await resolvePerformedBy(req, fallbackActor);
+
+    const existingRecord = existingPatient as unknown as Record<string, unknown>;
+    const updatedRecord = updatedPatient as unknown as Record<string, unknown>;
+    const candidateFields = extractChangedFields(updateData as Record<string, unknown>);
+    const changedFields = candidateFields.filter((field) => {
+      const before = existingRecord[field];
+      const after = updatedRecord[field];
+      try {
+        return JSON.stringify(before) !== JSON.stringify(after);
+      } catch {
+        return before !== after;
+      }
+    });
+
+    if (changedFields.length > 0) {
+      const updateAuditPayload: CreateAuditLogPayload = {
+        patient_id: updatedPatient._id,
+        action: "UPDATE",
+        event_message: `Patient record updated (${changedFields.join(", ")})`,
+        old_values: pickFields(existingRecord, changedFields),
+        new_values: pickFields(updatedRecord, changedFields),
+        performed_by: actorEmail,
+      };
+      appendRequestMetadata(req, updateAuditPayload);
+      try {
+        await patientAuditLogService.createAuditLog(updateAuditPayload);
+      } catch (logError) {
+        console.error("[PatientAuditLog] Failed to record update event", logError);
+      }
+    }
+
     console.log(`   ✅ Patient updated: ${updatedPatient.patient_code}`);
     res.status(200).json({ message: "Patient updated", patient: updatedPatient });
   } catch (error) {
@@ -300,6 +459,25 @@ const deletePatient = async (req: Request, res: Response): Promise<void> => {
     }
 
     const shouldHardDelete = typeof hard === "string" ? hard.toLowerCase() === "true" : false;
+    const existingPatient = await patientService.getPatientById(id);
+
+    if (!existingPatient) {
+      console.log(`   ❌ Patient not found: ${id}`);
+      res.status(404).json({ message: "Patient not found" });
+      return;
+    }
+
+    const fallbackActor = (() => {
+      const createdBy = existingPatient.created_by;
+      if (typeof createdBy === "string" && createdBy.length > 0 && createdBy !== "system") {
+        return createdBy;
+      }
+      return existingPatient.user_id;
+    })();
+
+    const actorEmail = await resolvePerformedBy(req, fallbackActor);
+
+    const existingRecord = existingPatient as unknown as Record<string, unknown>;
 
     if (shouldHardDelete) {
       const deleted = await patientService.hardDeletePatient(id);
@@ -307,6 +485,21 @@ const deletePatient = async (req: Request, res: Response): Promise<void> => {
         console.log(`   ❌ Patient not found: ${id}`);
         res.status(404).json({ message: "Patient not found" });
         return;
+      }
+
+      const deleteAuditPayload: CreateAuditLogPayload = {
+        patient_id: existingPatient._id,
+        action: "DELETE",
+        event_message: "Patient record hard deleted",
+        old_values: existingRecord,
+        new_values: null,
+        performed_by: actorEmail,
+      };
+      appendRequestMetadata(req, deleteAuditPayload);
+      try {
+        await patientAuditLogService.createAuditLog(deleteAuditPayload);
+      } catch (logError) {
+        console.error("[PatientAuditLog] Failed to record hard delete event", logError);
       }
 
       console.log(`   ✅ Patient permanently deleted (hard delete): ${id}`);
@@ -320,6 +513,23 @@ const deletePatient = async (req: Request, res: Response): Promise<void> => {
       console.log(`   ❌ Patient not found: ${id}`);
       res.status(404).json({ message: "Patient not found" });
       return;
+    }
+
+    const updatedRecord = patient as unknown as Record<string, unknown>;
+    const softDeleteFields = ["is_deleted", "is_active", "deleted_at"];
+    const softDeleteAuditPayload: CreateAuditLogPayload = {
+      patient_id: patient._id,
+      action: "DELETE",
+      event_message: "Patient record soft deleted",
+      old_values: pickFields(existingRecord, softDeleteFields),
+      new_values: pickFields(updatedRecord, softDeleteFields),
+      performed_by: actorEmail,
+    };
+    appendRequestMetadata(req, softDeleteAuditPayload);
+    try {
+      await patientAuditLogService.createAuditLog(softDeleteAuditPayload);
+    } catch (logError) {
+      console.error("[PatientAuditLog] Failed to record soft delete event", logError);
     }
 
     console.log(`   ✅ Patient soft deleted: ${patient.patient_code}`);
@@ -351,12 +561,47 @@ const softDeletePatientByUserId = async (req: Request, res: Response): Promise<v
       return;
     }
 
+    const existingPatient = await patientService.getPatientByUserId(userId);
+
+    if (!existingPatient) {
+      console.log(`   ❌ Patient not found for user: ${userId}`);
+      res.status(404).json({ message: "Patient not found for user" });
+      return;
+    }
+
     const patient = await patientService.softDeletePatientByUserId(userId);
 
     if (!patient) {
       console.log(`   ❌ Patient not found for user: ${userId}`);
       res.status(404).json({ message: "Patient not found for user" });
       return;
+    }
+
+    const existingRecord = existingPatient as unknown as Record<string, unknown>;
+    const updatedRecord = patient as unknown as Record<string, unknown>;
+    const softDeleteFields = ["is_deleted", "is_active", "deleted_at"];
+    const fallbackActor = (() => {
+      const createdBy = existingPatient.created_by;
+      if (typeof createdBy === "string" && createdBy.length > 0 && createdBy !== "system") {
+        return createdBy;
+      }
+      return existingPatient.user_id;
+    })();
+
+    const actorEmail = await resolvePerformedBy(req, fallbackActor);
+    const softDeleteAuditPayload: CreateAuditLogPayload = {
+      patient_id: patient._id,
+      action: "DELETE",
+      event_message: "Patient record soft deleted by user ID",
+      old_values: pickFields(existingRecord, softDeleteFields),
+      new_values: pickFields(updatedRecord, softDeleteFields),
+      performed_by: actorEmail,
+    };
+    appendRequestMetadata(req, softDeleteAuditPayload);
+    try {
+      await patientAuditLogService.createAuditLog(softDeleteAuditPayload);
+    } catch (logError) {
+      console.error("[PatientAuditLog] Failed to record soft delete by user event", logError);
     }
 
     console.log(`   ✅ Patient soft deleted: ${patient.patient_code} (User: ${userId})`);

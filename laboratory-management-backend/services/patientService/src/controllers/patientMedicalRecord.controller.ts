@@ -1,8 +1,114 @@
 import type { Request, Response } from "express";
 import { PatientMedicalRecordService } from "../services/patientMedicalRecord.service.js";
 import { errorHandler } from "../utils/error.util.js";
+import medicalRecordAccessLogService from "../services/medicalRecordAccessLog.service.js";
+import iamServiceClient from "../services/iamService.client.js";
 
 const patientMedicalRecordService = new PatientMedicalRecordService();
+
+const fetchActorEmail = async (actorId: string | undefined): Promise<string | null> => {
+  if (!actorId) {
+    return null;
+  }
+  try {
+    const user = await iamServiceClient.getUserById(actorId);
+    if (user?.email) {
+      return user.email;
+    }
+  } catch (error) {
+    console.warn(`[PatientMedicalRecordController] Unable to resolve email for user ${actorId}`, error);
+  }
+  return actorId.includes("@") ? actorId : null;
+};
+
+const resolveAccessActor = async (
+  req: Request
+): Promise<{ actorId: string; actorEmail: string | null }> => {
+  const headerEmailRaw = req.headers["x-user-email"];
+  const headerEmail = Array.isArray(headerEmailRaw) ? headerEmailRaw[0] : headerEmailRaw;
+  if (typeof headerEmail === "string" && headerEmail.length > 0) {
+    return { actorId: headerEmail, actorEmail: headerEmail };
+  }
+
+  const headerUserIdRaw = req.headers["x-user-id"];
+  const headerUserId = Array.isArray(headerUserIdRaw) ? headerUserIdRaw[0] : headerUserIdRaw;
+  const resolvedUserId = (req as any).userId ?? (typeof headerUserId === "string" ? headerUserId : undefined);
+
+  if (typeof resolvedUserId === "string" && resolvedUserId.length > 0) {
+    const email = await fetchActorEmail(resolvedUserId);
+    return { actorId: resolvedUserId, actorEmail: email };
+  }
+
+  return { actorId: "system", actorEmail: null };
+};
+
+const buildRequestClientFootprint = (
+  req: Request
+): { ip_address?: string; user_agent?: string } => {
+  const footprint: { ip_address?: string; user_agent?: string } = {};
+  if (req.ip) {
+    footprint.ip_address = req.ip;
+  }
+  const userAgent = req.get("user-agent");
+  if (userAgent) {
+    footprint.user_agent = userAgent;
+  }
+  return footprint;
+};
+
+const toPlainRecord = (value: unknown): Record<string, unknown> => {
+  if (value && typeof value === "object") {
+    return { ...(value as Record<string, unknown>) };
+  }
+  return {};
+};
+
+const pickValues = (source: Record<string, unknown>, fields: string[]): Record<string, unknown> => {
+  const result: Record<string, unknown> = {};
+  for (const field of fields) {
+    if (field in source) {
+      result[field] = source[field];
+    }
+  }
+  return result;
+};
+
+const diffChangedFields = (
+  previous: Record<string, unknown>,
+  current: Record<string, unknown>,
+  candidateFields: string[]
+): { fields: string[]; previousValues: Record<string, unknown>; currentValues: Record<string, unknown> } => {
+  const changed: string[] = [];
+
+  for (const field of candidateFields) {
+    const before = previous[field];
+    const after = current[field];
+    const beforeJson = before === undefined ? undefined : JSON.stringify(before);
+    const afterJson = after === undefined ? undefined : JSON.stringify(after);
+    if (beforeJson !== afterJson) {
+      changed.push(field);
+    }
+  }
+
+  return {
+    fields: changed,
+    previousValues: pickValues(previous, changed),
+    currentValues: pickValues(current, changed),
+  };
+};
+
+const trackableMedicalRecordFields: string[] = [
+  "blood_type",
+  "allergies",
+  "chronic_conditions",
+  "current_medications",
+  "medical_history",
+  "clinical_notes",
+  "recent_test_summary",
+  "recent_instruments_used",
+  "recent_reagents_info",
+  "updated_by",
+];
 
 const getPatientRecordDetail = async (req: Request, res: Response): Promise<void> => {
   /*
@@ -68,6 +174,24 @@ const getPatientRecordDetail = async (req: Request, res: Response): Promise<void
     }
 
     console.log(`   ✅ Found record: ${record.record_code} (Patient: ${record.patient_id})`);
+
+    const actorContext = await resolveAccessActor(req);
+    const footprint = buildRequestClientFootprint(req);
+    try {
+      await medicalRecordAccessLogService.createAccessLog({
+        medical_record_id: record._id,
+        patient_id: record.patient_id,
+        accessed_by: actorContext.actorId,
+        accessed_by_email: actorContext.actorEmail,
+        access_type: "VIEW",
+        old_values: null,
+        new_values: null,
+        ...footprint,
+      });
+    } catch (logError) {
+      console.warn("[MedicalRecordAccessLog] Failed to record view event", logError);
+    }
+
     res.status(200).json({ record });
   } catch (error) {
     console.log(`   ⚠️  Error: ${error instanceof Error ? error.message : String(error)}`);
@@ -135,6 +259,24 @@ const createPatientRecord = async (req: Request, res: Response): Promise<void> =
     );
 
     console.log(`   ✅ Record created: ${record.record_code} (ID: ${record._id})`);
+
+    const actorContext = await resolveAccessActor(req);
+    const footprint = buildRequestClientFootprint(req);
+    try {
+      await medicalRecordAccessLogService.createAccessLog({
+        medical_record_id: record._id,
+        patient_id: record.patient_id,
+        accessed_by: actorContext.actorId,
+        accessed_by_email: actorContext.actorEmail,
+        access_type: "CREATE",
+        old_values: null,
+        new_values: record as unknown as Record<string, unknown>,
+        ...footprint,
+      });
+    } catch (logError) {
+      console.warn("[MedicalRecordAccessLog] Failed to record create event", logError);
+    }
+
     res.status(201).json({
       message: "Patient medical record created successfully",
       record,
@@ -316,9 +458,21 @@ const updatePatientRecord = async (req: Request, res: Response): Promise<void> =
       return;
     }
 
-    const actorId = userId as string | undefined;
+    const actorContext = await resolveAccessActor(req);
     const updates = req.body ?? {};
-    const record = await patientMedicalRecordService.updatePatientRecord(id, updates, actorId);
+
+    const existingRecord = await patientMedicalRecordService.getPatientRecordDetail(id, false);
+    if (!existingRecord) {
+      console.log(`   ❌ Record not found: ${id}`);
+      res.status(404).json({ message: "Patient medical record not found" });
+      return;
+    }
+
+    const record = await patientMedicalRecordService.updatePatientRecord(
+      id,
+      updates,
+      actorContext.actorId
+    );
 
     if (!record) {
       console.log(`   ❌ Record not found: ${id}`);
@@ -327,6 +481,31 @@ const updatePatientRecord = async (req: Request, res: Response): Promise<void> =
     }
 
     console.log(`   ✅ Record updated: ${record.record_code}`);
+
+    const footprint = buildRequestClientFootprint(req);
+    const diff = diffChangedFields(
+      toPlainRecord(existingRecord),
+      toPlainRecord(record),
+      trackableMedicalRecordFields
+    );
+
+    if (diff.fields.length > 0) {
+      try {
+        await medicalRecordAccessLogService.createAccessLog({
+          medical_record_id: record._id,
+          patient_id: record.patient_id,
+          accessed_by: actorContext.actorId,
+          accessed_by_email: actorContext.actorEmail,
+          access_type: "UPDATE",
+          old_values: diff.previousValues,
+          new_values: diff.currentValues,
+          ...footprint,
+        });
+      } catch (logError) {
+        console.warn("[MedicalRecordAccessLog] Failed to record update event", logError);
+      }
+    }
+
     res.status(200).json({
       message: "Patient medical record updated",
       record,
@@ -364,8 +543,15 @@ const deletePatientRecord = async (req: Request, res: Response): Promise<void> =
       return;
     }
 
-    const actorId = userId as string | undefined;
-    const record = await patientMedicalRecordService.deletePatientRecord(id, actorId);
+    const actorContext = await resolveAccessActor(req);
+    const existingRecord = await patientMedicalRecordService.getPatientRecordDetail(id, false);
+    if (!existingRecord) {
+      console.log(`   ❌ Record not found: ${id}`);
+      res.status(404).json({ message: "Patient medical record not found" });
+      return;
+    }
+
+    const record = await patientMedicalRecordService.deletePatientRecord(id, actorContext.actorId);
 
     if (!record) {
       console.log(`   ❌ Record not found: ${id}`);
@@ -374,6 +560,23 @@ const deletePatientRecord = async (req: Request, res: Response): Promise<void> =
     }
 
     console.log(`   ✅ Record deleted (soft): ${record.record_code}`);
+
+    const footprint = buildRequestClientFootprint(req);
+    try {
+      await medicalRecordAccessLogService.createAccessLog({
+        medical_record_id: record._id,
+        patient_id: record.patient_id,
+        accessed_by: actorContext.actorId,
+        accessed_by_email: actorContext.actorEmail,
+        access_type: "DELETE",
+        old_values: toPlainRecord(existingRecord),
+        new_values: toPlainRecord(record),
+        ...footprint,
+      });
+    } catch (logError) {
+      console.warn("[MedicalRecordAccessLog] Failed to record delete event", logError);
+    }
+
     res.status(200).json({
       message: "Patient medical record deleted",
       record,

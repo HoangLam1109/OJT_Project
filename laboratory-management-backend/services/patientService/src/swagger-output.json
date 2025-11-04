@@ -815,6 +815,187 @@
           }
         ]
       }
+    },
+    "/patient-audit-logs/": {
+      "get": {
+        "tags": [
+          "PatientAuditLogs"
+        ],
+        "description": "Danh sách log (phân trang, filter)",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "integer",
+            "default": 1
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "integer",
+            "default": 10
+          },
+          {
+            "name": "patientId",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "performedBy",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "action",
+            "in": "query",
+            "type": "string",
+            "enum": [
+              "CREATE",
+              "UPDATE",
+              "DELETE"
+            ]
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/patient-audit-logs/{id}": {
+      "get": {
+        "tags": [
+          "PatientAuditLogs"
+        ],
+        "description": "Chi tiết một audit log",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "PatientAuditLogs"
+        ],
+        "description": "Xóa audit log (chỉ admin nội bộ)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/medical-record-access-logs/": {
+      "get": {
+        "tags": [
+          "MedicalRecordAccessLogs"
+        ],
+        "description": "Danh sách log truy cập hồ sơ y tế",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "integer",
+            "default": 1
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "integer",
+            "default": 10
+          },
+          {
+            "name": "medicalRecordId",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "patientId",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "accessedBy",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "accessType",
+            "in": "query",
+            "type": "string",
+            "enum": [
+              "VIEW",
+              "UPDATE",
+              "DELETE",
+              "EXPORT",
+              "CREATE"
+            ]
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/medical-record-access-logs/{id}": {
+      "get": {
+        "tags": [
+          "MedicalRecordAccessLogs"
+        ],
+        "description": "Chi tiết log truy cập hồ sơ y tế",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "MedicalRecordAccessLogs"
+        ],
+        "description": "Xóa log truy cập (nội bộ)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
     }
   }
 }
