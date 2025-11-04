@@ -42,8 +42,21 @@ export class PatientService {
 		return await Patient.findOne({ user_id, is_deleted: false }).lean<IPatient | null>();
 	}
 
-	async getPatientById(id: string): Promise<IPatient | null> {
-		return await Patient.findOne({ _id: id, is_deleted: false }).lean<IPatient | null>();
+	async getPatientById(id: string, includeUser: boolean = false): Promise<PatientWithUser | null> {
+		const patient = await Patient.findOne({ _id: id, is_deleted: false }).lean<IPatient | null>();
+		if (!patient) {
+			return null;
+		}
+
+		if (!includeUser || !patient.user_id) {
+			return patient as PatientWithUser;
+		}
+
+		const user = await iamServiceClient.getUserById(patient.user_id);
+		return {
+			...patient,
+			user: user ?? null,
+		} as PatientWithUser;
 	}
        async getAllPatients(
 	       filters: PatientFilters = {},
