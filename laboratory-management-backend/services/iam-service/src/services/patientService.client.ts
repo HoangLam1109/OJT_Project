@@ -8,6 +8,11 @@ interface CreatePatientRequest {
   };
 }
 
+interface PerformerContext {
+  performerId?: string;
+  performerEmail?: string;
+}
+
 class PatientServiceClient {
   private baseUrl: string | null = null;
   private internalApiKey: string | null = null;
@@ -31,7 +36,7 @@ class PatientServiceClient {
     }
   }
 
-  async createPatientForUser(userId: string): Promise<void> {
+  async createPatientForUser(userId: string, performer?: PerformerContext): Promise<void> {
     this.initialize();
     try {
       if (!this.baseUrl) {
@@ -44,6 +49,13 @@ class PatientServiceClient {
         "Content-Type": "application/json",
         "X-Internal-API-Key": this.internalApiKey || "",
       } as Record<string, string>;
+
+      if (performer?.performerId) {
+        headers["X-User-Id"] = performer.performerId;
+      }
+      if (performer?.performerEmail) {
+        headers["X-User-Email"] = performer.performerEmail;
+      }
 
       const response = await axios.post(url, {
         user_id: userId,
@@ -65,7 +77,7 @@ class PatientServiceClient {
     }
   }
 
-  async softDeletePatientByUserId(userId: string): Promise<void> {
+  async softDeletePatientByUserId(userId: string, performer?: PerformerContext): Promise<void> {
     this.initialize();
 
     try {
@@ -79,6 +91,13 @@ class PatientServiceClient {
         "Content-Type": "application/json",
         "X-Internal-API-Key": this.internalApiKey || "",
       } as Record<string, string>;
+
+      if (performer?.performerId) {
+        headers["X-User-Id"] = performer.performerId;
+      }
+      if (performer?.performerEmail) {
+        headers["X-User-Email"] = performer.performerEmail;
+      }
 
       await axios.delete(url, { headers });
       console.log(`[IAM] ✅ Soft deleted patient for user ${userId}`);

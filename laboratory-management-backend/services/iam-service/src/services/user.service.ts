@@ -72,7 +72,20 @@ export class UserService {
     try {
       if (!createdUser.role || createdUser.role.includes(ROLE_CODES.USER)) {
         console.log('[UserService] Triggering PatientServiceClient for user:', createdUser._id);
-        await patientServiceClient.createPatientForUser(createdUser._id);
+        let performerId = performedBy || createdUser._id;
+        let performerEmail = createdUser.email;
+
+        if (performedBy && performedBy !== createdUser._id) {
+          const performer = await userRepository.findById(performedBy, "email");
+          if (performer?.email) {
+            performerEmail = performer.email;
+          }
+        }
+
+        await patientServiceClient.createPatientForUser(createdUser._id, {
+          performerId,
+          performerEmail,
+        });
       }
     } catch (err) {
       console.error('[UserService] Error creating patient for user:', createdUser._id, err);
@@ -123,7 +136,20 @@ export class UserService {
     // Soft delete associated patient record if user had USER role
     if (user.role && user.role.includes(ROLE_CODES.USER)) {
       console.log('[UserService] Soft deleting patient for user role USER');
-      await patientServiceClient.softDeletePatientByUserId(userId);
+      let performerId = performedBy || userId;
+      let performerEmail = user.email;
+
+      if (performedBy && performedBy !== userId) {
+        const performer = await userRepository.findById(performedBy, "email");
+        if (performer?.email) {
+          performerEmail = performer.email;
+        }
+      }
+
+      await patientServiceClient.softDeletePatientByUserId(userId, {
+        performerId,
+        performerEmail,
+      });
     }
 
     return deletedUser;
