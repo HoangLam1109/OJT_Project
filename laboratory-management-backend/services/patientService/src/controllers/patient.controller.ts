@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { PatientService, type CreatePatientPayload } from "../services/patient.service.js";
+import  PatientService, {type CreatePatientPayload } from "../services/patient.service.js";
 import { errorHandler } from "../utils/error.util.js";
 
 const patientService = new PatientService();
@@ -84,7 +84,7 @@ const getPatientById = async (req: Request, res: Response): Promise<void> => {
     }
 
     const includeUser = typeof populateUser === "string" ? populateUser.toLowerCase() === "true" : true;
-    const patient = await patientService.getPatientDetail(id, includeUser);
+    const patient = await patientService.getPatientById(id);
 
     if (!patient) {
       console.log(`   ❌ Patient not found: ${id}`);
