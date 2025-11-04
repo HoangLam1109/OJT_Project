@@ -143,6 +143,10 @@ export class PatientService {
 			.limit(limit)
 			.lean<IPatient[]>();
 	}
+	async getPatientById(id: string): Promise<IPatient | null> {
+  return await Patient.findOne({ _id: id, is_deleted: false }).lean<IPatient | null>();
+}
+
 }
 
 export default PatientService;

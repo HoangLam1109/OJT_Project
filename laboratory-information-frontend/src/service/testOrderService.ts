@@ -115,6 +115,7 @@ export const testOrderService = {
   async getAllTestOrders(): Promise<TestOrder[]> {
     try {
       const response = await testOrderApiClient.get<BackendTestOrder[]>(`${TEST_ORDER_API_BASE_URL}/all`);
+      console.log("response", response.data)
       return response.data.map(transformBackendOrder);
     } catch (error) {
       console.error('Error fetching test orders:', error);
@@ -125,7 +126,7 @@ export const testOrderService = {
   // Get all test orders via Swagger path (/testOrder/all)
   async getAllTestOrdersDirect(): Promise<TestOrder[]> {
     try {
-      const response = await testOrderApiClient.get<BackendTestOrder[]>(`/testOrder/all`);
+      const response = await testOrderApiClient.get<BackendTestOrder[]>(`${TEST_ORDER_API_BASE_URL}/all`);
       return response.data.map(transformBackendOrder);
     } catch (error) {
       console.error('Error fetching test orders (direct):', error);
