@@ -50,8 +50,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 };
 
   const onLogout = () => {
+    // Clear state immediately
     setUser(null);
+    // Clear all auth-related localStorage
     localStorage.removeItem("limsUser");
+    localStorage.removeItem("authToken");
+    // Force clear any stale data
+    setLoading(false);
   };
 
   const value: AuthContextType = { user, onLogin, onLogout, loading };

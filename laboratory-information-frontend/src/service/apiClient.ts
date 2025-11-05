@@ -106,32 +106,46 @@ const createApiClient = (): AxiosInstance => {
         isRefreshing = true;
 
         try {
-          // Try to refresh the token
-          const refreshResponse = await axios.post(
-            `${API_BASE_URL}/refresh-token`,
-            {},
-            {
-              withCredentials: true, // Important: send cookies (refreshToken)
-            }
-          );
+          // Try to refresh the token using the same client instance (ensures cookies are sent)
+          // Create a new axios instance without interceptors to avoid infinite loop
+          const refreshClient = axios.create({
+            baseURL: API_BASE_URL,
+            timeout: 10000,
+            withCredentials: true, // Critical: send cookies (refreshToken)
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+
+          console.log('[API Client] Attempting to refresh token...');
+          const refreshResponse = await refreshClient.post('/refresh-token', {});
 
           if (refreshResponse.status === 200) {
+            console.log('[API Client] Token refreshed successfully');
             // Token refreshed successfully
-            // New access token is set in cookies by backend, no need to update localStorage
-            // But if you have a token in localStorage, you might want to update it
-            // However, since backend uses httpOnly cookies, we might not need localStorage token
+            // New access token is set in cookies by backend (httpOnly cookie)
+            // No need to update localStorage since backend uses cookies
             
             // Process queued requests
             processQueue(null, null);
             isRefreshing = false;
 
-            // Retry the original request (new token will be in cookies)
+            // Retry the original request (new accessToken will be in cookies)
             return client(originalRequest);
           } else {
             throw new Error('Token refresh failed');
           }
         } catch (refreshError) {
           // Refresh failed - clear auth and redirect to login
+          console.error('[API Client] Token refresh failed:', refreshError);
+          if (axios.isAxiosError(refreshError)) {
+            console.error('[API Client] Refresh error details:', {
+              status: refreshError.response?.status,
+              data: refreshError.response?.data,
+              message: refreshError.message,
+            });
+          }
+          
           processQueue(refreshError as AxiosError, null);
           isRefreshing = false;
           
