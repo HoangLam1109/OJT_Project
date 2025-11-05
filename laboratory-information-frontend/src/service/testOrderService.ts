@@ -157,8 +157,6 @@ export const testOrderService = {
         status: (orderData.status && isValidStatus(orderData.status))
           ? orderData.status
           : 'Pending',
-        // created_by: orderData.created_by || 'Lab User',
-        // updated_by: orderData.updated_by || orderData.created_by || 'Lab User',
       };
       console.log('Sending to backend:', backendData); // DEBUG
 
