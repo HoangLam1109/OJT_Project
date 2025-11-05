@@ -10,8 +10,6 @@ export interface IInstrument extends Document {
   status: "Ready" | "Processing" | "Maintenance" | "Error" | "Inactive";
   is_active: boolean;
   location?: string;
-  last_maintenance_date?: Date;
-  next_maintenance_date?: Date;
   created_at: Date;
   updated_at: Date;
   created_by?: string;
@@ -65,12 +63,6 @@ const InstrumentSchema = new Schema<IInstrument>(
       type: String,
       trim: true,
       maxlength: 255,
-    },
-    last_maintenance_date: {
-      type: Date,
-    },
-    next_maintenance_date: {
-      type: Date,
     },
     created_at: {
       type: Date,

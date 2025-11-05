@@ -1,5 +1,6 @@
 import express from "express";
 import { healthCheck } from "../controllers/health.controller.js";
+import instrumentRoutes from "./v1/instrument/instrument.routes.js";
 
 const router = express.Router();
 
@@ -18,6 +19,15 @@ router.get(
 	}
 	*/
 	healthCheck
+);
+
+router.use(
+	"/warehouse/instruments",
+	/*
+	#swagger.tags = ['Instruments']
+	#swagger.description = 'Inventory instrument endpoints'
+	*/
+	instrumentRoutes
 );
 
 export default router;
