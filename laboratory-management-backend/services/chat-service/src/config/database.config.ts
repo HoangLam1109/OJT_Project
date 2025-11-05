@@ -7,6 +7,7 @@ let db: Db | null = null;
 
 export const connectDB = async (): Promise<void> => {
   try {
+    console.log(process.env.MONGODB_URI);
     if (!process.env.MONGODB_URI) {
       throw new Error('MONGODB_URI is not defined in environment variables');
     }

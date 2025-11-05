@@ -13,7 +13,7 @@
     "swagger": "tsx services/iam-service/src/swagger.ts",
     "swagger:chat": "tsx services/chat-service/src/swagger.ts",
     "swagger:patient": "tsx services/patientService/src/swagger.ts",
-    "dev:all": "npm-run-all --parallel dev:patient dev:testOrder dev:chat"
+    "dev:all": "npm-run-all --parallel dev:patient dev:testOrder dev:chat dev"
   },
   "keywords": [],
   "author": "",
