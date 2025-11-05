@@ -3,8 +3,7 @@ import Button from './button';
 import { ChevronLeft, Menu, Shield, User } from 'lucide-react';
 import type { SidebarProps } from '../../types/Layout.types';
 import { LogoutButton } from './LogoutButton'; 
-
-
+import { useNavigate } from 'react-router-dom';
 export function Sidebar({
   currentUserName,
   currentUserRole,
@@ -14,6 +13,8 @@ export function Sidebar({
   onNavigate,
   navigationItems,
 }: SidebarProps) {
+  const navigate = useNavigate(); 
+
   return (
     <div className={`bg-white shadow-lg transition-all duration-300 ${
       sidebarCollapsed ? 'w-16' : 'w-64'
@@ -22,7 +23,10 @@ export function Sidebar({
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0">
         {!sidebarCollapsed && (
-          <div className="flex items-center space-x-2">
+          <div
+            className="flex items-center space-x-2 cursor-pointer hover:opacity-80"
+            onClick={() => navigate('/')}
+          >
             <div className="p-2 bg-blue-100 rounded-lg">
               <Shield className="h-6 w-6 text-blue-600" />
             </div>
@@ -38,6 +42,7 @@ export function Sidebar({
           {sidebarCollapsed ? <Menu className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
         </Button>
       </div>
+
 
       {/* Navigation */}
       <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
