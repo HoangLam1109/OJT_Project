@@ -31,7 +31,7 @@ const refreshJWT = (res: Response, userId: string) => {
   const newAccessToken = jwt.sign({ userId: userId }, process.env.JWT_SECRET_KEY as string, {
     expiresIn: process.env.JWT_EXPIRY,
   } as SignOptions);
-
+  console.log("Mới được cấp access token mới")
   res.cookie("accessToken", newAccessToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV?.toLowerCase() === "production",

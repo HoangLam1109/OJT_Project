@@ -11,12 +11,7 @@ const doc = {
   schemes: ['http', 'https'],
   tags: [
     {
-      name: 'Health',
-      description: 'Service heartbeat and readiness checks'
-    },
-    {
       name: 'Instruments',
-      description: 'Instrument inventory management endpoints'
     }
   ],
   securityDefinitions: {
