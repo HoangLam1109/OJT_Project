@@ -40,8 +40,12 @@ app.get("/", (req, res) => {
 // Start server
 const PORT = process.env.TESTORDER_SERVICE_PORT || 5002;
 app.listen(PORT, () => {
+  console.log(`\n${"=".repeat(60)}`);
   console.log(`TestOrder Service Started Successfully!`);
-  console.log(`Server URL:     http://localhost:${PORT}`);
-  console.log(`Swagger UI:     http://localhost:${PORT}/api-docs`);
-  console.log(`Database:       TestOrder Service`);
+  console.log(`${"=".repeat(60)}`);
+  console.log(`📍Server URL:     http://localhost:${PORT}`);
+  console.log(`📚Swagger UI:     http://localhost:${PORT}/api-docs`);
+  console.log(`🔗 API Endpoint:   http://localhost:${PORT}/api`);
+  console.log(`🔗Database:       TestOrder Service`);
+  console.log(`${"=".repeat(60)}\n`);
 });

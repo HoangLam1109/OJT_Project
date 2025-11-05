@@ -17,11 +17,6 @@ import "./config/oauth.config.js";
 
 dotenv.config();
 
-console.log('[IAM Service] Environment loaded:');
-console.log('[IAM Service] PORT:', process.env.PORT);
-console.log('[IAM Service] INTERNAL_API_KEY:', process.env.INTERNAL_API_KEY ? '***' + process.env.INTERNAL_API_KEY.slice(-4) : 'NOT SET');
-console.log('[IAM Service] PATIENT_SERVICE_URL:', process.env.PATIENT_SERVICE_URL);
-
 // Add error handlers early for debugging
 process.on('unhandledRejection', (reason, promise) => {
   console.error('Unhandled Rejection at:', promise, 'reason:', reason);
@@ -62,5 +57,12 @@ app.get("/", (req, res) => {
 });
 
 app.listen(process.env.PORT, () => {
-  console.log(`Server is running on http://localhost:${process.env.PORT}`);
+    console.log(`\n${"=".repeat(60)}`);
+  console.log(`🚀 IAM Service Started Successfully!`);
+  console.log(`${"=".repeat(60)}`);
+  console.log(`📍 Server URL:     http://localhost:${process.env.PORT}`);
+  console.log(`📚 Swagger UI:     http://localhost:${process.env.PORT}/api-docs`);
+  console.log(`🔗 API Endpoint:   http://localhost:${process.env.PORT}/api`);
+  console.log(`💾 Database:       IAM Service`);
+  console.log(`${"=".repeat(60)}\n`);
 });

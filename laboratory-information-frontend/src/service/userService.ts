@@ -13,7 +13,7 @@ interface BackendUser {
   phoneNumber?: string;
   address?: string;
   isActive: boolean;
-  role?: string;
+  role?: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -53,7 +53,9 @@ const transformBackendUser = (backendUser: BackendUser): ManagerUser => {
     id: backendUser._id || '',
     name: backendUser.fullName || 'N/A',
     email: backendUser.email || 'N/A',
-    role: (backendUser.role as ManagerUser['role']) || 'USER',
+    role: Array.isArray(backendUser.role) && backendUser.role.length > 0
+      ? (backendUser.role as ManagerUser['role'])
+      : ['USER'],
     active: backendUser.isActive ?? true,
     lastLogin: new Date().toISOString(), 
     permissions: [], 
@@ -97,7 +99,9 @@ const transformFrontendUser = (frontendUser: UserFormData) => {
     phoneNumber: frontendUser.phone_number,
     address: frontendUser.address,
     // isActive: frontendUser.active, // Temporarily commented out - API doesn't accept this field for user creation
-    role: frontendUser.role,
+    role: Array.isArray(frontendUser.role) && frontendUser.role.length > 0 
+      ? frontendUser.role 
+      : ['USER'],
     ...(frontendUser.password && { password: frontendUser.password }),
   };
   
@@ -273,7 +277,7 @@ export class UserService {
       const userData: UserFormData = {
         fullName: '',
         email: '', 
-        role: 'USER', 
+        role: ['USER'], 
         phone_number: '',
         identify_number: '',
         gender: 'Male' as 'Male' | 'Female' | 'Other',

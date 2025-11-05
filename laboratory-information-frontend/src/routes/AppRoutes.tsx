@@ -8,7 +8,6 @@ import { AdminLayout } from "../layouts/AdminLayout";
 import {
   AdminDashboardPage,
   AdminPatientManagementPage,
-  AdminTestOrderManagementPage,
   AdminAuditReportsPage,
   AdminProfilePage
 } from "../pages/admin";
@@ -23,7 +22,6 @@ import { LabUserLayout } from "../layouts/LabUserLayout";
 import LabUserDashboard from "../pages/LabUser/Dashboard";
 import TestOrdersPage from "../pages/LabUser/TestOrdersPage";
 import TestResultsPage from "../pages/LabUser/TestResultsPage";
-import LabUserPatientManagementPage from "../pages/LabUser/PatientManagementPage";
 import InstrumentManagementPage from "../pages/LabUser/InstrumentManagementPage";
 import ReagentManagementPage from "../pages/LabUser/ReagentManagementPage";
 import { ServiceLayout } from "../layouts/ServiceLayout";
@@ -31,7 +29,6 @@ import ServiceDashboardPage from "../pages/service/ServiceDashboardPage";
 import ServiceEventLogPage from "../pages/service/ServiceEventLogPage";
 import ServiceReagentPage from "../pages/service/ServiceReagentPage";
 import ServiceInstrumentPage from "../pages/service/ServiceInstrumentPage";
-import { ServiceTestPage } from "../pages/service/ServiceTestPage";
 import { GoogleCallbackPage } from "../pages/login/GoogleCallbackPage";
 
 export function AppRoutes() {
@@ -110,7 +107,7 @@ export function AppRoutes() {
               {adminPage === "dashboard" && <AdminDashboardPage />}
               {adminPage === "user-management" && <ManagerUserManagementPage />}
               {adminPage === "patient-management" && <AdminPatientManagementPage />}
-              {adminPage === "test-management" && <AdminTestOrderManagementPage />}
+              {adminPage === "test-orders" && <TestOrdersPage />}
               {adminPage === "audit-reports" && <AdminAuditReportsPage />}
               {adminPage === "profile" && <AdminProfilePage />}
             </AdminLayout>
@@ -142,6 +139,7 @@ export function AppRoutes() {
                   <p className="text-gray-500 mt-2">Trang cài đặt đang được phát triển</p>
                 </div>
               )}
+              {managerPage === "instruments" && <InstrumentManagementPage />}
               {managerPage === "profile" && <Profile currentUser={user!} />}
             </ManagerLayout>
           </ProtectedRoute>
@@ -160,7 +158,7 @@ export function AppRoutes() {
               onNavigate={(page) => setLabUserPage(page)}
             >
               {labUserPage === "dashboard" && <LabUserDashboard />}
-              {labUserPage === "patients" && <LabUserPatientManagementPage />}
+              {labUserPage === "patients" && <AdminPatientManagementPage />}
               {labUserPage === "test-orders" && <TestOrdersPage />}
               {labUserPage === "test-results" && <TestResultsPage />}
               {labUserPage === "instruments" && <InstrumentManagementPage />}
@@ -193,7 +191,7 @@ export function AppRoutes() {
               {servicePage === "event-logs" && <ServiceEventLogPage />}
               {servicePage === "reagents" && <ServiceReagentPage />}
               {servicePage === "instruments" && <ServiceInstrumentPage />}
-              {servicePage === "blood-testing" && <ServiceTestPage />}
+              {servicePage === "test-orders" && <TestOrdersPage />}
               {servicePage === "profile" && <Profile currentUser={user!} />}
             </ServiceLayout>
           </ProtectedRoute>
