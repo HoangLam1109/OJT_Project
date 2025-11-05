@@ -1,5 +1,38 @@
-import { InferenceClient } from '@huggingface/inference';
+import { InferenceClient } from "@huggingface/inference";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+import { sleep } from "../utils/sleep.util.js";
+
+// Rate limiting configuration
+const RATE_LIMIT = {
+  REQUESTS_PER_MINUTE: 15, // Adjust based on your quota
+  DELAY_MS: 4000, // 4 seconds between requests (15 per minute)
+};
+
+let lastRequestTime = 0;
+
+async function rateLimitedRequest<T>(fn: () => Promise<T>): Promise<T> {
+  const now = Date.now();
+  const timeSinceLastRequest = now - lastRequestTime;
+  
+  // If we're making requests too quickly, wait
+  if (timeSinceLastRequest < RATE_LIMIT.DELAY_MS) {
+    await sleep(RATE_LIMIT.DELAY_MS - timeSinceLastRequest);
+  }
+
+  try {
+    const result = await fn();
+    lastRequestTime = Date.now();
+    return result;
+  } catch (error: any) {
+    if (error.status === 429) {
+      // If rate limited, wait longer and retry
+      console.log('Rate limited, waiting before retry...');
+      await sleep(5000); // Wait 5 seconds before retry
+      return rateLimitedRequest(fn);
+    }
+    throw error;
+  }
+}
 import { AIMessage, BaseMessage, HumanMessage } from "@langchain/core/messages";
 import {
   ChatPromptTemplate,
@@ -64,7 +97,7 @@ async function retryWithBackoff<T>(
 
 export async function callAgent({ db, query, threadId }: CallAgentParams) {
   try {
-    const collection = db.collection("Patient");
+    const collection = db.collection("user_sessions");
 
     // Define the state structure for the agent workflow
     const GraphState = Annotation.Root({
@@ -102,111 +135,112 @@ export async function callAgent({ db, query, threadId }: CallAgentParams) {
           };
 
           const hf = new InferenceClient(process.env.HF_ACCESS_TOKEN);
-          
+
           const vectorStore = new MongoDBAtlasVectorSearch(
             {
               embedDocuments: async (texts: string[]): Promise<number[][]> => {
                 const embeddings: number[][] = [];
+
                 for (const text of texts) {
                   try {
-                    const response = await hf.featureExtraction({
-                      model: 'sentence-transformers/all-MiniLM-L6-v2',
-                      inputs: text,
-                    });
-                    
-                    // Ensure the response is always a number[]
+                    const response = await rateLimitedRequest(() =>
+                      hf.featureExtraction({
+                        model: "sentence-transformers/all-MiniLM-L6-v2",
+                        inputs: text,
+                      })
+                    );
+
+                    // Handle the response format
                     let embedding: number[];
                     if (Array.isArray(response)) {
-                      // If it's already an array of numbers, use it directly
-                      if (response.length > 0 && typeof response[0] === 'number') {
+                      if (response.length > 0 && typeof response[0] === "number") {
                         embedding = response as number[];
-                      } 
-                      // If it's an array of arrays, take the first one
-                      else if (response.length > 0 && Array.isArray(response[0])) {
+                      } else if (response.length > 0 && Array.isArray(response[0])) {
                         embedding = (response as number[][])[0] || [];
                       } else {
                         embedding = [];
                       }
                     } else {
-                      // If it's a single number, wrap it in an array
-                      embedding = typeof response === 'number' ? [response] : [];
+                      embedding = typeof response === "number" ? [response] : [];
                     }
-                    
+
+                    if (embedding.length === 0) {
+                      throw new Error("Received empty embedding");
+                    }
                     embeddings.push(embedding);
                   } catch (error) {
-                    console.error('Error generating embedding:', error);
-                    // Push an empty array to maintain the same array length as input
-                    embeddings.push([]);
+                    console.error("Error generating embedding for text:", text, error);
+                    throw error;
                   }
                 }
                 return embeddings;
               },
               embedQuery: async (text: string): Promise<number[]> => {
                 try {
-                  const response = await hf.featureExtraction({
-                    model: 'sentence-transformers/all-MiniLM-L6-v2',
-                    inputs: text,
-                  });
-                  
-                  // Handle different possible response types
+                  const response = await rateLimitedRequest(() =>
+                    hf.featureExtraction({
+                      model: "sentence-transformers/all-MiniLM-L6-v2",
+                      inputs: text,
+                    })
+                  );
+
+                  // Handle the response format
+                  let embedding: number[];
                   if (Array.isArray(response)) {
-                    // If it's already a flat array of numbers, return it
-                    if (response.every(item => typeof item === 'number')) {
-                      return response as number[];
+                    if (response.every((item) => typeof item === "number")) {
+                      embedding = response as number[];
+                    } else if (Array.isArray(response[0])) {
+                      embedding = response[0] as number[];
+                    } else {
+                      embedding = [];
                     }
-                    // If it's an array of arrays (e.g., for batch processing), take the first one
-                    if (Array.isArray(response[0])) {
-                      return response[0] as number[];
-                    }
+                  } else {
+                    embedding = typeof response === "number" ? [response] : [];
                   }
-                  // If response is a single number, wrap it in an array
-                  return typeof response === 'number' ? [response] : [];
+
+                  if (embedding.length === 0) {
+                    throw new Error("Received empty query embedding");
+                  }
+                  return embedding;
                 } catch (error) {
-                  console.error('Error generating query embedding:', error);
-                  return [];
+                  console.error("Error generating query embedding:", error);
+                  throw error;
                 }
               },
             },
             dbConfig
           );
 
-          console.log("Performing text search (vector search disabled)...");
+          console.log("Performing text search...");
           const textResults = await collection
             .find({
               $and: [
                 {
                   $or: [
-                    { user_id: { $regex: query, $options: "i" } },
-                    { patient_code: { $regex: query, $options: "i" } },
-                    { emergency_contact: { $regex: query, $options: "i" } },
-                    { is_active: { $regex: query, $options: "i" } },
-                    { created_by: { $regex: query, $options: "i" } },
-                    { updated_by: { $regex: query, $options: "i" } },
-                  ]
+                    { userId: { $regex: query, $options: "i" } },
+                    // { patient_code: { $regex: query, $options: "i" } },
+                    // { emergency_contact: { $regex: query, $options: "i" } },
+                    // { is_active: { $regex: query, $options: "i" } },
+                    // { created_by: { $regex: query, $options: "i" } },
+                    // { updated_by: { $regex: query, $options: "i" } },
+                  ],
                 },
-                { is_deleted: { $ne: true } }  // Filter out deleted records
-              ]
+                { is_deleted: { $ne: true } }, // Filter out deleted records
+              ],
             })
             .limit(n)
             .toArray();
 
-            console.log(`Text search returned ${textResults.length} results`);
-            const textResult: ItemLookupResult = {
-              results: textResults,
-              searchType: "text",
-              query: query,
-              count: textResults.length,
-            };
-            return JSON.stringify(textResult);
+          console.log(`Text search returned ${textResults.length} results`);
           
+          const result: ItemLookupResult = {
+            results: textResults,
+            searchType: "text",
+            query: query,
+            count: textResults.length,
+          };
 
-          // const vectorResult: ItemLookupResult = {
-          //   results: result,
-          //   searchType: "vector",
-          //   query: query,
-          //   count: result.length,
-          // };
-          // return JSON.stringify(vectorResult);
+          return JSON.stringify(result);
         } catch (error: any) {
           console.error("Error in item lookup:", error);
           console.error("Error details:", {
@@ -225,8 +259,7 @@ export async function callAgent({ db, query, threadId }: CallAgentParams) {
       },
       {
         name: "item_lookup",
-        description:
-          "Gathers patient details from the Patient database",
+        description: "Gathers patient details from the Patient database",
         schema: z.object({
           query: z.string().describe("The search query"),
           n: z
@@ -263,7 +296,7 @@ export async function callAgent({ db, query, threadId }: CallAgentParams) {
         const prompt = ChatPromptTemplate.fromMessages([
           [
             "system",
-            `You are a helpful E-commerce Chatbot Agent for a healthcare system. 
+            `You are a helpful Chatbot Agent for a healthcare system. 
 
 IMPORTANT: You have access to an item_lookup tool that searches the patient database. ALWAYS use this tool when customers ask about patient information, even if the tool returns errors or empty results.
 

@@ -14,7 +14,7 @@ export const connectDB = async (): Promise<void> => {
     client = new MongoClient(process.env.MONGO_URI);
     await client.connect();
     // Using the test database
-    db = client.db('patientService');
+    db = client.db('test');
     await db.command({ ping: 1 });
 
     console.log('Successfully connected to MongoDB!');
