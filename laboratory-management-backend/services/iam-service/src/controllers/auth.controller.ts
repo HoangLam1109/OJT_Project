@@ -108,6 +108,7 @@ const registerUser = async (req: Request, res: Response, next: NextFunction): Pr
 
     res.status(200).json({
       message: "User created successfully!",
+      userId: newUser._id,
     });
   } catch (error) {
     next(error);

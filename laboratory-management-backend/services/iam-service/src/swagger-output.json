@@ -2174,7 +2174,7 @@
         "tags": [
           "Audit Logs"
         ],
-        "description": "Get logs with pagination",
+        "description": "Get logs with pagination (For performedAt option please use MM/DD/YYYY or YYYY-MM-DD format)",
         "parameters": [
           {
             "name": "limit",
