@@ -7,9 +7,12 @@
     "dev": "npm run swagger && nodemon",
     "dev:patient": "npm run swagger:patient && nodemon --exec \"node --loader ts-node/esm services/patientService/src/index.ts\"",
     "dev:testOrder": "nodemon --exec \"node --loader ts-node/esm services/testOrderService/src/index.ts\"",
+  "dev:warehouse": "npm-run-all swagger:warehouse start:warehouse",
     "swagger": "tsx services/iam-service/src/swagger.ts",
     "swagger:patient": "tsx services/patientService/src/swagger.ts",
-    "dev:all": "npm-run-all --parallel dev:patient dev:testOrder dev"
+  "swagger:warehouse": "tsx services/warehouseService/src/swagger.ts",
+  "start:warehouse": "nodemon --watch services/warehouseService/src --ext ts,json --exec \"node --loader ts-node/esm services/warehouseService/src/index.ts\"",
+    "dev:all": "npm-run-all --parallel dev:patient dev:testOrder dev:warehouse dev"
   },
   "keywords": [],
   "author": "",
