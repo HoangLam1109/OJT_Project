@@ -78,6 +78,6 @@ roleSchema.pre("save", function(next) {
   next();
 });
 
-const Role = mongoose.model<IRole>("Role", roleSchema)
+const Role = mongoose.model<IRole>("Role", roleSchema, "roles")
 
 export default Role

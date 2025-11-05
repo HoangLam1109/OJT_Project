@@ -1,8 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-
-dotenv.config();
+import iamServiceClient from "../services/iamService/client/index.js";
 
 const JWT_SECRET = process.env.JWT_SECRET || process.env.JWT_SECRET_KEY || "your-secret-key";
 
@@ -10,7 +8,27 @@ interface JWTPayload {
   userId: string;
   iat?: number;
   exp?: number;
+  email?: string;
 }
+
+const extractTokenFromRequest = (req: Request): string | undefined => {
+  const cookieToken = req.cookies?.accessToken;
+  if (typeof cookieToken === "string" && cookieToken.length > 0) {
+    return cookieToken;
+  }
+
+  const authHeader = req.headers?.authorization;
+  if (typeof authHeader === "string" && authHeader.startsWith("Bearer ")) {
+    return authHeader.slice(7).trim();
+  }
+
+  const headerToken = req.headers?.["x-access-token"];
+  if (typeof headerToken === "string" && headerToken.length > 0) {
+    return headerToken;
+  }
+
+  return undefined;
+};
 
 class AuthenticateUser {
   authenticateUser = async (
@@ -19,16 +37,7 @@ class AuthenticateUser {
     next: NextFunction
   ): Promise<void> => {
     try {
-      // Try to get token from cookie first, then from Authorization header
-      let token = req.cookies?.accessToken;
-      
-      // If no token in cookie, check Authorization header
-      if (!token) {
-        const authHeader = req.headers.authorization;
-        if (authHeader && authHeader.startsWith('Bearer ')) {
-          token = authHeader.substring(7); // Remove 'Bearer ' prefix
-        }
-      }
+      const token = extractTokenFromRequest(req);
 
       if (!token) {
         res.status(401).json({ message: "No token provided. Authentication required." });
@@ -39,6 +48,19 @@ class AuthenticateUser {
       
       // Attach userId to request object
       (req as any).userId = decoded.userId;
+
+      if (decoded.email) {
+        (req as any).userEmail = decoded.email;
+      } else {
+        try {
+          const user = await iamServiceClient.getUserById(decoded.userId);
+          if (user?.email) {
+            (req as any).userEmail = user.email;
+          }
+        } catch (fetchError) {
+          console.warn("[AuthenticateUser] Unable to resolve user email", fetchError);
+        }
+      }
 
       next();
     } catch (error) {

@@ -17,6 +17,7 @@ import { ManagerLayout } from "../layouts/ManagerLayout";
 import NormalUserLayout from "../layouts/NormalUserLayout";
 import Dashboard from "../pages/NormalUser/Dashboard";
 import TestResults from "../pages/NormalUser/TestResults";
+import ChatPage from "../pages/NormalUser/ChatPage";
 import Profile from "../layouts/Profile";
 import { LabUserLayout } from "../layouts/LabUserLayout";
 import LabUserDashboard from "../pages/LabUser/Dashboard";
@@ -87,6 +88,7 @@ export function AppRoutes() {
             >
               {normalUserPage === "dashboard" && <Dashboard />}
               {normalUserPage === "test-results" && <TestResults />}
+              {normalUserPage === "chat" && <ChatPage />}
               {normalUserPage === "profile" && <Profile currentUser={user!} />}
             </NormalUserLayout>
           </ProtectedRoute>
