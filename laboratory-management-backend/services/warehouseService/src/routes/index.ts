@@ -1,27 +1,16 @@
 import express from "express";
-import { healthCheck } from "../controllers/health.controller.js";
+import reagentRoutes from "./v1/reagent/reagent.routes.js"
 import instrumentRoutes from "./v1/instrument/instrument.routes.js";
-import { ReagentController } from "../controllers/reagent.controller.js";
-const reagent = new ReagentController();
+
 const router = express.Router();
 
-// ===============================
-// 🔹 GET ALL REAGENTS
-// ===============================
-router.get(
+router.use(
   "/warehouse/reagents",
   /*
   #swagger.tags = ['Reagents']
-  #swagger.summary = 'Get all reagents'
   #swagger.description = 'Retrieve a list of all reagents in the system, including available, low stock, and expired ones.'
-  #swagger.responses[200] = {
-    description: 'List of reagents',
-    schema: {
-      success: true
-    }
-  }
   */
-  reagent.getAllReagents
+  reagentRoutes
 );
 
 router.use(

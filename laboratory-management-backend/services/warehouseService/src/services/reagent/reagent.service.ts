@@ -1,6 +1,6 @@
 // src/services/reagent.service.ts
-import { ReagentRepository } from "../repositories/reagent.repository.js";
-import { IReagent } from "../db/models/Reagent.model.js";
+import { ReagentRepository } from "../../repositories/reagent.repository.js";
+import { IReagent } from "../../db/models/Reagent.model.js";
 
 export class ReagentService {
   private repo: ReagentRepository;

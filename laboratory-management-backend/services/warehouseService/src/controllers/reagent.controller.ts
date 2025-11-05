@@ -1,6 +1,6 @@
 // src/controllers/reagent.controller.ts
 import type { Request, Response } from "express";
-import { ReagentService } from "../services/reagent.service.js";
+import { ReagentService } from "../services/reagent/reagent.service.js";
 
 const service = new ReagentService();
 
@@ -14,8 +14,9 @@ export class ReagentController {
     }
   }
 
-  async getById(req: Request, res: Response) {
+  async getById(req: Request<{ id: string }>, res: Response) {
     try {
+
       const reagent = await service.getReagentById(req.params.id);
       if (!reagent) return res.status(404).json({ success: false, message: "Not found" });
       res.json({ success: true, data: reagent });
