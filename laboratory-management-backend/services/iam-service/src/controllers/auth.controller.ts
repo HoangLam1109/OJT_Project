@@ -1,9 +1,9 @@
-import type { Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 import { UserService } from "../services/user.service.js";
 import type { IUser } from "../db/models/User.model.ts";
 import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
-import { errorHandler } from "../utils/error.util.js";
+import { AppError } from "../utils/error.util.js";
 import { clearJWT, generateJWT, refreshJWT } from "../utils/jwt.util.js";
 import patientServiceClient from "../services/patientService.client.js";
 import { ROLE_CODES } from "../constants/roles.constant.js";
@@ -11,7 +11,7 @@ dotenv.config();
 
 const userService = new UserService();
 
-const registerUser = async (req: Request, res: Response): Promise<void> => {
+const registerUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   /*
     #swagger.auto = false
     #swagger.tags = ['Authentication']
@@ -73,8 +73,7 @@ const registerUser = async (req: Request, res: Response): Promise<void> => {
       !phoneNumber ||
       !address
     ) {
-      res.status(400).json({ message: "Missing required fields!" });
-      return;
+      throw new AppError(400, "Missing required fields!");
     }
 
     const existingEmail = await userService.getUserByEmail(email);
@@ -82,12 +81,9 @@ const registerUser = async (req: Request, res: Response): Promise<void> => {
       identityNumber
     );
     if (existingEmail || existingPhoneNumber) {
-      res.status(400).json({
-        message: existingEmail
+      throw new AppError(400, existingEmail
           ? "Email already exists!"
-          : "Phone number already exists!",
-      });
-      return;
+          : "Phone number already exists!");
     }
 
     const newUser = await userService.createUser(
@@ -119,11 +115,11 @@ const registerUser = async (req: Request, res: Response): Promise<void> => {
       message: "User created successfully!",
     });
   } catch (error) {
-    errorHandler(res, error);
+    next(error);
   }
 };
 
-const loginUser = async (req: Request, res: Response): Promise<void> => {
+const loginUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   /*
     #swagger.auto = false
     #swagger.tags = ['Authentication']
@@ -161,8 +157,7 @@ const loginUser = async (req: Request, res: Response): Promise<void> => {
     const { identifier, password } = req.body;
 
     if (!identifier || !password) {
-      res.status(400).json({ message: "Missing credentials" });
-      return;
+      throw new AppError(400, "Missing credentials");
     }
 
     // ✅ Kiểm tra là email hay số điện thoại
@@ -173,14 +168,12 @@ const loginUser = async (req: Request, res: Response): Promise<void> => {
       ? await userService.getUserByEmail(identifier)
       : await userService.getUserByPhoneNumber(identifier);
     if (!user) {
-      res.status(400).json({ message: "User not found!" });
-      return;
+      throw new AppError(400, "User not found!");
     }
 
     const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isMatch) {
-      res.status(400).json({ message: "Invalid password!" });
-      return;
+      throw new AppError(400, "Invalid password!");
     }
 
     generateJWT(res, user._id as string);
@@ -196,11 +189,11 @@ const loginUser = async (req: Request, res: Response): Promise<void> => {
       },
     });
   } catch (error) {
-    errorHandler(res, error);
+    next(error);
   }
 };
 
-const logoutUser = async (req: Request, res: Response): Promise<void> => {
+const logoutUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   /*
     #swagger.auto = false
     #swagger.tags = ['Authentication']
@@ -222,11 +215,11 @@ const logoutUser = async (req: Request, res: Response): Promise<void> => {
 
     res.status(200).json({ message: "Logout successful!" });
   } catch (error) {
-    errorHandler(res, error);
+    next(error);
   }
 };
 
-const refreshToken = async (req: Request, res: Response) => {
+const refreshToken = async (req: Request, res: Response, next: NextFunction) => {
   /*
     #swagger.auto = false
     #swagger.tags = ['Authentication']
@@ -251,16 +244,15 @@ const refreshToken = async (req: Request, res: Response) => {
     const refreshToken = req.cookies.refreshToken;
     console.log("Xác nhận có userID được truyền vào refreshToken không:",userId)
     if (!refreshToken) {
-      return res.status(401).json({ message: "No refresh token provided" });
+      throw new AppError(401, "No refresh token provided");
     }
     
     // Generate new access token
     refreshJWT(res, userId);
 
-    return res.status(200).json({ message: "Refresh token successful!" });
+    res.status(200).json({ message: "Refresh token successful!" });
   } catch (error) {
-    console.error("Refresh Token failed:", error);
-    return res.status(500).json({ message: "Failed to refresh token" });
+    next(error);
   }
 };
 

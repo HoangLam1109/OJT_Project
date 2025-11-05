@@ -1,9 +1,7 @@
-import type { Request, Response } from "express";
-import type { IRole } from "../db/models/Role.model.js";
+import type { NextFunction, Request, Response } from "express";
 import { RoleService } from "../services/role.service.js";
-import { errorHandler } from "../utils/error.util.js";
+import { AppError } from "../utils/error.util.js";
 import { PaginationUtils } from "../utils/pagination.util.js";
-import { PaginationOptions } from "../types/pagination.type.js";
 
 // Define the type for authenticated user (matches what the middleware provides)
 interface AuthenticatedUser {
@@ -23,7 +21,7 @@ interface AuthenticatedUser {
 
 const roleService = new RoleService();
 
-const getRole = async (req: Request, res: Response): Promise<void> => {
+const getRole = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   /*
     #swagger.auto = false
     #swagger.tags = ['Role CRUD']
@@ -57,25 +55,24 @@ const getRole = async (req: Request, res: Response): Promise<void> => {
   try {
     const roleId = req.params.id;
     if (!roleId) {
-      res.status(400).json({ message: "Role ID is required" });
-      return;
+      throw new AppError(400, 'Role ID is required');
     }
 
     const role = await roleService.getRole(roleId);
     if (!role) {
-      res.status(404).json({ message: "Role not found" });
-      return;
+      throw new AppError(404, 'Role not found');
     }
 
     res.status(200).json(role);
   } catch (error) {
-    errorHandler(res, error);
+    next(error);
   }
 };
 
 const getRolesWithPagination = async (
   req: Request,
-  res: Response
+  res: Response,
+  next: NextFunction
 ): Promise<void> => {
   /*
     #swagger.auto = false
@@ -160,11 +157,11 @@ const getRolesWithPagination = async (
     const roles = await roleService.getRolesWithPagination(options);
     res.status(200).json(roles);
   } catch (error) {
-    errorHandler(res, error);
+    next(error);
   }
 };
 
-const getAll = async (req: Request, res: Response): Promise<void> => {
+const getAll = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   /*
     #swagger.auto = false
     #swagger.tags = ['Role CRUD']
@@ -192,11 +189,11 @@ const getAll = async (req: Request, res: Response): Promise<void> => {
     const roles = await roleService.getAllRoles();
     res.status(200).json(roles);
   } catch (error) {
-    errorHandler(res, error);
+    next(error);
   }
 };
 
-const createRole = async (req: Request, res: Response): Promise<void> => {
+const createRole = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   /*
     #swagger.auto = false
     #swagger.tags = ['Role CRUD']
@@ -237,11 +234,11 @@ const createRole = async (req: Request, res: Response): Promise<void> => {
       roleId: newRole._id,
     });
   } catch (error) {
-    errorHandler(res, error);
+    next(error);
   }
 };
 
-const updateRole = async (req: Request, res: Response): Promise<void> => {
+const updateRole = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   /*
     #swagger.auto = false
     #swagger.tags = ['Role CRUD']
@@ -284,8 +281,7 @@ const updateRole = async (req: Request, res: Response): Promise<void> => {
   try {
     const roleId = req.params.id;
     if (!roleId) {
-      res.status(400).json({ message: "Role ID is required" });
-      return;
+      throw new AppError(400, 'Role ID is required');
     }
 
     const roleData = req.body;
@@ -296,8 +292,7 @@ const updateRole = async (req: Request, res: Response): Promise<void> => {
     );
 
     if (!updatedRole) {
-      res.status(404).json({ message: "Role not found" });
-      return;
+      throw new AppError(404, 'Role not found');
     }
 
     res.status(200).json({
@@ -306,11 +301,11 @@ const updateRole = async (req: Request, res: Response): Promise<void> => {
       isActive: updatedRole.isActive,
     });
   } catch (error) {
-    errorHandler(res, error);
+    next(error);
   }
 };
 
-const deleteRole = async (req: Request, res: Response): Promise<void> => {
+const deleteRole = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   /*
     #swagger.auto = false
     #swagger.tags = ['Role CRUD']
@@ -337,8 +332,7 @@ const deleteRole = async (req: Request, res: Response): Promise<void> => {
   try {
     const roleId = req.params.id;
     if (!roleId) {
-      res.status(400).json({ message: "Role ID is required" });
-      return;
+      throw new AppError(400, 'Role ID is required');
     }
 
     const deletedRole = await roleService.deleteRole(
@@ -346,8 +340,7 @@ const deleteRole = async (req: Request, res: Response): Promise<void> => {
       (req.user as AuthenticatedUser)?._id
     );
     if (!deletedRole) {
-      res.status(404).json({ message: "Role not found" });
-      return;
+      throw new AppError(404, 'Role not found');
     }
 
     res.status(200).json({
@@ -355,13 +348,14 @@ const deleteRole = async (req: Request, res: Response): Promise<void> => {
       roleId: deletedRole._id,
     });
   } catch (error) {
-    errorHandler(res, error);
+    next(error);
   }
 };
 
 const assignPrivilegesToRole = async (
   req: Request,
-  res: Response
+  res: Response,
+  next: NextFunction
 ): Promise<void> => {
   /*
     #swagger.auto = false
@@ -400,8 +394,7 @@ const assignPrivilegesToRole = async (
   try {
     const roleId = req.params.id;
     if (!roleId) {
-      res.status(400).json({ message: "Role ID is required" });
-      return;
+      throw new AppError(400, 'Role ID is required');
     }
 
     const privileges = req.body.privileges;
@@ -412,8 +405,7 @@ const assignPrivilegesToRole = async (
     );
 
     if (!updatedRole) {
-      res.status(404).json({ message: "Role not found" });
-      return;
+      throw new AppError(404, 'Role not found');
     }
 
     res.status(200).json({
@@ -422,11 +414,11 @@ const assignPrivilegesToRole = async (
       isActive: updatedRole.isActive,
     });
   } catch (error) {
-    errorHandler(res, error);
+    next(error);
   }
 };
 
-const removePrivileges = async (req: Request, res: Response): Promise<void> => {
+const removePrivileges = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   /*
     #swagger.auto = false
     #swagger.tags = ['Additional']
@@ -464,8 +456,7 @@ const removePrivileges = async (req: Request, res: Response): Promise<void> => {
   try {
     const roleId = req.params.id;
     if (!roleId) {
-      res.status(400).json({ message: "Role ID is required" });
-      return;
+      throw new AppError(400, 'Role ID is required');
     }
 
     const privileges = req.body.privileges;
@@ -476,8 +467,7 @@ const removePrivileges = async (req: Request, res: Response): Promise<void> => {
     );
 
     if (!updatedRole) {
-      res.status(404).json({ message: "Role not found" });
-      return;
+      throw new AppError(404, 'Role not found');
     }
 
     res.status(200).json({
@@ -486,7 +476,7 @@ const removePrivileges = async (req: Request, res: Response): Promise<void> => {
       isActive: updatedRole.isActive,
     });
   } catch (error) {
-    errorHandler(res, error);
+    next(error);
   }
 };
 
