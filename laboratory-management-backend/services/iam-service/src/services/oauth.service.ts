@@ -1,7 +1,6 @@
 import { randomUUID } from "crypto";
 import type { IUser } from "../db/models/User.model.js";
 import { userRepository } from "../repositories/index.js";
-import { errorHandler } from "../utils/error.util.js";
 
 export interface CreateOAuthUserData {
   email: string;

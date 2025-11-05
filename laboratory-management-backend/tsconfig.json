@@ -46,8 +46,9 @@
   "include": [
     "services/iam-service/src/**/*",
     "services/patientService/src/**/*",
-    "services/testOrderService/src/**/*"
- ],
+    "services/testOrderService/src/**/*",
+    "services/chat-service/src/**/*"
+  ],
   "ts-node": {
     "esm": true,
     "experimentalSpecifierResolution": "node",
