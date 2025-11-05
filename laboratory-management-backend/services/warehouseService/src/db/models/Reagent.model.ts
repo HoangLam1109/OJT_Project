@@ -8,7 +8,6 @@ export interface IReagent extends Document {
   reagent_type: string;
   quantity_received: number;
   quantity_current: number;
-  quantity_reserved: number;
   unit_of_measure: string;
   usage_per_run: number;
   expiration_date: Date;
@@ -58,10 +57,6 @@ const ReagentSchema = new Schema<IReagent>(
     quantity_current: {
       type: Number,
       required: true,
-    },
-    quantity_reserved: {
-      type: Number,
-      default: 0,
     },
     unit_of_measure: {
       type: String,
@@ -138,6 +133,6 @@ ReagentSchema.index({ status: 1 });
 ReagentSchema.index({ instrument_id: 1 });
 ReagentSchema.index({ status: 1, expiration_date: 1 });
 
-const Reagent = model<IReagent>("Reagent", ReagentSchema);
+const Reagent = model<IReagent>("Reagent", ReagentSchema, "reagents");
 
 export default Reagent;
