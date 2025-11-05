@@ -15,7 +15,6 @@ export interface IReagent extends Document {
   status: "Available" | "InUse" | "LowStock" | "Expired" | "Depleted";
   low_stock_threshold?: number;
   storage_location?: string;
-  instrument_id?: string;
   created_at: Date;
   updated_at: Date;
   created_by?: string;
@@ -89,10 +88,6 @@ const ReagentSchema = new Schema<IReagent>(
       type: String,
       trim: true,
       maxlength: 255,
-    },
-    instrument_id: {
-      type: String,
-      ref: "Instrument",
     },
     created_at: {
       type: Date,

@@ -17,18 +17,7 @@ router.get(
   #swagger.responses[200] = {
     description: 'List of reagents',
     schema: {
-      success: true,
-      data: [
-        {
-          _id: 'uuid',
-          reagent_code: 'RG202510090001',
-          reagent_name: 'Diluent A',
-          reagent_type: 'Cleaner',
-          quantity_current: 250,
-          unit_of_measure: 'mL',
-          status: 'Available'
-        }
-      ]
+      success: true
     }
   }
   */
