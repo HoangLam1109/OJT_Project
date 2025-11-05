@@ -40,7 +40,8 @@ export class IamServiceClient {
    */
   async getUserById(userId: string): Promise<IamUser | null> {
     try {
-      const url = `${this.baseUrl}/api/user/${userId}`;
+      const url = `${this.baseUrl}/api/internal/${userId}`;
+
       const headers = {
         'X-Internal-API-Key': this.internalApiKey, // Internal service authentication
       };
