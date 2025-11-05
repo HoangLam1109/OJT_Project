@@ -21,6 +21,8 @@ const usersSeedData = [
     dateOfBirth: new Date('1989-01-15'),
     password: 'admin123',
     role: ROLE_CODES.ADMIN,
+    address: '123 Admin Street, Tech City',
+    phoneNumber: '1234567890',
   },
   {
     email: 'manager@example.com',
@@ -31,6 +33,8 @@ const usersSeedData = [
     dateOfBirth: new Date('1982-03-20'),
     password: 'manager123',
     role: ROLE_CODES.MANAGER,
+    address: '456 Manager Ave, Business District',
+    phoneNumber: '1987654321',
   },
   {
     email: 'service@example.com',
@@ -41,6 +45,8 @@ const usersSeedData = [
     dateOfBirth: new Date('1996-07-10'),
     password: 'service123',
     role: ROLE_CODES.SERVICE,
+    address: '789 Service Road, Industrial Area',
+    phoneNumber: '1122334455',
   },
   {
     email: 'labuser@example.com',
@@ -51,6 +57,8 @@ const usersSeedData = [
     dateOfBirth: new Date('1993-11-05'),
     password: 'labuser123',
     role: ROLE_CODES.LAB_USER,
+    address: '321 Lab Lane, Science Park',
+    phoneNumber: '5566778899',
   },
   {
     email: 'user1@example.com',
@@ -61,6 +69,8 @@ const usersSeedData = [
     dateOfBirth: new Date('1999-05-12'),
     password: 'user123',
     role: ROLE_CODES.USER,
+    address: '321 Lab Lane, Science Park',
+    phoneNumber: '5566778899',
   },
   {
     email: 'user2@example.com',
@@ -71,6 +81,8 @@ const usersSeedData = [
     dateOfBirth: new Date('1995-09-18'),
     password: 'user123',
     role: ROLE_CODES.USER,
+    address: '321 Lab Lane, Science Park',
+    phoneNumber: '5566778899',
   },
 ];
 
@@ -101,12 +113,6 @@ async function seedDatabase() {
       if (!existingUser) {
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(userData.password, saltRounds);
-        const roleId = roleMap.get(userData.role);
-
-        if (!roleId) {
-          console.error(`❌ Role ${userData.role} not found for user ${userData.email}`);
-          continue;
-        }
 
         await User.create({
           _id: randomUUID(),
@@ -115,9 +121,11 @@ async function seedDatabase() {
           identityNumber: userData.identityNumber,
           gender: userData.gender,
           age: userData.age,
+          address: userData.address,
+          phoneNumber: userData.phoneNumber,
           dateOfBirth: userData.dateOfBirth,
           passwordHash: hashedPassword,
-          role: [roleId], // Store as array of role IDs
+          role: [userData.role], // Store as array of role IDs
           isActive: true,
           isDeleted: false,
         });

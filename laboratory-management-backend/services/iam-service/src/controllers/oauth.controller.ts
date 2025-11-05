@@ -1,14 +1,14 @@
-import type { Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 import passport from "../config/oauth.config.js";
 import { generateJWT } from "../utils/jwt.util.js";
-import { errorHandler } from "../utils/error.util.js";
+import { AppError } from "../utils/error.util.js";
 import type { IUser } from "../db/models/User.model.js";
 import { OAuthService } from "../services/oauth.service.js";
 import jwt from "jsonwebtoken";
 
 const oauthService = new OAuthService();
 
-const googleLogin = (req: Request, res: Response): void => {
+const googleLogin = (req: Request, res: Response, next: NextFunction): void => {
   /*
     #swagger.auto = false
     #swagger.tags = ['OAuth Authentication']
@@ -32,11 +32,11 @@ const googleLogin = (req: Request, res: Response): void => {
       state: stateToken,
     })(req, res);
   } catch (error) {
-    errorHandler(res, error);
+    next(error);
   }
 };
 
-const googleCallback = async (req: Request, res: Response): Promise<void> => {
+const googleCallback = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   /*
     #swagger.auto = false
     #swagger.tags = ['OAuth Authentication']
@@ -66,11 +66,11 @@ const googleCallback = async (req: Request, res: Response): Promise<void> => {
     passport.authenticate('google', async (err: any, user: IUser | false, info: any) => {
       if (err) {
         console.error('Google OAuth error:', err);
-        return res.status(401).json({ message: 'Google authentication failed' });
+        return next(new AppError(401, 'Google authentication failed'));
       }
 
       if (!user) {
-        return res.status(401).json({ message: 'Google authentication failed' });
+        return next(new AppError(401, 'Google authentication failed'));
       }
 
       generateJWT(res, user._id as string);
@@ -104,11 +104,11 @@ const googleCallback = async (req: Request, res: Response): Promise<void> => {
       res.redirect(`${frontendUrl}/auth/google/callback?data=${encodedData}`);
     })(req, res);
   } catch (error) {
-    errorHandler(res, error);
+    next(error);
   }
 };
 
-const getOAuthStatus = async (req: Request, res: Response): Promise<void> => {
+const getOAuthStatus = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   /*
     #swagger.auto = false
     #swagger.tags = ['OAuth Authentication']
@@ -128,19 +128,18 @@ const getOAuthStatus = async (req: Request, res: Response): Promise<void> => {
   try {
     const user = req.user as any;
     if (!user) {
-      res.status(401).json({ message: 'Authentication required' });
-      return;
+      throw new AppError(401, 'Authentication required');
     }
 
     const status = await oauthService.getOAuthUserStatus(user._id);
 
     res.status(200).json(status);
   } catch (error) {
-    errorHandler(res, error);
+    next(error);
   }
 };
 
-const linkOAuthAccount = async (req: Request, res: Response): Promise<void> => {
+const linkOAuthAccount = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   /*
     #swagger.auto = false
     #swagger.tags = ['OAuth Authentication']
@@ -170,8 +169,7 @@ const linkOAuthAccount = async (req: Request, res: Response): Promise<void> => {
     const { provider, providerId, email } = req.body;
 
     if (!user || !provider || !providerId) {
-      res.status(400).json({ message: 'Missing required data' });
-      return;
+      throw new AppError(400, 'Missing required data');
     }
     
     await oauthService.linkOAuthAccount(user, {
@@ -183,7 +181,7 @@ const linkOAuthAccount = async (req: Request, res: Response): Promise<void> => {
 
     res.status(200).json({ message: 'OAuth account linked successfully' });
   } catch (error) {
-    errorHandler(res, error);
+    next(error);
   }
 };
 

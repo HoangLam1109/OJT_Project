@@ -12,53 +12,63 @@ interface TestOrderStatsCardsProps {
   loading?: boolean;
 }
 
-const TestOrderStatsCards: React.FC<TestOrderStatsCardsProps> = ({ stats,loading }) => {
-   if (loading) {
+const TestOrderStatsCards: React.FC<TestOrderStatsCardsProps> = ({ stats, loading }) => {
+  if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        {[...Array(4)].map((_, i) => (
-          <Card key={i} className="p-6">
-            <Skeleton className="h-4 w-24 mb-2" />
-            <Skeleton className="h-6 w-12" />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {[...Array(3)].map((_, i) => (
+          <Card key={i} className="p-6 bg-white">
+            <Skeleton className="h-4 w-24 mb-4" />
+            <Skeleton className="h-10 w-16" />
           </Card>
         ))}
       </div>
     );
   }
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-      <Card className="glass-strong hover-lift">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Chờ xử lý */}
+      <Card className="bg-white rounded-lg shadow-sm border border-gray-200">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 mb-1">Chờ xử lý</p>
-              <p className="text-2xl text-orange-600">{stats.pending}</p>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-gray-700 mb-4">Chờ xử lý</p>
+              <p className="text-4xl font-semibold text-orange-500">{stats.pending}</p>
             </div>
-            <Clock className="w-8 h-8 text-orange-600" />
+            <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
+              <Clock className="w-6 h-6 text-orange-500" />
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      <Card className="glass-strong hover-lift">
+      {/* Đang xử lý */}
+      <Card className="bg-white rounded-lg shadow-sm border border-gray-200">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 mb-1">Đang xử lý</p>
-              <p className="text-2xl text-blue-600">{stats.processing}</p>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-gray-700 mb-4">Đang xử lý</p>
+              <p className="text-4xl font-semibold text-blue-500">{stats.processing}</p>
             </div>
-            <PlayCircle className="w-8 h-8 text-blue-600" />
+            <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+              <PlayCircle className="w-6 h-6 text-blue-500" />
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      <Card className="glass-strong hover-lift">
+      {/* Hoàn thành */}
+      <Card className="bg-white rounded-lg shadow-sm border border-gray-200">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 mb-1">Hoàn thành</p>
-              <p className="text-2xl text-green-600">{stats.completed}</p>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-gray-700 mb-4">Hoàn thành</p>
+              <p className="text-4xl font-semibold text-green-500">{stats.completed}</p>
             </div>
-            <CheckCircle className="w-8 h-8 text-green-600" />
+            <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+              <CheckCircle className="w-6 h-6 text-green-500" />
+            </div>
           </div>
         </CardContent>
       </Card>

@@ -56,6 +56,15 @@ paths:
           description: Danh sách Test Orders
         '500':
           description: Lỗi server
+ # ==================== GET: Lấy tất cả ====================
+  /testOrder/result:
+    get:
+      summary: Lấy danh sách kết quả tất cả Test Orders Result
+      responses:
+        '200':
+          description: Danh sách Test Orders Result
+        '500':
+          description: Lỗi server
 
   # ==================== GET: Lấy theo ID ====================
   /testOrder/{id}:
