@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Input } from '../../../../components/common/input';
 import { Label } from '../../../../components/common/label';
 import Button from '../../../../components/common/button';
-import { TestTube2, X, Save } from 'lucide-react';
+import { Edit3, X, FileText } from 'lucide-react';
 import type { TestOrder } from '../../types/TestOrderTypes';
 import { mockTestTypes } from '../../data/mockTestOrdersData';
 import { useAuthContext } from '../../../../hooks/useAuthContext';
@@ -182,16 +182,16 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
       <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-200">
         <div className="p-6">
           {/* Header */}
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex justify-between items-start mb-6">
             <div className="flex items-center space-x-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <TestTube2 className="w-6 h-6 text-blue-600" />
+              <div className="p-2.5 bg-blue-100 rounded-lg flex items-center justify-center">
+                <Edit3 className="w-5 h-5 text-blue-600" />
               </div>
               <div>
                 <h2 className="text-xl font-semibold text-gray-900">
                   {isEdit ? 'Chỉnh sửa lệnh xét nghiệm' : 'Tạo lệnh xét nghiệm mới'}
                 </h2>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 mt-0.5">
                   {isEdit
                     ? `Mã: ${order?.barcode || 'N/A'}`
                     : 'Nhập thông tin để tạo lệnh mới'}
@@ -200,13 +200,13 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
             </div>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-500 hover:text-gray-700"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
             {/* Thông tin barcode (chỉ hiển thị khi edit) */}
             {isEdit && (
               <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
@@ -217,10 +217,11 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
               </div>
             )}
 
+            {/* Bệnh nhân và Loại xét nghiệm - cùng hàng */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Bệnh nhân */}
-              <div>
-                <Label htmlFor="patient">
+              <div className="space-y-2">
+                <Label htmlFor="patient" className="text-sm font-medium">
                   Bệnh nhân <span className="text-red-500">*</span>
                 </Label>
                 <select
@@ -228,9 +229,11 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
                   value={formData.patient_id}
                   onChange={(e) => handlePatientChange(e.target.value)}
                   disabled={loadingPatients || isSubmitting}
-                  className={`mt-1 block w-full rounded-lg border px-3 py-2 ${
-                    errors.patient_id ? 'border-red-500' : 'border-gray-300'
-                  } focus:border-blue-500`}
+                  className={`w-full rounded-lg border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                    errors.patient_id 
+                      ? 'border-red-500 bg-red-50' 
+                      : 'border-gray-300 bg-white hover:border-gray-400'
+                  } disabled:bg-gray-50 disabled:cursor-not-allowed`}
                 >
                   <option value="">
                     {loadingPatients ? 'Đang tải...' : 'Chọn bệnh nhân'}
@@ -242,13 +245,13 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
                   ))}
                 </select>
                 {errors.patient_id && (
-                  <p className="mt-1 text-sm text-red-600">{errors.patient_id}</p>
+                  <p className="text-sm text-red-600">{errors.patient_id}</p>
                 )}
               </div>
 
               {/* Loại xét nghiệm */}
-              <div>
-                <Label htmlFor="testType">
+              <div className="space-y-2">
+                <Label htmlFor="testType" className="text-sm font-medium">
                   Loại xét nghiệm <span className="text-red-500">*</span>
                 </Label>
                 <select
@@ -256,9 +259,11 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
                   value={formData.testType}
                   onChange={(e) => setFormData(prev => ({ ...prev, testType: e.target.value }))}
                   disabled={isSubmitting}
-                  className={`mt-1 block w-full rounded-lg border px-3 py-2 ${
-                    errors.testType ? 'border-red-500' : 'border-gray-300'
-                  } focus:border-blue-500`}
+                  className={`w-full rounded-lg border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                    errors.testType 
+                      ? 'border-red-500 bg-red-50' 
+                      : 'border-gray-300 bg-white hover:border-gray-400'
+                  } disabled:bg-gray-50 disabled:cursor-not-allowed`}
                 >
                   <option value="">Chọn loại xét nghiệm</option>
                   {mockTestTypes.map(t => (
@@ -266,59 +271,69 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
                   ))}
                 </select>
                 {errors.testType && (
-                  <p className="mt-1 text-sm text-red-600">{errors.testType}</p>
+                  <p className="text-sm text-red-600">{errors.testType}</p>
                 )}
               </div>
+            </div>
 
-              {/* Hạn hoàn thành */}
-              <div>
-                <Label htmlFor="dueDate">
-                  Hạn hoàn thành <span className="text-red-500">*</span>
-                </Label>
+            {/* Hạn hoàn thành - full width */}
+            <div className="space-y-2">
+              <Label htmlFor="dueDate" className="text-sm font-medium">
+                Hạn hoàn thành <span className="text-red-500">*</span>
+              </Label>
+              <div className="relative">
                 <Input
                   id="dueDate"
                   type="date"
                   value={formData.due_date}
                   onChange={(e) => setFormData(prev => ({ ...prev, due_date: e.target.value }))}
                   disabled={isSubmitting}
-                  className={errors.due_date ? 'border-red-500' : ''}
+                  className={`w-full rounded-lg border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                    errors.due_date 
+                      ? 'border-red-500 bg-red-50' 
+                      : 'border-gray-300 bg-white hover:border-gray-400'
+                  } disabled:bg-gray-50 disabled:cursor-not-allowed`}
+                  placeholder="dd/mm/yyyy"
                 />
-                {errors.due_date && (
-                  <p className="mt-1 text-sm text-red-600">{errors.due_date}</p>
-                )}
               </div>
+              {errors.due_date && (
+                <p className="text-sm text-red-600">{errors.due_date}</p>
+              )}
             </div>
 
             {/* Ghi chú */}
-            <div>
-              <Label htmlFor="notes">Ghi chú</Label>
+            <div className="space-y-2">
+              <Label htmlFor="notes" className="text-sm font-medium">
+                Ghi chú
+              </Label>
               <textarea
                 id="notes"
                 rows={3}
                 value={formData.notes}
                 onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
                 disabled={isSubmitting}
-                className="mt-1 block w-full rounded-lg border border-gray-300 p-3 focus:border-blue-500"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors resize-y hover:border-gray-400 disabled:bg-gray-50 disabled:cursor-not-allowed"
                 placeholder="Ghi chú thêm (tùy chọn)"
               />
             </div>
 
-            {/* Nút */}
-            <div className="flex justify-end space-x-3 pt-4 border-t">
+            {/* Nút hành động */}
+            <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 mt-6">
               <Button
                 type="button"
                 variant="outline"
                 onClick={onClose}
                 disabled={isSubmitting}
+                className="px-6 py-2.5 border-gray-300 text-gray-700 hover:bg-gray-50"
               >
                 Hủy
               </Button>
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-blue-600 hover:bg-blue-700 text-white flex items-center"
+                className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Save className="w-4 h-4 mr-2" />
+                <FileText className="w-4 h-4" />
                 {isSubmitting
                   ? 'Đang lưu...'
                   : isEdit
