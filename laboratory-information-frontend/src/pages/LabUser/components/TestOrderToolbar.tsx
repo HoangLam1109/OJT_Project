@@ -1,18 +1,15 @@
 import React from 'react';
-import { Search, Plus } from 'lucide-react';
-import Button from '../../../components/common/button';
+import { Search } from 'lucide-react';
 import { Input } from '../../../components/common/input';
 
 interface TestOrderToolbarProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
-  onCreateClick: () => void;
 }
 
 const TestOrderToolbar: React.FC<TestOrderToolbarProps> = ({
   searchTerm,
   onSearchChange,
-  onCreateClick,
 }) => {
   return (
     <div className="flex justify-between items-center">
@@ -30,22 +27,6 @@ const TestOrderToolbar: React.FC<TestOrderToolbarProps> = ({
             onChange={(e) => onSearchChange(e.target.value)}
           />
         </div>
-        <Button 
-          onClick={onCreateClick} 
-          className="
-            flex items-center 
-            bg-gradient-to-r from-blue-500 to-indigo-600
-            text-white font-medium shadow-md
-            px-4 py-2 rounded-lg
-            hover:from-blue-600 hover:to-indigo-700
-            hover:shadow-lg
-            focus:ring-2 focus:ring-indigo-400 focus:ring-offset-1
-            transition-all duration-200 ease-in-out
-          "
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Tạo đơn xét nghiệm bệnh nhân
-        </Button>
       </div>
     </div>
   );

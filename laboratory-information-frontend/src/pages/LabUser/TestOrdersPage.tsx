@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useAuthContext } from '../../hooks/useAuthContext';
+import { useTestOrderActions } from '../../context/TestOrderActionsContext';
 import type { TestOrder, TestResult } from './types/TestOrderTypes';
 import { testOrderService } from '../../service/testOrderService';
 import { mockInstrument } from '../service/data/mockInstrument';
@@ -20,6 +22,8 @@ import { Skeleton } from '@/components/common/skeleton';
 
 const TestOrdersPage: React.FC = () => {
   const { user } = useAuthContext();
+  const { setOnCreateTestOrder } = useTestOrderActions();
+  const navigate = useNavigate();
   
 
   const [orders, setOrders] = useState<TestOrder[]>([]);
@@ -89,11 +93,17 @@ const TestOrdersPage: React.FC = () => {
   };
 
 
-  const handleCreate = () => {
-    setSelectedOrder(null);
-    setIsEdit(false);
-    setFormModalOpen(true);
-  };
+  const handleCreate = React.useCallback(() => {
+    navigate('/labuser/create-test-order');
+  }, [navigate]);
+
+  // Đăng ký callback với context
+  useEffect(() => {
+    setOnCreateTestOrder(handleCreate);
+    return () => {
+      setOnCreateTestOrder(() => {});
+    };
+  }, [handleCreate, setOnCreateTestOrder]);
 
 
   const handleFormSubmit = async (orderData: Omit<TestOrder, 'id'> | Partial<TestOrder>) => {
@@ -276,7 +286,6 @@ const handleStatusChange = async (
       <TestOrderToolbar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
-        onCreateClick={handleCreate}
       />
 
       <TestOrderStatsCards stats={stats} loading={loading} />

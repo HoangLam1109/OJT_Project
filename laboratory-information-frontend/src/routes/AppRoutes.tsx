@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { HomeLayout } from "../layouts/HomeLayout";
 import { LoginLayout } from "../layouts/LoginLayout";
 import { RegisterPage } from "../pages/register/RegisterPage";
@@ -19,9 +19,13 @@ import Dashboard from "../pages/NormalUser/Dashboard";
 import TestResults from "../pages/NormalUser/TestResults";
 import ChatPage from "../pages/NormalUser/ChatPage";
 import Profile from "../layouts/Profile";
-import { LabUserLayout } from "../layouts/LabUserLayout";
 import LabUserDashboard from "../pages/LabUser/Dashboard";
 import TestOrdersPage from "../pages/LabUser/TestOrdersPage";
+import CreateTestOrderPage from "../pages/LabUser/CreateTestOrderPage";
+import SelectInstrumentsPage from "../pages/LabUser/SelectInstrumentsPage";
+import SelectReagentsPage from "../pages/LabUser/SelectReagentsPage";
+import { LabUserRouteWrapper } from "./LabUserRouteWrapper";
+import { LabUserRouteElement } from "./LabUserRouteElement";
 import TestResultsPage from "../pages/LabUser/TestResultsPage";
 import InstrumentManagementPage from "../pages/LabUser/InstrumentManagementPage";
 import ReagentManagementPage from "../pages/LabUser/ReagentManagementPage";
@@ -153,11 +157,12 @@ export function AppRoutes() {
         path="/labuser"
         element={
           <ProtectedRoute allowedRoles={["LAB_USER"]}>
-            <LabUserLayout
+            <LabUserRouteElement
               currentUser={user!}
               onLogout={onLogout}
               currentPage={labUserPage}
               onNavigate={(page) => setLabUserPage(page)}
+              setLabUserPage={setLabUserPage}
             >
               {labUserPage === "dashboard" && <LabUserDashboard />}
               {labUserPage === "patients" && <AdminPatientManagementPage />}
@@ -172,7 +177,67 @@ export function AppRoutes() {
                 </div>
               )}
               {labUserPage === "profile" && <Profile currentUser={user!} />}
-            </LabUserLayout>
+            </LabUserRouteElement>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Trang tạo lệnh xét nghiệm */}
+      <Route
+        path="/labuser/create-test-order"
+        element={
+          <ProtectedRoute allowedRoles={["LAB_USER"]}>
+            <LabUserRouteWrapper
+              currentUser={user!}
+              onLogout={onLogout}
+              currentPage="test-orders"
+              onNavigate={(page) => {
+                setLabUserPage(page);
+                navigate(`/labuser`);
+              }}
+            >
+              <CreateTestOrderPage />
+            </LabUserRouteWrapper>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Trang chọn thiết bị */}
+      <Route
+        path="/labuser/select-instruments"
+        element={
+          <ProtectedRoute allowedRoles={["LAB_USER"]}>
+            <LabUserRouteWrapper
+              currentUser={user!}
+              onLogout={onLogout}
+              currentPage="test-orders"
+              onNavigate={(page) => {
+                setLabUserPage(page);
+                navigate(`/labuser`);
+              }}
+            >
+              <SelectInstrumentsPage />
+            </LabUserRouteWrapper>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Trang chọn thuốc thử */}
+      <Route
+        path="/labuser/select-reagents"
+        element={
+          <ProtectedRoute allowedRoles={["LAB_USER"]}>
+            <LabUserRouteWrapper
+              currentUser={user!}
+              onLogout={onLogout}
+              currentPage="test-orders"
+              onNavigate={(page) => {
+                setLabUserPage(page);
+                navigate(`/labuser`);
+              }}
+            >
+              <SelectReagentsPage />
+            </LabUserRouteWrapper>
           </ProtectedRoute>
         }
       />
