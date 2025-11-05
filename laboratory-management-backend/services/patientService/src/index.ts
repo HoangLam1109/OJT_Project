@@ -8,9 +8,6 @@ const __dirname = dirname(__filename);
 const envPath = resolve(__dirname, '../.env');
 dotenv.config({ path: envPath });
 
-console.log('[Patient Service] Env loaded from:', envPath);
-console.log('[Patient Service] INTERNAL_API_KEY:', process.env.INTERNAL_API_KEY ? '***' + process.env.INTERNAL_API_KEY.slice(-4) : 'NOT SET');
-
 // Now import other modules (they will see the env vars)
 import express from "express";
 import cors from "cors";
@@ -58,6 +55,6 @@ app.listen(PORT, () => {
   console.log(`📍 Server URL:     http://localhost:${PORT}`);
   console.log(`📚 Swagger UI:     http://localhost:${PORT}/api-docs`);
   console.log(`🔗 API Endpoint:   http://localhost:${PORT}/api`);
-  console.log(`💾 Database:       patientService`);
+  console.log(`💾 Database:       Patient Service`);
   console.log(`${"=".repeat(60)}\n`);
 });

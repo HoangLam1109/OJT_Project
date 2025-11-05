@@ -103,4 +103,4 @@ export const UpdateTestOrderSchema = z.object({
   notes: z.string().optional()
 });
 
-export default mongoose.model<ITestOrder>("TestOrder", TestOrderSchema);
+export default mongoose.model<ITestOrder>("TestOrder", TestOrderSchema,"testOrders" );
