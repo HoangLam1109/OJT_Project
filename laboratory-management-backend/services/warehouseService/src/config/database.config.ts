@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const connectDB = async (): Promise<void> => {
-  const uri = process.env.MONGO_URI ?? "mongodb://localhost:27017/warehouseService";
+  const uri = "mongodb+srv://user:123@cluster0.uevq3rb.mongodb.net/warehouseService?retryWrites=true&w=majority&appName=Cluster0";
 
   try {
     await mongoose.connect(uri);
