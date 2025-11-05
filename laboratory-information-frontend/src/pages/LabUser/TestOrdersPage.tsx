@@ -10,7 +10,6 @@ import type { Instrument } from '../service/types/Instrument';
 import TestOrderToolbar from './components/TestOrderToolbar';
 import TestOrderStatsCards from './components/TestOrderStatsCards';
 import TestOrderList from './components/TestOrderList';
-import AvailableInstrumentsCard from './components/AvailableInstrumentsCard';
 import StartTestDialog from './components/modals/StartTestDialog';
 import TestOrderFormModal from './components/modals/TestOrderFormModal';
 import ReviewResultModal from './components/modals/ReviewResultModal';
@@ -253,27 +252,6 @@ const handleStatusChange = async (
           ))}
         </CardContent>
       </Card>
-
-      {/* AvailableInstruments skeleton */}
-      <Card className="glass-strong hover-lift">
-        <CardHeader>
-          <Skeleton className="h-5 w-48 mb-2" />
-          <Skeleton className="h-4 w-2/3" />
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="p-4 border rounded-lg bg-white/50 space-y-3">
-                <Skeleton className="h-4 w-40" />
-                <Skeleton className="h-3 w-28" />
-                <Skeleton className="h-3 w-36" />
-                <Skeleton className="h-3 w-24" />
-                <Skeleton className="h-2 w-full rounded-full" />
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }
@@ -295,8 +273,6 @@ const handleStatusChange = async (
         onOrderClick={handleOrderClick}
         onStatusChange={handleStatusChange}
       />
-
-      <AvailableInstrumentsCard instruments={availableInstruments} />
 
       <StartTestDialog
         isOpen={showStartTestDialog}
