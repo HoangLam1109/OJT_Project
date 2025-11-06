@@ -85,6 +85,48 @@ router.post(
   reagent.createReagent
 );
 
+router.put(
+  "/:id",
+  /*
+  #swagger.tags = ['Reagents']
+  #swagger.summary = 'Update a reagent'
+  #swagger.description = 'Update an existing reagent by ID. Status, updated_at, and updated_by are automatically handled.'
+  #swagger.parameters['id'] = {
+    in: 'path',
+    description: 'Reagent ID to update',
+    required: true,
+    type: 'string'
+  }
+  #swagger.parameters['body'] = {
+    in: 'body',
+    description: 'Fields to update',
+    required: true,
+    schema: {
+      "reagent_name": "Updated Diluent Solution",
+      "quantity_received": 5000,
+      "quantity_current": 4500,
+      "usage_per_run": 5,
+      "unit_of_measure": "ml",
+      "expiration_date": "2026-10-01T00:00:00.000Z",
+      "received_date": "2025-10-01T09:00:00.000Z",
+      "low_stock_threshold": 500,
+      "storage_location": "Shelf A - Lab Room 1",
+      "updated_by": "USER001"
+    }
+  }
+  #swagger.responses[200] = {
+    description: 'Reagent updated successfully',
+    schema: {
+      success: true,
+    }
+  }
+  #swagger.responses[404] = { description: 'Reagent not found' }
+  #swagger.responses[500] = { description: 'Server error' }
+  */
+  reagent.updateReagent
+);
+
+
 router.delete(
   "/:id",
   /*
