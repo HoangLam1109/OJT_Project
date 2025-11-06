@@ -28,8 +28,6 @@ export interface CreateAccessLogPayload {
   accessed_at?: Date;
   old_values?: Record<string, unknown> | null;
   new_values?: Record<string, unknown> | null;
-  ip_address?: string;
-  user_agent?: string;
 }
 
 class MedicalRecordAccessLogService {
