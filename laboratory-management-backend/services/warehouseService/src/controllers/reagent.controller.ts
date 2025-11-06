@@ -12,7 +12,7 @@ export class ReagentController {
     } catch (err: any) {
       res.status(500).json({ success: false, message: err.message });
     }
-  }
+  } 
 
   async getById(req: Request<{ id: string }>, res: Response) {
     try {

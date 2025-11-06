@@ -2,7 +2,8 @@ import type { Request, Response } from "express";
 import { PatientMedicalRecordService } from "../services/patientMedicalRecord.service.js";
 import { errorHandler } from "../utils/error.util.js";
 import medicalRecordAccessLogService from "../services/medicalRecordAccessLog.service.js";
-import iamServiceClient from "../services/iamService.client.js";
+import iamServiceClient, { type IamUser } from "../services/iamService.client.js";
+import Patient, { type IPatient } from "../db/models/Patient.model.js";
 
 const patientMedicalRecordService = new PatientMedicalRecordService();
 
@@ -40,20 +41,6 @@ const resolveAccessActor = async (
   }
 
   return { actorId: "system", actorEmail: null };
-};
-
-const buildRequestClientFootprint = (
-  req: Request
-): { ip_address?: string; user_agent?: string } => {
-  const footprint: { ip_address?: string; user_agent?: string } = {};
-  if (req.ip) {
-    footprint.ip_address = req.ip;
-  }
-  const userAgent = req.get("user-agent");
-  if (userAgent) {
-    footprint.user_agent = userAgent;
-  }
-  return footprint;
 };
 
 const toPlainRecord = (value: unknown): Record<string, unknown> => {
@@ -94,6 +81,90 @@ const diffChangedFields = (
     fields: changed,
     previousValues: pickValues(previous, changed),
     currentValues: pickValues(current, changed),
+  };
+};
+
+const sanitizeMedicalRecord = (
+  record: Record<string, unknown> | null | undefined
+): Record<string, unknown> | null => {
+  if (!record) {
+    return null;
+  }
+  const sanitized = { ...record };
+  delete sanitized.__v;
+  if ("patient" in sanitized) {
+    delete sanitized.patient;
+  }
+  return sanitized;
+};
+
+const buildUserSnapshot = (user: IamUser | null | undefined): Record<string, unknown> | null => {
+  if (!user) {
+    return null;
+  }
+  return {
+    id: user._id,
+    email: user.email,
+    fullName: user.fullName,
+    identityNumber: user.identityNumber,
+    phoneNumber: user.phoneNumber ?? null,
+    gender: user.gender,
+    dateOfBirth: user.dateOfBirth,
+    address: user.address ?? null,
+    age: user.age,
+    role: user.role,
+    isActive: user.isActive,
+  };
+};
+
+const buildAccessLogSnapshot = (
+  medicalRecord: Record<string, unknown> | null | undefined,
+  user: IamUser | null | undefined
+): Record<string, unknown> | null => {
+  const recordData = sanitizeMedicalRecord(medicalRecord ?? null);
+  const userData = buildUserSnapshot(user);
+
+  if (!recordData && !userData) {
+    return null;
+  }
+
+  return {
+    ...(recordData ? { medical_record: recordData } : {}),
+    ...(userData ? { user: userData } : {}),
+  };
+};
+
+const fetchPatientContext = async (
+  patientId: string,
+  cachedPatient?: IPatient | null
+): Promise<{ patient: IPatient | null; user: IamUser | null }> => {
+  if (!patientId) {
+    return { patient: null, user: null };
+  }
+
+  let patient: IPatient | null | undefined = cachedPatient;
+  if (!patient) {
+    try {
+      patient = await Patient.findOne({ _id: patientId }).lean<IPatient | null>();
+    } catch (error) {
+      console.warn(`[PatientMedicalRecordController] Unable to fetch patient ${patientId}`, error);
+      patient = null;
+    }
+  }
+
+  let user: IamUser | null = null;
+  const userId = patient?.user_id;
+  if (typeof userId === "string" && userId.length > 0) {
+    try {
+      user = await iamServiceClient.getUserById(userId);
+    } catch (error) {
+      console.warn(`[PatientMedicalRecordController] Unable to fetch IAM user ${userId}`, error);
+    }
+  }
+
+  return {
+    patient: patient ?? null,
+    user,
   };
 };
 
@@ -175,8 +246,11 @@ const getPatientRecordDetail = async (req: Request, res: Response): Promise<void
 
     console.log(`   ✅ Found record: ${record.record_code} (Patient: ${record.patient_id})`);
 
-    const actorContext = await resolveAccessActor(req);
-    const footprint = buildRequestClientFootprint(req);
+  const actorContext = await resolveAccessActor(req);
+    const inlinePatient = (record as { patient?: IPatient | null }).patient ?? null;
+    const { user: patientUser } = await fetchPatientContext(record.patient_id, inlinePatient);
+    const recordPlain = toPlainRecord(record);
+  const viewSnapshot = buildAccessLogSnapshot(recordPlain, patientUser);
     try {
       await medicalRecordAccessLogService.createAccessLog({
         medical_record_id: record._id,
@@ -185,8 +259,7 @@ const getPatientRecordDetail = async (req: Request, res: Response): Promise<void
         accessed_by_email: actorContext.actorEmail,
         access_type: "VIEW",
         old_values: null,
-        new_values: null,
-        ...footprint,
+        new_values: viewSnapshot ? { snapshot: viewSnapshot } : null,
       });
     } catch (logError) {
       console.warn("[MedicalRecordAccessLog] Failed to record view event", logError);
@@ -260,8 +333,13 @@ const createPatientRecord = async (req: Request, res: Response): Promise<void> =
 
     console.log(`   ✅ Record created: ${record.record_code} (ID: ${record._id})`);
 
-    const actorContext = await resolveAccessActor(req);
-    const footprint = buildRequestClientFootprint(req);
+  const actorContext = await resolveAccessActor(req);
+    const { user: patientUser } = await fetchPatientContext(record.patient_id);
+    const createLogValues = toPlainRecord(record);
+    const createSnapshot = buildAccessLogSnapshot(createLogValues, patientUser);
+    if (createSnapshot) {
+      createLogValues.snapshot = createSnapshot;
+    }
     try {
       await medicalRecordAccessLogService.createAccessLog({
         medical_record_id: record._id,
@@ -270,8 +348,7 @@ const createPatientRecord = async (req: Request, res: Response): Promise<void> =
         accessed_by_email: actorContext.actorEmail,
         access_type: "CREATE",
         old_values: null,
-        new_values: record as unknown as Record<string, unknown>,
-        ...footprint,
+        new_values: createLogValues,
       });
     } catch (logError) {
       console.warn("[MedicalRecordAccessLog] Failed to record create event", logError);
@@ -482,14 +559,21 @@ const updatePatientRecord = async (req: Request, res: Response): Promise<void> =
 
     console.log(`   ✅ Record updated: ${record.record_code}`);
 
-    const footprint = buildRequestClientFootprint(req);
-    const diff = diffChangedFields(
-      toPlainRecord(existingRecord),
-      toPlainRecord(record),
-      trackableMedicalRecordFields
-    );
+    const existingPlain = toPlainRecord(existingRecord);
+    const updatedPlain = toPlainRecord(record);
+    const diff = diffChangedFields(existingPlain, updatedPlain, trackableMedicalRecordFields);
+
+    const { user: patientUser } = await fetchPatientContext(record.patient_id);
+    const oldSnapshot = buildAccessLogSnapshot(existingPlain, patientUser);
+    const newSnapshot = buildAccessLogSnapshot(updatedPlain, patientUser);
 
     if (diff.fields.length > 0) {
+      if (oldSnapshot) {
+        diff.previousValues.snapshot = oldSnapshot;
+      }
+      if (newSnapshot) {
+        diff.currentValues.snapshot = newSnapshot;
+      }
       try {
         await medicalRecordAccessLogService.createAccessLog({
           medical_record_id: record._id,
@@ -499,7 +583,6 @@ const updatePatientRecord = async (req: Request, res: Response): Promise<void> =
           access_type: "UPDATE",
           old_values: diff.previousValues,
           new_values: diff.currentValues,
-          ...footprint,
         });
       } catch (logError) {
         console.warn("[MedicalRecordAccessLog] Failed to record update event", logError);
@@ -561,7 +644,17 @@ const deletePatientRecord = async (req: Request, res: Response): Promise<void> =
 
     console.log(`   ✅ Record deleted (soft): ${record.record_code}`);
 
-    const footprint = buildRequestClientFootprint(req);
+    const existingPlain = toPlainRecord(existingRecord);
+    const deletedPlain = toPlainRecord(record);
+    const { user: patientUser } = await fetchPatientContext(record.patient_id);
+    const deleteOldSnapshot = buildAccessLogSnapshot(existingPlain, patientUser);
+    const deleteNewSnapshot = buildAccessLogSnapshot(deletedPlain, patientUser);
+    if (deleteOldSnapshot) {
+      existingPlain.snapshot = deleteOldSnapshot;
+    }
+    if (deleteNewSnapshot) {
+      deletedPlain.snapshot = deleteNewSnapshot;
+    }
     try {
       await medicalRecordAccessLogService.createAccessLog({
         medical_record_id: record._id,
@@ -569,9 +662,8 @@ const deletePatientRecord = async (req: Request, res: Response): Promise<void> =
         accessed_by: actorContext.actorId,
         accessed_by_email: actorContext.actorEmail,
         access_type: "DELETE",
-        old_values: toPlainRecord(existingRecord),
-        new_values: toPlainRecord(record),
-        ...footprint,
+        old_values: existingPlain,
+        new_values: deletedPlain,
       });
     } catch (logError) {
       console.warn("[MedicalRecordAccessLog] Failed to record delete event", logError);

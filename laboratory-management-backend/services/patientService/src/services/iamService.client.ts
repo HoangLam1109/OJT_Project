@@ -19,6 +19,8 @@ export interface IamUser {
   dateOfBirth: string;
   isActive: boolean;
   role: string;
+  phoneNumber?: string;
+  address?: string;
 }
 
 export class IamServiceClient {

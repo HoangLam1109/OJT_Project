@@ -1,7 +1,6 @@
 import axios, { AxiosError } from 'axios';
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 
-// API Configuration
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 // Token refresh state management
@@ -12,160 +11,68 @@ let failedQueue: Array<{
   config: InternalAxiosRequestConfig;
 }> = [];
 
-const processQueue = (error: AxiosError | null, token: string | null = null) => {
-  failedQueue.forEach((prom) => {
+const processQueue = (error: AxiosError | null) => {
+  failedQueue.forEach(prom => {
     if (error) {
       prom.reject(error);
     } else {
-      // Update token in request config and retry
-      if (token && prom.config.headers) {
-        prom.config.headers.Authorization = `Bearer ${token}`;
-      }
       prom.resolve();
     }
   });
-  
   failedQueue = [];
 };
-
-// Default axios instance configuration
+// Tạo client
 const createApiClient = (): AxiosInstance => {
   const client = axios.create({
     baseURL: API_BASE_URL,
-    timeout: 10000, // 10 seconds timeout
-    withCredentials: true, // Enable cookies for JWT authentication
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    timeout: 10000,
+    withCredentials: true,
+    headers: { 'Content-Type': 'application/json' },
   });
 
-  // Request interceptor - Add auth token if available
-  client.interceptors.request.use(
-    (config) => {
-      // Get token from localStorage or cookies if needed
-      const token = localStorage.getItem('authToken');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-      return config;
-    },
-    (error) => {
-      return Promise.reject(error);
-    }
-  );
+  // Không cần thêm header → cookie tự gửi
+  client.interceptors.request.use(config => config);
 
-  // Response interceptor - Handle common errors and token refresh
+  // Xử lý 401 + refresh token
   client.interceptors.response.use(
-    (response: AxiosResponse) => {
-      return response;
-    },
+    res => res,
     async (error: AxiosError) => {
       const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
-      // Handle 401 Unauthorized - Try to refresh token
       if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
-        const requestUrl = originalRequest.url || '';
-        const fullUrl = originalRequest.baseURL 
-          ? `${originalRequest.baseURL}${requestUrl}` 
-          : requestUrl;
-        
-        // Skip refresh for auth endpoints to avoid infinite loop
-        if (
-          fullUrl.includes('/login') ||
-          fullUrl.includes('/refresh-token') ||
-          fullUrl.includes('/logout') ||
-          fullUrl.includes('/register') ||
-          requestUrl.includes('/login') ||
-          requestUrl.includes('/refresh-token') ||
-          requestUrl.includes('/logout') ||
-          requestUrl.includes('/register')
-        ) {
-          // If auth endpoint failed, redirect to login
-          localStorage.removeItem('authToken');
-          if (typeof window !== 'undefined') {
-            window.location.href = '/login';
-          }
+        const url = originalRequest.url || '';
+        const fullUrl = originalRequest.baseURL ? `${originalRequest.baseURL}${url}` : url;
+
+        // Bỏ qua auth endpoints
+        if (['/login', '/refresh-token', '/logout', '/register'].some(ep =>
+          fullUrl.includes(ep) || url.includes(ep)
+        )) {
+          window.location.href = '/login';
           return Promise.reject(error);
         }
 
         if (isRefreshing) {
-          // If already refreshing, queue this request
           return new Promise((resolve, reject) => {
             failedQueue.push({ resolve, reject, config: originalRequest });
-          })
-            .then(() => {
-              // Retry the original request after token refresh
-              return client(originalRequest);
-            })
-            .catch((err) => {
-              return Promise.reject(err);
-            });
+          }).then(() => client(originalRequest));
         }
 
         originalRequest._retry = true;
         isRefreshing = true;
 
         try {
-          // Try to refresh the token using the same client instance (ensures cookies are sent)
-          // Create a new axios instance without interceptors to avoid infinite loop
-          const refreshClient = axios.create({
-            baseURL: API_BASE_URL,
-            timeout: 10000,
-            withCredentials: true, // Critical: send cookies (refreshToken)
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          });
-
-          console.log('[API Client] Attempting to refresh token...');
-          const refreshResponse = await refreshClient.post('/refresh-token', {});
-
-          if (refreshResponse.status === 200) {
-            console.log('[API Client] Token refreshed successfully');
-            // Token refreshed successfully
-            // New access token is set in cookies by backend (httpOnly cookie)
-            // No need to update localStorage since backend uses cookies
-            
-            // Process queued requests
-            processQueue(null, null);
-            isRefreshing = false;
-
-            // Retry the original request (new accessToken will be in cookies)
-            return client(originalRequest);
-          } else {
-            throw new Error('Token refresh failed');
-          }
-        } catch (refreshError) {
-          // Refresh failed - clear auth and redirect to login
-          console.error('[API Client] Token refresh failed:', refreshError);
-          if (axios.isAxiosError(refreshError)) {
-            console.error('[API Client] Refresh error details:', {
-              status: refreshError.response?.status,
-              data: refreshError.response?.data,
-              message: refreshError.message,
-            });
-          }
-          
-          processQueue(refreshError as AxiosError, null);
+          await client.post('/refresh-token');
+          processQueue(null);
           isRefreshing = false;
-          
-          localStorage.removeItem('authToken');
-          if (typeof window !== 'undefined') {
-            window.location.href = '/login';
-          }
-          return Promise.reject(refreshError);
+          return client(originalRequest);
+        } catch (err) {
+          processQueue(err as AxiosError);
+          isRefreshing = false;
+          window.location.href = '/login';
+          return Promise.reject(err);
         }
       }
 
-      // Handle other HTTP errors
-      if (error.response?.status === 403) {
-        // Forbidden - show access denied message
-        console.error('Access denied:', error.response?.data);
-      } else if (error.response?.status && error.response.status >= 500) {
-        // Server errors
-        console.error('Server error:', error.response?.data);
-      }
-      
       return Promise.reject(error);
     }
   );
@@ -173,7 +80,6 @@ const createApiClient = (): AxiosInstance => {
   return client;
 };
 
-// Create the main API client instance
 export const apiClient = createApiClient();
 
 // Generic API response types
@@ -278,8 +184,8 @@ export const apiService = new ApiService();
 export const apiUtils = {
   // Check if response is successful
   isSuccessResponse: (response: AxiosResponse | undefined): boolean => {
-  return !!response && (response.status === 200 || response.status === 201);
-},
+    return !!response && (response.status === 200 || response.status === 201);
+  },
 
   // Extract error message from axios error
   getErrorMessage: (error: unknown): string => {
