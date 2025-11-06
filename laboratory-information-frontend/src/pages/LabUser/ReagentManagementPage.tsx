@@ -89,14 +89,91 @@ const ReagentManagementPage: React.FC = () => {
     setIsDeleteModalOpen(true);
   };
 
-  const handleSaveReagent = () => {
-    toast.info('Chức năng tạo/cập nhật thuốc thử chưa được kích hoạt');
+  const handleSaveReagent = async () => {
+    // Validate required fields
+    if (!editingReagent.name || !editingReagent.lotNumber || !editingReagent.quantity || !editingReagent.expiryDate) {
+      toast.error('Vui lòng điền đầy đủ thông tin bắt buộc (Tên, Số lô, Số lượng, Ngày hết hạn)');
+      return;
+    }
+
+    // Validate lot number uniqueness (only for new reagents)
+    if (!editingReagent.id) {
+      const existingReagent = reagents.find(reagent => 
+        reagent.lotNumber === editingReagent.lotNumber
+      );
+      if (existingReagent) {
+        toast.error('Số lô đã tồn tại');
+        return;
+      }
+    }
+
+    // Validate expiry date
+    const expiryDate = new Date(editingReagent.expiryDate);
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0); // Reset time to compare dates only
+    if (expiryDate <= currentDate) {
+      toast.error('Ngày hết hạn phải sau ngày hiện tại');
+      return;
+    }
+
+    // Validate quantity
+    if (editingReagent.quantity! < 1) {
+      toast.error('Số lượng phải lớn hơn 0');
+      return;
+    }
+
+    try {
+      if (editingReagent.id) {
+        // Update is not implemented yet, show message
+        toast.info('Chức năng cập nhật thuốc thử chưa được kích hoạt');
+      } else {
+        // Create new reagent
+        const newReagent = await reagentService.createReagent(
+          {
+            ...editingReagent,
+            receivedDate: editingReagent.receivedDate || new Date().toISOString().split('T')[0],
+            status: editingReagent.status || 'Available',
+          },
+          user?.id
+        );
+        setReagents(prev => [...prev, newReagent]);
+        toast.success('Tạo thuốc thử thành công');
+        console.log(`[AUDIT] E_00026 | Reagent created by ${user?.name}`);
+        
+        setIsAddModalOpen(false);
+        setEditingReagent({});
+      }
+    } catch (error: any) {
+      console.error('Error saving reagent:', error);
+      
+      // Show specific error message
+      const errorMessage = error.message || 'Có lỗi xảy ra khi lưu thuốc thử';
+      
+      // Check for validation errors from backend
+      if (errorMessage.includes('duplicate') || errorMessage.includes('unique')) {
+        toast.error('Số lô thuốc thử đã tồn tại trong hệ thống');
+      } else if (errorMessage.includes('validation') || errorMessage.includes('required')) {
+        toast.error('Dữ liệu không hợp lệ. Vui lòng kiểm tra lại thông tin nhập vào.');
+      } else {
+        toast.error(errorMessage);
+      }
+    }
   };
 
-  const handleDeleteConfirm = () => {
-    toast.info('Chức năng xóa thuốc thử chưa được kích hoạt');
-    setIsDeleteModalOpen(false);
-    setSelectedReagent(null);
+  const handleDeleteConfirm = async () => {
+    if (!selectedReagent) return;
+
+    try {
+      await reagentService.deleteReagent(selectedReagent.id, user?.id);
+      setReagents(prev => prev.filter(reagent => reagent.id !== selectedReagent.id));
+      toast.success('Xóa thuốc thử thành công');
+      console.log(`[AUDIT] E_00028 | Reagent deleted by ${user?.name}`);
+      setIsDeleteModalOpen(false);
+      setSelectedReagent(null);
+    } catch (error: any) {
+      console.error('Error deleting reagent:', error);
+      toast.error(error.message || 'Có lỗi xảy ra khi xóa thuốc thử');
+    }
   };
 
   const handleReagentChange = (field: keyof Reagent, value: any) => {
