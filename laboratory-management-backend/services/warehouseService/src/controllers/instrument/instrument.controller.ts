@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import {
   createInstrumentService,
+  deleteInstrumentService,
   getInstrumentByIdService,
   getInstrumentsService,
   updateInstrumentService,
@@ -173,6 +174,33 @@ export const updateInstrumentController = async (
     }
 
     res.status(200).json({ message: "Instrument updated", data: instrument });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const deleteInstrumentController = async (
+  req: Request,
+  res: Response<InstrumentResponse>,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      res.status(400).json({ message: "Instrument id is required" });
+      return;
+    }
+
+    const actorEmail = await resolvePerformedBy(req, "system");
+
+    const instrument = await deleteInstrumentService(id, actorEmail);
+    if (!instrument) {
+      res.status(404).json({ message: "Instrument not found" });
+      return;
+    }
+
+    res.status(200).json({ message: "Instrument deleted", data: instrument });
   } catch (err) {
     next(err);
   }

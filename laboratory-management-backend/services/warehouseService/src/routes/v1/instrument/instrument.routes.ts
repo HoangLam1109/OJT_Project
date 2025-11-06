@@ -1,12 +1,24 @@
 import express from "express";
 import {
   addInstrumentController,
+  deleteInstrumentController,
   getInstrumentDetailController,
   listInstrumentsController,
   updateInstrumentController,
 } from "../../../controllers/instrument/instrument.controller.js";
+import authenticateUser from "../../../middlewares/authenticate.middleware.js";
+import { isInternalApiKeyValid } from "../../../middlewares/internalApi.middleware.js";
 
 const router = express.Router();
+
+const authorizeWriteAccess = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  if (isInternalApiKeyValid(req)) {
+    next();
+    return;
+  }
+
+  authenticateUser.authenticateUser(req, res, next);
+};
 
 router.post(
   "/",
@@ -25,6 +37,7 @@ router.post(
     }
   }
   */
+  authorizeWriteAccess,
   addInstrumentController
 );
 
@@ -73,7 +86,19 @@ router.put(
     }
   }
   */
+  authorizeWriteAccess,
   updateInstrumentController
+);
+
+router.delete(
+  "/:id",
+  /*
+  #swagger.tags = ['Instruments']
+  #swagger.summary = 'Delete instrument'
+  #swagger.description = 'Soft delete an instrument record.'
+  */
+  authorizeWriteAccess,
+  deleteInstrumentController
 );
 
 export default router;
