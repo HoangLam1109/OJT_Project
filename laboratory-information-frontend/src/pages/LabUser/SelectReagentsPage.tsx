@@ -2,9 +2,9 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Button from '../../components/common/button';
 import { ArrowLeft, ArrowRight, Check, Search, X } from 'lucide-react';
-import { mockReagents } from './data/mockReagentsData';
 import type { Reagent } from './data/mockReagentsData';
 import { testOrderService } from '../../service/testOrderService';
+import { reagentService } from '../../service/reagentService';
 import { useAuthContext } from '../../hooks/useAuthContext';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader } from '../../components/common/card';
@@ -27,9 +27,10 @@ const SelectReagentsPage: React.FC = () => {
   const { user } = useAuthContext();
   const state = location.state as LocationState | null;
 
-  const [reagents] = useState<Reagent[]>(mockReagents.filter(r => r.status === 'Available'));
+  const [reagents, setReagents] = useState<Reagent[]>([]);
   const [selectedReagents, setSelectedReagents] = useState<Record<string, SelectedReagent>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
   // Available quantity for each reagent (using reagent.quantity)
@@ -47,6 +48,29 @@ const SelectReagentsPage: React.FC = () => {
       navigate('/labuser/create-test-order');
     }
   }, [state, navigate]);
+
+  // Fetch reagents from API
+  useEffect(() => {
+    const fetchReagents = async () => {
+      setIsLoading(true);
+      try {
+        const allReagents = await reagentService.getAllReagents();
+        // Filter only Available and In Use reagents (exclude Expired and Depleted)
+        const availableReagents = allReagents.filter(
+          r => r.status === 'Available' || r.status === 'In Use'
+        );
+        setReagents(availableReagents);
+      } catch (error: any) {
+        console.error('Error fetching reagents:', error);
+        toast.error(error.message || 'Không thể tải danh sách thuốc thử');
+        setReagents([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchReagents();
+  }, []);
 
   const handleToggleSelect = (reagentId: string) => {
     setSelectedReagents(prev => {
@@ -256,7 +280,16 @@ const SelectReagentsPage: React.FC = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredReagents.length === 0 ? (
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8">
+                      <div className="flex flex-col items-center justify-center gap-2">
+                        <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                        <span className="text-sm text-gray-500">Đang tải danh sách thuốc thử...</span>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : filteredReagents.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center py-8 text-gray-500">
                       Không tìm thấy thuốc thử nào

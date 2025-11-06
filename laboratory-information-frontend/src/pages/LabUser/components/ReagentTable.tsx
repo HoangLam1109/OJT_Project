@@ -6,12 +6,13 @@ import { getStatusBadge, formatDate, isExpired, isExpiringSoon, getRowClassName 
 
 interface ReagentTableProps {
   reagents: Reagent[];
+  isLoading?: boolean;
   onView: (reagent: Reagent) => void;
   onEdit: (reagent: Reagent) => void;
   onDelete: (reagent: Reagent) => void;
 }
 
-const ReagentTable: React.FC<ReagentTableProps> = ({ reagents, onView, onEdit, onDelete }) => {
+const ReagentTable: React.FC<ReagentTableProps> = ({ reagents, isLoading = false, onView, onEdit, onDelete }) => {
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
       <Table>
@@ -44,7 +45,23 @@ const ReagentTable: React.FC<ReagentTableProps> = ({ reagents, onView, onEdit, o
           </TableRow>
         </TableHeader>
         <TableBody>
-          {reagents.map((reagent) => (
+          {isLoading ? (
+            <TableRow>
+              <TableCell colSpan={8} className="text-center py-8">
+                <div className="flex flex-col items-center justify-center gap-2">
+                  <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                  <span className="text-sm text-gray-500">Đang tải danh sách thuốc thử...</span>
+                </div>
+              </TableCell>
+            </TableRow>
+          ) : reagents.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={8} className="text-center py-8 text-gray-500">
+                Không có thuốc thử nào
+              </TableCell>
+            </TableRow>
+          ) : (
+            reagents.map((reagent) => (
             <TableRow key={reagent.id} className={getRowClassName(reagent)}>
               <TableCell className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                 <div className="flex items-center gap-2">
@@ -107,7 +124,8 @@ const ReagentTable: React.FC<ReagentTableProps> = ({ reagents, onView, onEdit, o
                 </div>
               </TableCell>
             </TableRow>
-          ))}
+            ))
+          )}
         </TableBody>
       </Table>
     </div>
