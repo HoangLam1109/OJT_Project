@@ -32,6 +32,7 @@ import { toast } from "sonner";
 import { InstrumentDetailDialog } from "./components/InstrumentDetailDialog";
 import { AddInstrumentDialog } from "./components/AddInstrumentDialog";
 import { ChangeInstrumentStatusDialog } from "./components/ChangeInstrumentStatusDialog";
+import { DeleteInstrumentConfirmDialog } from "./components/DeleteInstrumentConfirmDialog";
 import { instrumentsService } from "../../service/instrumentsService";
 
 export default function ServiceInstrumentPage() {
@@ -42,6 +43,8 @@ export default function ServiceInstrumentPage() {
     const [openDialog, setOpenDialog] = useState(false);
     const [openAddDialog, setOpenAddDialog] = useState(false);
     const [showChangeModeDialog, setShowChangeModeDialog] = useState(false);
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [instrumentToDelete, setInstrumentToDelete] = useState<Instrument | null>(null);
 
     useEffect(() => {
         (async () => {
@@ -73,15 +76,29 @@ export default function ServiceInstrumentPage() {
         setOpenDialog(true);
     };
 
-    const handleDeleteInstrument = (id: string) => {
-        if (!confirm('Bạn có chắc chắn muốn xóa thiết bị này?')) return;
-        setInstruments((prev) => prev.filter((i) => i._id !== id));
-        // If the deleted instrument was opened in detail, close it
-        if (selectedInstrumentId === id) {
-            setSelectedInstrumentId(null);
-            setOpenDialog(false);
+    const handleDeleteClick = (instrument: Instrument) => {
+        setInstrumentToDelete(instrument);
+        setShowDeleteDialog(true);
+    };
+
+    const handleDeleteInstrument = async () => {
+        if (!instrumentToDelete) return;
+        
+        try {
+            await instrumentsService.deleteInstrument(instrumentToDelete._id);
+            setInstruments((prev) => prev.filter((i) => i._id !== instrumentToDelete._id));
+            // If the deleted instrument was opened in detail, close it
+            if (selectedInstrumentId === instrumentToDelete._id) {
+                setSelectedInstrumentId(null);
+                setOpenDialog(false);
+            }
+            toast.success('Thiết bị đã được xóa thành công');
+            setShowDeleteDialog(false);
+            setInstrumentToDelete(null);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : "Không thể xóa thiết bị";
+            toast.error(message);
         }
-        toast.success('Thiết bị đã được xóa');
     };
 
     // 👉 Thống kê nhanh
@@ -275,7 +292,7 @@ export default function ServiceInstrumentPage() {
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
-                                                    onClick={() => handleDeleteInstrument(instrument._id)}
+                                                    onClick={() => handleDeleteClick(instrument)}
                                                 >
                                                     <Trash2 className="w-4 h-4 text-red-500" />
                                                 </Button>
@@ -315,6 +332,12 @@ export default function ServiceInstrumentPage() {
                 open={openDialog}
                 onOpenChange={setOpenDialog}
                 instrumentId={selectedInstrumentId} 
+            />
+            <DeleteInstrumentConfirmDialog
+                open={showDeleteDialog}
+                onOpenChange={setShowDeleteDialog}
+                instrument={instrumentToDelete}
+                onConfirm={handleDeleteInstrument}
             />
         </div>
     );
