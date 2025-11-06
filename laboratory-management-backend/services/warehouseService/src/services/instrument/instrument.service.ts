@@ -3,6 +3,7 @@ import {
   createInstrument,
   findInstrumentById,
   findInstruments,
+  softDeleteInstrumentById,
   updateInstrumentById,
   type PaginationOptions,
 } from "../../repositories/instrument/instrument.repository.js";
@@ -29,4 +30,11 @@ export const updateInstrumentService = async (
   updatePayload: Parameters<typeof updateInstrumentById>[1]
 ): Promise<IInstrument | null> => {
   return updateInstrumentById(id, updatePayload);
+};
+
+export const deleteInstrumentService = async (
+  id: string,
+  deletedBy?: string
+): Promise<IInstrument | null> => {
+  return softDeleteInstrumentById(id, deletedBy);
 };

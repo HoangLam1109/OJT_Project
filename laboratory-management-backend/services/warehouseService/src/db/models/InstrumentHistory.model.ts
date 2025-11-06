@@ -10,6 +10,7 @@ export interface IInstrumentHistory extends Document {
   history_type: InstrumentHistoryType;
   old_values?: Record<string, unknown> | null;
   new_values?: Record<string, unknown> | null;
+  instrument_snapshot?: Record<string, unknown> | null;
   performed_by: string;
   performed_at: Date;
 }
@@ -46,6 +47,10 @@ const InstrumentHistorySchema = new Schema<IInstrumentHistory>(
       type: Schema.Types.Mixed,
       default: null,
     },
+    instrument_snapshot: {
+      type: Schema.Types.Mixed,
+      default: null,
+    },
     performed_by: {
       type: String,
       required: true,
@@ -61,6 +66,7 @@ const InstrumentHistorySchema = new Schema<IInstrumentHistory>(
   {
     collection: "InstrumentHistory",
     timestamps: false,
+    versionKey: false,
   }
 );
 

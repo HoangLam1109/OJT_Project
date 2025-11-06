@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import {
   createInstrumentService,
+  deleteInstrumentService,
   getInstrumentByIdService,
   getInstrumentsService,
   updateInstrumentService,
@@ -12,6 +13,8 @@ import {
 } from "../../validators/instrument/instrument.validator.js";
 import type { InstrumentListResponse, InstrumentResponse } from "../../dtos/instrument.dto.js";
 import iamServiceClient from "../../services/iamService/client/index.js";
+import instrumentHistoryService from "../../services/instrument/instrumentHistory.service.js";
+import type { IInstrument } from "../../db/models/Instrument.model.js";
 
 const fetchUserEmail = async (userId: string | null | undefined): Promise<string | null> => {
   if (!userId || typeof userId !== "string") {
@@ -69,6 +72,43 @@ const resolvePerformedBy = async (req: Request, fallback?: string): Promise<stri
   return "system";
 };
 
+const pickInstrumentFields = (
+  source: Partial<IInstrument> | null | undefined,
+  fields: string[]
+): Record<string, unknown> => {
+  const result: Record<string, unknown> = {};
+  if (!source) {
+    return result;
+  }
+  for (const field of fields) {
+    if (field in source) {
+      result[field] = (source as Record<string, unknown>)[field];
+    }
+  }
+  return result;
+};
+
+const buildInstrumentSnapshot = (instrument: IInstrument | null | undefined): Record<string, unknown> | null => {
+  if (!instrument) {
+    return null;
+  }
+  return {
+    id: instrument._id,
+    code: instrument.instrument_code,
+    name: instrument.instrument_name,
+    type: instrument.instrument_type,
+    manufacturer: instrument.manufacturer ?? null,
+    status: instrument.status,
+    isActive: instrument.is_active,
+    location: instrument.location ?? null,
+    createdAt: instrument.created_at,
+    updatedAt: instrument.updated_at,
+    isDeleted: instrument.is_deleted,
+    deletedAt: instrument.deleted_at ?? null,
+    deletedBy: instrument.deleted_by ?? null,
+  };
+};
+
 export const addInstrumentController = async (req: Request, res: Response<InstrumentResponse>, next: NextFunction): Promise<void> => {
   try {
     const { value, error } = createInstrumentSchema.validate(req.body, { abortEarly: false, stripUnknown: true });
@@ -83,6 +123,29 @@ export const addInstrumentController = async (req: Request, res: Response<Instru
       ...value,
       created_by: actorEmail,
     });
+
+    const snapshot = buildInstrumentSnapshot(instrument);
+    let newValues: Record<string, unknown> | null = null;
+    if (instrument) {
+      newValues = { ...(instrument as unknown as Record<string, unknown>) };
+      if (snapshot) {
+        newValues.snapshot = snapshot;
+      }
+    }
+    try {
+      await instrumentHistoryService.recordHistory({
+        instrument_id: instrument._id,
+        instrument_code: instrument.instrument_code,
+        history_type: "CREATE",
+        old_values: null,
+        new_values: newValues,
+        instrument_snapshot: snapshot,
+        performed_by: actorEmail,
+      });
+    } catch (historyError) {
+      console.error("[InstrumentHistory] Failed to record create history", historyError);
+    }
+
     res.status(201).json({ message: "Instrument created", data: instrument });
   } catch (err) {
     next(err);
@@ -163,6 +226,12 @@ export const updateInstrumentController = async (
 
     const actorEmail = await resolvePerformedBy(req, "system");
 
+    const existingInstrument = await getInstrumentByIdService(id);
+    if (!existingInstrument) {
+      res.status(404).json({ message: "Instrument not found" });
+      return;
+    }
+
     const instrument = await updateInstrumentService(id, {
       ...value,
       updated_by: actorEmail,
@@ -172,7 +241,92 @@ export const updateInstrumentController = async (
       return;
     }
 
+    const candidateFields = Object.keys(value);
+    if (candidateFields.length > 0) {
+      const oldValues = pickInstrumentFields(existingInstrument, candidateFields);
+      const newValues = pickInstrumentFields(instrument, candidateFields);
+      const oldSnapshot = buildInstrumentSnapshot(existingInstrument);
+      const newSnapshot = buildInstrumentSnapshot(instrument);
+      if (oldSnapshot) {
+        oldValues.snapshot = oldSnapshot;
+      }
+      if (newSnapshot) {
+        newValues.snapshot = newSnapshot;
+      }
+      try {
+        await instrumentHistoryService.recordHistory({
+          instrument_id: instrument._id,
+          instrument_code: instrument.instrument_code,
+          history_type: "UPDATE",
+          old_values: oldValues,
+          new_values: newValues,
+          instrument_snapshot: newSnapshot,
+          performed_by: actorEmail,
+        });
+      } catch (historyError) {
+        console.error("[InstrumentHistory] Failed to record update history", historyError);
+      }
+    }
+
     res.status(200).json({ message: "Instrument updated", data: instrument });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const deleteInstrumentController = async (
+  req: Request,
+  res: Response<InstrumentResponse>,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      res.status(400).json({ message: "Instrument id is required" });
+      return;
+    }
+
+    const actorEmail = await resolvePerformedBy(req, "system");
+
+    const existingInstrument = await getInstrumentByIdService(id);
+    if (!existingInstrument) {
+      res.status(404).json({ message: "Instrument not found" });
+      return;
+    }
+
+    const instrument = await deleteInstrumentService(id, actorEmail);
+    if (!instrument) {
+      res.status(404).json({ message: "Instrument not found" });
+      return;
+    }
+
+    const trackedFields = ["is_deleted", "is_active", "deleted_at", "deleted_by"];
+    const oldValues = pickInstrumentFields(existingInstrument, trackedFields);
+    const newValues = pickInstrumentFields(instrument, trackedFields);
+    const oldSnapshot = buildInstrumentSnapshot(existingInstrument);
+    const newSnapshot = buildInstrumentSnapshot(instrument);
+    if (oldSnapshot) {
+      oldValues.snapshot = oldSnapshot;
+    }
+    if (newSnapshot) {
+      newValues.snapshot = newSnapshot;
+    }
+    try {
+      await instrumentHistoryService.recordHistory({
+        instrument_id: instrument._id,
+        instrument_code: instrument.instrument_code,
+        history_type: "DELETE",
+        old_values: oldValues,
+        new_values: newValues,
+        instrument_snapshot: newSnapshot,
+        performed_by: actorEmail,
+      });
+    } catch (historyError) {
+      console.error("[InstrumentHistory] Failed to record delete history", historyError);
+    }
+
+    res.status(200).json({ message: "Instrument deleted", data: instrument });
   } catch (err) {
     next(err);
   }

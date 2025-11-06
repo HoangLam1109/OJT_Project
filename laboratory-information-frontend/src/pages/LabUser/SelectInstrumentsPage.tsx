@@ -2,12 +2,12 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Button from '../../components/common/button';
 import { ArrowLeft, ArrowRight, Check, Search, X } from 'lucide-react';
-import { mockInstrument } from '../service/data/mockInstrument';
 import type { Instrument } from '../service/types/Instrument';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader } from '../../components/common/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/common/table';
 import { Input } from '../../components/common/input';
+import { instrumentsService } from '../../service/instrumentsService';
 
 interface SelectedInstrument {
   instrumentId: string;
@@ -15,7 +15,7 @@ interface SelectedInstrument {
 }
 
 interface LocationState {
-  formData: any;
+  formData: Record<string, unknown>;
 }
 
 const SelectInstrumentsPage: React.FC = () => {
@@ -23,19 +23,10 @@ const SelectInstrumentsPage: React.FC = () => {
   const location = useLocation();
   const state = location.state as LocationState | null;
 
-  const [instruments] = useState<Instrument[]>(mockInstrument);
+  const [instruments, setInstruments] = useState<Instrument[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedInstruments, setSelectedInstruments] = useState<Record<string, SelectedInstrument>>({});
   const [searchQuery, setSearchQuery] = useState('');
-
-  // Available quantity for each instrument (mock data - in real app this would come from API)
-  const [availableQuantities] = useState<Record<string, number>>(() => {
-    const initial: Record<string, number> = {};
-    instruments.forEach(inst => {
-      // Mock: Each instrument has 5 units available
-      initial[inst.id] = 5;
-    });
-    return initial;
-  });
 
   useEffect(() => {
     if (!state?.formData) {
@@ -43,6 +34,24 @@ const SelectInstrumentsPage: React.FC = () => {
       navigate('/labuser/create-test-order');
     }
   }, [state, navigate]);
+
+  // Load instruments from API
+  useEffect(() => {
+    const loadInstruments = async () => {
+      setIsLoading(true);
+      try {
+        const data = await instrumentsService.getAllInstruments();
+        setInstruments(data);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Không thể tải danh sách thiết bị';
+        toast.error(message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadInstruments();
+  }, []);
 
   const handleToggleSelect = (instrumentId: string) => {
     setSelectedInstruments(prev => {
@@ -59,8 +68,14 @@ const SelectInstrumentsPage: React.FC = () => {
     });
   };
 
+  // Get available quantity for an instrument (mock: always 5 for now)
+  // In real app, this would come from API based on instrumentId
+  const getAvailableQuantity = (): number => {
+    return 5;
+  };
+
   const handleQuantityChange = (instrumentId: string, quantity: number) => {
-    const available = availableQuantities[instrumentId] || 0;
+    const available = getAvailableQuantity();
     const newQuantity = Math.max(1, Math.min(quantity, available));
     
     setSelectedInstruments(prev => ({
@@ -73,7 +88,7 @@ const SelectInstrumentsPage: React.FC = () => {
   };
 
   const getRemainingQuantity = (instrumentId: string): number => {
-    const available = availableQuantities[instrumentId] || 0;
+    const available = getAvailableQuantity();
     const selected = selectedInstruments[instrumentId];
     if (!selected) return available;
     return Math.max(0, available - selected.quantity);
@@ -107,9 +122,10 @@ const SelectInstrumentsPage: React.FC = () => {
     const query = searchQuery.toLowerCase().trim();
     return instruments.filter(
       (instrument) =>
-        instrument.name.toLowerCase().includes(query) ||
-        instrument.serialNumber?.toLowerCase().includes(query) ||
-        instrument.id.toLowerCase().includes(query)
+        instrument.instrument_name.toLowerCase().includes(query) ||
+        instrument.instrument_code.toLowerCase().includes(query) ||
+        instrument._id.toLowerCase().includes(query) ||
+        instrument.instrument_type.toLowerCase().includes(query)
     );
   }, [instruments, searchQuery]);
 
@@ -117,7 +133,7 @@ const SelectInstrumentsPage: React.FC = () => {
   const selectedInstrumentsList = useMemo(() => {
     return Object.values(selectedInstruments)
       .map((selected) => {
-        const instrument = instruments.find((inst) => inst.id === selected.instrumentId);
+        const instrument = instruments.find((inst) => inst._id === selected.instrumentId);
         return instrument ? { ...instrument, quantity: selected.quantity } : null;
       })
       .filter((item): item is Instrument & { quantity: number } => item !== null);
@@ -236,7 +252,13 @@ const SelectInstrumentsPage: React.FC = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredInstruments.length === 0 ? (
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+                      Đang tải danh sách thiết bị...
+                    </TableCell>
+                  </TableRow>
+                ) : filteredInstruments.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center py-8 text-gray-500">
                       Không tìm thấy thiết bị nào
@@ -244,17 +266,17 @@ const SelectInstrumentsPage: React.FC = () => {
                   </TableRow>
                 ) : (
                   filteredInstruments.map((instrument) => {
-                  const isSelected = !!selectedInstruments[instrument.id];
-                  const selected = selectedInstruments[instrument.id];
-                  const remaining = getRemainingQuantity(instrument.id);
-                  const available = availableQuantities[instrument.id] || 0;
+                  const isSelected = !!selectedInstruments[instrument._id];
+                  const selected = selectedInstruments[instrument._id];
+                  const remaining = getRemainingQuantity(instrument._id);
+                  const available = getAvailableQuantity();
 
                   return (
-                    <TableRow key={instrument.id}>
+                    <TableRow key={instrument._id}>
                       <TableCell>
                         <button
                           type="button"
-                          onClick={() => handleToggleSelect(instrument.id)}
+                          onClick={() => handleToggleSelect(instrument._id)}
                           className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
                             isSelected
                               ? 'bg-blue-600 border-blue-600'
@@ -265,10 +287,10 @@ const SelectInstrumentsPage: React.FC = () => {
                         </button>
                       </TableCell>
                       <TableCell className="font-mono text-sm">
-                        {instrument.serialNumber || instrument.id}
+                        {instrument.instrument_code}
                       </TableCell>
                       <TableCell className="font-medium">
-                        {instrument.name}
+                        {instrument.instrument_name}
                       </TableCell>
                       <TableCell>
                         {isSelected ? (
@@ -277,7 +299,7 @@ const SelectInstrumentsPage: React.FC = () => {
                             min="1"
                             max={available}
                             value={selected.quantity}
-                            onChange={(e) => handleQuantityChange(instrument.id, parseInt(e.target.value) || 1)}
+                            onChange={(e) => handleQuantityChange(instrument._id, parseInt(e.target.value) || 1)}
                             className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                           />
                         ) : (
@@ -326,15 +348,15 @@ const SelectInstrumentsPage: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {selectedInstrumentsList.map((instrument) => (
                 <div
-                  key={instrument.id}
+                  key={instrument._id}
                   className="flex items-start justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
                 >
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm text-gray-900 truncate">
-                      {instrument.name}
+                      {instrument.instrument_name}
                     </p>
                     <p className="text-xs text-gray-500 font-mono mt-1">
-                      {instrument.serialNumber || instrument.id}
+                      {instrument.instrument_code}
                     </p>
                     <p className="text-xs text-gray-600 mt-1">
                       Số lượng: <span className="font-semibold text-blue-600">{instrument.quantity}</span>
@@ -342,7 +364,7 @@ const SelectInstrumentsPage: React.FC = () => {
                   </div>
                   <button
                     type="button"
-                    onClick={() => handleToggleSelect(instrument.id)}
+                    onClick={() => handleToggleSelect(instrument._id)}
                     className="ml-2 p-1 hover:bg-red-100 rounded-full transition-colors flex-shrink-0"
                     title="Bỏ chọn"
                   >
@@ -380,4 +402,3 @@ const SelectInstrumentsPage: React.FC = () => {
 };
 
 export default SelectInstrumentsPage;
-

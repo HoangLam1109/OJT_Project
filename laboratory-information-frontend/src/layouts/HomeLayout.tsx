@@ -11,6 +11,7 @@ import {
   Footer,
   HomeHeader,
 } from '../pages/home';
+import ChatBox from '../pages/home/ChatBox';
 
 
 export function HomeLayout({ onShowLogin, onShowRegister }: LoginAndRegisterType) {
@@ -60,25 +61,26 @@ export function HomeLayout({ onShowLogin, onShowRegister }: LoginAndRegisterType
         <div className="pt-0" data-aos="fade-down">
           <HeroSection />
         </div>
-        <div className="pt-2" data-aos="fade-down" >
+        <div  data-aos="fade-down" >
           <FeaturesSection />
         </div>
-        <div className="pt-2" data-aos="fade-down" >
+        <div  data-aos="fade-down" >
           <AboutSection onShowLogin={onShowLogin} />
         </div>
-        <div className="pt-2" data-aos="fade-down">
+        <div  data-aos="fade-down">
           <ServicesSection />
         </div>
-        <div className="pt-2" data-aos="fade-down">
+        <div  data-aos="fade-down">
           <FAQSection />
         </div>
-        <div className="pt-2" data-aos="fade-down">
+        <div  data-aos="fade-down">
           <ContactSection />
         </div>
-        <div className="pt-2" data-aos="fade-down">
+        <div data-aos="fade-down">
           <Footer />
         </div>
       </div>
+      <ChatBox />
     </div>
   );
 }

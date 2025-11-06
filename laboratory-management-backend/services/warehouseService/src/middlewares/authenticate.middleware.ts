@@ -2,7 +2,17 @@ import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import iamServiceClient from "../services/iamService/client/index.js";
 
-const JWT_SECRET = process.env.JWT_SECRET || process.env.JWT_SECRET_KEY || "your-secret-key";
+const resolveJwtSecret = (): string => {
+  const fromJwtSecret = process.env.JWT_SECRET?.trim();
+  if (fromJwtSecret && fromJwtSecret.length > 0) {
+    return fromJwtSecret;
+  }
+  const fromLegacySecret = process.env.JWT_SECRET_KEY?.trim();
+  if (fromLegacySecret && fromLegacySecret.length > 0) {
+    return fromLegacySecret;
+  }
+  return "your-secret-key";
+};
 
 interface JWTPayload {
   userId: string;
@@ -44,7 +54,7 @@ class AuthenticateUser {
         return;
       }
 
-      const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
+  const decoded = jwt.verify(token, resolveJwtSecret()) as JWTPayload;
       
       // Attach userId to request object
       (req as any).userId = decoded.userId;
