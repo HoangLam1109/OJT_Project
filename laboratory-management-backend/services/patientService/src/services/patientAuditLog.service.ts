@@ -21,8 +21,6 @@ export interface CreateAuditLogPayload {
   old_values?: Record<string, unknown> | null;
   new_values?: Record<string, unknown> | null;
   performed_by: string;
-  ip_address?: string;
-  user_agent?: string;
   performed_at?: Date;
 }
 

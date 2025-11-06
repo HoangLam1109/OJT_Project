@@ -8,8 +8,6 @@ export interface IPatientAuditLog extends Document {
   new_values?: Record<string, unknown> | null;
   performed_by: string;
   performed_at: Date;
-  ip_address?: string;
-  user_agent?: string;
 }
 
 const PatientAuditLogSchema = new Schema<IPatientAuditLog>(
@@ -45,16 +43,11 @@ const PatientAuditLogSchema = new Schema<IPatientAuditLog>(
       default: Date.now,
       index: true,
     },
-    ip_address: {
-      type: String,
-    },
-    user_agent: {
-      type: String,
-    },
   },
   {
     collection: "PatientAuditLog",
     timestamps: false,
+    versionKey: false,
   }
 );
 

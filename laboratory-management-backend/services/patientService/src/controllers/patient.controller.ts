@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import { PatientService, type CreatePatientPayload } from "../services/patient.service.js";
 import { errorHandler } from "../utils/error.util.js";
 import patientAuditLogService, { type CreateAuditLogPayload } from "../services/patientAuditLog.service.js";
-import iamServiceClient from "../services/iamService.client.js";
+import iamServiceClient, { type IamUser } from "../services/iamService.client.js";
 
 const patientService = new PatientService();
 
@@ -85,17 +85,35 @@ const pickFields = (
   return result;
 };
 
-const appendRequestMetadata = (
-  req: Request,
-  target: { ip_address?: string; user_agent?: string }
-): void => {
-  if (req.ip) {
-    target.ip_address = req.ip;
+const buildUserSnapshot = (user: IamUser | null | undefined): Record<string, unknown> | null => {
+  if (!user) {
+    return null;
   }
-  const userAgent = req.get("user-agent");
-  if (userAgent) {
-    target.user_agent = userAgent;
+  return {
+    id: user._id,
+    email: user.email,
+    fullName: user.fullName,
+    identityNumber: user.identityNumber,
+    phoneNumber: user.phoneNumber ?? null,
+    gender: user.gender,
+    dateOfBirth: user.dateOfBirth,
+    address: user.address ?? null,
+    age: user.age,
+    role: user.role,
+    isActive: user.isActive,
+  };
+};
+
+const buildPatientSnapshot = (
+  user: IamUser | null | undefined
+): Record<string, unknown> | null => {
+  const userData = buildUserSnapshot(user);
+  if (!userData) {
+    return null;
   }
+  return {
+    user: userData,
+  };
 };
 
 const getAllPatients = async (req: Request, res: Response): Promise<void> => {
@@ -250,15 +268,22 @@ const createPatient = async (req: Request, res: Response): Promise<void> => {
     });
     console.log(`   ✅ Patient created: ${patient.patient_code} (ID: ${patient._id})`);
 
+    const iamUserSnapshot = typeof user_id === "string" ? await iamServiceClient.getUserById(user_id) : null;
+    const patientRecord = patient as unknown as Record<string, unknown>;
+    const newValues: Record<string, unknown> = { ...patientRecord };
+  const createSnapshot = buildPatientSnapshot(iamUserSnapshot);
+    if (createSnapshot) {
+      newValues.snapshot = createSnapshot;
+    }
+
     const createAuditPayload: CreateAuditLogPayload = {
       patient_id: patient._id,
       action: "CREATE",
       event_message: "Patient record created",
       old_values: null,
-      new_values: patient as unknown as Record<string, unknown>,
+      new_values: newValues,
       performed_by: actorEmail,
     };
-    appendRequestMetadata(req, createAuditPayload);
     try {
       await patientAuditLogService.createAuditLog(createAuditPayload);
     } catch (logError) {
@@ -314,6 +339,10 @@ const updatePatient = async (req: Request, res: Response): Promise<void> => {
       res.status(404).json({ message: "Patient not found" });
       return;
     }
+
+    const iamUserSnapshot = existingPatient.user_id
+      ? await iamServiceClient.getUserById(existingPatient.user_id)
+      : null;
 
     const updateData: Partial<CreatePatientPayload> = {};
     if (idFromBody) {
@@ -372,15 +401,24 @@ const updatePatient = async (req: Request, res: Response): Promise<void> => {
     });
 
     if (changedFields.length > 0) {
+  const oldSnapshot = buildPatientSnapshot(iamUserSnapshot);
+  const newSnapshot = buildPatientSnapshot(iamUserSnapshot);
+      const oldValues = pickFields(existingRecord, changedFields);
+      const newValues = pickFields(updatedRecord, changedFields);
+      if (oldSnapshot) {
+        oldValues.snapshot = oldSnapshot;
+      }
+      if (newSnapshot) {
+        newValues.snapshot = newSnapshot;
+      }
       const updateAuditPayload: CreateAuditLogPayload = {
         patient_id: updatedPatient._id,
         action: "UPDATE",
         event_message: `Patient record updated (${changedFields.join(", ")})`,
-        old_values: pickFields(existingRecord, changedFields),
-        new_values: pickFields(updatedRecord, changedFields),
+        old_values: oldValues,
+        new_values: newValues,
         performed_by: actorEmail,
       };
-      appendRequestMetadata(req, updateAuditPayload);
       try {
         await patientAuditLogService.createAuditLog(updateAuditPayload);
       } catch (logError) {
@@ -426,6 +464,10 @@ const deletePatient = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    const iamUserSnapshot = existingPatient.user_id
+      ? await iamServiceClient.getUserById(existingPatient.user_id)
+      : null;
+
     const fallbackActor = (() => {
       const createdBy = existingPatient.created_by;
       if (typeof createdBy === "string" && createdBy.length > 0 && createdBy !== "system") {
@@ -437,6 +479,7 @@ const deletePatient = async (req: Request, res: Response): Promise<void> => {
     const actorEmail = await resolvePerformedBy(req, fallbackActor);
 
     const existingRecord = existingPatient as unknown as Record<string, unknown>;
+  const existingSnapshot = buildPatientSnapshot(iamUserSnapshot);
 
     if (shouldHardDelete) {
       const deleted = await patientService.hardDeletePatient(id);
@@ -445,15 +488,18 @@ const deletePatient = async (req: Request, res: Response): Promise<void> => {
         return;
       }
 
+      const hardDeleteOldValues: Record<string, unknown> = { ...existingRecord };
+      if (existingSnapshot) {
+        hardDeleteOldValues.snapshot = existingSnapshot;
+      }
       const deleteAuditPayload: CreateAuditLogPayload = {
         patient_id: existingPatient._id,
         action: "DELETE",
         event_message: "Patient record hard deleted",
-        old_values: existingRecord,
+        old_values: hardDeleteOldValues,
         new_values: null,
         performed_by: actorEmail,
       };
-      appendRequestMetadata(req, deleteAuditPayload);
       try {
         await patientAuditLogService.createAuditLog(deleteAuditPayload);
       } catch (logError) {
@@ -473,15 +519,23 @@ const deletePatient = async (req: Request, res: Response): Promise<void> => {
 
     const updatedRecord = patient as unknown as Record<string, unknown>;
     const softDeleteFields = ["is_deleted", "is_active", "deleted_at"];
+    const softDeleteOldValues = pickFields(existingRecord, softDeleteFields);
+  const newSnapshot = buildPatientSnapshot(iamUserSnapshot);
+    if (existingSnapshot) {
+      softDeleteOldValues.snapshot = existingSnapshot;
+    }
+    const softDeleteNewValues = pickFields(updatedRecord, softDeleteFields);
+    if (newSnapshot) {
+      softDeleteNewValues.snapshot = newSnapshot;
+    }
     const softDeleteAuditPayload: CreateAuditLogPayload = {
       patient_id: patient._id,
       action: "DELETE",
       event_message: "Patient record soft deleted",
-      old_values: pickFields(existingRecord, softDeleteFields),
-      new_values: pickFields(updatedRecord, softDeleteFields),
+      old_values: softDeleteOldValues,
+      new_values: softDeleteNewValues,
       performed_by: actorEmail,
     };
-    appendRequestMetadata(req, softDeleteAuditPayload);
     try {
       await patientAuditLogService.createAuditLog(softDeleteAuditPayload);
     } catch (logError) {
@@ -521,6 +575,10 @@ const softDeletePatientByUserId = async (req: Request, res: Response): Promise<v
       return;
     }
 
+    const iamUserSnapshot = existingPatient.user_id
+      ? await iamServiceClient.getUserById(existingPatient.user_id)
+      : null;
+
     const patient = await patientService.softDeletePatientByUserId(userId);
     if (!patient) {
       console.log(`   ❌ Patient not found for user: ${userId}`);
@@ -531,6 +589,16 @@ const softDeletePatientByUserId = async (req: Request, res: Response): Promise<v
     const existingRecord = existingPatient as unknown as Record<string, unknown>;
     const updatedRecord = patient as unknown as Record<string, unknown>;
     const softDeleteFields = ["is_deleted", "is_active", "deleted_at"];
+  const existingSnapshot = buildPatientSnapshot(iamUserSnapshot);
+  const newSnapshot = buildPatientSnapshot(iamUserSnapshot);
+    const softDeleteOldValues = pickFields(existingRecord, softDeleteFields);
+    if (existingSnapshot) {
+      softDeleteOldValues.snapshot = existingSnapshot;
+    }
+    const softDeleteNewValues = pickFields(updatedRecord, softDeleteFields);
+    if (newSnapshot) {
+      softDeleteNewValues.snapshot = newSnapshot;
+    }
     const fallbackActor = (() => {
       const createdBy = existingPatient.created_by;
       if (typeof createdBy === "string" && createdBy.length > 0 && createdBy !== "system") {
@@ -544,11 +612,10 @@ const softDeletePatientByUserId = async (req: Request, res: Response): Promise<v
       patient_id: patient._id,
       action: "DELETE",
       event_message: "Patient record soft deleted by user ID",
-      old_values: pickFields(existingRecord, softDeleteFields),
-      new_values: pickFields(updatedRecord, softDeleteFields),
+      old_values: softDeleteOldValues,
+      new_values: softDeleteNewValues,
       performed_by: actorEmail,
     };
-    appendRequestMetadata(req, softDeleteAuditPayload);
     try {
       await patientAuditLogService.createAuditLog(softDeleteAuditPayload);
     } catch (logError) {

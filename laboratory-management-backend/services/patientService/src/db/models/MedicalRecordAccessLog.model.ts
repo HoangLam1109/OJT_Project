@@ -14,8 +14,6 @@ export interface IMedicalRecordAccessLog extends Document {
   access_type: MedicalRecordAccessType;
   old_values?: Record<string, unknown> | null;
   new_values?: Record<string, unknown> | null;
-  ip_address?: string;
-  user_agent?: string;
 }
 
 const MedicalRecordAccessLogSchema = new Schema<IMedicalRecordAccessLog>(
@@ -65,18 +63,11 @@ const MedicalRecordAccessLogSchema = new Schema<IMedicalRecordAccessLog>(
       type: Schema.Types.Mixed,
       default: null,
     },
-    ip_address: {
-      type: String,
-      default: null,
-    },
-    user_agent: {
-      type: String,
-      default: null,
-    },
   },
   {
     collection: "MedicalRecordAccessLog",
     timestamps: false,
+    versionKey: false,
   }
 );
 

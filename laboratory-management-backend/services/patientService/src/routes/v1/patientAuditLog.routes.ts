@@ -36,6 +36,6 @@ const requireInternalApiKey = (
 
 router.get("/", authorizeAccess, getAllAuditLogs);
 router.get("/:id", authorizeAccess, getAuditLogDetail);
-router.delete("/:id", requireInternalApiKey, deleteAuditLog);
+router.delete("/:id", authorizeAccess, deleteAuditLog);
 
 export default router;
