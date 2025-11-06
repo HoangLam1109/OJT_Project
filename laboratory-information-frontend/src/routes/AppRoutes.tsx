@@ -36,6 +36,8 @@ import ServiceReagentPage from "../pages/service/ServiceReagentPage";
 import ServiceInstrumentPage from "../pages/service/ServiceInstrumentPage";
 import { GoogleCallbackPage } from "../pages/login/GoogleCallbackPage";
 import SelectInstrumentsPage from "../pages/LabUser/SelectInstrumentsPage";
+import PatientMedicalRecordsPage from "../pages/LabUser/PatientMedicalRecordsPage";
+import PatientMedicalRecordDetailPage from "../pages/LabUser/PatientMedicalRecordDetailPage";
 
 export function AppRoutes() {
   const { user, onLogout } = useAuthContext();
@@ -167,6 +169,7 @@ export function AppRoutes() {
             >
               {labUserPage === "dashboard" && <LabUserDashboard />}
               {labUserPage === "patients" && <AdminPatientManagementPage />}
+              {labUserPage === "patient-medical-records" && <PatientMedicalRecordsPage />}
               {labUserPage === "test-orders" && <TestOrdersPage />}
               {labUserPage === "test-results" && <TestResultsPage />}
               {labUserPage === "instruments" && <ServiceInstrumentPage />}
@@ -217,7 +220,7 @@ export function AppRoutes() {
                 navigate(`/labuser`);
               }}
             >
-            <SelectInstrumentsPage />
+              <SelectInstrumentsPage />
             </LabUserRouteWrapper>
           </ProtectedRoute>
         }
@@ -242,6 +245,46 @@ export function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      {/* Hồ sơ y tế bệnh nhân - danh sách */}
+      <Route
+        path="/labuser/patient-medical-records"
+        element={
+          <ProtectedRoute allowedRoles={["LAB_USER"]}>
+            <LabUserRouteWrapper
+              currentUser={user!}
+              onLogout={onLogout}
+              currentPage="patient-medical-records"
+              onNavigate={(page) => {
+                setLabUserPage(page);
+                navigate(`/labuser`);
+              }}
+            >
+              <PatientMedicalRecordsPage />
+            </LabUserRouteWrapper>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Hồ sơ y tế bệnh nhân - chi tiết */}
+      <Route
+        path="/labuser/patient-medical-records/:id"
+        element={
+          <ProtectedRoute allowedRoles={["LAB_USER"]}>
+            <LabUserRouteWrapper
+              currentUser={user!}
+              onLogout={onLogout}
+              currentPage="patient-medical-records"
+              onNavigate={(page) => {
+                setLabUserPage(page);
+                navigate(`/labuser`);
+              }}
+            >
+              <PatientMedicalRecordDetailPage />
+            </LabUserRouteWrapper>
+          </ProtectedRoute>
+        }
+      />
+
 
 
       {/* Trang Service */}

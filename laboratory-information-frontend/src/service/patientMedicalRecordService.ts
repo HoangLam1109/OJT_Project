@@ -1,0 +1,296 @@
+import axios, { type AxiosInstance } from 'axios';
+import { apiService } from './apiClient';
+
+const PATIENT_SERVICE_URL = import.meta.env.VITE_PATIENT_SERVICE_URL || 'http://localhost:5001';
+
+const pmrApiClient: AxiosInstance = axios.create({
+  baseURL: PATIENT_SERVICE_URL,
+  timeout: 10000,
+  withCredentials: true,
+  headers: { 'Content-Type': 'application/json' },
+});
+
+pmrApiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem('authToken');
+  if (token) {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    config.headers = config.headers || {};
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+export interface PMRPatientEmbed {
+  _id?: string;
+  user_id?: string;
+  patient_code?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface PatientMedicalRecord {
+  _id: string;
+  patient_id: string;
+  record_code: string;
+  blood_type?: string;
+  allergies?: string;
+  chronic_conditions?: string;
+  current_medications?: string;
+  medical_history?: string;
+  clinical_notes?: string;
+  recent_test_summary?: string;
+  recent_instruments_used?: string;
+  recent_reagents_info?: string;
+  created_by?: string;
+  updated_by?: string;
+  is_deleted?: boolean;
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string;
+  deleted_by?: string;
+  patient?: PMRPatientEmbed & {
+    user?: {
+      email?: string;
+      fullName?: string;
+      identityNumber?: string;
+      phoneNumber?: string;
+      gender?: string;
+      dateOfBirth?: string;
+      address?: string;
+      age?: number;
+    };
+  };
+}
+
+export interface PMRListResponse {
+  records: PatientMedicalRecord[];
+  total?: number;
+  page?: number;
+  limit?: number;
+  totalPages?: number;
+}
+
+const ENDPOINTS = {
+  list: ['/api/patient-medical-records/getAll', '/patient-medical-records/getAll'],
+  detail: (id: string) => [`/api/patient-medical-records/viewDetail/${id}`, `/patient-medical-records/viewDetail/${id}`],
+};
+
+async function tryGet<T>(path: string): Promise<T> {
+  try {
+    const res = await pmrApiClient.get<T>(path);
+    // axios returns { data, status, ... }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (res as any).data as T;
+  } catch {
+    return await apiService.get<T>(path);
+  }
+}
+
+function isPMRListResponse(v: unknown): v is PMRListResponse {
+  if (!v || typeof v !== 'object') return false;
+  const obj = v as Record<string, unknown>;
+  return Array.isArray(obj.records);
+}
+
+type AltPMRListResponse = {
+  data?: PatientMedicalRecord[];
+  items?: PatientMedicalRecord[];
+  total?: number;
+  totalCount?: number;
+  page?: number;
+  limit?: number;
+  totalPages?: number;
+  total_pages?: number;
+};
+
+function isAltPMRList(v: unknown): v is AltPMRListResponse {
+  if (!v || typeof v !== 'object') return false;
+  const obj = v as Record<string, unknown>;
+  return Array.isArray(obj.data as unknown[]) || Array.isArray(obj.items as unknown[]);
+}
+
+export const patientMedicalRecordService = {
+  async getAll(params?: { page?: number; limit?: number; search?: string; sort?: string; testType?: string; instrument?: string; fromDate?: string; toDate?: string; }): Promise<PMRListResponse> {
+    const page = params?.page ?? 1;
+    const limit = params?.limit ?? 10;
+    const q: Record<string, string> = { page: String(page), limit: String(limit) };
+    if (params?.search) q.search = params.search;
+    if (params?.sort) q.sort = params.sort;
+    if (params?.testType) q.testType = params.testType;
+    if (params?.instrument) q.instrument = params.instrument;
+    if (params?.fromDate) q.fromDate = params.fromDate;
+    if (params?.toDate) q.toDate = params.toDate;
+    const query = `?${new URLSearchParams(q).toString()}`;
+
+    // Try a wide range of possible list endpoints
+    const candidates = [
+      ...ENDPOINTS.list,
+      '/api/patient-medical-records',
+      '/patient-medical-records',
+      '/api/patient-medical-records/list',
+      '/patient-medical-records/list',
+    ];
+
+    for (const base of candidates) {
+      try {
+        const data = await tryGet<unknown>(`${base}${query}`);
+        if (isPMRListResponse(data)) return data;
+        if (isAltPMRList(data)) {
+          return {
+            records: (data.data || data.items) ?? [],
+            total: data.total ?? data.totalCount,
+            page: data.page ?? page,
+            limit: data.limit ?? limit,
+            totalPages: data.totalPages ?? data.total_pages,
+          };
+        }
+      } catch {
+        // try next
+      }
+    }
+    return { records: [], total: 0, page, limit, totalPages: 0 };
+  },
+
+  async getDetail(id: string): Promise<PatientMedicalRecord | null> {
+    const candidates = [
+      ...ENDPOINTS.detail(id),
+      `/api/patient-medical-records/${id}`,
+      `/patient-medical-records/${id}`,
+      `/api/patient-medical-records/view-detail/${id}`,
+      `/patient-medical-records/view-detail/${id}`,
+      `/api/patient-medical-records/view/${id}`,
+      `/patient-medical-records/view/${id}`,
+    ];
+    for (const path of candidates) {
+      try {
+        const data = await tryGet<unknown>(path);
+        if (data && typeof data === 'object') {
+          const obj = data as Record<string, unknown>;
+          // Normalize: direct object, { record: {...} }, { data: {...} }
+          const candidate = (obj.record && typeof obj.record === 'object')
+            ? (obj.record as PatientMedicalRecord)
+            : (obj.data && typeof obj.data === 'object')
+              ? (obj.data as PatientMedicalRecord)
+              : (data as PatientMedicalRecord);
+          if (candidate && typeof candidate._id === 'string') return candidate;
+        }
+      } catch {
+        // try next
+      }
+    }
+    return null;
+  },
+
+  async create(payload: {
+    patient_id: string;
+    blood_type?: string;
+    allergies?: string;
+    chronic_conditions?: string;
+    current_medications?: string;
+    medical_history?: string;
+    clinical_notes?: string;
+    recent_test_summary?: string;
+    recent_instruments_used?: string;
+    recent_reagents_info?: string;
+  }): Promise<PatientMedicalRecord | null> {
+    const candidates = [
+      '/api/patient-medical-records/create',
+      '/patient-medical-records/create',
+    ];
+    for (const path of candidates) {
+      try {
+        const res = await pmrApiClient.post(path, payload);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const data = (res as any).data ?? res;
+        if (data && typeof data === 'object') {
+          const obj = data as Record<string, unknown>;
+          const candidate = (obj.record && typeof obj.record === 'object')
+            ? (obj.record as PatientMedicalRecord)
+            : (obj.data && typeof obj.data === 'object')
+              ? (obj.data as PatientMedicalRecord)
+              : (data as PatientMedicalRecord);
+          if (candidate && typeof candidate._id === 'string') return candidate;
+        }
+      } catch {
+        try {
+          const data = await apiService.post<PatientMedicalRecord>(path, payload);
+          // apiService returns parsed data directly
+          if (data && (data as unknown as PatientMedicalRecord)._id) return data as unknown as PatientMedicalRecord;
+        } catch {
+          // try next
+        }
+      }
+    }
+    return null;
+  },
+
+  async update(id: string, payload: {
+    blood_type?: string;
+    allergies?: string;
+    chronic_conditions?: string;
+    current_medications?: string;
+    medical_history?: string;
+    clinical_notes?: string;
+    recent_test_summary?: string;
+    recent_instruments_used?: string;
+    recent_reagents_info?: string;
+  }): Promise<PatientMedicalRecord | null> {
+    const candidates = [
+      `/api/patient-medical-records/update/${id}`,
+      `/patient-medical-records/update/${id}`,
+    ];
+    for (const path of candidates) {
+      try {
+        const res = await pmrApiClient.put(path, payload);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const data = (res as any).data ?? res;
+        if (data && typeof data === 'object') {
+          const obj = data as Record<string, unknown>;
+          const candidate = (obj.record && typeof obj.record === 'object')
+            ? (obj.record as PatientMedicalRecord)
+            : (obj.data && typeof obj.data === 'object')
+              ? (obj.data as PatientMedicalRecord)
+              : (data as PatientMedicalRecord);
+          if (candidate && typeof candidate._id === 'string') return candidate;
+        }
+      } catch {
+        try {
+          const data = await apiService.put<PatientMedicalRecord>(path, payload);
+          if (data && (data as unknown as PatientMedicalRecord)._id) return data as unknown as PatientMedicalRecord;
+        } catch {
+          // try next
+        }
+      }
+    }
+    return null;
+  },
+
+  async remove(id: string): Promise<boolean> {
+    const candidates = [
+      `/api/patient-medical-records/delete/${id}`,
+      `/patient-medical-records/delete/${id}`,
+    ];
+    for (const path of candidates) {
+      try {
+        const res = await pmrApiClient.delete(path);
+        // success if 2xx
+        if (res.status >= 200 && res.status < 300) return true;
+      } catch {
+        try {
+          await apiService.delete(path);
+          return true;
+        } catch {
+          // try next
+        }
+      }
+    }
+    return false;
+  },
+};
+
+export default patientMedicalRecordService;
+
+
