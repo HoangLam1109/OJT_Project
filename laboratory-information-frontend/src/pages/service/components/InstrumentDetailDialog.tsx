@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import {
     Dialog,
     DialogContent,
@@ -8,61 +9,68 @@ import {
 import Badge from "../../../components/common/badge";
 import { Label } from "../../../components/common/label";
 import { Separator } from "../../../components/common/separator";
-import { Progress } from "../../../components/common/progress";
 import type { Instrument } from "../types/Instrument";
+import { instrumentsService } from "../../../service/instrumentsService";
+import { toast } from "sonner";
 import {
     Monitor,
-    Wifi,
-    WifiOff,
     Calendar,
-    Wrench,
-    Activity,
-    Thermometer,
-    CheckCircle,
     AlertCircle,
+    Loader2,
 } from "lucide-react";
 
 interface InstrumentDetailDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    instrument: Instrument | null;
+    instrumentId: string | null;
 }
 
 export function InstrumentDetailDialog({
     open,
     onOpenChange,
-    instrument,
+    instrumentId,
 }: InstrumentDetailDialogProps) {
-    if (!instrument) return null;
+    const [instrument, setInstrument] = useState<Instrument | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (open && instrumentId) {
+            setIsLoading(true);
+            setError(null);
+            instrumentsService
+                .getInstrumentById(instrumentId)
+                .then((data) => {
+                    setInstrument(data);
+                    setIsLoading(false);
+                })
+                .catch((err) => {
+                    const message = err instanceof Error ? err.message : "Không thể tải thông tin thiết bị";
+                    setError(message);
+                    setIsLoading(false);
+                    toast.error(message);
+                });
+        } else if (!open) {
+            // Reset when dialog closes
+            setInstrument(null);
+            setError(null);
+        }
+    }, [open, instrumentId]);
 
     const getStatusBadge = (status: string) => {
         const map: Record<string, { text: string; variant: string }> = {
-            ready: { text: "Sẵn sàng", variant: "default" },
-            in_use: { text: "Đang sử dụng", variant: "secondary" },
-            maintenance: { text: "Bảo trì", variant: "outline" },
-            out_of_service: { text: "Ngưng hoạt động", variant: "destructive" },
+            Ready: { text: "Sẵn sàng", variant: "default" },
+            Processing: { text: "Đang chạy", variant: "secondary" },
+            Maintenance: { text: "Bảo trì", variant: "outline" },
+            Error: { text: "Lỗi", variant: "destructive" },
+            Inactive: { text: "Ngưng hoạt động", variant: "destructive" },
         };
         const data = map[status] || { text: status, variant: "outline" };
         return <Badge variant={data.variant as "default" | "secondary" | "destructive" | "outline"}>{data.text}</Badge>;
-
     };
 
-    const getQCStatusBadge = (qcStatus?: string) => {
-        switch (qcStatus) {
-            case "passed":
-                return (
-                    <Badge variant="default" className="bg-green-600 text-white">
-                        Đạt
-                    </Badge>
-                );
-            case "failed":
-                return <Badge variant="destructive">Không đạt</Badge>;
-            case "pending":
-                return <Badge variant="secondary">Chờ kiểm tra</Badge>;
-            default:
-                return <Badge variant="outline">Chưa có</Badge>;
-        }
-    };
+
+    if (!open) return null;
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -77,211 +85,108 @@ export function InstrumentDetailDialog({
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="space-y-6 pt-4">
-                    {/* Basic Info */}
-                    <div className="grid grid-cols-2 gap-6">
-                        <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                            <Label className="text-xs text-gray-500">Mã thiết bị</Label>
-                            <p className="font-mono text-sm mt-1">{instrument.id}</p>
-                        </div>
-                        <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                            <Label className="text-xs text-gray-500">Trạng thái</Label>
-                            <div className="mt-1 flex items-center gap-2">
-                                {getStatusBadge(instrument.status)}
-                                {instrument.isActive ? (
-                                    <Badge variant="outline" className="bg-green-50 text-green-700">
-                                        Hoạt động
-                                    </Badge>
-                                ) : (
-                                    <Badge variant="outline" className="bg-gray-50 text-gray-600">
-                                        Tạm dừng
-                                    </Badge>
-                                )}
-                            </div>
-                        </div>
-                        <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                            <Label className="text-xs text-gray-500">Tên thiết bị</Label>
-                            <p className="mt-1">{instrument.name}</p>
-                        </div>
-                        <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                            <Label className="text-xs text-gray-500">Model</Label>
-                            <p className="mt-1">{instrument.model}</p>
-                        </div>
+                {isLoading ? (
+                    <div className="flex items-center justify-center py-12">
+                        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                        <span className="ml-3 text-gray-600">Đang tải thông tin...</span>
                     </div>
-
-                    <Separator />
-
-                    {/* Connection & Location */}
-                    <div className="grid grid-cols-2 gap-6">
-                        <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                            <Label className="text-xs text-gray-500">Số Serial</Label>
-                            <p className="font-mono text-sm mt-1">{instrument.serialNumber}</p>
-                        </div>
-                        <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                            <Label className="text-xs text-gray-500">Nhà sản xuất</Label>
-                            <p className="mt-1">{instrument.manufacturer}</p>
-                        </div>
-                        <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                            <Label className="text-xs text-gray-500">Vị trí</Label>
-                            <p className="mt-1">{instrument.location}</p>
-                        </div>
-                        <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                            <Label className="text-xs text-gray-500">Kết nối</Label>
-                            <div className="flex items-center gap-2 mt-1">
-                                {instrument.isConnected ? (
-                                    <>
-                                        <Wifi className="w-4 h-4 text-green-600" />
-                                        <span className="text-green-600 text-sm">Online</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <WifiOff className="w-4 h-4 text-red-600" />
-                                        <span className="text-red-600 text-sm">Offline</span>
-                                    </>
-                                )}
-                            </div>
-                        </div>
+                ) : error ? (
+                    <div className="flex flex-col items-center justify-center py-12">
+                        <AlertCircle className="w-8 h-8 text-red-600 mb-3" />
+                        <p className="text-red-600">{error}</p>
                     </div>
-
-                    <Separator />
-
-                    {/* Performance Metrics */}
-                    <div>
-                        <Label className="text-sm text-gray-600 mb-3 block">Hiệu suất & Chất lượng</Label>
-                        <div className="grid grid-cols-3 gap-4">
-                            <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <Activity className="w-4 h-4 text-blue-600" />
-                                    <Label className="text-xs text-blue-700">Công suất</Label>
-                                </div>
-                                <p className="text-xl text-blue-600">{instrument.throughputPerHour}</p>
-                                <p className="text-xs text-blue-600">test/giờ</p>
-                            </div>
-
-                            <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <Thermometer className="w-4 h-4 text-blue-600" />
-                                    <Label className="text-xs text-blue-700">Nhiệt độ</Label>
-                                </div>
-                                <p className="text-xl text-blue-600">{instrument.temperature}°C</p>
-                                <p className="text-xs text-blue-600">Bình thường</p>
-                            </div>
-
-                            <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <AlertCircle className="w-4 h-4 text-blue-600" />
-                                    <Label className="text-xs text-blue-700">Lỗi</Label>
-                                </div>
-                                <p className="text-xl text-blue-600">{instrument.errorCount}</p>
-                                <p className="text-xs text-blue-600">lỗi ghi nhận</p>
-                            </div>
-                        </div>
+                ) : !instrument ? (
+                    <div className="flex items-center justify-center py-12">
+                        <p className="text-gray-600">Không tìm thấy thông tin thiết bị</p>
                     </div>
-
-                    <Separator />
-
-                    {/* Reagent Level */}
-                    {instrument.reagentLevel !== undefined && (
-                        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                            <div className="flex justify-between mb-2">
-                                <Label className="text-sm text-gray-600">Mức hóa chất</Label>
-                                <span className="text-sm font-medium text-gray-800">
-                                    {instrument.reagentLevel}%
-                                </span>
+                ) : (
+                    <div className="space-y-6 pt-4">
+                        {/* Basic Info */}
+                        <div className="grid grid-cols-2 gap-6">
+                            <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                                <Label className="text-xs text-gray-500">Mã thiết bị</Label>
+                                <p className="font-mono text-sm mt-1">{instrument.instrument_code}</p>
                             </div>
-                            <Progress value={instrument.reagentLevel} className="h-3" />
-                            {instrument.reagentLevel < 30 && (
-                                <p className="text-xs text-orange-600 mt-1">
-                                    ⚠️ Hóa chất sắp hết, cần nạp thêm
-                                </p>
-                            )}
-                        </div>
-                    )}
-
-                    <Separator />
-
-                    {/* Calibration & Maintenance */}
-                    <div className="grid grid-cols-2 gap-6">
-                        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                            <Label className="text-sm flex items-center gap-2 text-gray-700">
-                                <Calendar className="w-4 h-4" /> Hiệu chuẩn
-                            </Label>
-                            <p className="text-sm mt-1">
-                                Lần cuối: <span className="font-mono">{instrument.lastCalibration}</span>
-                            </p>
-                            <p className="text-sm mt-1">
-                                Lần tiếp: <span className="font-mono">{instrument.nextCalibration}</span>
-                            </p>
-                        </div>
-                        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                            <Label className="text-sm flex items-center gap-2 text-gray-700">
-                                <Wrench className="w-4 h-4" /> Bảo trì
-                            </Label>
-                            <p className="text-sm mt-1">
-                                Lần cuối: <span className="font-mono">{instrument.lastMaintenanceDate}</span>
-                            </p>
-                            <p className="text-sm mt-1">
-                                Chu kỳ:{" "}
-                                <span className="font-mono">{instrument.maintenanceInterval} ngày</span>
-                            </p>
-                        </div>
-                    </div>
-
-                    <Separator />
-
-                    {/* QC Status */}
-                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 grid grid-cols-2 gap-6">
-                        <div>
-                            <Label className="text-sm flex items-center gap-2 text-gray-700">
-                                <CheckCircle className="w-4 h-4" /> Trạng thái QC
-                            </Label>
-                            <div className="mt-2">{getQCStatusBadge(instrument.qcStatus)}</div>
-                            {instrument.lastQcDate && (
-                                <p className="text-xs text-gray-500 mt-1">
-                                    Kiểm tra cuối: {instrument.lastQcDate}
-                                </p>
-                            )}
-                        </div>
-                        <div>
-                            <Label className="text-sm text-gray-700">Firmware</Label>
-                            <p className="font-mono text-sm mt-2 p-2 bg-white border border-gray-200 rounded-md">
-                                {instrument.firmwareVersion}
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Test Types */}
-                    {instrument.testTypes?.length > 0 && (
-                        <>
-                            <Separator />
-                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                                <Label className="text-sm text-gray-700 mb-2 block">
-                                    Loại xét nghiệm hỗ trợ
-                                </Label>
-                                <div className="flex flex-wrap gap-2">
-                                    {instrument.testTypes.map((type, i) => (
-                                        <Badge key={i} variant="outline" className="bg-white border-gray-300">
-                                            {type}
+                            <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                                <Label className="text-xs text-gray-500">Trạng thái</Label>
+                                <div className="mt-1 flex items-center gap-2">
+                                    {getStatusBadge(instrument.status)}
+                                    {instrument.is_active ? (
+                                        <Badge variant="outline" className="bg-green-50 text-green-700">
+                                            Hoạt động
                                         </Badge>
-                                    ))}
+                                    ) : (
+                                        <Badge variant="outline" className="bg-gray-50 text-gray-600">
+                                            Tạm dừng
+                                        </Badge>
+                                    )}
                                 </div>
                             </div>
-                        </>
-                    )}
-
-                    {/* Status Change Reason */}
-                    {instrument.statusChangeReason && (
-                        <>
-                            <Separator />
-                            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                                <Label className="text-sm text-yellow-900 mb-1 block">
-                                    Lý do thay đổi trạng thái
-                                </Label>
-                                <p className="text-sm text-yellow-800">{instrument.statusChangeReason}</p>
+                            <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                                <Label className="text-xs text-gray-500">Tên thiết bị</Label>
+                                <p className="mt-1">{instrument.instrument_name}</p>
                             </div>
-                        </>
-                    )}
-                </div>
+                            <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                                <Label className="text-xs text-gray-500">Loại thiết bị</Label>
+                                <p className="mt-1">{instrument.instrument_type}</p>
+                            </div>
+                        </div>
+
+                        <Separator />
+
+                        {/* Connection & Location */}
+                        <div className="grid grid-cols-2 gap-6">
+                            <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                                <Label className="text-xs text-gray-500">Nhà sản xuất</Label>
+                                <p className="mt-1">{instrument.manufacturer || "Chưa có thông tin"}</p>
+                            </div>
+                            <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                                <Label className="text-xs text-gray-500">Vị trí</Label>
+                                <p className="mt-1">{instrument.location || "Chưa có thông tin"}</p>
+                            </div>
+                        </div>
+
+                        <Separator />
+
+                        {/* Metadata */}
+                        <div className="grid grid-cols-2 gap-6">
+                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                <Label className="text-sm flex items-center gap-2 text-gray-700">
+                                    <Calendar className="w-4 h-4" /> Ngày tạo
+                                </Label>
+                                <p className="text-sm mt-1">
+                                    <span className="font-mono">
+                                        {instrument.created_at instanceof Date
+                                            ? instrument.created_at.toLocaleDateString("vi-VN")
+                                            : new Date(instrument.created_at).toLocaleDateString("vi-VN")}
+                                    </span>
+                                </p>
+                                {instrument.created_by && (
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        Tạo bởi: {instrument.created_by}
+                                    </p>
+                                )}
+                            </div>
+                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                <Label className="text-sm flex items-center gap-2 text-gray-700">
+                                    <Calendar className="w-4 h-4" /> Cập nhật lần cuối
+                                </Label>
+                                <p className="text-sm mt-1">
+                                    <span className="font-mono">
+                                        {instrument.updated_at instanceof Date
+                                            ? instrument.updated_at.toLocaleDateString("vi-VN")
+                                            : new Date(instrument.updated_at).toLocaleDateString("vi-VN")}
+                                    </span>
+                                </p>
+                                {instrument.updated_by && (
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        Cập nhật bởi: {instrument.updated_by}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
             </DialogContent>
         </Dialog>
     );

@@ -17,8 +17,8 @@ const testOrderApiClient: AxiosInstance = axios.create({
 // testOrderService.ts
 const VALID_STATUSES = ['Pending', 'Processing', 'Completed'] as const;
 
-const isValidStatus = (status: any): status is typeof VALID_STATUSES[number] => {
-  return typeof status === 'string' && VALID_STATUSES.includes(status as any);
+const isValidStatus = (status: string): status is typeof VALID_STATUSES[number] => {
+  return typeof status === 'string' && VALID_STATUSES.includes(status as typeof VALID_STATUSES[number]);
 };
 
 // Attach Authorization header like the global apiClient

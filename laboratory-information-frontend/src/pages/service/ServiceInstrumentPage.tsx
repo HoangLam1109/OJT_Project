@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { mockInstrument } from "./data/mockInstrument";
+import { useState, useEffect } from "react";
 import type { Instrument } from "./types/Instrument";
 import {
     Monitor,
@@ -33,23 +32,36 @@ import { toast } from "sonner";
 import { InstrumentDetailDialog } from "./components/InstrumentDetailDialog";
 import { AddInstrumentDialog } from "./components/AddInstrumentDialog";
 import { ChangeInstrumentStatusDialog } from "./components/ChangeInstrumentStatusDialog";
+import { instrumentsService } from "../../service/instrumentsService";
 
 export default function ServiceInstrumentPage() {
-    const [instruments, setInstruments] = useState<Instrument[]>(mockInstrument);
+    const [instruments, setInstruments] = useState<Instrument[]>([]);
     const [instrumentSearchTerm, setInstrumentSearchTerm] = useState("");
+    const [selectedInstrumentId, setSelectedInstrumentId] = useState<string | null>(null);
     const [selectedInstrument, setSelectedInstrument] = useState<Instrument | null>(null);
     const [openDialog, setOpenDialog] = useState(false);
     const [openAddDialog, setOpenAddDialog] = useState(false);
     const [showChangeModeDialog, setShowChangeModeDialog] = useState(false);
 
+    useEffect(() => {
+        (async () => {
+            try {
+                const data = await instrumentsService.getAllInstruments();
+                setInstruments(data);
+            } catch (error) {
+                const message = error instanceof Error ? error.message : "Không thể tải danh sách thiết bị";
+                toast.error(message);
+            }
+        })();
+    }, []);
 
-    const handleChangeInstrumentStatus = (id: string, newStatus: Instrument['status'], reason: string) => {
+
+    const handleChangeInstrumentStatus = (updatedInstrument: Instrument) => {
         setInstruments((prev) =>
             prev.map((i) =>
-                i.id === id ? { ...i, status: newStatus, updatedAt: new Date().toISOString() } : i
+                i._id === updatedInstrument._id ? updatedInstrument : i
             )
         );
-        console.log("Status change log:", { id, newStatus, reason });
     };
 
     const handleAddInstrument = (instrument: Instrument) => {
@@ -57,16 +69,16 @@ export default function ServiceInstrumentPage() {
         toast.success("Thiết bị đã được thêm thành công!");
     };
     const handleOpenDetail = (instrument: Instrument) => {
-        setSelectedInstrument(instrument);
+        setSelectedInstrumentId(instrument._id);
         setOpenDialog(true);
     };
 
     const handleDeleteInstrument = (id: string) => {
         if (!confirm('Bạn có chắc chắn muốn xóa thiết bị này?')) return;
-        setInstruments((prev) => prev.filter((i) => i.id !== id));
+        setInstruments((prev) => prev.filter((i) => i._id !== id));
         // If the deleted instrument was opened in detail, close it
-        if (selectedInstrument?.id === id) {
-            setSelectedInstrument(null);
+        if (selectedInstrumentId === id) {
+            setSelectedInstrumentId(null);
             setOpenDialog(false);
         }
         toast.success('Thiết bị đã được xóa');
@@ -75,20 +87,20 @@ export default function ServiceInstrumentPage() {
     // 👉 Thống kê nhanh
     const stats = {
         totalInstruments: instruments.length,
-        activeInstruments: instruments.filter((i) => i.isActive).length,
-        readyInstruments: instruments.filter((i) => i.status === "ready").length,
-        maintenanceInstruments: instruments.filter((i) => i.status === "maintenance").length,
+        activeInstruments: instruments.filter((i) => i.is_active).length,
+        readyInstruments: instruments.filter((i) => i.status === "Ready").length,
+        maintenanceInstruments: instruments.filter((i) => i.status === "Maintenance").length,
     };
 
     // 👉 Lọc theo từ khóa
     const filteredInstruments = instruments.filter((instrument) => {
         const searchLower = instrumentSearchTerm.toLowerCase();
         return (
-            instrument.name.toLowerCase().includes(searchLower) ||
-            instrument.model.toLowerCase().includes(searchLower) ||
-            instrument.manufacturer.toLowerCase().includes(searchLower) ||
-            instrument.location.toLowerCase().includes(searchLower) ||
-            instrument.id.toLowerCase().includes(searchLower)
+            instrument.instrument_name.toLowerCase().includes(searchLower) ||
+            instrument.instrument_type.toLowerCase().includes(searchLower) ||
+            instrument.manufacturer?.toLowerCase().includes(searchLower) ||
+            instrument.location?.toLowerCase().includes(searchLower) ||
+            instrument._id.toLowerCase().includes(searchLower)
         );
     });
 
@@ -205,53 +217,42 @@ export default function ServiceInstrumentPage() {
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>Tên thiết bị</TableHead>
-                                    <TableHead>Model</TableHead>
+                                    <TableHead>Loại thiết bị</TableHead>
                                     <TableHead>Vị trí</TableHead>
-                                    <TableHead>Trạng thái</TableHead>
-                                    <TableHead>Kết nối</TableHead>
-                                    <TableHead>Hiệu suất</TableHead>
+                                    <TableHead>Trạng thái</TableHead>   
                                     <TableHead>Thao tác</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {filteredInstruments.map((instrument) => (
-                                    <TableRow key={instrument.id}>
-                                        <TableCell>{instrument.name}</TableCell>
-                                        <TableCell>{instrument.model}</TableCell>
+                                    <TableRow key={instrument._id}>
+                                        <TableCell>{instrument.instrument_name}</TableCell>
+                                        <TableCell>{instrument.instrument_type}</TableCell>
                                         <TableCell>{instrument.location}</TableCell>
                                         <TableCell>
                                             <Badge
                                                 variant={
-                                                    instrument.status === "ready"
+                                                    instrument.status === "Ready"
                                                         ? "default"
-                                                        : instrument.status === "processing"
+                                                        : instrument.status === "Processing"
                                                             ? "secondary"
-                                                            : instrument.status === "maintenance"
+                                                            : instrument.status === "Maintenance"
                                                                 ? "outline"
                                                                 : "destructive"
                                                 }
                                             >
-                                                {instrument.status === "ready"
+                                                {instrument.status === "Ready"
                                                     ? "Sẵn sàng"
-                                                    : instrument.status === "processing"
+                                                    : instrument.status === "Processing"
                                                         ? "Đang chạy"
-                                                        : instrument.status === "maintenance"
+                                                        : instrument.status === "Maintenance"
                                                             ? "Bảo trì"
-                                                            : "Ngưng hoạt động"}
+                                                            : instrument.status === "Error"
+                                                                ? "Lỗi"
+                                                                : "Ngưng hoạt động"}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center gap-2">
-                                                <div
-                                                    className={`w-2 h-2 rounded-full ${instrument.isConnected ? "bg-green-500" : "bg-red-500"
-                                                        }`}
-                                                ></div>
-                                                <span className="text-xs">
-                                                    {instrument.isConnected ? "Online" : "Offline"}
-                                                </span>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>{instrument.throughputPerHour} test/h</TableCell>
+                                        
                                         <TableCell>
                                             <div className="flex items-center gap-2">
                                                 <Button
@@ -274,7 +275,7 @@ export default function ServiceInstrumentPage() {
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
-                                                    onClick={() => handleDeleteInstrument(instrument.id)}
+                                                    onClick={() => handleDeleteInstrument(instrument._id)}
                                                 >
                                                     <Trash2 className="w-4 h-4 text-red-500" />
                                                 </Button>
@@ -313,7 +314,7 @@ export default function ServiceInstrumentPage() {
             <InstrumentDetailDialog
                 open={openDialog}
                 onOpenChange={setOpenDialog}
-                instrument={selectedInstrument}
+                instrumentId={selectedInstrumentId} 
             />
         </div>
     );
