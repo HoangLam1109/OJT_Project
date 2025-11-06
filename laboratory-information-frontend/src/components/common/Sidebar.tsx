@@ -18,18 +18,6 @@ export function Sidebar({
   const navigate = useNavigate();
   const [openDropdowns, setOpenDropdowns] = useState<Set<string>>(new Set());
 
-  const toggleDropdown = (itemId: string) => {
-    setOpenDropdowns(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(itemId)) {
-        newSet.delete(itemId);
-      } else {
-        newSet.add(itemId);
-      }
-      return newSet;
-    });
-  };
-
   return (
     <div className={`bg-white shadow-lg transition-all duration-300 ${
       sidebarCollapsed ? 'w-16' : 'w-64'
@@ -68,16 +56,41 @@ export function Sidebar({
           const isDropdownOpen = openDropdowns.has(item.id);
 
           return (
-            <div key={item.id} className="space-y-1">
-              <div className="flex items-center">
+            <div 
+              key={item.id} 
+              className="space-y-1"
+              onMouseEnter={() => {
+                if (hasDropdown && !sidebarCollapsed) {
+                  setOpenDropdowns(prev => {
+                    const newSet = new Set(prev);
+                    newSet.add(item.id);
+                    return newSet;
+                  });
+                }
+              }}
+              onMouseLeave={() => {
+                if (hasDropdown && !sidebarCollapsed) {
+                  setOpenDropdowns(prev => {
+                    const newSet = new Set(prev);
+                    newSet.delete(item.id);
+                    return newSet;
+                  });
+                }
+              }}
+            >
+              <div className="flex items-stretch gap-1">
                 <Button
                   variant={isActive ? "default" : "ghost"}
-                  className={`flex-1 justify-start px-3 py-2 h-auto ${
+                  className={`flex-1 justify-start px-3 py-2 ${
                     sidebarCollapsed ? 'px-2' : ''
                   } ${
                     isActive
                       ? 'bg-blue-600 text-white hover:bg-blue-700' 
                       : 'text-gray-700 hover:bg-gray-100'
+                  } ${
+                    hasDropdown && !sidebarCollapsed 
+                      ? 'rounded-md' 
+                      : 'rounded-md'
                   }`}
                   onClick={() => {
                     onNavigate(item.id);
@@ -90,17 +103,14 @@ export function Sidebar({
                 </Button>
                 {hasDropdown && !sidebarCollapsed && (
                   <Button
-                    variant="ghost"
-                    size="sm"
-                    className={`p-1 h-auto ${
-                      isActive ? 'text-white hover:bg-blue-700' : 'text-gray-500 hover:bg-gray-100'
+                    variant={isActive ? "default" : "ghost"}
+                    className={`px-2.5 py-2 min-w-[40px] flex items-center justify-center transition-all pointer-events-none ${
+                      isActive 
+                        ? 'bg-blue-700 text-white rounded-md' 
+                        : 'text-gray-500 rounded-md'
                     }`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleDropdown(item.id);
-                    }}
                   >
-                    <ChevronDown className={`h-4 w-4 transition-transform ${
+                    <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${
                       isDropdownOpen ? 'rotate-180' : ''
                     }`} />
                   </Button>
