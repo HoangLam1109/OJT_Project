@@ -37,6 +37,7 @@ import ServiceInstrumentPage from "../pages/service/ServiceInstrumentPage";
 import { GoogleCallbackPage } from "../pages/login/GoogleCallbackPage";
 import SelectInstrumentsPage from "../pages/LabUser/SelectInstrumentsPage";
 import PatientMedicalRecordsPage from "../pages/LabUser/PatientMedicalRecordsPage";
+import MedicalRecordAccessLogsPage from "../pages/LabUser/MedicalRecordAccessLogsPage";
 import PatientMedicalRecordDetailPage from "../pages/LabUser/PatientMedicalRecordDetailPage";
 
 export function AppRoutes() {
@@ -174,6 +175,7 @@ export function AppRoutes() {
               {labUserPage === "test-results" && <TestResultsPage />}
               {labUserPage === "instruments" && <ServiceInstrumentPage />}
               {labUserPage === "reagents" && <ReagentManagementPage />}
+              {labUserPage === "mr-access-logs" && <MedicalRecordAccessLogsPage />}
               {labUserPage === "reports" && (
                 <div className="text-center py-12">
                   <h2 className="text-2xl font-bold text-gray-900">Báo cáo</h2>

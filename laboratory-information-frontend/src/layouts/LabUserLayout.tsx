@@ -75,6 +75,11 @@ export const LabUserLayout: React.FC<LabUserLayoutProps> = ({
         icon: (props) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 20V10" /><path d="M12 20V4" /><path d="M6 20v-6" /></svg>
       },
       {
+        id: 'mr-access-logs',
+        label: 'Nhật ký truy cập HSYT',
+        icon: (props) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 4h18v14H3z" /><path d="M7 20h10" /></svg>
+      },
+      {
         id: 'profile',
         label: 'Hồ sơ cá nhân',
         icon: (props) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
