@@ -1,5 +1,5 @@
-import HttpClient from "../utils/httpClient.util.js";
-import iamServiceClient, { IamUser } from "./iamServiceClient.js";
+import HttpClient from "../../utils/httpClient.util.js";
+import iamServiceClient, { IamUser } from "../iam/iamServiceClient.js";
 
 export interface Patient {
   _id: string;

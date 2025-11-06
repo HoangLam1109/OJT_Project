@@ -3,6 +3,7 @@ import { z } from 'zod';
 
 export interface ITestOrder extends Document {
   patient_id: string;
+  instrument_id?: string ;
   patient_name?: string;   
   barcode: string;
   test_type: string;       
@@ -22,6 +23,7 @@ export interface ITestOrder extends Document {
 
 export interface ITestOrderInput {
   patient_id: string;
+  instrument_id?: string ;
   patient_name?:string,
   barcode: string;
   test_type?: string;
@@ -39,6 +41,7 @@ export interface ITestOrderInput {
 
 export interface UpdateTestOrderDto {
   patient_id?: string;
+  instrument_id?: string ;
   patient_name?: string;
   barcode?: string;
   test_type?: string;
@@ -56,6 +59,7 @@ export interface UpdateTestOrderDto {
 const TestOrderSchema: Schema = new Schema(
   {
     patient_id: { type: String, required: true },
+    instrument_id: { type: String, default: '' },
     patient_name: { type: String, default: '' },
     barcode: { type: String, required: true, unique: true },
     test_type: { type: String,   required: true  },
@@ -71,7 +75,7 @@ const TestOrderSchema: Schema = new Schema(
     is_deleted: { type: Boolean, default: false },
     deleted_at: { type: Date, default: null },
     deleted_by: { type: String, default: null },
-    notes: {type: String, default: 'Have no comment'}
+    notes: {type: String, default: 'Have no comment'},
   },
   {
     timestamps: false, // We're handling created_at/updated_at manually
@@ -100,7 +104,10 @@ export const UpdateTestOrderSchema = z.object({
   processing: z.number().min(0).max(100).optional(),
   due_date: z.string().datetime().optional().nullable(),
   isDeleted: z.boolean().optional(),
-  notes: z.string().optional()
+  notes: z.string().optional(),
+
+  instrument_id: z.string().optional().nullable(),
+  reagents: z.array(z.string()).optional().nullable(),
 });
 
 export default mongoose.model<ITestOrder>("TestOrder", TestOrderSchema,"testOrders" );

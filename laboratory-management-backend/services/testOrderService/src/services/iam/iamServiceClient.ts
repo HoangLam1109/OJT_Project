@@ -1,4 +1,4 @@
-import HttpClient from "../utils/httpClient.util.js";
+import HttpClient from "../../utils/httpClient.util.js";
 
 export interface IamUser {
   _id: string;

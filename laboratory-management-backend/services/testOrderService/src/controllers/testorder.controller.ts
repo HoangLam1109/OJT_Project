@@ -1,8 +1,9 @@
 import { Request, Response } from "express";
-import { TestOrderService } from "../services/testOrderService.js";
-import { TestOrderRepository } from "../repositories/testOrderRepository.js";
-import patientServiceClient from "../services/patientServiceClient.js";
-import iamServiceClient from "../services/iamServiceClient.js";
+import { TestOrderService } from "../services/testorder/testOrderService.js"; 
+
+import patientServiceClient from "../services/patient/patientServiceClient.js";
+import iamServiceClient from "../services/iam/iamServiceClient.js";
+import instrumentServiceClient from "../services/warehouse/instrumentServiceClient.js";
 export const getAllTestOrders = async (req: Request, res: Response) => {
   try {
     //  Lấy danh sách test order
@@ -13,10 +14,14 @@ export const getAllTestOrders = async (req: Request, res: Response) => {
 
     //  Lấy các patientId duy nhất
     const patientIds = [...new Set(activeOrders.map((o) => o.patient_id))];
+    const instrumentIds = [...new Set(activeOrders.map((o) => o.instrument_id))];
+      console.log("instrumentIds:", instrumentIds);
+
 
     //  Lấy thông tin patient
     const patientsMap = await patientServiceClient.getPatientsByIds(patientIds);
-
+    const instrumentsMap = await instrumentServiceClient.getInstrumentsByIds(instrumentIds);
+console.log("instrumentsMap keys:", Array.from(instrumentsMap.keys()));
     //  Lấy danh sách userId từ patients
     const userIds = [...new Set(Array.from(patientsMap.values()).map((p) => p.user_id))];
     const usersMap = await iamServiceClient.getUsersByIds(userIds);
@@ -24,11 +29,15 @@ export const getAllTestOrders = async (req: Request, res: Response) => {
     //  Kết hợp dữ liệu TestOrder + User
     const enrichedOrders = activeOrders.map((order) => {
       const patient = patientsMap.get(order.patient_id);
+      const instrument = instrumentsMap.get(order.instrument_id || '');
+        console.log("instrument:", instrument);
+
       const user = patient ? usersMap.get(patient.user_id) : null;
 
       return {
         _id: order._id,
         patient_id: order.patient_id,
+        instrument_id: order.instrument_id,
         barcode: order.barcode,
         status: order.status,
         created_at: order.created_at,
@@ -50,6 +59,12 @@ export const getAllTestOrders = async (req: Request, res: Response) => {
             age: user.age,
           }
           : null,
+
+        instrument: instrument
+           ?{
+             instrument_name: instrument.instrument_name,
+           }
+           : null,
       };
     });
       console.log("enrichedOrders",enrichedOrders);

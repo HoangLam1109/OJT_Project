@@ -1,7 +1,7 @@
-import { TestOrderRepository } from "../repositories/testOrderRepository.js";
-import patientServiceClient from "../services/patientServiceClient.js";
-import { ITestOrderInput } from "../db/models/TestOrder.model.js";
-import { ITestOrder } from "../db/models/TestOrder.model.js";
+import { TestOrderRepository } from "../../repositories/testOrderRepository.js";
+import patientServiceClient from "../patient/patientServiceClient.js";
+import { ITestOrderInput } from "../../db/models/TestOrder.model.js";
+import { ITestOrder } from "../../db/models/TestOrder.model.js";
 export const TestOrderService = {
   // Lấy tất cả Test Orders
   async getAllOrders() {
