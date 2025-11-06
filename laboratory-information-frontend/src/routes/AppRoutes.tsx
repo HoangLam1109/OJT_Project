@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { HomeLayout } from "../layouts/HomeLayout";
 import { LoginLayout } from "../layouts/LoginLayout";
 import { RegisterPage } from "../pages/register/RegisterPage";
@@ -22,12 +22,12 @@ import Profile from "../layouts/Profile";
 import LabUserDashboard from "../pages/LabUser/Dashboard";
 import TestOrdersPage from "../pages/LabUser/TestOrdersPage";
 import CreateTestOrderPage from "../pages/LabUser/CreateTestOrderPage";
-import SelectInstrumentsPage from "../pages/LabUser/SelectInstrumentsPage";
+
 import SelectReagentsPage from "../pages/LabUser/SelectReagentsPage";
 import { LabUserRouteWrapper } from "./LabUserRouteWrapper";
 import { LabUserRouteElement } from "./LabUserRouteElement";
 import TestResultsPage from "../pages/LabUser/TestResultsPage";
-import InstrumentManagementPage from "../pages/LabUser/InstrumentManagementPage";
+
 import ReagentManagementPage from "../pages/LabUser/ReagentManagementPage";
 import { ServiceLayout } from "../layouts/ServiceLayout";
 import ServiceDashboardPage from "../pages/service/ServiceDashboardPage";
@@ -35,6 +35,7 @@ import ServiceEventLogPage from "../pages/service/ServiceEventLogPage";
 import ServiceReagentPage from "../pages/service/ServiceReagentPage";
 import ServiceInstrumentPage from "../pages/service/ServiceInstrumentPage";
 import { GoogleCallbackPage } from "../pages/login/GoogleCallbackPage";
+import SelectInstrumentsPage from "../pages/LabUser/SelectInstrumentsPage";
 
 export function AppRoutes() {
   const { user, onLogout } = useAuthContext();
@@ -145,7 +146,7 @@ export function AppRoutes() {
                   <p className="text-gray-500 mt-2">Trang cài đặt đang được phát triển</p>
                 </div>
               )}
-              {managerPage === "instruments" && <InstrumentManagementPage />}
+              {managerPage === "instruments" && <ServiceInstrumentPage />}
               {managerPage === "profile" && <Profile currentUser={user!} />}
             </ManagerLayout>
           </ProtectedRoute>
@@ -168,7 +169,7 @@ export function AppRoutes() {
               {labUserPage === "patients" && <AdminPatientManagementPage />}
               {labUserPage === "test-orders" && <TestOrdersPage />}
               {labUserPage === "test-results" && <TestResultsPage />}
-              {labUserPage === "instruments" && <InstrumentManagementPage />}
+              {labUserPage === "instruments" && <ServiceInstrumentPage />}
               {labUserPage === "reagents" && <ReagentManagementPage />}
               {labUserPage === "reports" && (
                 <div className="text-center py-12">
@@ -216,7 +217,7 @@ export function AppRoutes() {
                 navigate(`/labuser`);
               }}
             >
-              <SelectInstrumentsPage />
+            <SelectInstrumentsPage />
             </LabUserRouteWrapper>
           </ProtectedRoute>
         }
