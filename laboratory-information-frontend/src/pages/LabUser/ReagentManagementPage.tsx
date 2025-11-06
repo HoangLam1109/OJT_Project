@@ -105,6 +105,13 @@ const ReagentManagementPage: React.FC = () => {
         toast.error('Số lô đã tồn tại');
         return;
       }
+    } else {
+      // For updates, check if lot number is being changed
+      const originalReagent = reagents.find(reagent => reagent.id === editingReagent.id);
+      if (originalReagent && originalReagent.lotNumber !== editingReagent.lotNumber) {
+        toast.error('Không thể thay đổi số lô thuốc thử');
+        return;
+      }
     }
 
     // Validate expiry date
@@ -124,8 +131,18 @@ const ReagentManagementPage: React.FC = () => {
 
     try {
       if (editingReagent.id) {
-        // Update is not implemented yet, show message
-        toast.info('Chức năng cập nhật thuốc thử chưa được kích hoạt');
+        // Update existing reagent
+        const updatedReagent = await reagentService.updateReagent(
+          editingReagent.id,
+          editingReagent,
+          user?.id
+        );
+        setReagents(prev => prev.map(reagent => reagent.id === editingReagent.id ? updatedReagent : reagent));
+        toast.success('Cập nhật thuốc thử thành công');
+        console.log(`[AUDIT] E_00027 | Reagent modified by ${user?.name}`);
+        
+        setIsEditModalOpen(false);
+        setEditingReagent({});
       } else {
         // Create new reagent
         const newReagent = await reagentService.createReagent(
@@ -152,8 +169,12 @@ const ReagentManagementPage: React.FC = () => {
       // Check for validation errors from backend
       if (errorMessage.includes('duplicate') || errorMessage.includes('unique')) {
         toast.error('Số lô thuốc thử đã tồn tại trong hệ thống');
+      } else if (errorMessage.includes('quantity_current') && errorMessage.includes('lớn hơn')) {
+        toast.error('Số lượng hiện tại không được lớn hơn số lượng đã nhận');
       } else if (errorMessage.includes('validation') || errorMessage.includes('required')) {
         toast.error('Dữ liệu không hợp lệ. Vui lòng kiểm tra lại thông tin nhập vào.');
+      } else if (errorMessage.includes('not found') || errorMessage.includes('không tìm thấy')) {
+        toast.error('Không tìm thấy thuốc thử để cập nhật');
       } else {
         toast.error(errorMessage);
       }

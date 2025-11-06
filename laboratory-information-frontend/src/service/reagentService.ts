@@ -212,11 +212,8 @@ export const reagentService = {
     const quantity = reagent.quantity || 0;
 
     const backendData: Partial<BackendReagent> = {
-      reagent_code: reagent.lotNumber || '',
       reagent_name: reagent.name || '',
       reagent_type: reagent.manufacturer || 'Unknown',
-      quantity_received: quantity,
-      quantity_current: quantity,
       unit_of_measure: 'unit', // Default, can be updated if frontend provides
       usage_per_run: 1, // Default, can be updated if frontend provides
       expiration_date: parseDate(reagent.expiryDate) || new Date(),
@@ -226,8 +223,16 @@ export const reagentService = {
     };
 
     if (reagent.id) {
+      // Update case: only update quantity_current, not quantity_received
+      // Backend will keep quantity_received unchanged
+      backendData.quantity_current = quantity;
+      // Don't include reagent_code (backend doesn't allow updating it)
       backendData.updated_by = userId;
     } else {
+      // Create case: set both quantity_received and quantity_current
+      backendData.quantity_received = quantity;
+      backendData.quantity_current = quantity;
+      backendData.reagent_code = reagent.lotNumber || '';
       backendData.created_by = userId;
     }
 
@@ -258,6 +263,43 @@ export const reagentService = {
       
       if (error.code === 'ERR_NETWORK' || error.code === 'ERR_CONNECTION_REFUSED') {
         throw new Error('Không thể kết nối đến Warehouse Service (port 5003). Vui lòng kiểm tra backend service đã chạy chưa.');
+      }
+      
+      throw new Error(apiUtils.getErrorMessage(error));
+    }
+  },
+
+  // Update reagent
+  async updateReagent(id: string, reagentData: Partial<Reagent>, userId?: string): Promise<Reagent> {
+    try {
+      const backendData = this.transformToBackendFormat(reagentData, userId);
+      
+      const response = await reagentApiClient.put<BackendReagentResponse>(
+        `${REAGENT_API_BASE_URL}/${id}`,
+        backendData
+      );
+      
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Failed to update reagent');
+      }
+
+      const reagent = Array.isArray(response.data.data)
+        ? response.data.data[0]
+        : response.data.data;
+
+      return transformBackendReagent(reagent);
+    } catch (error: any) {
+      console.error('Error updating reagent:', error);
+      
+      if (error.code === 'ERR_NETWORK' || error.code === 'ERR_CONNECTION_REFUSED') {
+        throw new Error('Không thể kết nối đến Warehouse Service (port 5003). Vui lòng kiểm tra backend service đã chạy chưa.');
+      }
+      
+      // Handle HTTP error responses
+      if (error.response) {
+        const status = error.response.status;
+        const message = error.response.data?.message || `Failed to update reagent (${status})`;
+        throw new Error(message);
       }
       
       throw new Error(apiUtils.getErrorMessage(error));
