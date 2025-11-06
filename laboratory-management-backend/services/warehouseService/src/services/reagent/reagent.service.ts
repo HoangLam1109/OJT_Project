@@ -1,5 +1,5 @@
 // src/services/reagent.service.ts
-import { ReagentRepository } from "../../repositories/reagent.repository.js";
+import { ReagentRepository } from "../../repositories/reagent/reagent.repository.js";
 import { IReagent } from "../../db/models/Reagent.model.js";
 
 export class ReagentService {
@@ -9,17 +9,17 @@ export class ReagentService {
     this.repo = new ReagentRepository();
   }
 
-  async getAllReagents(): Promise<IReagent[]> {
+  async getAll(): Promise<IReagent[]> {
     return this.repo.findAll();
   }
 
-  async getReagentById(id: string): Promise<IReagent | null> {
+  async getById(id: string): Promise<IReagent | null> {
     return this.repo.findById(id);
   }
 
-  async createReagent(data: Partial<IReagent>): Promise<IReagent> {
+  async create(data: Partial<IReagent>): Promise<IReagent> {
     if (!data.low_stock_threshold) {
-      data.low_stock_threshold = Math.round(data.quantity_received * 0.1); // mặc định 10%
+      data.low_stock_threshold = Math.round((data.quantity_received ?? 0) * 0.1); 
     }
     return this.repo.create(data);
   }
@@ -39,7 +39,7 @@ export class ReagentService {
     return this.repo.update(id, data);
   }
 
-  async deleteReagent(id: string, deletedBy: string): Promise<IReagent | null> {
+  async delete(id: string, deletedBy: string): Promise<IReagent | null> {
     return this.repo.softDelete(id, deletedBy);
   }
 
