@@ -54,7 +54,7 @@ export function HomeLayout({ onShowLogin, onShowRegister }: LoginAndRegisterType
       <div className="relative z-10">
 
         <div className="fixed top-0 w-full z-50 bg-transparent transition-all duration-300">
-          <HomeHeader onShowLogin={onShowLogin} onShowRegister={onShowRegister} onLogout={onLogout} />
+          <HomeHeader onShowLogin={onShowLogin} onShowRegister={onShowRegister} />
         </div>
 
         <div className="pt-0" data-aos="fade-down">
