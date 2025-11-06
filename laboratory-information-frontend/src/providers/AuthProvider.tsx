@@ -1,5 +1,5 @@
 // AuthProvider.tsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useLocation } from "react-router-dom"; // THÊM DÒNG NÀY
 import { AuthContext } from "../context/AuthContext";
@@ -12,15 +12,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const location = useLocation(); // THÊM DÒNG NÀY
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const hasInitialized = useRef(false); // Track xem đã initialize chưa
 
   useEffect(() => {
     // 1. BỎ QUA TRANG LOGIN
     if (location.pathname === '/login') {
       setLoading(false);
+      hasInitialized.current = false; // Reset khi vào trang login
+      return;
+    }
+
+    // 2. NẾU ĐÃ CÓ USER HOẶC ĐÃ INITIALIZE, KHÔNG CẦN GỌI API LẠI
+    if (user || hasInitialized.current) {
+      setLoading(false);
       return;
     }
 
     const initializeAuth = async () => {
+      hasInitialized.current = true; // Đánh dấu đã bắt đầu initialize
+
       // Google OAuth
       if (isGoogleCallback()) {
         try {
@@ -65,7 +75,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     initializeAuth();
-  }, [location, user]); // DÙNG location + user → ESLint OK
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]); // CHỈ THEO DÕI location.pathname, KHÔNG BAO GỒM user
 
   const onLogin = (userData: User) => {
     setUser(userData);
@@ -83,6 +94,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (location.pathname === '/login') {
       setUser(null);
       localStorage.removeItem("limsUser");
+      hasInitialized.current = false; // Reset flag
       setLoading(false);
       return;
     }
@@ -97,6 +109,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     document.cookie = 'refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
     localStorage.removeItem("limsUser");
     setUser(null);
+    hasInitialized.current = false; // Reset flag để có thể initialize lại khi login
     window.location.href = '/login';
   };
 
