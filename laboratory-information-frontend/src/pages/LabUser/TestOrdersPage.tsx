@@ -5,7 +5,6 @@ import { useAuthContext } from '../../hooks/useAuthContext';
 import { useTestOrderActions } from '../../context/TestOrderActionsContext';
 import type { TestOrder, TestResult } from './types/TestOrderTypes';
 import { testOrderService } from '../../service/testOrderService';
-import { mockInstrument } from '../service/data/mockInstrument';
 import type { Instrument } from '../service/types/Instrument';
 import TestOrderToolbar from './components/TestOrderToolbar';
 import TestOrderStatsCards from './components/TestOrderStatsCards';
@@ -18,6 +17,7 @@ import TestOrderDetailModal from './components/modals/TestOrderDetailModal';
 import { calculateStats, filterTestOrders } from './utils/testOrderUtils';
 import { Card, CardContent, CardHeader } from '@/components/common/card';
 import { Skeleton } from '@/components/common/skeleton';
+import { TrendingUpDownIcon } from 'lucide-react';
 
 const TestOrdersPage: React.FC = () => {
   const { user } = useAuthContext();
@@ -34,7 +34,7 @@ const TestOrdersPage: React.FC = () => {
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
-  const [instruments] = useState<Instrument[]>(mockInstrument);
+  const [instruments] = useState<Instrument[]>([]);
   const [showStartTestDialog, setShowStartTestDialog] = useState(false);
   const [selectedInstrument, setSelectedInstrument] = useState('');
   const [showDetailDialog, setShowDetailDialog] = useState(false);
@@ -205,7 +205,7 @@ const handleStatusChange = async (
     setShowDetailDialog(true);
   };
 
-  const availableInstruments = instruments.filter(i => i.status === 'ready' && i.isActive);
+  const availableInstruments = instruments.filter(i => i.status === 'Ready' && i.is_active === true);
 
   if (loading) {
   return (

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
     Dialog,
     DialogContent,
@@ -8,7 +8,6 @@ import {
     DialogTitle,
 } from '../../../components/common/dialog';
 import Button from '../../../components/common/button';
-import { Input } from '../../../components/common/input';
 import { Label } from '../../../components/common/label';
 import {
     Select,
@@ -17,9 +16,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from '../../../components/common/select';
-import { Textarea } from '../../../components/common/textarea';
 import { toast } from 'sonner';
 import type { Instrument } from '../types/Instrument';
+import { instrumentsService } from '../../../service/instrumentsService';
 
 interface AddInstrumentDialogProps {
     open: boolean;
@@ -27,89 +26,69 @@ interface AddInstrumentDialogProps {
     onAddInstrument: (instrument: Instrument) => void;
 }
 
+interface InstrumentFormData {
+    instrument_name: string;
+    instrument_type: string;
+    manufacturer: string;
+    location: string;
+}
+
 export function AddInstrumentDialog({
     open,
     onOpenChange,
     onAddInstrument,
 }: AddInstrumentDialogProps) {
-    const [newInstrument, setNewInstrument] = useState({
-        name: '',
-        model: '',
-        serialNumber: '',
+    const [newInstrument, setNewInstrument] = useState<InstrumentFormData>({
+        instrument_name: '',
+        instrument_type: '',
         manufacturer: '',
         location: '',
-        firmwareVersion: '',
-        testTypes: '',
-        throughputPerHour: '',
-        maintenanceInterval: '',
-        configurations: '',
     });
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const resetForm = () =>
+    const resetForm = useCallback(() => {
         setNewInstrument({
-            name: '',
-            model: '',
-            serialNumber: '',
+            instrument_name: '',
+            instrument_type: '',
             manufacturer: '',
             location: '',
-            firmwareVersion: '',
-            testTypes: '',
-            throughputPerHour: '',
-            maintenanceInterval: '',
-            configurations: '',
         });
+    }, []);
 
-    const handleSubmit = () => {
-        if (
-            !newInstrument.name ||
-            !newInstrument.model ||
-            !newInstrument.serialNumber ||
-            !newInstrument.manufacturer
-        ) {
+    // Reset form when dialog closes
+    useEffect(() => {
+        if (!open) {
+            resetForm();
+            setIsSubmitting(false);
+        }
+    }, [open, resetForm]);
+
+    const handleSubmit = async () => {
+        if (!newInstrument.instrument_name || !newInstrument.instrument_type) {
             toast.error('⚠️ Vui lòng điền đầy đủ các trường bắt buộc');
             return;
         }
 
-        const now = new Date();
-        const currentDate = now.toISOString();
-        const nextCalibration = new Date();
-        nextCalibration.setMonth(nextCalibration.getMonth() + 3);
+        setIsSubmitting(true);
+        try {
+            const payload: Partial<Instrument> = {
+                instrument_name: newInstrument.instrument_name.trim(),
+                instrument_type: newInstrument.instrument_type.trim(),
+                manufacturer: newInstrument.manufacturer.trim() || undefined,
+                location: newInstrument.location.trim() || undefined,
+            };
 
-        const instrument: Instrument = {
-            id: `INS${Date.now().toString().slice(-6)}`,
-            name: newInstrument.name.trim(),
-            model: newInstrument.model.trim(),
-            serialNumber: newInstrument.serialNumber.trim(),
-            manufacturer: newInstrument.manufacturer.trim(),
-            location: newInstrument.location || 'Chưa xác định',
-            status: 'ready',
-            mode: 'ready',
-            isActive: true,
-            isConnected: true,
-            lastCalibration: currentDate.split('T')[0],
-            nextCalibration: nextCalibration.toISOString().split('T')[0],
-            lastMaintenanceDate: currentDate.split('T')[0],
-            maintenanceInterval: parseInt(newInstrument.maintenanceInterval) || 90,
-            firmwareVersion: newInstrument.firmwareVersion || 'v1.0.0',
-            testTypes: newInstrument.testTypes
-                ? newInstrument.testTypes.split(',').map((t) => t.trim())
-                : [],
-            throughputPerHour: parseInt(newInstrument.throughputPerHour) || 100,
-            temperature: 25,
-            errorCount: 0,
-            qcStatus: 'not_required',
-            reagentLevel: 100,
-            lastStatusChange: new Date().toLocaleString('vi-VN'),
-            statusChangedBy: 'admin',
-            configurations: newInstrument.configurations || '{}',
-            createdAt: currentDate,
-            updatedAt: currentDate,
-        };
-
-        onAddInstrument(instrument);
-        onOpenChange(false);
-        resetForm();
-        toast.success('✅ Thêm thiết bị thành công');
+            const createdInstrument = await instrumentsService.createInstrument(payload);
+            onAddInstrument(createdInstrument);
+            onOpenChange(false);
+            resetForm();
+            toast.success('✅ Thêm thiết bị thành công');
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'Không thể thêm thiết bị';
+            toast.error(message);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -125,31 +104,72 @@ export function AddInstrumentDialog({
                 </DialogHeader>
 
                 <div className="grid grid-cols-2 gap-4 mt-2">
-                    {[
-                        { id: 'name', label: 'Tên thiết bị *', placeholder: 'Máy phân tích huyết học HA-500' },
-                        { id: 'model', label: 'Model *', placeholder: 'HA-500' },
-                        { id: 'serialNumber', label: 'Số serial *', placeholder: 'HA500-2024-001' },
-                    ].map((f) => (
-                        <div className="space-y-2" key={f.id}>
-                            <Label htmlFor={f.id}>{f.label}</Label>
-                            <Input
-                                id={f.id}
-                                value={newInstrument[f.id as keyof typeof newInstrument] || ""}
-                                onChange={(e) =>
-                                    setNewInstrument({
-                                        ...newInstrument,
-                                        [f.id]: e.target.value,
-                                    })
-                                }
-                                placeholder={f.placeholder}
-                            />
+                    {/* Instrument Name */}
+                    <div className="space-y-2">
+                        <Label htmlFor="instrument_name">Tên thiết bị *</Label>
+                        <Select
+                            value={newInstrument.instrument_name}
+                            onValueChange={(value) =>
+                                setNewInstrument({
+                                    ...newInstrument,
+                                    instrument_name: value,
+                                })
+                            }
+                        >
+                            <SelectTrigger className="bg-white border border-gray-300 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <SelectValue placeholder="Chọn loại thiết bị hoặc nhập tên thiết bị" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-white border border-gray-200 shadow-md">
+                                {[
+                                    'Máy phân tích huyết học HA-500',
+                                    'Máy sinh hóa tự động AU480',
+                                    'Máy đông máu ACL TOP 300',
+                                    'Máy xét nghiệm nước tiểu Urisys 1100',
+                                    'Máy miễn dịch tự động Architect i1000SR',
+                                    'Máy PCR Rotor-Gene Q',
+                                    'Thiết bị khác'
+                                ].map((name) => (
+                                    <SelectItem key={name} value={name}>
+                                        {name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
 
-                        </div>
-                    ))}
+                    {/* Instrument Type */}
+                    <div className="space-y-2">
+                        <Label htmlFor="instrument_type">Loại thiết bị *</Label>
+                        <Select
+                            value={newInstrument.instrument_type}
+                            onValueChange={(value) =>
+                                setNewInstrument({ ...newInstrument, instrument_type: value })
+                            }
+                        >
+                            <SelectTrigger className="bg-white border border-gray-300 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <SelectValue placeholder="Chọn loại thiết bị" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-white border border-gray-200 shadow-md">
+                                {[
+                                    'Máy phân tích huyết học',
+                                    'Máy sinh hóa tự động',
+                                    'Máy đông máu',
+                                    'Máy xét nghiệm nước tiểu',
+                                    'Máy miễn dịch tự động',
+                                    'Máy PCR',
+                                    'Thiết bị khác'
+                                ].map((type) => (
+                                    <SelectItem key={type} value={type}>
+                                        {type}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
 
                     {/* Manufacturer */}
                     <div className="space-y-2">
-                        <Label>Nhà sản xuất *</Label>
+                        <Label>Nhà sản xuất</Label>
                         <Select
                             value={newInstrument.manufacturer}
                             onValueChange={(value) =>
@@ -176,7 +196,6 @@ export function AddInstrumentDialog({
                                 ))}
                             </SelectContent>
                         </Select>
-
                     </div>
 
                     {/* Location */}
@@ -200,91 +219,16 @@ export function AddInstrumentDialog({
                                 <SelectItem value="Phòng Đông máu">Phòng Đông máu</SelectItem>
                             </SelectContent>
                         </Select>
-
-                    </div>
-                    {/* Firmware */}
-                    <div className="space-y-2">
-                        <Label>Phiên bản firmware</Label>
-                        <Input
-                            value={newInstrument.firmwareVersion}
-                            onChange={(e) =>
-                                setNewInstrument({
-                                    ...newInstrument,
-                                    firmwareVersion: e.target.value,
-                                })
-                            }
-                            placeholder="v2.1.3"
-                        />
-                    </div>
-
-                    {/* Test types */}
-                    <div className="space-y-2">
-                        <Label>Loại xét nghiệm</Label>
-                        <Input
-                            value={newInstrument.testTypes}
-                            onChange={(e) =>
-                                setNewInstrument({
-                                    ...newInstrument,
-                                    testTypes: e.target.value,
-                                })
-                            }
-                            placeholder="CBC, WBC, RBC, PLT"
-                        />
-                    </div>
-
-                    {/* Performance */}
-                    <div className="space-y-2">
-                        <Label>Công suất (mẫu/giờ)</Label>
-                        <Input
-                            type="number"
-                            value={newInstrument.throughputPerHour}
-                            onChange={(e) =>
-                                setNewInstrument({
-                                    ...newInstrument,
-                                    throughputPerHour: e.target.value,
-                                })
-                            }
-                            placeholder="120"
-                        />
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label>Chu kỳ bảo trì (ngày)</Label>
-                        <Input
-                            type="number"
-                            value={newInstrument.maintenanceInterval}
-                            onChange={(e) =>
-                                setNewInstrument({
-                                    ...newInstrument,
-                                    maintenanceInterval: e.target.value,
-                                })
-                            }
-                            placeholder="90"
-                        />
-                    </div>
-
-                    {/* Config JSON */}
-                    <div className="col-span-2 space-y-2">
-                        <Label>Cấu hình thiết bị (JSON)</Label>
-                        <Textarea
-                            value={newInstrument.configurations}
-                            onChange={(e) =>
-                                setNewInstrument({
-                                    ...newInstrument,
-                                    configurations: e.target.value,
-                                })
-                            }
-                            rows={3}
-                            placeholder='{"sampleVolume": 200, "dilutionRatio": "1:1000"}'
-                        />
                     </div>
                 </div>
 
                 <DialogFooter className="mt-4">
-                    <Button variant="outline" onClick={() => onOpenChange(false)}>
+                    <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
                         Hủy
                     </Button>
-                    <Button onClick={handleSubmit}>Thêm thiết bị</Button>
+                    <Button onClick={handleSubmit} disabled={isSubmitting}>
+                        {isSubmitting ? 'Đang thêm...' : 'Thêm thiết bị'}
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

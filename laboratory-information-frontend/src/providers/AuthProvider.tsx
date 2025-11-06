@@ -12,10 +12,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const location = useLocation(); // THÊM DÒNG NÀY
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const hasInitialized = useRef(false); // Track xem đã initialize chưa
+  const hasInitialized = useRef(false);
 
   useEffect(() => {
-    // 1. BỎ QUA TRANG LOGIN
     if (location.pathname === '/login') {
       setLoading(false);
       hasInitialized.current = false; // Reset khi vào trang login
