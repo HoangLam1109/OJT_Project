@@ -34,14 +34,29 @@ export class ReagentController {
     }
   }
 
-  // async update(req: Request, res: Response) {
-  //   try {
-  //     const reagent = await service.updateReagent(req.params.id, req.body);
-  //     res.json({ success: true, data: reagent });
-  //   } catch (err: any) {
-  //     res.status(400).json({ success: false, message: err.message });
-  //   }
-  // }
+// Cập nhật reagent
+async updateReagent(req: Request, res: Response) {
+  try {
+    const _id = req.params.id as string;
+    const data = req.body;
+
+    const updatedReagent = await service.update(_id, data);
+
+    if (!updatedReagent) {
+      return res.status(404).json({ message: 'Reagent không tìm thấy' });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Cập nhật reagent thành công',
+      data: updatedReagent,
+    });
+  } catch (error) {
+    console.error('❌ Lỗi khi cập nhật reagent:', error);
+    res.status(500).json({ message: 'Lỗi server khi cập nhật reagent' });
+  }
+}
+
 
   async deleteReagent(req: Request, res: Response) {
      try {

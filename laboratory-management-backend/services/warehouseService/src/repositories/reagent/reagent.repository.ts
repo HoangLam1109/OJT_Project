@@ -19,12 +19,12 @@ export class ReagentRepository {
     return reagent.save();
   }
 
-  async update(id: string, data: Partial<IReagent>): Promise<IReagent | null> {
+  async findAndUpdate(id: string, data: Partial<IReagent>): Promise<IReagent | null> {
     return Reagent.findOneAndUpdate(
       { _id: id, is_deleted: false },
       { $set: data },
       { new: true }
-    );
+    ).exec();
   }
 
 async softDelete(_id: string, deletedBy: string): Promise<IReagent | null> {
