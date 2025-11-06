@@ -2,12 +2,12 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Button from '../../components/common/button';
 import { ArrowLeft, ArrowRight, Check, Search, X } from 'lucide-react';
-import { mockInstrument } from '../service/data/mockInstrument';
 import type { Instrument } from '../service/types/Instrument';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader } from '../../components/common/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/common/table';
 import { Input } from '../../components/common/input';
+import { instrumentsService } from '../../service/instrumentsService';
 
 interface SelectedInstrument {
   instrumentId: string;
@@ -15,7 +15,7 @@ interface SelectedInstrument {
 }
 
 interface LocationState {
-  formData: any;
+  formData: Record<string, unknown>;
 }
 
 const SelectInstrumentsPage: React.FC = () => {
@@ -23,17 +23,10 @@ const SelectInstrumentsPage: React.FC = () => {
   const location = useLocation();
   const state = location.state as LocationState | null;
 
-  const [instruments] = useState<Instrument[]>(mockInstrument);
+  const [instruments, setInstruments] = useState<Instrument[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedInstruments, setSelectedInstruments] = useState<Record<string, SelectedInstrument>>({});
   const [searchQuery, setSearchQuery] = useState('');
-
-    const initial: Record<string, number> = {};
-    instruments.forEach(inst => {
-      // Mock: Each instrument has 5 units available
-      initial[inst.id] = 5;
-    });
-    return initial;
-  });
 
   useEffect(() => {
     if (!state?.formData) {
@@ -42,6 +35,16 @@ const SelectInstrumentsPage: React.FC = () => {
     }
   }, [state, navigate]);
 
+  // Load instruments from API
+  useEffect(() => {
+    const loadInstruments = async () => {
+      setIsLoading(true);
+      try {
+        const data = await instrumentsService.getAllInstruments();
+        setInstruments(data);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Không thể tải danh sách thiết bị';
+        toast.error(message);
       } finally {
         setIsLoading(false);
       }
@@ -49,6 +52,7 @@ const SelectInstrumentsPage: React.FC = () => {
 
     loadInstruments();
   }, []);
+
   const handleToggleSelect = (instrumentId: string) => {
     setSelectedInstruments(prev => {
       const newState = { ...prev };
@@ -64,12 +68,14 @@ const SelectInstrumentsPage: React.FC = () => {
     });
   };
 
+  // Get available quantity for an instrument (mock: always 5 for now)
   // In real app, this would come from API based on instrumentId
   const getAvailableQuantity = (): number => {
     return 5;
   };
 
   const handleQuantityChange = (instrumentId: string, quantity: number) => {
+    const available = getAvailableQuantity();
     const newQuantity = Math.max(1, Math.min(quantity, available));
     
     setSelectedInstruments(prev => ({
@@ -119,6 +125,7 @@ const SelectInstrumentsPage: React.FC = () => {
         instrument.instrument_name.toLowerCase().includes(query) ||
         instrument.instrument_code.toLowerCase().includes(query) ||
         instrument._id.toLowerCase().includes(query) ||
+        instrument.instrument_type.toLowerCase().includes(query)
     );
   }, [instruments, searchQuery]);
 
@@ -245,7 +252,11 @@ const SelectInstrumentsPage: React.FC = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredInstruments.length === 0 ? (
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+                      Đang tải danh sách thiết bị...
+                    </TableCell>
                   </TableRow>
                 ) : filteredInstruments.length === 0 ? (
                   <TableRow>
@@ -258,8 +269,10 @@ const SelectInstrumentsPage: React.FC = () => {
                   const isSelected = !!selectedInstruments[instrument._id];
                   const selected = selectedInstruments[instrument._id];
                   const remaining = getRemainingQuantity(instrument._id);
+                  const available = getAvailableQuantity();
 
                   return (
+                    <TableRow key={instrument._id}>
                       <TableCell>
                         <button
                           type="button"
@@ -277,6 +290,7 @@ const SelectInstrumentsPage: React.FC = () => {
                         {instrument.instrument_code}
                       </TableCell>
                       <TableCell className="font-medium">
+                        {instrument.instrument_name}
                       </TableCell>
                       <TableCell>
                         {isSelected ? (
@@ -342,6 +356,7 @@ const SelectInstrumentsPage: React.FC = () => {
                       {instrument.instrument_name}
                     </p>
                     <p className="text-xs text-gray-500 font-mono mt-1">
+                      {instrument.instrument_code}
                     </p>
                     <p className="text-xs text-gray-600 mt-1">
                       Số lượng: <span className="font-semibold text-blue-600">{instrument.quantity}</span>
