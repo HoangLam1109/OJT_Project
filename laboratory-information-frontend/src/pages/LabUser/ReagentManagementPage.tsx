@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { mockReagents, type Reagent } from './data/mockReagentsData';
+import type { Reagent } from './data/mockReagentsData';
 import { useAuthContext } from '../../hooks/useAuthContext';
+import { reagentService } from '../../service/reagentService';
+import { toast } from 'sonner';
 import ReagentToolbar from './components/ReagentToolbar';
 import ReagentTable from './components/ReagentTable';
 import ReagentFormModal from './components/modals/ReagentFormModal';
@@ -10,8 +12,8 @@ import { filterReagents } from './utils/reagentUtils';
 
 const ReagentManagementPage: React.FC = () => {
   const { user } = useAuthContext();
-  const [reagents, setReagents] = useState<Reagent[]>(mockReagents);
-  const [filteredReagents, setFilteredReagents] = useState<Reagent[]>(mockReagents);
+  const [reagents, setReagents] = useState<Reagent[]>([]);
+  const [filteredReagents, setFilteredReagents] = useState<Reagent[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('All');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -20,6 +22,33 @@ const ReagentManagementPage: React.FC = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedReagent, setSelectedReagent] = useState<Reagent | null>(null);
   const [editingReagent, setEditingReagent] = useState<Partial<Reagent>>({});
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch reagents from API
+  useEffect(() => {
+    const fetchReagents = async () => {
+      setIsLoading(true);
+      try {
+        const allReagents = await reagentService.getAllReagents();
+        setReagents(allReagents);
+      } catch (error: any) {
+        console.error('Error fetching reagents:', error);
+        
+        // Check if it's a network/connection error
+        if (error.message?.includes('Network Error') || error.code === 'ERR_NETWORK' || error.code === 'ERR_CONNECTION_REFUSED') {
+          toast.error('Không thể kết nối đến server. Vui lòng kiểm tra backend service đã chạy chưa (port 5003)');
+        } else {
+          toast.error(error.message || 'Không thể tải danh sách thuốc thử');
+        }
+        
+        setReagents([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchReagents();
+  }, []);
 
   useEffect(() => {
     const filtered = filterReagents(reagents, searchTerm, statusFilter);
@@ -36,9 +65,23 @@ const ReagentManagementPage: React.FC = () => {
     setIsEditModalOpen(true);
   };
 
-  const handleViewDetails = (reagent: Reagent) => {
-    setSelectedReagent(reagent);
-    setIsDetailModalOpen(true);
+  const handleViewDetails = async (reagent: Reagent) => {
+    try {
+      // Fetch full details from API using getById
+      const fullReagent = await reagentService.getReagentById(reagent.id);
+      if (fullReagent) {
+        setSelectedReagent(fullReagent);
+        setIsDetailModalOpen(true);
+      } else {
+        toast.error('Không tìm thấy thông tin thuốc thử');
+      }
+    } catch (error: any) {
+      console.error('Error fetching reagent details:', error);
+      toast.error(error.message || 'Không thể tải thông tin thuốc thử');
+      // Fallback to use the reagent from list
+      setSelectedReagent(reagent);
+      setIsDetailModalOpen(true);
+    }
   };
 
   const handleDeleteReagent = (reagent: Reagent) => {
@@ -47,73 +90,13 @@ const ReagentManagementPage: React.FC = () => {
   };
 
   const handleSaveReagent = () => {
-    if (!editingReagent.name || !editingReagent.lotNumber || !editingReagent.quantity || !editingReagent.expiryDate) {
-      alert('Vui lòng điền đầy đủ thông tin bắt buộc');
-      return;
-    }
-
-    const existingReagent = reagents.find(reagent => 
-      reagent.lotNumber === editingReagent.lotNumber && reagent.id !== editingReagent.id
-    );
-    if (existingReagent) {
-      alert('Số lô đã tồn tại');
-      return;
-    }
-
-    const expiryDate = new Date(editingReagent.expiryDate);
-    const currentDate = new Date();
-    if (expiryDate <= currentDate) {
-      alert('Ngày hết hạn phải sau ngày hiện tại');
-      return;
-    }
-
-    if (editingReagent.quantity! < 1) {
-      alert('Số lượng phải lớn hơn 0');
-      return;
-    }
-
-    if (editingReagent.id) {
-      const updatedReagent = {
-        ...editingReagent,
-        updatedAt: new Date().toISOString()
-      } as Reagent;
-      
-      setReagents(prev => prev.map(reagent => reagent.id === editingReagent.id ? updatedReagent : reagent));
-      console.log(`[AUDIT] E_00027 | Reagent modified by ${user?.name}`);
-    } else {
-      const newReagent: Reagent = {
-        id: `RG-${String(reagents.length + 1).padStart(3, '0')}`,
-        name: editingReagent.name!,
-        lotNumber: editingReagent.lotNumber!,
-        manufacturer: editingReagent.manufacturer,
-        receivedDate: editingReagent.receivedDate || new Date().toISOString().split('T')[0],
-        expiryDate: editingReagent.expiryDate!,
-        quantity: editingReagent.quantity!,
-        status: editingReagent.status || 'Available',
-        storageLocation: editingReagent.storageLocation || '',
-        usedInTests: [],
-        notes: editingReagent.notes,
-        createdBy: user?.id || 'unknown',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      
-      setReagents(prev => [...prev, newReagent]);
-      console.log(`[AUDIT] E_00026 | Reagent created by ${user?.name}`);
-    }
-
-    setIsAddModalOpen(false);
-    setIsEditModalOpen(false);
-    setEditingReagent({});
+    toast.info('Chức năng tạo/cập nhật thuốc thử chưa được kích hoạt');
   };
 
   const handleDeleteConfirm = () => {
-    if (selectedReagent) {
-      setReagents(prev => prev.filter(reagent => reagent.id !== selectedReagent.id));
-      console.log(`[AUDIT] E_00028 | Reagent deleted by ${user?.name}`);
-      setIsDeleteModalOpen(false);
-      setSelectedReagent(null);
-    }
+    toast.info('Chức năng xóa thuốc thử chưa được kích hoạt');
+    setIsDeleteModalOpen(false);
+    setSelectedReagent(null);
   };
 
   const handleReagentChange = (field: keyof Reagent, value: any) => {
@@ -147,6 +130,7 @@ const ReagentManagementPage: React.FC = () => {
 
       <ReagentTable
         reagents={filteredReagents}
+        isLoading={isLoading}
         onView={handleViewDetails}
         onEdit={handleEditReagent}
         onDelete={handleDeleteReagent}
