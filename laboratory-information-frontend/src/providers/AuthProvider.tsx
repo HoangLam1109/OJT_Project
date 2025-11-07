@@ -15,9 +15,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const hasInitialized = useRef(false);
 
   useEffect(() => {
-    if (location.pathname === '/login') {
+    // Các route public không cần kiểm tra authentication
+    const publicRoutes = ['/', '/login', '/register', '/auth/google/callback'];
+    const isPublicRoute = publicRoutes.includes(location.pathname);
+
+    if (isPublicRoute) {
+      // Nếu là route public, chỉ xử lý Google OAuth callback nếu cần
+      if (location.pathname === '/auth/google/callback' || isGoogleCallback()) {
+        const handleGoogleAuth = async () => {
+          try {
+            const googleUser = await handleGoogleCallback();
+            if (googleUser) {
+              onLogin(googleUser);
+              cleanGoogleCallbackUrl();
+            }
+          } catch (error) {
+            console.error('Google OAuth error:', error);
+          } finally {
+            setLoading(false);
+          }
+        };
+        handleGoogleAuth();
+        return;
+      }
+      
+      // Các route public khác không cần kiểm tra auth
       setLoading(false);
-      hasInitialized.current = false; // Reset khi vào trang login
+      if (location.pathname === '/login') {
+        hasInitialized.current = false; // Reset khi vào trang login
+      }
       return;
     }
 
