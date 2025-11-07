@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Button from "@/components/common/button";
 import { Card } from "@/components/common/card";
-import { MessageCircle, X, Send, Loader2 } from "lucide-react";
+import { MessageCircle, X, Send } from "lucide-react";
 import { Textarea } from "@/components/common/textarea";
 import { sendMessage, continueChat } from "@/service/chatBoxService";
 
@@ -127,6 +127,20 @@ const ChatBox = () => {
                 </div>
               </div>
             ))}
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="max-w-[80%] rounded-lg p-3 bg-muted text-foreground">
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm">Thinking...</span>
+                    <span className="flex gap-0.5">
+                      <span className="w-1 h-1 bg-foreground rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                      <span className="w-1 h-1 bg-foreground rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                      <span className="w-1 h-1 bg-foreground rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Input */}
@@ -150,11 +164,7 @@ const ChatBox = () => {
                 className="shrink-0"
                 disabled={isLoading || !inputMessage.trim()}
               >
-                {isLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Send className="h-4 w-4" />
-                )}
+                <Send className="h-4 w-4" />
               </Button>
             </div>
           </div>
