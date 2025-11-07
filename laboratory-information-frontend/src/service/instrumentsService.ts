@@ -201,5 +201,17 @@ export const instrumentsService = {
         console.error('Error updating instrument:', error);
         throw new Error(apiUtils.getErrorMessage(error));
     }
+},
+
+async deleteInstrument(_id: string): Promise<Instrument> {
+    try {
+        const response = await instrumentsApiClient.delete(`${INSTRUMENTS_API_BASE_URL}/${_id}`);
+        const payload = response.data as unknown;
+        const item = extractDataItem(payload);
+        return transformBackendInstrument(item);
+    } catch (error) {
+        console.error('Error deleting instrument:', error);
+        throw new Error(apiUtils.getErrorMessage(error));
+    }
 }
 };

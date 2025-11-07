@@ -7,15 +7,14 @@ let db: Db | null = null;
 
 export const connectDB = async (): Promise<void> => {
   try {
-    console.log(process.env.MONGODB_URI);
-    if (!process.env.MONGODB_URI) {
-      throw new Error('MONGODB_URI is not defined in environment variables');
+    if (!process.env.MONGO_URI) {
+      throw new Error('MONGO_URI is not defined in environment variables');
     }
 
-    client = new MongoClient(process.env.MONGODB_URI);
+    client = new MongoClient(process.env.MONGO_URI);
     await client.connect();
     // Using the test database
-    db = client.db('patientService');
+    db = client.db('test');
     await db.command({ ping: 1 });
 
     console.log('Successfully connected to MongoDB!');

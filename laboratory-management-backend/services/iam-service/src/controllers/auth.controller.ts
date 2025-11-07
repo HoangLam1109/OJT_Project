@@ -47,8 +47,6 @@ const registerUser = async (req: Request, res: Response, next: NextFunction): Pr
     #swagger.responses[500] = { description: 'Internal server error' }
   */
   try {
-    console.log('[AuthController] POST /api/auth/register called');
-    console.log('[AuthController] Body keys:', Object.keys(req.body || {}));
     const {
       email,
       fullName,
@@ -105,14 +103,12 @@ const registerUser = async (req: Request, res: Response, next: NextFunction): Pr
     // Auto-create patient record only for normal users
     if (!newUser.role || newUser.role[0] === ROLE_CODES.USER) {
       console.log('[AuthController] Auto-creating patient for user role USER');
-      await patientServiceClient.createPatientForUser(newUser._id, {
-        performerId: newUser._id,
-        performerEmail: newUser.email,
-      });
+      await patientServiceClient.createPatientForUser(newUser._id);
     }
 
     res.status(200).json({
       message: "User created successfully!",
+      userId: newUser._id,
     });
   } catch (error) {
     next(error);
@@ -242,7 +238,7 @@ const refreshToken = async (req: Request, res: Response, next: NextFunction) => 
   try {
     const userId = (req as any).userId;
     const refreshToken = req.cookies.refreshToken;
-    console.log("Xác nhận có userID được truyền vào refreshToken không:",userId)
+
     if (!refreshToken) {
       throw new AppError(401, "No refresh token provided");
     }

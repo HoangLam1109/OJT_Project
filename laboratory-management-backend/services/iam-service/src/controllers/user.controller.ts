@@ -23,11 +23,7 @@ interface AuthenticatedUser {
 
 const userService = new UserService();
 
-const getCurrentUser = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+const getCurrentUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   /*
     #swagger.auto = false
     #swagger.tags = ['User CRUD']
@@ -57,12 +53,12 @@ const getCurrentUser = async (
   try {
     const currentUser = req.user as AuthenticatedUser | undefined;
     if (!currentUser?._id) {
-      throw new AppError(401, "Unauthorized: User not found");
+      throw new AppError(401, 'Unauthorized: User not found');
     }
 
     const user = await userService.getUser(currentUser._id);
     if (!user) {
-      throw new AppError(404, "User not found");
+      throw new AppError(404, 'User not found');
     }
 
     res.json({ user });
@@ -71,11 +67,7 @@ const getCurrentUser = async (
   }
 };
 
-const getUser = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+const getUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   /*
     #swagger.auto = false
     #swagger.tags = ['User CRUD']
@@ -112,12 +104,12 @@ const getUser = async (
   try {
     const userId = req.params.id || (req.user as AuthenticatedUser)?._id;
     if (!userId) {
-      throw new AppError(400, "User ID is required");
+      throw new AppError(400, 'User ID is required');
     }
 
     const user = await userService.getUser(userId);
     if (!user) {
-      throw new AppError(404, "User not found");
+      throw new AppError(404, 'User not found');
     }
 
     // Return in consistent format for internal API calls
@@ -223,11 +215,7 @@ const getUsersWithPagination = async (
   }
 };
 
-const createUser = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+const createUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   /*
     #swagger.auto = false
     #swagger.tags = ['User CRUD']
@@ -262,21 +250,16 @@ const createUser = async (
     #swagger.responses[500] = { description: 'Internal server error' }
   */
   try {
-    console.log('[UserController] POST /api/v1/user/create called');
-    console.log('[UserController] Body keys:', Object.keys(req.body || {}));
     const userData = req.body;
-    const newUser = await userService.createUser(
-      userData,
-      (req.user as AuthenticatedUser)?._id
-    );
-    console.log("[UserController] Created user role:", newUser.role);
-
+    const newUser = await userService.createUser(userData, (req.user as AuthenticatedUser)?._id);
+    console.log('[UserController] Created user role:', newUser.role);
+    
     // Auto-create patient record only for normal users
     if (!newUser.role || newUser.role.includes(ROLE_CODES.USER)) {
-      console.log("[UserController] Auto-creating patient for user role USER");
+      console.log('[UserController] Auto-creating patient for user role USER');
       await patientServiceClient.createPatientForUser(newUser._id);
     }
-
+    
     res.status(201).json({
       message: "User created successfully!",
       userId: newUser._id,
@@ -286,11 +269,7 @@ const createUser = async (
   }
 };
 
-const updateUser = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+const updateUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   /*
     #swagger.auto = false
     #swagger.tags = ['User CRUD']
@@ -334,7 +313,7 @@ const updateUser = async (
   try {
     const userId = req.params.id;
     if (!userId) {
-      throw new AppError(400, "User ID is required");
+      throw new AppError(400, 'User ID is required');
     }
 
     const userData = req.body;
@@ -345,7 +324,7 @@ const updateUser = async (
     );
 
     if (!updatedUser) {
-      throw new AppError(404, "User not found");
+      throw new AppError(404, 'User not found');
     }
 
     res.status(201).json({
@@ -357,11 +336,7 @@ const updateUser = async (
   }
 };
 
-const deleteUser = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+const deleteUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   /*
     #swagger.auto = false
     #swagger.tags = ['User CRUD']
@@ -388,7 +363,7 @@ const deleteUser = async (
   try {
     const userId = req.params.id;
     if (!userId) {
-      throw new AppError(400, "User ID is required");
+      throw new AppError(400, 'User ID is required');
     }
 
     const deletedUser = await userService.deleteUser(
@@ -396,7 +371,7 @@ const deleteUser = async (
       (req.user as AuthenticatedUser)?._id
     );
     if (!deletedUser) {
-      throw new AppError(404, "User not found");
+      throw new AppError(404, 'User not found');
     }
 
     res.status(200).json({
@@ -450,12 +425,12 @@ const getUserRolesAndPrivileges = async (
   try {
     const userId = req.params.id;
     if (!userId) {
-      throw new AppError(400, "User ID is required");
+      throw new AppError(400, 'User ID is required');
     }
 
     const result = await userService.getUserRolesAndPrivileges(userId);
     if (!result) {
-      throw new AppError(404, "User not found");
+      throw new AppError(404, 'User not found');
     }
 
     res.status(200).json(result);
@@ -499,12 +474,12 @@ const getCurrentUserRolesAndPrivileges = async (
   try {
     const currentUser = req.user as AuthenticatedUser;
     if (!currentUser) {
-      throw new AppError(401, "Not authenticated");
+      throw new AppError(401, 'Not authenticated');
     }
 
     const result = await userService.getUserRolesAndPrivileges(currentUser._id);
     if (!result) {
-      throw new AppError(404, "User not found");
+      throw new AppError(404, 'User not found');
     }
 
     res.status(200).json(result);
@@ -513,11 +488,7 @@ const getCurrentUserRolesAndPrivileges = async (
   }
 };
 
-const assignRoleToUser = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+const assignRoleToUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   /*
     #swagger.auto = false
     #swagger.tags = ['Additional']
@@ -552,21 +523,17 @@ const assignRoleToUser = async (
   try {
     const userId = req.params.id;
     if (!userId) {
-      throw new AppError(400, "User ID is required");
+      throw new AppError(400, 'User ID is required');
     }
 
     const role = req.body.role;
     if (!role) {
-      throw new AppError(400, "Role is required");
+      throw new AppError(400, 'Role is required');
     }
 
-    const result = await userService.assignRoleToUser(
-      userId,
-      role,
-      (req.user as AuthenticatedUser)?._id
-    );
+    const result = await userService.assignRoleToUser(userId, role, (req.user as AuthenticatedUser)?._id);
     if (!result) {
-      throw new AppError(404, "User not found");
+      throw new AppError(404, 'User not found');
     }
 
     res.status(200).json({
@@ -578,11 +545,7 @@ const assignRoleToUser = async (
   }
 };
 
-const lockUser = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+const lockUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   /*
     #swagger.auto = false
     #swagger.tags = ['Additional']
@@ -617,17 +580,13 @@ const lockUser = async (
   try {
     const userId = req.params.id;
     if (!userId) {
-      throw new AppError(400, "User ID is required");
+      throw new AppError(400, 'User ID is required');
     }
 
     const isActive = req.body.isActive;
-    const result = await userService.lockUser(
-      userId,
-      isActive,
-      (req.user as AuthenticatedUser)?._id
-    );
+    const result = await userService.lockUser(userId, isActive , (req.user as AuthenticatedUser)?._id);
     if (!result) {
-      throw new AppError(404, "User not found");
+      throw new AppError(404, 'User not found');
     }
 
     res.status(200).json({

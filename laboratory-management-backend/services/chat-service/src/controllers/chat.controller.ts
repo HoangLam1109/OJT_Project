@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { AppError } from '../middlewares/error.middleware.js';
 import { callAgent } from '../services/agent.service.js';
+import { callFAQAgent } from '../services/faq-agent.service.js';
 import { getDb } from '../config/database.config.js';
 
 export const startChat = async (req: Request, res: Response, next: NextFunction) => {
@@ -28,7 +29,7 @@ export const startChat = async (req: Request, res: Response, next: NextFunction)
 
     const threadId = Date.now().toString();
     const db = getDb();
-    const response = await callAgent({ db, query: message, threadId });
+    const response = await callFAQAgent({ db, query: message, threadId });
     
     res.status(200).json({
       status: 'success',
@@ -77,7 +78,7 @@ export const continueChat = async (req: Request, res: Response, next: NextFuncti
     }
 
     const db = getDb();
-    const response = await callAgent({ db, query: message, threadId });
+    const response = await callFAQAgent({ db, query: message, threadId });
     
     res.status(200).json({
       status: 'success',

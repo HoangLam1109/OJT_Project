@@ -17,6 +17,10 @@
       "description": "Role management operations (requires authentication)"
     },
     {
+      "name": "Audit Logs",
+      "description": "Audit log operations (requires admin authentication)"
+    },
+    {
       "name": "Authentication",
       "description": "Authentication and authorization operations"
     },
@@ -54,6 +58,11 @@
           },
           {
             "name": "x-internal-api-key",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "X-Internal-API-Key",
             "in": "header",
             "type": "string"
           }
@@ -2148,6 +2157,316 @@
           },
           "404": {
             "description": "Role not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/log/all": {
+      "get": {
+        "tags": [
+          "Audit Logs"
+        ],
+        "description": "Get logs with pagination (For performedAt option please use MM/DD/YYYY or YYYY-MM-DD format)",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of logs per page (1-100)",
+            "required": false,
+            "type": "integer",
+            "default": 10
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Cursor for next page (log ID)",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "description": "Field to sort by",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "createdAt",
+              "_id",
+              "action",
+              "eventMessage",
+              "performedAt",
+              "serviceName"
+            ],
+            "default": "_id"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Search term to filter logs",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "searchField",
+            "in": "query",
+            "description": "Fields to search by",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "action",
+              "eventMessage",
+              "performedAt",
+              "serviceName"
+            ],
+            "default": "action"
+          },
+          {
+            "name": "sortOrder",
+            "in": "query",
+            "description": "Sort order",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "default": "asc"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Logs retrieved successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "array"
+                    },
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "_id": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "action": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "eventMessage": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "userId": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "performedAt": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "serviceName": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "example": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "pagination": {
+                  "type": "object",
+                  "properties": {
+                    "hasNextPage": {
+                      "type": "string",
+                      "example": "boolean"
+                    },
+                    "hasPreviousPage": {
+                      "type": "string",
+                      "example": "boolean"
+                    },
+                    "nextCursor": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "previousCursor": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "totalCount": {
+                      "type": "string",
+                      "example": "number"
+                    },
+                    "limit": {
+                      "type": "string",
+                      "example": "number"
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid pagination parameters"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/log/{id}": {
+      "get": {
+        "tags": [
+          "Audit Logs"
+        ],
+        "description": "Get log by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Log ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Log retrieved successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "_id": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "action": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "eventMessage": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "userId": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "performedAt": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "serviceName": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "createdAt": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "updatedAt": {
+                  "type": "string",
+                  "example": "string"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Log ID is required"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "404": {
+            "description": "Log not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/log/delete/{id}": {
+      "delete": {
+        "tags": [
+          "Audit Logs"
+        ],
+        "description": "Delete log by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Log ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Log deleted successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Log deleted successfully!"
+                },
+                "logId": {
+                  "type": "string",
+                  "example": "string"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Log ID is required"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "404": {
+            "description": "Log not found"
           },
           "500": {
             "description": "Internal server error"
