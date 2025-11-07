@@ -178,12 +178,6 @@ export class RoleService {
     return await roleRepository.findOne({ roleCode });
   }
 
-  async getAllRoles(): Promise<IRole[]> {
-    return await roleRepository.findAll(
-      "_id roleCode roleName description isSystemRole isActive privileges"
-    );
-  }
-
   async getRolesWithPagination(
     options: PaginationOptions
   ): Promise<PaginationResponse<IRole>> {
