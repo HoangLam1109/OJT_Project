@@ -1,9 +1,11 @@
 
+import { useState } from 'react';
 import Button from './button';
-import { ChevronLeft, Menu, Shield, User } from 'lucide-react';
+import { ChevronLeft, Menu, Shield, User, ChevronDown, Plus } from 'lucide-react';
 import type { SidebarProps } from '../../types/Layout.types';
 import { LogoutButton } from './LogoutButton'; 
 import { useNavigate } from 'react-router-dom';
+
 export function Sidebar({
   currentUserName,
   currentUserRole,
@@ -13,7 +15,8 @@ export function Sidebar({
   onNavigate,
   navigationItems,
 }: SidebarProps) {
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
+  const [openDropdowns, setOpenDropdowns] = useState<Set<string>>(new Set());
 
   return (
     <div className={`bg-white shadow-lg transition-all duration-300 ${
@@ -49,25 +52,98 @@ export function Sidebar({
         {navigationItems.map((item) => {
           const isActive = currentPage === item.id || 
             (item.id === 'user-management' && currentPage === 'add-user');
+          const hasDropdown = item.dropdownItems && item.dropdownItems.length > 0;
+          const isDropdownOpen = openDropdowns.has(item.id);
 
           return (
-            <Button
-              key={item.id}
-              variant={isActive ? "default" : "ghost"}
-              className={`w-full justify-start px-3 py-2 h-auto ${
-                sidebarCollapsed ? 'px-2' : ''
-              } ${
-                isActive
-                  ? 'bg-blue-600 text-white hover:bg-blue-700' 
-                  : 'text-gray-700 hover:bg-gray-100'
-              }`}
-              onClick={() => onNavigate(item.id)}
+            <div 
+              key={item.id} 
+              className="space-y-1"
+              onMouseEnter={() => {
+                if (hasDropdown && !sidebarCollapsed) {
+                  setOpenDropdowns(prev => {
+                    const newSet = new Set(prev);
+                    newSet.add(item.id);
+                    return newSet;
+                  });
+                }
+              }}
+              onMouseLeave={() => {
+                if (hasDropdown && !sidebarCollapsed) {
+                  setOpenDropdowns(prev => {
+                    const newSet = new Set(prev);
+                    newSet.delete(item.id);
+                    return newSet;
+                  });
+                }
+              }}
             >
-              <item.icon className={`h-5 w-5 ${sidebarCollapsed ? '' : 'mr-3'} ${
-                isActive ? 'text-white' : 'text-gray-500'
-              }`} />
-              {!sidebarCollapsed && <span className="flex-1 text-left">{item.label}</span>}
-            </Button>
+              <div className="flex items-stretch gap-1">
+                <Button
+                  variant={isActive ? "default" : "ghost"}
+                  className={`flex-1 justify-start px-3 py-2 ${
+                    sidebarCollapsed ? 'px-2' : ''
+                  } ${
+                    isActive
+                      ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                      : 'text-gray-700 hover:bg-gray-100'
+                  } ${
+                    hasDropdown && !sidebarCollapsed 
+                      ? 'rounded-md' 
+                      : 'rounded-md'
+                  }`}
+                  onClick={() => {
+                    onNavigate(item.id);
+                  }}
+                >
+                  <item.icon className={`h-5 w-5 ${sidebarCollapsed ? '' : 'mr-3'} ${
+                    isActive ? 'text-white' : 'text-gray-500'
+                  }`} />
+                  {!sidebarCollapsed && <span className="flex-1 text-left">{item.label}</span>}
+                </Button>
+                {hasDropdown && !sidebarCollapsed && (
+                  <Button
+                    variant={isActive ? "default" : "ghost"}
+                    className={`px-2.5 py-2 min-w-[40px] flex items-center justify-center transition-all pointer-events-none ${
+                      isActive 
+                        ? 'bg-blue-700 text-white rounded-md' 
+                        : 'text-gray-500 rounded-md'
+                    }`}
+                  >
+                    <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${
+                      isDropdownOpen ? 'rotate-180' : ''
+                    }`} />
+                  </Button>
+                )}
+              </div>
+              
+              {/* Dropdown Items */}
+              {hasDropdown && !sidebarCollapsed && isDropdownOpen && (
+                <div className="ml-4 space-y-1 border-l-2 border-gray-200 pl-2">
+                  {item.dropdownItems?.map((dropdownItem) => (
+                    <Button
+                      key={dropdownItem.id}
+                      variant="ghost"
+                      className="w-full justify-start px-3 py-2 h-auto text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                      onClick={() => {
+                        dropdownItem.onClick();
+                        setOpenDropdowns(prev => {
+                          const newSet = new Set(prev);
+                          newSet.delete(item.id);
+                          return newSet;
+                        });
+                      }}
+                    >
+                      {dropdownItem.icon && (
+                        <dropdownItem.icon className="h-4 w-4 mr-2 text-gray-500" />
+                      )}
+                      {!dropdownItem.icon && <Plus className="h-4 w-4 mr-2 text-gray-500" />}
+                      <span className="flex-1 text-left">{dropdownItem.label}</span>
+                    </Button>
+                  ))}
+                </div>
+              )}
+            </div>
           );
         })}
       </nav>

@@ -4,11 +4,12 @@ import { TestTube } from "lucide-react";
 import { LoginForm } from "../pages/login/LoginForm";
 import { BubbleBackground } from "@/components/common/bubble-background";
 import { useAuthContext } from "../hooks/useAuthContext";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import type { User } from "../types/User";
 export const LoginLayout = () => {
   const navigate = useNavigate();
-  const { user, onLogin } = useAuthContext(); // ✅ lấy onLogin từ context
+  const { user, onLogin, loading } = useAuthContext(); // ✅ lấy onLogin từ context
+  const [hasRedirected, setHasRedirected] = React.useState(false);
 
   // ✅ định nghĩa hàm login
   const handleLogin = (userData: User) => {
@@ -17,30 +18,45 @@ export const LoginLayout = () => {
   };
 
   useEffect(() => {
-    if (user && user.role?.length > 0) {
+    // Chỉ redirect khi đã load xong và có user hợp lệ
+    // Tránh redirect nhiều lần
+    if (!loading && user && user.role?.length > 0 && !hasRedirected) {
       const firstRole = user.role[0];
+      let redirectPath = "";
+      
       switch (firstRole) {
         case "ADMIN":
-          navigate("/admin");
+          redirectPath = "/admin";
           break;
         case "MANAGER":
-          navigate("/manager");
+          redirectPath = "/manager";
           break;
         case "SERVICE":
-          navigate("/service");
+          redirectPath = "/service";
           break;
         case "LAB_USER":
-          navigate("/labuser");
+          redirectPath = "/labuser";
           break;
         case "USER":
-          navigate("/user");
+          redirectPath = "/user";
           break;
         default:
-          navigate("/home");
+          redirectPath = "/home";
           break;
       }
+      
+      // Only navigate if we have a valid redirect path
+      if (redirectPath) {
+        setHasRedirected(true);
+        navigate(redirectPath, { replace: true });
+      }
     }
-  }, [user]);
+    
+    // Reset redirect flag if user is cleared (logout)
+    if (!user && hasRedirected) {
+      setHasRedirected(false);
+    }
+  }, [user, loading, navigate, hasRedirected]);
 
   return (
     <div className="min-h-screen flex">

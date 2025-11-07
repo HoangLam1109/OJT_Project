@@ -1,6 +1,7 @@
 import express from "express";
 import reagentRoutes from "./v1/reagent/reagent.routes.js"
 import instrumentRoutes from "./v1/instrument/instrument.routes.js";
+import instrumentHistoryRoutes from "./v1/instrument/instrumentHistory.routes.js";
 
 const router = express.Router();
 
@@ -14,12 +15,21 @@ router.use(
 );
 
 router.use(
-	"/warehouse/instruments",
-	/*
-	#swagger.tags = ['Instruments']
-	#swagger.description = 'Inventory instrument endpoints'
-	*/
-	instrumentRoutes
+  "/warehouse/instruments/history",
+  /*
+  #swagger.tags = ['InstrumentHistory']
+  #swagger.description = 'Instrument history log endpoints'
+  */
+  instrumentHistoryRoutes
+);
+
+router.use(
+  "/warehouse/instruments",
+  /*
+  #swagger.tags = ['Instruments']
+  #swagger.description = 'Inventory instrument endpoints'
+  */
+  instrumentRoutes
 );
 
 export default router;

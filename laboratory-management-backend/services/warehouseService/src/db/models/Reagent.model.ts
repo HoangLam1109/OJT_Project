@@ -6,7 +6,7 @@ export interface IReagent extends Document {
   reagent_code: string;
   reagent_name: string;
   reagent_type: string;
-  quantity_received: number;
+  quantity_received?: number;
   quantity_current: number;
   unit_of_measure: string;
   usage_per_run: number;

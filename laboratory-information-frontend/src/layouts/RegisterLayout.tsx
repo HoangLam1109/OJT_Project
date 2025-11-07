@@ -1,54 +1,52 @@
 import { useNavigate } from "react-router-dom";
 import { TestTube } from "lucide-react";
 import { RegisterForm } from "../pages/register/RegisterForm";
+import { BubbleBackground } from "@/components/common/bubble-background";
 
 export function RegisterLayout() {
   const navigate = useNavigate();
 
   return (
-    <div className="h-screen flex overflow-hidden">
-      {/* Left Side - Medical Image */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 relative overflow-hidden">
-        <div className="absolute inset-0 bg-black/20"></div>
-        <div className="relative z-10 flex flex-col justify-center items-center text-white p-8">
+    <div className="min-h-screen flex">
+      {/* Left Side - Bubble Background */}
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
+        <BubbleBackground className="absolute inset-0" />
+        <div className="relative z-10 flex flex-col justify-center items-center text-white p-12">
           {/* Medical Icons and Content */}
-          <div className="text-center space-y-6">
+          <div className="text-center space-y-8">
             {/* Test Tube Icon */}
-            <div className="w-20 h-20 mx-auto bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-              <TestTube className="w-10 h-10 text-white" />
+            <div className="w-24 h-24 mx-auto bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+              <TestTube className="w-12 h-12 text-white" />
             </div>
             
             {/* Title */}
             <div>
-              <h1 className="text-3xl font-bold mb-3">Hệ Thống Quản Lý</h1>
-              <h2 className="text-xl font-semibold text-blue-100">Phòng Thí Nghiệm Y Khoa</h2>
+              <h1 className="text-4xl font-bold mb-4">Hệ Thống Quản Lý</h1>
+              <h2 className="text-2xl font-semibold text-blue-100">Phòng Thí Nghiệm Y Khoa</h2>
             </div>
             
             {/* Features */}
-            <div className="space-y-3 text-left max-w-sm">
+            <div className="space-y-4 text-left max-w-md">
               <div className="flex items-center space-x-3">
                 <div className="w-2 h-2 bg-white rounded-full"></div>
-                <span className="text-blue-100 text-sm">Quản lý bệnh nhân và xét nghiệm</span>
+                <span className="text-blue-100">Quản lý bệnh nhân và xét nghiệm</span>
               </div>
               <div className="flex items-center space-x-3">
                 <div className="w-2 h-2 bg-white rounded-full"></div>
-                <span className="text-blue-100 text-sm">Báo cáo kết quả chính xác</span>
+                <span className="text-blue-100">Báo cáo kết quả chính xác</span>
               </div>
               <div className="flex items-center space-x-3">
                 <div className="w-2 h-2 bg-white rounded-full"></div>
-                <span className="text-blue-100 text-sm">Theo dõi lịch sử bệnh án</span>
+                <span className="text-blue-100">Theo dõi lịch sử bệnh án</span>
               </div>
               <div className="flex items-center space-x-3">
                 <div className="w-2 h-2 bg-white rounded-full"></div>
-                <span className="text-blue-100 text-sm">Bảo mật thông tin cao</span>
+                <span className="text-blue-100">Bảo mật thông tin cao</span>
               </div>
             </div>
           </div>
           
-          {/* Decorative Elements */}
-          <div className="absolute top-8 left-8 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
-          <div className="absolute bottom-8 right-8 w-20 h-20 bg-blue-300/20 rounded-full blur-lg"></div>
-          <div className="absolute top-1/2 right-16 w-12 h-12 bg-white/5 rounded-full blur-md"></div>
+          {/* Decorative Elements - removed, handled by BubbleBackground */}
         </div>
       </div>
 

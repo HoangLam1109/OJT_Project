@@ -19,15 +19,27 @@ export const LogoutButton: React.FC<LogoutButtonProps> = ({ collapsed = false })
   const handleLogout = async () => {
     try {
       setLoading(true);
+      
+      // Clear local state first to prevent any redirect issues
+      onLogout();
+      
+      // Then call logout API
       const success = await logoutUser();
 
       if (success) {
-        onLogout(); 
         toast.success("Đăng xuất thành công!");
-        navigate("/");
       } else {
         toast.error("Đăng xuất thất bại!");
       }
+      
+      // Force navigate to login page
+      // Use replace to prevent going back
+      navigate("/login", { replace: true });
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Even if logout fails, clear local state and redirect
+      onLogout();
+      navigate("/login", { replace: true });
     } finally {
       setLoading(false);
       setShowDialog(false);

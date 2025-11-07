@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -8,18 +8,18 @@ import {
   DialogFooter,
 } from "../../../components/common/dialog";
 import { Label } from "../../../components/common/label";
+import { Input } from "../../../components/common/input";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "../../../components/common/select";
-import { Textarea } from "../../../components/common/textarea";
 import Button from "../../../components/common/button";
-import { Power, PlayCircle, Wrench, AlertTriangle, CheckCircle } from "lucide-react";
 import type { Instrument } from "../types/Instrument";
 import { toast } from "sonner";
+import { instrumentsService } from "../../../service/instrumentsService";
 
 interface ChangeInstrumentStatusDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   instrument: Instrument | null;
-  onStatusChange: (id: string, newStatus: Instrument['status'], reason: string) => void;
+  onStatusChange: (updatedInstrument: Instrument) => void;
 }
 
 export function ChangeInstrumentStatusDialog({
@@ -28,103 +28,197 @@ export function ChangeInstrumentStatusDialog({
   instrument,
   onStatusChange,
 }: ChangeInstrumentStatusDialogProps) {
-  const [newStatus, setNewStatus] = useState<Instrument['status'] | "">("");
-  const [reason, setReason] = useState("");
+  const [instrumentName, setInstrumentName] = useState("");
+  const [instrumentType, setInstrumentType] = useState("");
+  const [manufacturer, setManufacturer] = useState("");
+  const [location, setLocation] = useState("");
+  const [status, setStatus] = useState<Instrument['status'] | "">("");
+  const [isActive, setIsActive] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Reset fields when dialog opens or instrument changes to avoid stale input
   useEffect(() => {
-    if (open) {
-      setNewStatus("");
-      setReason("");
+    if (open && instrument) {
+      setInstrumentName(instrument.instrument_name || "");
+      setInstrumentType(instrument.instrument_type || "");
+      setManufacturer(instrument.manufacturer || "");
+      setLocation(instrument.location || "");
+      setStatus(instrument.status); // Set default to current status
+      setIsActive(instrument.is_active);
+      setIsSubmitting(false);
     }
   }, [open, instrument]);
 
   if (!instrument) return null;
 
-  const statusIcons: Record<string, React.ReactNode> = {
-    ready: <PlayCircle className="text-blue-500 w-4 h-4" />,
-    processing: <Power className="text-yellow-500 w-4 h-4" />,
-    maintenance: <Wrench className="text-orange-500 w-4 h-4" />,
-    error: <AlertTriangle className="text-red-500 w-4 h-4" />,
-  };
+  const handleConfirm = async () => {
+    setIsSubmitting(true);
+    try {
+      const updatePayload: Partial<Instrument> = {
+        instrument_name: instrumentName.trim(),
+        instrument_type: instrumentType.trim(),
+        status: (status || instrument.status) as Instrument['status'],
+        is_active: isActive,
+      };
 
-  const handleConfirm = () => {
-    if (!newStatus || !reason.trim()) {
-      toast.error("Vui lòng chọn trạng thái mới và nhập lý do thay đổi!");
-      return;
+      if (manufacturer.trim()) {
+        updatePayload.manufacturer = manufacturer.trim();
+      }
+
+      if (location.trim()) {
+        updatePayload.location = location.trim();
+      }
+
+      const updatedInstrument = await instrumentsService.updateInstrument(instrument._id, updatePayload);
+
+      onStatusChange(updatedInstrument);
+      toast.success("✅ Thông tin thiết bị đã được cập nhật!");
+      onOpenChange(false);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Không thể cập nhật thông tin thiết bị";
+      toast.error(message);
+    } finally {
+      setIsSubmitting(false);
     }
-    onStatusChange(instrument.id, newStatus, reason);
-    toast.success("✅ Trạng thái thiết bị đã được cập nhật!");
-    onOpenChange(false);
-    setNewStatus("");
-    setReason("");
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl p-6">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-6">
         <DialogHeader>
-          <DialogTitle>Thay đổi Trạng thái Thiết bị</DialogTitle>
+          <DialogTitle>Cập nhật Thông tin Thiết bị</DialogTitle>
           <DialogDescription>
-            Chuyển đổi chế độ hoạt động của thiết bị <b>{instrument.name}</b>
+            Cập nhật thông tin và trạng thái của thiết bị
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-2">
-          {/* Hiện tại */}
-          <div>
-            <Label className="mb-2">Trạng thái hiện tại</Label>
-            <div className="mt-1 flex items-center gap-3 bg-gray-50 border rounded-md px-4 py-3 text-gray-700">
-              <div className="flex items-center justify-center">{statusIcons[instrument.status] || <CheckCircle className="text-gray-400 w-5 h-5" />}</div>
-              <span className="text-sm">
-                {instrument.status === "ready"
-                  ? "Sẵn sàng"
-                  : instrument.status === "processing"
-                  ? "Đang xử lý"
-                  : instrument.status === "maintenance"
-                  ? "Bảo trì"
-                  : "Ngưng hoạt động"}
-              </span>
+        <div className="space-y-6 mt-4 max-h-[70vh] overflow-y-auto pr-2">
+          {/* Basic Information */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Tên thiết bị */}
+            <div className="space-y-2">
+              <Label htmlFor="instrument_name">Tên thiết bị</Label>
+              <Input
+                id="instrument_name"
+                value={instrumentName}
+                onChange={(e) => setInstrumentName(e.target.value)}
+                placeholder="Nhập tên thiết bị"
+              />
+            </div>
+
+            {/* Loại thiết bị */}
+            <div className="space-y-2">
+              <Label htmlFor="instrument_type">Loại thiết bị</Label>
+              <Select
+                value={instrumentType}
+                onValueChange={(value) => setInstrumentType(value)}
+              >
+                <SelectTrigger className="bg-white border border-gray-300 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  <SelectValue placeholder="Chọn loại thiết bị" />
+                </SelectTrigger>
+                <SelectContent className="bg-white border border-gray-200 shadow-md">
+                  {[
+                    'Máy phân tích huyết học',
+                    'Máy sinh hóa tự động', 
+                    'Máy đông máu',
+                    'Máy xét nghiệm nước tiểu',
+                    'Máy miễn dịch tự động',
+                    'Máy PCR',
+                    'Thiết bị khác'
+                  ].map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {type}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Nhà sản xuất */}
+            <div className="space-y-2">
+              <Label>Nhà sản xuất</Label>
+              <Select value={manufacturer} onValueChange={setManufacturer}>
+                <SelectTrigger className="bg-white border border-gray-300 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  <SelectValue placeholder="Chọn nhà sản xuất" />
+                </SelectTrigger>
+                <SelectContent className="bg-white border border-gray-200 shadow-md">
+                  {[
+                    'Sysmex',
+                    'Roche',
+                    'Abbott',
+                    'Siemens',
+                    'Beckman Coulter',
+                    'Bio-Rad',
+                    'Radiometer',
+                    'Khác',
+                  ].map((m) => (
+                    <SelectItem key={m} value={m}>
+                      {m}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Vị trí */}
+            <div className="space-y-2">
+              <Label htmlFor="location">Vị trí</Label>
+              <Select value={location} onValueChange={setLocation}>
+                <SelectTrigger className="bg-white border border-gray-300 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  <SelectValue placeholder="Chọn vị trí" />
+                </SelectTrigger>
+                <SelectContent className="bg-white border border-gray-200 shadow-md">
+                  <SelectItem value="Phòng Huyết học">Phòng Huyết học</SelectItem>
+                  <SelectItem value="Phòng Sinh hóa">Phòng Sinh hóa</SelectItem>
+                  <SelectItem value="Phòng Miễn dịch">Phòng Miễn dịch</SelectItem>
+                  <SelectItem value="Phòng Vi sinh">Phòng Vi sinh</SelectItem>
+                  <SelectItem value="Phòng Nước tiểu">Phòng Nước tiểu</SelectItem>
+                  <SelectItem value="Phòng Đông máu">Phòng Đông máu</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
-          {/* Trạng thái mới */}
-          <div>
-            <Label className="mb-2">Trạng thái mới *</Label>
-            <Select value={newStatus} onValueChange={(v) => setNewStatus(v as Instrument['status'])}>
+          {/* Status Section */}
+          <div className="space-y-2">
+            <Label>Trạng thái</Label>
+            <Select value={status} onValueChange={(v) => setStatus(v as Instrument['status'])}>
               <SelectTrigger className="w-full bg-white border border-gray-300 text-gray-900 focus:ring-2 focus:ring-blue-500">
-                <SelectValue placeholder="Chọn trạng thái mới" />
+                <SelectValue placeholder="Chọn trạng thái" />
               </SelectTrigger>
               <SelectContent className="w-full bg-white border border-gray-200 shadow-md">
-                <SelectItem value="ready">Sẵn sàng</SelectItem>
-                <SelectItem value="processing">Đang xử lý</SelectItem>
-                <SelectItem value="maintenance">Bảo trì</SelectItem>
-                <SelectItem value="error">Ngưng hoạt động</SelectItem>
+                <SelectItem value="Ready">Sẵn sàng</SelectItem>
+                <SelectItem value="Processing">Đang xử lý</SelectItem>
+                <SelectItem value="Maintenance">Bảo trì</SelectItem>
+                <SelectItem value="Error">Lỗi</SelectItem>
+                <SelectItem value="Inactive">Ngưng hoạt động</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          {/* Lý do */}
-          <div className="md:col-span-2">
-            <Label className="mb-2">Lý do thay đổi *</Label>
-            <Textarea
-              rows={5}
-              className="w-full min-h-[120px]"
-              placeholder="Nhập lý do thay đổi trạng thái thiết bị..."
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              Lý do này sẽ được ghi vào nhật ký hệ thống
-            </p>
+          {/* Active Status */}
+          <div className="space-y-2">
+            <Label>Trạng thái hoạt động</Label>
+            <Select value={isActive ? "active" : "inactive"} onValueChange={(v) => setIsActive(v === "active")}>
+              <SelectTrigger className="bg-white border border-gray-300 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <SelectValue placeholder="Chọn trạng thái hoạt động" />
+              </SelectTrigger>
+              <SelectContent className="bg-white border border-gray-200 shadow-md">
+                <SelectItem value="active">Hoạt động</SelectItem>
+                <SelectItem value="inactive">Tạm dừng</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
+
         </div>
 
         <DialogFooter className="mt-4">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
             Hủy
           </Button>
-          <Button onClick={handleConfirm}>Xác nhận thay đổi</Button>
+          <Button onClick={handleConfirm} disabled={isSubmitting}>
+            {isSubmitting ? "Đang cập nhật..." : "Xác nhận thay đổi"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

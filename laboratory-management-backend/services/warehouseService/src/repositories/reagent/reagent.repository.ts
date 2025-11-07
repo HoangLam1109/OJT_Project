@@ -1,5 +1,5 @@
 // src/repositories/reagent.repository.ts
-import Reagent, { IReagent } from "../db/models/Reagent.model.js";
+import Reagent, { IReagent } from "../../db/models/Reagent.model.js";
 
 export class ReagentRepository {
   async findAll(): Promise<IReagent[]> {
@@ -19,21 +19,26 @@ export class ReagentRepository {
     return reagent.save();
   }
 
-  async update(id: string, data: Partial<IReagent>): Promise<IReagent | null> {
+  async findAndUpdate(id: string, data: Partial<IReagent>): Promise<IReagent | null> {
     return Reagent.findOneAndUpdate(
       { _id: id, is_deleted: false },
       { $set: data },
       { new: true }
-    );
+    ).exec();
   }
 
-  async softDelete(id: string, deletedBy: string): Promise<IReagent | null> {
-    return Reagent.findByIdAndUpdate(
-      id,
-      { is_deleted: true, deleted_at: new Date(), deleted_by: deletedBy },
-      { new: true }
-    );
-  }
+async softDelete(_id: string, deletedBy: string): Promise<IReagent | null> {
+  return Reagent.findOneAndUpdate(
+    { _id }, // filter
+    {
+      is_deleted: true,
+      deleted_at: new Date(),
+      deleted_by: deletedBy,
+    },
+    { new: true } // trả về document sau khi update
+  ).exec();
+}
+
 
   async findExpiringSoon(days: number): Promise<IReagent[]> {
     const today = new Date();

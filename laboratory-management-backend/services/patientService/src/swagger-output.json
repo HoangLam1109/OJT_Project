@@ -897,8 +897,8 @@
           }
         ],
         "responses": {
-          "403": {
-            "description": "Forbidden"
+          "default": {
+            "description": ""
           }
         }
       }
@@ -991,8 +991,8 @@
           }
         ],
         "responses": {
-          "403": {
-            "description": "Forbidden"
+          "default": {
+            "description": ""
           }
         }
       }

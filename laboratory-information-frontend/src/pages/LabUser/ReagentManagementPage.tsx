@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { mockReagents, type Reagent } from './data/mockReagentsData';
+import type { Reagent } from './data/mockReagentsData';
 import { useAuthContext } from '../../hooks/useAuthContext';
+import { reagentService } from '../../service/reagentService';
+import { toast } from 'sonner';
 import ReagentToolbar from './components/ReagentToolbar';
 import ReagentTable from './components/ReagentTable';
 import ReagentFormModal from './components/modals/ReagentFormModal';
@@ -10,8 +12,8 @@ import { filterReagents } from './utils/reagentUtils';
 
 const ReagentManagementPage: React.FC = () => {
   const { user } = useAuthContext();
-  const [reagents, setReagents] = useState<Reagent[]>(mockReagents);
-  const [filteredReagents, setFilteredReagents] = useState<Reagent[]>(mockReagents);
+  const [reagents, setReagents] = useState<Reagent[]>([]);
+  const [filteredReagents, setFilteredReagents] = useState<Reagent[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('All');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -20,6 +22,33 @@ const ReagentManagementPage: React.FC = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedReagent, setSelectedReagent] = useState<Reagent | null>(null);
   const [editingReagent, setEditingReagent] = useState<Partial<Reagent>>({});
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch reagents from API
+  useEffect(() => {
+    const fetchReagents = async () => {
+      setIsLoading(true);
+      try {
+        const allReagents = await reagentService.getAllReagents();
+        setReagents(allReagents);
+      } catch (error: any) {
+        console.error('Error fetching reagents:', error);
+        
+        // Check if it's a network/connection error
+        if (error.message?.includes('Network Error') || error.code === 'ERR_NETWORK' || error.code === 'ERR_CONNECTION_REFUSED') {
+          toast.error('Không thể kết nối đến server. Vui lòng kiểm tra backend service đã chạy chưa (port 5003)');
+        } else {
+          toast.error(error.message || 'Không thể tải danh sách thuốc thử');
+        }
+        
+        setReagents([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchReagents();
+  }, []);
 
   useEffect(() => {
     const filtered = filterReagents(reagents, searchTerm, statusFilter);
@@ -36,9 +65,23 @@ const ReagentManagementPage: React.FC = () => {
     setIsEditModalOpen(true);
   };
 
-  const handleViewDetails = (reagent: Reagent) => {
-    setSelectedReagent(reagent);
-    setIsDetailModalOpen(true);
+  const handleViewDetails = async (reagent: Reagent) => {
+    try {
+      // Fetch full details from API using getById
+      const fullReagent = await reagentService.getReagentById(reagent.id);
+      if (fullReagent) {
+        setSelectedReagent(fullReagent);
+        setIsDetailModalOpen(true);
+      } else {
+        toast.error('Không tìm thấy thông tin thuốc thử');
+      }
+    } catch (error: any) {
+      console.error('Error fetching reagent details:', error);
+      toast.error(error.message || 'Không thể tải thông tin thuốc thử');
+      // Fallback to use the reagent from list
+      setSelectedReagent(reagent);
+      setIsDetailModalOpen(true);
+    }
   };
 
   const handleDeleteReagent = (reagent: Reagent) => {
@@ -46,73 +89,111 @@ const ReagentManagementPage: React.FC = () => {
     setIsDeleteModalOpen(true);
   };
 
-  const handleSaveReagent = () => {
+  const handleSaveReagent = async () => {
+    // Validate required fields
     if (!editingReagent.name || !editingReagent.lotNumber || !editingReagent.quantity || !editingReagent.expiryDate) {
-      alert('Vui lòng điền đầy đủ thông tin bắt buộc');
+      toast.error('Vui lòng điền đầy đủ thông tin bắt buộc (Tên, Số lô, Số lượng, Ngày hết hạn)');
       return;
     }
 
-    const existingReagent = reagents.find(reagent => 
-      reagent.lotNumber === editingReagent.lotNumber && reagent.id !== editingReagent.id
-    );
-    if (existingReagent) {
-      alert('Số lô đã tồn tại');
-      return;
+    // Validate lot number uniqueness (only for new reagents)
+    if (!editingReagent.id) {
+      const existingReagent = reagents.find(reagent => 
+        reagent.lotNumber === editingReagent.lotNumber
+      );
+      if (existingReagent) {
+        toast.error('Số lô đã tồn tại');
+        return;
+      }
+    } else {
+      // For updates, check if lot number is being changed
+      const originalReagent = reagents.find(reagent => reagent.id === editingReagent.id);
+      if (originalReagent && originalReagent.lotNumber !== editingReagent.lotNumber) {
+        toast.error('Không thể thay đổi số lô thuốc thử');
+        return;
+      }
     }
 
+    // Validate expiry date
     const expiryDate = new Date(editingReagent.expiryDate);
     const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0); // Reset time to compare dates only
     if (expiryDate <= currentDate) {
-      alert('Ngày hết hạn phải sau ngày hiện tại');
+      toast.error('Ngày hết hạn phải sau ngày hiện tại');
       return;
     }
 
+    // Validate quantity
     if (editingReagent.quantity! < 1) {
-      alert('Số lượng phải lớn hơn 0');
+      toast.error('Số lượng phải lớn hơn 0');
       return;
     }
 
-    if (editingReagent.id) {
-      const updatedReagent = {
-        ...editingReagent,
-        updatedAt: new Date().toISOString()
-      } as Reagent;
+    try {
+      if (editingReagent.id) {
+        // Update existing reagent
+        const updatedReagent = await reagentService.updateReagent(
+          editingReagent.id,
+          editingReagent,
+          user?.id
+        );
+        setReagents(prev => prev.map(reagent => reagent.id === editingReagent.id ? updatedReagent : reagent));
+        toast.success('Cập nhật thuốc thử thành công');
+        console.log(`[AUDIT] E_00027 | Reagent modified by ${user?.name}`);
+        
+        setIsEditModalOpen(false);
+        setEditingReagent({});
+      } else {
+        // Create new reagent
+        const newReagent = await reagentService.createReagent(
+          {
+            ...editingReagent,
+            receivedDate: editingReagent.receivedDate || new Date().toISOString().split('T')[0],
+            status: editingReagent.status || 'Available',
+          },
+          user?.id
+        );
+        setReagents(prev => [...prev, newReagent]);
+        toast.success('Tạo thuốc thử thành công');
+        console.log(`[AUDIT] E_00026 | Reagent created by ${user?.name}`);
+        
+        setIsAddModalOpen(false);
+        setEditingReagent({});
+      }
+    } catch (error: any) {
+      console.error('Error saving reagent:', error);
       
-      setReagents(prev => prev.map(reagent => reagent.id === editingReagent.id ? updatedReagent : reagent));
-      console.log(`[AUDIT] E_00027 | Reagent modified by ${user?.name}`);
-    } else {
-      const newReagent: Reagent = {
-        id: `RG-${String(reagents.length + 1).padStart(3, '0')}`,
-        name: editingReagent.name!,
-        lotNumber: editingReagent.lotNumber!,
-        manufacturer: editingReagent.manufacturer,
-        receivedDate: editingReagent.receivedDate || new Date().toISOString().split('T')[0],
-        expiryDate: editingReagent.expiryDate!,
-        quantity: editingReagent.quantity!,
-        status: editingReagent.status || 'Available',
-        storageLocation: editingReagent.storageLocation || '',
-        usedInTests: [],
-        notes: editingReagent.notes,
-        createdBy: user?.id || 'unknown',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
+      // Show specific error message
+      const errorMessage = error.message || 'Có lỗi xảy ra khi lưu thuốc thử';
       
-      setReagents(prev => [...prev, newReagent]);
-      console.log(`[AUDIT] E_00026 | Reagent created by ${user?.name}`);
+      // Check for validation errors from backend
+      if (errorMessage.includes('duplicate') || errorMessage.includes('unique')) {
+        toast.error('Số lô thuốc thử đã tồn tại trong hệ thống');
+      } else if (errorMessage.includes('quantity_current') && errorMessage.includes('lớn hơn')) {
+        toast.error('Số lượng hiện tại không được lớn hơn số lượng đã nhận');
+      } else if (errorMessage.includes('validation') || errorMessage.includes('required')) {
+        toast.error('Dữ liệu không hợp lệ. Vui lòng kiểm tra lại thông tin nhập vào.');
+      } else if (errorMessage.includes('not found') || errorMessage.includes('không tìm thấy')) {
+        toast.error('Không tìm thấy thuốc thử để cập nhật');
+      } else {
+        toast.error(errorMessage);
+      }
     }
-
-    setIsAddModalOpen(false);
-    setIsEditModalOpen(false);
-    setEditingReagent({});
   };
 
-  const handleDeleteConfirm = () => {
-    if (selectedReagent) {
+  const handleDeleteConfirm = async () => {
+    if (!selectedReagent) return;
+
+    try {
+      await reagentService.deleteReagent(selectedReagent.id, user?.id);
       setReagents(prev => prev.filter(reagent => reagent.id !== selectedReagent.id));
+      toast.success('Xóa thuốc thử thành công');
       console.log(`[AUDIT] E_00028 | Reagent deleted by ${user?.name}`);
       setIsDeleteModalOpen(false);
       setSelectedReagent(null);
+    } catch (error: any) {
+      console.error('Error deleting reagent:', error);
+      toast.error(error.message || 'Có lỗi xảy ra khi xóa thuốc thử');
     }
   };
 
@@ -147,6 +228,7 @@ const ReagentManagementPage: React.FC = () => {
 
       <ReagentTable
         reagents={filteredReagents}
+        isLoading={isLoading}
         onView={handleViewDetails}
         onEdit={handleEditReagent}
         onDelete={handleDeleteReagent}

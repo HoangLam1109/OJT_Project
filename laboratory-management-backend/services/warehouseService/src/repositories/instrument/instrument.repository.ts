@@ -74,3 +74,21 @@ export const updateInstrumentById = async (
     new: true,
   }).select('-__v').lean<IInstrument>();
 };
+
+export const softDeleteInstrumentById = async (
+  id: string,
+  deletedBy?: string
+): Promise<IInstrument | null> => {
+  return Instrument.findOneAndUpdate(
+    { _id: id, is_deleted: false },
+    {
+      is_deleted: true,
+      deleted_at: new Date(),
+      deleted_by: deletedBy,
+      is_active: false,
+    },
+    { new: true }
+  )
+    .select('-__v')
+    .lean<IInstrument>();
+};
