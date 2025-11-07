@@ -264,6 +264,7 @@ const handleStatusChange = async (
       <TestOrderToolbar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
+        onCreateTestOrder={handleCreate}
       />
 
       <TestOrderStatsCards stats={stats} loading={loading} />
