@@ -70,6 +70,7 @@ export interface PatientOption {
   patientCode?: string;
   dateOfBirth?: string;
   gender?: string;
+  address?: string;
 }
 
 // Legacy interfaces from develop branch
@@ -124,6 +125,7 @@ const transformBackendPatient = (backendPatient: BackendPatient): PatientOption 
     patientCode: backendPatient.patient_code,
     dateOfBirth: backendPatient.user?.dateOfBirth,
     gender: backendPatient.user?.gender,
+    address: backendPatient.user?.address,
   };
 };
 
@@ -155,7 +157,7 @@ export const patientService = {
       try {
         const response = await patientApiClient.get<GetAllPatientsResponse>(endpoint);
         responseData = response.data;
-      } catch (error) {
+      } catch {
         // If dedicated service fails, try using main API client
         console.warn('Patient service dedicated client failed, trying main API client');
         responseData = await apiService.get<GetAllPatientsResponse>(endpoint);
@@ -196,7 +198,7 @@ export const patientService = {
       try {
         const response = await patientApiClient.get<BackendPatient>(endpoint);
         responseData = response.data;
-      } catch (error) {
+      } catch {
         console.warn('Patient service dedicated client failed, trying main API client');
         responseData = await apiService.get<BackendPatient>(endpoint);
       }
