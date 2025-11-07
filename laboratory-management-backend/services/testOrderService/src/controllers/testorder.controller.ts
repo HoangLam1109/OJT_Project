@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { TestOrderService } from "../services/testorder/testOrderService.js"; 
+import { TestOrderService } from "../services/testorder/testOrderService.js";
 
 import patientServiceClient from "../services/patient/patientServiceClient.js";
 import iamServiceClient from "../services/iam/iamServiceClient.js";
@@ -15,13 +15,15 @@ export const getAllTestOrders = async (req: Request, res: Response) => {
     //  Lấy các patientId duy nhất
     const patientIds = [...new Set(activeOrders.map((o) => o.patient_id))];
     const instrumentIds = [...new Set(activeOrders.map((o) => o.instrument_id))];
-      console.log("instrumentIds:", instrumentIds);
+    console.log("instrumentIds:", instrumentIds);
 
 
     //  Lấy thông tin patient
     const patientsMap = await patientServiceClient.getPatientsByIds(patientIds);
-    const instrumentsMap = await instrumentServiceClient.getInstrumentsByIds(instrumentIds);
-console.log("instrumentsMap keys:", Array.from(instrumentsMap.keys()));
+    const validInstrumentIds = instrumentIds.filter((id): id is string => typeof id === 'string');
+    const instrumentsMap = await instrumentServiceClient.getInstrumentsByIds(validInstrumentIds);
+
+    console.log("instrumentsMap keys:", Array.from(instrumentsMap.keys()));
     //  Lấy danh sách userId từ patients
     const userIds = [...new Set(Array.from(patientsMap.values()).map((p) => p.user_id))];
     const usersMap = await iamServiceClient.getUsersByIds(userIds);
@@ -30,7 +32,7 @@ console.log("instrumentsMap keys:", Array.from(instrumentsMap.keys()));
     const enrichedOrders = activeOrders.map((order) => {
       const patient = patientsMap.get(order.patient_id);
       const instrument = instrumentsMap.get(order.instrument_id || '');
-        console.log("instrument:", instrument);
+      console.log("instrument:", instrument);
 
       const user = patient ? usersMap.get(patient.user_id) : null;
 
@@ -48,9 +50,9 @@ console.log("instrumentsMap keys:", Array.from(instrumentsMap.keys()));
         is_deleted: order.is_deleted,
         deleted_at: order.deleted_at,
         deleted_by: order.deleted_by,
-        testType:order.test_type,
-        processing:order.processing,
-        notes:order.notes,
+        testType: order.test_type,
+        processing: order.processing,
+        notes: order.notes,
         user: user
           ? {
             fullName: user.fullName,
@@ -61,13 +63,13 @@ console.log("instrumentsMap keys:", Array.from(instrumentsMap.keys()));
           : null,
 
         instrument: instrument
-           ?{
-             instrument_name: instrument.instrument_name,
-           }
-           : null,
+          ? {
+            instrument_name: instrument.instrument_name,
+          }
+          : null,
       };
     });
-      console.log("enrichedOrders",enrichedOrders);
+    console.log("enrichedOrders", enrichedOrders);
     res.json(enrichedOrders);
   } catch (err) {
     console.error("[TestOrderController] Error fetching orders:", err);
@@ -97,9 +99,9 @@ export const getTestOrderById = async (req: Request<{ id: string }>, res: Respon
       is_deleted: order.is_deleted,
       deleted_at: order.deleted_at,
       deleted_by: order.deleted_by,
-      testType:order.test_type,
-      processing:order.processing,
-      notes:order.notes,
+      testType: order.test_type,
+      processing: order.processing,
+      notes: order.notes,
       user: user
         ? {
           fullName: user.fullName,
@@ -109,7 +111,7 @@ export const getTestOrderById = async (req: Request<{ id: string }>, res: Respon
         }
         : null,
     };
-    console.log("enrichedOrder",enrichedOrder);
+    console.log("enrichedOrder", enrichedOrder);
     res.json(enrichedOrder);
   } catch (err) {
     console.error("[TestOrderController] Error fetching order by ID:", err);
@@ -119,7 +121,7 @@ export const getTestOrderById = async (req: Request<{ id: string }>, res: Respon
 
 export const createTestOrder = async (req: Request, res: Response) => {
   try {
-    const {  ...orderData } = req.body;
+    const { ...orderData } = req.body;
     const order = await TestOrderService.createOrder(orderData);
     res.status(201).json({ message: "Test order created successfully", order });
   } catch (error: any) {
@@ -146,10 +148,10 @@ export const updateTestOrder = async (req: Request, res: Response) => {
   }
 };
 
-export const softDeleteTestOrder = async (req:Request, res:Response) => {
+export const softDeleteTestOrder = async (req: Request, res: Response) => {
   try {
     const _id = req.params.id as string;
-    const { deleted_by } = req.body; 
+    const { deleted_by } = req.body;
     const deletedBy = deleted_by || (req as any).user?.name || 'system';
 
     const deletedOrder = await TestOrderService.softDelete(_id, deletedBy);
@@ -168,7 +170,7 @@ export const softDeleteTestOrder = async (req:Request, res:Response) => {
 
 export const updateTestOrderStatus = async (req: Request, res: Response) => {
   try {
-   const id = req.params.id as string;
+    const id = req.params.id as string;
     const { status, updated_by } = req.body;
 
     if (!updated_by) {
