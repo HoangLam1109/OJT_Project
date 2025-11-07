@@ -324,3 +324,8 @@ html {
   -webkit-backdrop-filter: blur(8px);
   z-index: 50;
 }
+.chatbox-container * {
+  line-height: normal !important;
+  padding: 0 !important;
+  margin: 0;
+}
