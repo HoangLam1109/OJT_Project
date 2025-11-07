@@ -1,6 +1,4 @@
-import bcrypt from "bcryptjs";
 import { auditLogRepository } from "../repositories/index.js";
-import { passwordHistoryRepository } from "../repositories/index.js";
 import {
   PaginationResponse,
   PaginationOptions,

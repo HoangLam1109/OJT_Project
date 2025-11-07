@@ -21,6 +21,10 @@
       "description": "Audit log operations (requires admin authentication)"
     },
     {
+      "name": "Email Service",
+      "description": "Send reset password through email"
+    },
+    {
       "name": "Authentication",
       "description": "Authentication and authorization operations"
     },
@@ -591,6 +595,128 @@
         ]
       }
     },
+    "/reset-password/request": {
+      "post": {
+        "tags": [
+          "Email Service"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "User email",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "example": "string@example.com"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Log retrieved successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Email sent successfully!"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Email is required"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/reset-password/confirm": {
+      "post": {
+        "tags": [
+          "Email Service"
+        ],
+        "description": "Reset password",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "User data",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "dedicatedToken": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "password": {
+                  "type": "string",
+                  "example": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Password reset successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Password reset successfully!"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Password and token are required"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
     "/user/all": {
       "get": {
         "tags": [
@@ -620,7 +746,7 @@
             "required": false,
             "type": "string",
             "enum": [
-              "createdAt",
+              "updatedAt",
               "_id",
               "fullName",
               "email"
@@ -1521,7 +1647,7 @@
             "required": false,
             "type": "string",
             "enum": [
-              "createdAt",
+              "updatedAt",
               "_id",
               "roleCode",
               "roleName"

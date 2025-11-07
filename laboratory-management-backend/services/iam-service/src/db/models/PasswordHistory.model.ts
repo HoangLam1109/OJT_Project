@@ -57,6 +57,6 @@ passwordHistorySchema.pre("save", function(next) {
   next();
 });
 
-const PasswordHistory = mongoose.model<IPasswordHistory>("PasswordHistory", passwordHistorySchema, "password_histories")
+const PasswordHistory = mongoose.model<IPasswordHistory>("PasswordHistory", passwordHistorySchema)
 
 export default PasswordHistory

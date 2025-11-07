@@ -83,6 +83,6 @@ auditLogSchema.pre("save", function(next) {
   next();
 });
 
-const AuditLog = mongoose.model<IAuditLog>("AuditLog", auditLogSchema, "audit_logs")
+const AuditLog = mongoose.model<IAuditLog>("AuditLog", auditLogSchema)
 
 export default AuditLog

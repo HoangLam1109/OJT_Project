@@ -168,6 +168,6 @@ userSchema.pre("save", function (next) {
   next();
 });
 
-const UserModel = mongoose.model<IUser>("User", userSchema, "users");
+const UserModel = mongoose.model<IUser>("User", userSchema);
 
 export default UserModel;

@@ -23,6 +23,10 @@ const doc = {
       description: 'Audit log operations (requires admin authentication)'
     },
     {
+      name: 'Email Service',
+      description: 'Send reset password through email'
+    },
+    {
       name: 'Authentication',
       description: 'Authentication and authorization operations'
     },

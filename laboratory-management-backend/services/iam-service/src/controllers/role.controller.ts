@@ -97,7 +97,7 @@ const getRolesWithPagination = async (
       description: 'Field to sort by',
       required: false,
       type: 'string',
-      enum: ['createdAt', '_id', 'roleCode', 'roleName'],
+      enum: ['updatedAt', '_id', 'roleCode', 'roleName'],
       default: '_id'
     }
     #swagger.parameters['search'] = {

@@ -62,13 +62,29 @@ export class RoleRepository implements IRoleRepository {
     const sortObj = { [sortBy || "_id"]: sortDirection };
 
     if (search && searchField) {
-      query.$or = [searchField].map(field => ({
-        [field]: { $regex: search, $options: 'i' }
-      }));
+      if (searchField == "updatedAt") {
+        const dateSearch = new Date(search);
+        if (!isNaN(dateSearch.getTime())) {
+          const dateStart = new Date(dateSearch);
+          dateStart.setHours(0, 0, 0, 0);
+
+          const dateEnd = new Date(dateSearch);
+          dateEnd.setHours(23, 59, 59, 59);
+
+          query.updatedAt = {
+            $gte: dateStart,
+            $lte: dateEnd,
+          };
+        }
+      } else {
+        query.$or = [searchField].map((field) => ({
+          [field]: { $regex: search, $options: "i" },
+        }));
+      }
     }
 
     if (cursor) {
-      const cursorField = sortBy || "_id";
+      const cursorField = sortBy || "updatedAt";
 
       // For proper cursor pagination, we need to find items that come AFTER the cursor
       // in the sort order, not just exclude the cursor item
