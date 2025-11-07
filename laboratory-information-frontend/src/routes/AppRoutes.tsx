@@ -36,6 +36,7 @@ import ServiceReagentPage from "../pages/service/ServiceReagentPage";
 import ServiceInstrumentPage from "../pages/service/ServiceInstrumentPage";
 import { GoogleCallbackPage } from "../pages/login/GoogleCallbackPage";
 import { TestOrderActionsProvider } from "../context/TestOrderActionsContext";
+import SelectInstrumentsPage from "@/pages/LabUser/SelectInstrumentsPage";
 
 export function AppRoutes() {
   const { user, onLogout } = useAuthContext();
@@ -221,7 +222,7 @@ export function AppRoutes() {
                 navigate(`/labuser`);
               }}
             >
-            <SelectInstrumentsPage />
+            <SelectInstrumentsPage/>
             </LabUserRouteWrapper>
           </ProtectedRoute>
         }
