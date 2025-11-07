@@ -161,38 +161,6 @@ const getRolesWithPagination = async (
   }
 };
 
-const getAll = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  /*
-    #swagger.auto = false
-    #swagger.tags = ['Role CRUD']
-    #swagger.description = 'Get all roles'
-    #swagger.security = [{"apiKeyAuth": []}]
-    #swagger.responses[200] = {
-      description: 'Roles retrieved successfully',
-      schema: {
-        items: {
-          _id: 'string',
-          roleCode: 'string',
-          roleName: 'string',
-          description: 'string',
-          createdAt: 'string',
-          updatedAt: 'string',
-          isActive: 'boolean',
-          isSystemRole: 'boolean'
-        }
-      }
-    }
-    #swagger.responses[401] = { description: 'Authentication required' }
-    #swagger.responses[500] = { description: 'Internal server error' }
-  */
-  try {
-    const roles = await roleService.getAllRoles();
-    res.status(200).json(roles);
-  } catch (error) {
-    next(error);
-  }
-};
-
 const createRole = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   /*
     #swagger.auto = false
@@ -482,7 +450,6 @@ const removePrivileges = async (req: Request, res: Response, next: NextFunction)
 
 export {
   getRole,
-  getAll,
   createRole,
   updateRole,
   deleteRole,

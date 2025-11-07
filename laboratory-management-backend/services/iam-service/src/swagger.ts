@@ -19,6 +19,10 @@ const doc = {
       description: 'Role management operations (requires authentication)'
     },
     {
+      name: 'Audit Logs',
+      description: 'Audit log operations (requires admin authentication)'
+    },
+    {
       name: 'Authentication',
       description: 'Authentication and authorization operations'
     },
