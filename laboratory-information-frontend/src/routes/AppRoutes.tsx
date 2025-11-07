@@ -36,6 +36,10 @@ import ServiceReagentPage from "../pages/service/ServiceReagentPage";
 import ServiceInstrumentPage from "../pages/service/ServiceInstrumentPage";
 import { GoogleCallbackPage } from "../pages/login/GoogleCallbackPage";
 import { TestOrderActionsProvider } from "../context/TestOrderActionsContext";
+import SelectInstrumentsPage from "@/pages/LabUser/SelectInstrumentsPage";
+import PatientMedicalRecordsPage from "@/pages/LabUser/PatientMedicalRecordsPage";
+import PatientMedicalRecordDetailPage from "@/pages/LabUser/PatientMedicalRecordDetailPage";
+import MedicalRecordAccessLogsPage from "@/pages/LabUser/MedicalRecordAccessLogsPage";
 
 export function AppRoutes() {
   const { user, onLogout } = useAuthContext();
@@ -223,7 +227,7 @@ export function AppRoutes() {
                 navigate(`/labuser`);
               }}
             >
-              <SelectInstrumentsPage />
+            <SelectInstrumentsPage/>
             </LabUserRouteWrapper>
           </ProtectedRoute>
         }

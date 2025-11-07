@@ -1,6 +1,6 @@
 // controllers/testOrderResult.controller.ts
 import { Request, Response } from "express";
-import { TestOrderResultService } from "../services/testOrderResult.service.js"; "../services/testOrderResult.service.js";
+import { TestOrderResultService } from "../services/testorder/testOrderResult.service.js"; "../services/testOrderResult.service.js";
 const service =new TestOrderResultService();
 export class TestOrderResultController {
   async getListResults(req: Request, res: Response) {

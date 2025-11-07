@@ -25,16 +25,12 @@ const ReagentDetailModal: React.FC<ReagentDetailModalProps> = ({ isOpen, reagent
               <h3 className="text-lg font-semibold text-gray-800 mb-3">Thông tin cơ bản</h3>
               <div className="space-y-3">
                 <div>
-                  <span className="font-medium text-gray-600">Mã thuốc thử:</span>
-                  <span className="ml-2 text-gray-900">{reagent.id}</span>
+                  <span className="font-medium text-gray-600">Mã lô:</span>
+                  <span className="ml-2 text-gray-900">{reagent.lotNumber}</span>
                 </div>
                 <div>
                   <span className="font-medium text-gray-600">Tên thuốc thử:</span>
                   <span className="ml-2 text-gray-900">{reagent.name}</span>
-                </div>
-                <div>
-                  <span className="font-medium text-gray-600">Số lô:</span>
-                  <span className="ml-2 text-gray-900">{reagent.lotNumber}</span>
                 </div>
                 <div>
                   <span className="font-medium text-gray-600">Nhà sản xuất:</span>

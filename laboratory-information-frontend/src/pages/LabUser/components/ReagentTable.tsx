@@ -19,13 +19,10 @@ const ReagentTable: React.FC<ReagentTableProps> = ({ reagents, isLoading = false
         <TableHeader>
           <TableRow>
             <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Mã Thuốc Thử
+              Mã lô
             </TableHead>
             <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Tên Thuốc Thử
-            </TableHead>
-            <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Số Lô
             </TableHead>
             <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Hạn Dùng
@@ -66,14 +63,11 @@ const ReagentTable: React.FC<ReagentTableProps> = ({ reagents, isLoading = false
               <TableCell className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                 <div className="flex items-center gap-2">
                   <FlaskConical className="w-4 h-4 text-blue-500" />
-                  {reagent.id}
+                  {reagent.lotNumber}
                 </div>
               </TableCell>
               <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 {reagent.name}
-              </TableCell>
-              <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {reagent.lotNumber}
               </TableCell>
               <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 <div className="flex items-center gap-1">

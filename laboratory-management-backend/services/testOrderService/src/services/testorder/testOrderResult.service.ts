@@ -1,5 +1,5 @@
-import { TestOrderResultRepository } from "../repositories/testOrderResult.repository.js";
-import { ITestOrderResult } from "../db/models/TestResult.model.js";
+import { TestOrderResultRepository } from "../../repositories/testOrderResult.repository.js";
+import { ITestOrderResult } from "../../db/models/TestResult.model.js";
 
 export class TestOrderResultService {
   private repo = new TestOrderResultRepository();
