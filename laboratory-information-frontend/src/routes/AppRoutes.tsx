@@ -35,7 +35,7 @@ import ServiceEventLogPage from "../pages/service/ServiceEventLogPage";
 import ServiceReagentPage from "../pages/service/ServiceReagentPage";
 import ServiceInstrumentPage from "../pages/service/ServiceInstrumentPage";
 import { GoogleCallbackPage } from "../pages/login/GoogleCallbackPage";
-import SelectInstrumentsPage from "../pages/LabUser/SelectInstrumentsPage";
+import { TestOrderActionsProvider } from "../context/TestOrderActionsContext";
 
 export function AppRoutes() {
   const { user, onLogout } = useAuthContext();
@@ -114,7 +114,11 @@ export function AppRoutes() {
               {adminPage === "dashboard" && <AdminDashboardPage />}
               {adminPage === "user-management" && <ManagerUserManagementPage />}
               {adminPage === "patient-management" && <AdminPatientManagementPage />}
-              {adminPage === "test-orders" && <TestOrdersPage />}
+              {adminPage === "test-orders" && (
+                <TestOrderActionsProvider>
+                  <TestOrdersPage />
+                </TestOrderActionsProvider>
+              )}
               {adminPage === "audit-reports" && <AdminAuditReportsPage />}
               {adminPage === "profile" && <AdminProfilePage />}
             </AdminLayout>
@@ -259,7 +263,11 @@ export function AppRoutes() {
               {servicePage === "event-logs" && <ServiceEventLogPage />}
               {servicePage === "reagents" && <ServiceReagentPage />}
               {servicePage === "instruments" && <ServiceInstrumentPage />}
-              {servicePage === "test-orders" && <TestOrdersPage />}
+              {servicePage === "test-orders" && (
+                <TestOrderActionsProvider>
+                  <TestOrdersPage />
+                </TestOrderActionsProvider>
+              )}
               {servicePage === "profile" && <Profile currentUser={user!} />}
             </ServiceLayout>
           </ProtectedRoute>
