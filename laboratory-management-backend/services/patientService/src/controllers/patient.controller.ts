@@ -3,42 +3,75 @@ import { PatientService, type CreatePatientPayload } from "../services/patient.s
 import { errorHandler } from "../utils/error.util.js";
 import patientAuditLogService, { type CreateAuditLogPayload } from "../services/patientAuditLog.service.js";
 import iamServiceClient, { type IamUser } from "../services/iamService.client.js";
+import patientMonitoringService from "../services/patientMonitoring.service.js";
 
 const patientService = new PatientService();
 
-const fetchUserEmail = async (userId: string | null | undefined): Promise<string | null> => {
+const fetchIamUser = async (userId: string | null | undefined): Promise<IamUser | null> => {
   if (!userId || typeof userId !== "string") {
     return null;
   }
   try {
-    const user = await iamServiceClient.getUserById(userId);
-    if (user?.email) {
-      return user.email;
-    }
+    return await iamServiceClient.getUserById(userId);
   } catch (error) {
-    console.warn(`[PatientController] Unable to resolve email for user ${userId}`, error);
+    console.warn(`[PatientController] Unable to resolve IAM user ${userId}`, error);
+  }
+  return null;
+};
+
+const fetchUserEmail = async (userId: string | null | undefined): Promise<string | null> => {
+  const user = await fetchIamUser(userId);
+  return user?.email ?? null;
+};
+
+const fetchUserName = async (userId: string | null | undefined): Promise<string | null> => {
+  const user = await fetchIamUser(userId);
+  if (!user) {
+    return null;
+  }
+  if (typeof user.fullName === "string" && user.fullName.trim().length > 0) {
+    return user.fullName.trim();
+  }
+  if (typeof user.email === "string" && user.email.trim().length > 0) {
+    return user.email.trim();
   }
   return null;
 };
 
 const resolvePerformedBy = async (req: Request, fallback?: string): Promise<string> => {
-  const headerEmailRaw = req.headers["x-user-email"];
-  const headerEmail = Array.isArray(headerEmailRaw) ? headerEmailRaw[0] : headerEmailRaw;
-  if (typeof headerEmail === "string" && headerEmail.length > 0) {
-    (req as any).userEmail = headerEmail;
-    return headerEmail;
+  const headerEmailSources = ["x-user-email", "x-operator-email", "x-actor-email"] as const;
+  for (const headerKey of headerEmailSources) {
+    const rawValue = req.headers[headerKey];
+    const headerEmail = Array.isArray(rawValue) ? rawValue[0] : rawValue;
+    if (typeof headerEmail === "string" && headerEmail.trim().length > 0) {
+      const normalized = headerEmail.trim();
+      (req as any).userEmail = normalized;
+      return normalized;
+    }
   }
 
   const cachedEmail = (req as any).userEmail;
-  if (typeof cachedEmail === "string" && cachedEmail.length > 0) {
-    return cachedEmail;
+  if (typeof cachedEmail === "string" && cachedEmail.trim().length > 0) {
+    return cachedEmail.trim();
   }
 
-  const headerUserIdRaw = req.headers["x-user-id"];
-  const headerUserId = Array.isArray(headerUserIdRaw) ? headerUserIdRaw[0] : headerUserIdRaw;
-  const userId = (req as any).userId ?? (typeof headerUserId === "string" ? headerUserId : undefined);
-  if (typeof userId === "string" && userId.length > 0) {
-    const email = await fetchUserEmail(userId);
+  const headerUserIdSources = ["x-user-id", "x-operator-id", "x-actor-id"] as const;
+  for (const headerKey of headerUserIdSources) {
+    const rawValue = req.headers[headerKey];
+    const headerUserId = Array.isArray(rawValue) ? rawValue[0] : rawValue;
+    if (typeof headerUserId === "string" && headerUserId.trim().length > 0) {
+      const email = await fetchUserEmail(headerUserId.trim());
+      if (email) {
+        (req as any).userEmail = email;
+        return email;
+      }
+      continue;
+    }
+  }
+
+  const userId = (req as any).userId;
+  if (typeof userId === "string" && userId.trim().length > 0) {
+    const email = await fetchUserEmail(userId.trim());
     if (email) {
       (req as any).userEmail = email;
       return email;
@@ -60,6 +93,60 @@ const resolvePerformedBy = async (req: Request, fallback?: string): Promise<stri
   }
 
   return "system";
+};
+
+const resolveOperatorId = (req: Request, fallback?: string): string | undefined => {
+  const headerUserIdRaw = req.headers["x-user-id"] ?? req.headers["x-operator-id"] ?? req.headers["x-actor-id"];
+  const headerUserId = Array.isArray(headerUserIdRaw) ? headerUserIdRaw[0] : headerUserIdRaw;
+  const requestUserId = (req as any).userId;
+
+  if (typeof requestUserId === "string" && requestUserId.trim().length > 0) {
+    return requestUserId.trim();
+  }
+
+  if (typeof headerUserId === "string" && headerUserId.trim().length > 0) {
+    return headerUserId.trim();
+  }
+
+  if (typeof fallback === "string" && fallback.trim().length > 0) {
+    return fallback.trim();
+  }
+
+  return undefined;
+};
+
+const resolveOperatorName = async (
+  req: Request,
+  operatorId: string | undefined,
+  fallbackName?: string
+): Promise<string | null> => {
+  const headerNameSources = ["x-user-name", "x-operator-name", "x-actor-name"] as const;
+  for (const headerKey of headerNameSources) {
+    const rawValue = req.headers[headerKey];
+    const headerName = Array.isArray(rawValue) ? rawValue[0] : rawValue;
+    if (typeof headerName === "string" && headerName.trim().length > 0) {
+      return headerName.trim();
+    }
+  }
+
+  const cachedName = (req as any).userFullName;
+  if (typeof cachedName === "string" && cachedName.trim().length > 0) {
+    return cachedName.trim();
+  }
+
+  if (operatorId) {
+  const iamUser = await fetchIamUser(operatorId);
+    if (iamUser?.fullName) {
+      (req as any).userFullName = iamUser.fullName;
+      return iamUser.fullName;
+    }
+  }
+
+  if (fallbackName) {
+    return fallbackName;
+  }
+
+  return null;
 };
 
 const extractChangedFields = (payload: Record<string, unknown> | null | undefined): string[] => {
@@ -105,15 +192,35 @@ const buildUserSnapshot = (user: IamUser | null | undefined): Record<string, unk
 };
 
 const buildPatientSnapshot = (
-  user: IamUser | null | undefined
+  user: IamUser | null | undefined,
+  patientRecord?: Record<string, unknown> | null
 ): Record<string, unknown> | null => {
-  const userData = buildUserSnapshot(user);
-  if (!userData) {
-    return null;
+  const snapshot: Record<string, unknown> = {};
+
+  if (patientRecord) {
+    const pickValue = (key: string): unknown => (key in patientRecord ? patientRecord[key] : undefined);
+
+    snapshot.patient = {
+      id: (pickValue("_id") as string | undefined) ?? null,
+      userId: (pickValue("user_id") as string | undefined) ?? null,
+      code: (pickValue("patient_code") as string | undefined) ?? null,
+      isActive: (pickValue("is_active") as boolean | undefined) ?? null,
+      isDeleted: (pickValue("is_deleted") as boolean | undefined) ?? null,
+      createdAt: pickValue("created_at") ?? null,
+      updatedAt: pickValue("updated_at") ?? null,
+      deletedAt: pickValue("deleted_at") ?? null,
+      lastVisitDate: pickValue("last_visit_date") ?? null,
+      lastTestType: pickValue("last_test_type") ?? null,
+      emergencyContact: pickValue("emergency_contact") ?? null,
+    };
   }
-  return {
-    user: userData,
-  };
+
+  const userData = buildUserSnapshot(user);
+  if (userData) {
+    snapshot.user = userData;
+  }
+
+  return Object.keys(snapshot).length > 0 ? snapshot : null;
 };
 
 const getAllPatients = async (req: Request, res: Response): Promise<void> => {
@@ -258,7 +365,9 @@ const createPatient = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const actorEmail = await resolvePerformedBy(req, "system");
+  const fallbackActor = typeof user_id === "string" && user_id.length > 0 ? user_id : undefined;
+  const operatorIdForMonitoring = resolveOperatorId(req, fallbackActor);
+  const actorEmail = await resolvePerformedBy(req, operatorIdForMonitoring ?? fallbackActor ?? "system");
 
     const patient = await patientService.createPatient({
       user_id,
@@ -271,7 +380,7 @@ const createPatient = async (req: Request, res: Response): Promise<void> => {
     const iamUserSnapshot = typeof user_id === "string" ? await iamServiceClient.getUserById(user_id) : null;
     const patientRecord = patient as unknown as Record<string, unknown>;
     const newValues: Record<string, unknown> = { ...patientRecord };
-  const createSnapshot = buildPatientSnapshot(iamUserSnapshot);
+    const createSnapshot = buildPatientSnapshot(iamUserSnapshot, patientRecord);
     if (createSnapshot) {
       newValues.snapshot = createSnapshot;
     }
@@ -289,6 +398,20 @@ const createPatient = async (req: Request, res: Response): Promise<void> => {
     } catch (logError) {
       console.error("[PatientAuditLog] Failed to record create event", logError);
     }
+
+    await patientMonitoringService.recordPatientCreated({
+      patientId: `${patient._id}`,
+      eventMessage: "Patient record created",
+      oldValues: null,
+      newValues,
+      operatorEmail: actorEmail,
+      operatorId: operatorIdForMonitoring ?? null,
+      operatorName: await resolveOperatorName(
+        req,
+        operatorIdForMonitoring ?? undefined,
+        iamUserSnapshot?.fullName ?? undefined
+      ),
+    });
 
     res.status(201).json({ message: "Patient created", patient });
   } catch (error) {
@@ -377,15 +500,21 @@ const updatePatient = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    const fallbackOperatorId = typeof existingPatient.user_id === "string" ? existingPatient.user_id : undefined;
     const fallbackActor = (() => {
       const createdBy = existingPatient.created_by;
       if (typeof createdBy === "string" && createdBy.length > 0 && createdBy !== "system") {
         return createdBy;
       }
-      return existingPatient.user_id;
+      return fallbackOperatorId;
     })();
 
-    const actorEmail = await resolvePerformedBy(req, fallbackActor);
+    const operatorIdForMonitoring = resolveOperatorId(req, fallbackOperatorId);
+
+    const actorEmail = await resolvePerformedBy(
+      req,
+      operatorIdForMonitoring ?? fallbackActor ?? "system"
+    );
 
     const existingRecord = existingPatient as unknown as Record<string, unknown>;
     const updatedRecord = updatedPatient as unknown as Record<string, unknown>;
@@ -401,8 +530,8 @@ const updatePatient = async (req: Request, res: Response): Promise<void> => {
     });
 
     if (changedFields.length > 0) {
-  const oldSnapshot = buildPatientSnapshot(iamUserSnapshot);
-  const newSnapshot = buildPatientSnapshot(iamUserSnapshot);
+  const oldSnapshot = buildPatientSnapshot(iamUserSnapshot, existingRecord);
+  const newSnapshot = buildPatientSnapshot(iamUserSnapshot, updatedRecord);
       const oldValues = pickFields(existingRecord, changedFields);
       const newValues = pickFields(updatedRecord, changedFields);
       if (oldSnapshot) {
@@ -424,6 +553,20 @@ const updatePatient = async (req: Request, res: Response): Promise<void> => {
       } catch (logError) {
         console.error("[PatientAuditLog] Failed to record update event", logError);
       }
+
+      await patientMonitoringService.recordPatientUpdated({
+        patientId: `${updatedPatient._id}`,
+        eventMessage: `Patient record updated (${changedFields.join(", ")})`,
+        oldValues,
+        newValues,
+        operatorEmail: actorEmail,
+        operatorId: operatorIdForMonitoring ?? fallbackOperatorId ?? null,
+        operatorName: await resolveOperatorName(
+          req,
+          operatorIdForMonitoring ?? fallbackOperatorId,
+          iamUserSnapshot?.fullName ?? undefined
+        ),
+      });
     }
 
     console.log(`   ✅ Patient updated: ${updatedPatient.patient_code}`);
@@ -447,9 +590,8 @@ const deletePatient = async (req: Request, res: Response): Promise<void> => {
     #swagger.parameters['hard'] = { in: 'query', type: 'boolean', default: false }
   */
   try {
-    const { id } = req.params;
-    const { hard = "false" } = req.query;
-    const userId = (req as any).userId;
+  const { id } = req.params;
+  const { hard = "false" } = req.query;
     if (!id) {
       console.log(`   ❌ Missing patient ID`);
       res.status(400).json({ message: "Patient ID is required" });
@@ -468,18 +610,20 @@ const deletePatient = async (req: Request, res: Response): Promise<void> => {
       ? await iamServiceClient.getUserById(existingPatient.user_id)
       : null;
 
+    const fallbackOperatorId = typeof existingPatient.user_id === "string" ? existingPatient.user_id : undefined;
     const fallbackActor = (() => {
       const createdBy = existingPatient.created_by;
       if (typeof createdBy === "string" && createdBy.length > 0 && createdBy !== "system") {
         return createdBy;
       }
-      return existingPatient.user_id;
+      return fallbackOperatorId;
     })();
 
-    const actorEmail = await resolvePerformedBy(req, fallbackActor);
+    const operatorIdForMonitoring = resolveOperatorId(req, fallbackOperatorId);
+    const actorEmail = await resolvePerformedBy(req, operatorIdForMonitoring ?? fallbackActor ?? "system");
 
     const existingRecord = existingPatient as unknown as Record<string, unknown>;
-  const existingSnapshot = buildPatientSnapshot(iamUserSnapshot);
+  const existingSnapshot = buildPatientSnapshot(iamUserSnapshot, existingRecord);
 
     if (shouldHardDelete) {
       const deleted = await patientService.hardDeletePatient(id);
@@ -506,6 +650,20 @@ const deletePatient = async (req: Request, res: Response): Promise<void> => {
         console.error("[PatientAuditLog] Failed to record hard delete event", logError);
       }
 
+      await patientMonitoringService.recordPatientDeleted({
+        patientId: `${existingPatient._id}`,
+        eventMessage: "Patient record hard deleted",
+        oldValues: hardDeleteOldValues,
+        newValues: null,
+        operatorEmail: actorEmail,
+        operatorId: operatorIdForMonitoring ?? fallbackOperatorId ?? null,
+        operatorName: await resolveOperatorName(
+          req,
+          operatorIdForMonitoring ?? fallbackOperatorId,
+          iamUserSnapshot?.fullName ?? undefined
+        ),
+      });
+
       console.log(`   ✅ Patient permanently deleted (hard delete): ${id}`);
       res.status(200).json({ message: "Patient permanently deleted" });
       return;
@@ -520,7 +678,7 @@ const deletePatient = async (req: Request, res: Response): Promise<void> => {
     const updatedRecord = patient as unknown as Record<string, unknown>;
     const softDeleteFields = ["is_deleted", "is_active", "deleted_at"];
     const softDeleteOldValues = pickFields(existingRecord, softDeleteFields);
-  const newSnapshot = buildPatientSnapshot(iamUserSnapshot);
+  const newSnapshot = buildPatientSnapshot(iamUserSnapshot, updatedRecord);
     if (existingSnapshot) {
       softDeleteOldValues.snapshot = existingSnapshot;
     }
@@ -541,6 +699,20 @@ const deletePatient = async (req: Request, res: Response): Promise<void> => {
     } catch (logError) {
       console.error("[PatientAuditLog] Failed to record soft delete event", logError);
     }
+
+    await patientMonitoringService.recordPatientDeleted({
+      patientId: `${patient._id}`,
+      eventMessage: "Patient record soft deleted",
+      oldValues: softDeleteOldValues,
+      newValues: softDeleteNewValues,
+      operatorEmail: actorEmail,
+      operatorId: operatorIdForMonitoring ?? fallbackOperatorId ?? null,
+      operatorName: await resolveOperatorName(
+        req,
+        operatorIdForMonitoring ?? fallbackOperatorId,
+        iamUserSnapshot?.fullName ?? undefined
+      ),
+    });
 
     console.log(`   ✅ Patient soft deleted: ${patient.patient_code}`);
     res.status(200).json({ message: "Patient deleted", patient });
@@ -589,8 +761,8 @@ const softDeletePatientByUserId = async (req: Request, res: Response): Promise<v
     const existingRecord = existingPatient as unknown as Record<string, unknown>;
     const updatedRecord = patient as unknown as Record<string, unknown>;
     const softDeleteFields = ["is_deleted", "is_active", "deleted_at"];
-  const existingSnapshot = buildPatientSnapshot(iamUserSnapshot);
-  const newSnapshot = buildPatientSnapshot(iamUserSnapshot);
+  const existingSnapshot = buildPatientSnapshot(iamUserSnapshot, existingRecord);
+  const newSnapshot = buildPatientSnapshot(iamUserSnapshot, updatedRecord);
     const softDeleteOldValues = pickFields(existingRecord, softDeleteFields);
     if (existingSnapshot) {
       softDeleteOldValues.snapshot = existingSnapshot;
@@ -599,15 +771,17 @@ const softDeletePatientByUserId = async (req: Request, res: Response): Promise<v
     if (newSnapshot) {
       softDeleteNewValues.snapshot = newSnapshot;
     }
+    const fallbackOperatorId = typeof existingPatient.user_id === "string" ? existingPatient.user_id : undefined;
     const fallbackActor = (() => {
       const createdBy = existingPatient.created_by;
       if (typeof createdBy === "string" && createdBy.length > 0 && createdBy !== "system") {
         return createdBy;
       }
-      return existingPatient.user_id;
+      return fallbackOperatorId;
     })();
 
-    const actorEmail = await resolvePerformedBy(req, fallbackActor);
+    const operatorIdForMonitoring = resolveOperatorId(req, fallbackOperatorId);
+    const actorEmail = await resolvePerformedBy(req, operatorIdForMonitoring ?? fallbackActor ?? "system");
     const softDeleteAuditPayload: CreateAuditLogPayload = {
       patient_id: patient._id,
       action: "DELETE",
@@ -621,6 +795,20 @@ const softDeletePatientByUserId = async (req: Request, res: Response): Promise<v
     } catch (logError) {
       console.error("[PatientAuditLog] Failed to record soft delete by user event", logError);
     }
+
+    await patientMonitoringService.recordPatientDeleted({
+      patientId: `${patient._id}`,
+      eventMessage: "Patient record soft deleted by user ID",
+      oldValues: softDeleteOldValues,
+      newValues: softDeleteNewValues,
+      operatorEmail: actorEmail,
+      operatorId: operatorIdForMonitoring ?? fallbackOperatorId ?? null,
+      operatorName: await resolveOperatorName(
+        req,
+        operatorIdForMonitoring ?? fallbackOperatorId,
+        iamUserSnapshot?.fullName ?? undefined
+      ),
+    });
 
     console.log(`   ✅ Patient soft deleted: ${patient.patient_code} (User: ${userId})`);
     res.status(200).json({ message: "Patient deleted for user", patient });

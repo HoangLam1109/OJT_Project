@@ -1,22 +1,23 @@
 import EventCode, { type IEventCode } from "../db/models/EventCode.model.js";
+import { resolveServiceNameVariants, type ServiceName } from "../constants/event.constant.js";
 
 export interface CreateEventCodePayload {
   event_code: string;
   event_name: string;
   description: string;
-  category: string;
+  service_name: ServiceName;
   is_active?: boolean;
 }
 
 export interface UpdateEventCodePayload {
   event_name?: string;
   description?: string;
-  category?: string;
+  service_name?: ServiceName;
   is_active?: boolean;
 }
 
 export interface EventCodeFilters {
-  category?: string;
+  service_name?: ServiceName;
   is_active?: boolean;
 }
 
@@ -31,8 +32,8 @@ class EventCodeService {
   ): Promise<{ codes: IEventCode[]; total: number; page: number; totalPages: number }> {
     const query: Record<string, unknown> = {};
 
-    if (filters.category) {
-      query.category = filters.category;
+    if (filters.service_name) {
+      query.service_name = { $in: resolveServiceNameVariants(filters.service_name) };
     }
     if (typeof filters.is_active === "boolean") {
       query.is_active = filters.is_active;
@@ -99,10 +100,15 @@ class EventCodeService {
   }
 
   /**
-   * Get event codes by category
+   * Get event codes for a specific service
    */
-  async getEventCodesByCategory(category: string): Promise<IEventCode[]> {
-    return EventCode.find({ category, is_active: true }).sort({ event_code: 1 }).lean<IEventCode[]>();
+  async getEventCodesByService(serviceName: ServiceName): Promise<IEventCode[]> {
+    return EventCode.find({
+      service_name: { $in: resolveServiceNameVariants(serviceName) },
+      is_active: true,
+    })
+      .sort({ event_code: 1 })
+      .lean<IEventCode[]>();
   }
 }
 

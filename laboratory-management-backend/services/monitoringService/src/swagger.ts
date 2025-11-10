@@ -1,21 +1,15 @@
-import swaggerAutogen from "swagger-autogen";
-import { fileURLToPath } from "url";
-import { dirname, resolve } from "path";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+    import swaggerAutogen from "swagger-autogen";
 
 const doc = {
   info: {
+    version: "v1.0.0",
     title: "Monitoring Service API",
-    version: "1.0.0",
-    description: "Laboratory Management System - Monitoring Service API Documentation\nBased on Section 3.2 - Event Logs Management",
+    description:
+      "Monitoring microservice for Laboratory Management System. Captures cross-service event logs and event code references.",
   },
-  host: "localhost:3004",
+  host: `localhost:${process.env.MONITORING_SERVICE_PORT || 5004}`,
   basePath: "/api",
-  schemes: ["http"],
-  consumes: ["application/json"],
-  produces: ["application/json"],
+  schemes: ["http", "https"],
   tags: [
     {
       name: "Event Logs",
@@ -37,39 +31,12 @@ const doc = {
       type: "apiKey",
       in: "header",
       name: "X-Internal-API-Key",
-      description: "Internal service API key",
-    },
-  },
-  definitions: {
-    EventLog: {
-      event_id: "uuid-string",
-      event_code: "E_00001",
-      action: "CREATE",
-      event_message: "Test order created",
-      service_name: "TEST_ORDER",
-      entity_id: "entity-id-string",
-      old_values: {},
-      new_values: {},
-      operator_id: "user-id-string",
-      operator_name: "John Doe",
-      operator_role: "LAB_MANAGER",
-      occurred_at: "2025-01-01T00:00:00.000Z",
-      received_at: "2025-01-01T00:00:00.000Z",
-    },
-    EventCode: {
-      event_code: "E_00001",
-      event_name: "TEST_ORDER_CREATED",
-      description: "Test order created",
-      category: "TEST_ORDER",
-      is_active: true,
-      created_at: "2025-01-01T00:00:00.000Z",
+      description: "Internal service API key for trusted services",
     },
   },
 };
 
-const outputFile = resolve(__dirname, "./swagger-output.json");
-const endpointsFiles = [resolve(__dirname, "./routes/index.ts")];
+const outputFile = "./swagger-output.json";
+const endpointsFiles = ["./routes/index.ts"];
 
-swaggerAutogen({ openapi: "3.0.0" })(outputFile, endpointsFiles, doc).then(() => {
-  console.log("✅ Swagger documentation generated successfully!");
-});
+swaggerAutogen()(outputFile, endpointsFiles, doc);

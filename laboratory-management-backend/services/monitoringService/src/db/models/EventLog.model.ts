@@ -1,4 +1,5 @@
 import { Schema, model, type Document } from "mongoose";
+import { ALLOWED_SERVICE_NAMES } from "../../constants/event.constant.js";
 
 export interface IEventLog extends Document {
   event_id: string;
@@ -11,6 +12,7 @@ export interface IEventLog extends Document {
   new_values?: Record<string, unknown> | null;
   operator_id: string;
   operator_name?: string;
+  operator_gmail?: string;
   operator_role?: string;
   occurred_at: Date;
   received_at: Date;
@@ -50,7 +52,7 @@ const EventLogSchema = new Schema<IEventLog>(
       required: true,
       trim: true,
       uppercase: true,
-      enum: ['IAM', 'PATIENT', 'TEST_ORDER', 'WAREHOUSE', 'INSTRUMENT', 'MONITORING'],
+      enum: ALLOWED_SERVICE_NAMES,
       index: true,
     },
     entity_id: {
@@ -75,6 +77,11 @@ const EventLogSchema = new Schema<IEventLog>(
     operator_name: {
       type: String,
       trim: true,
+    },
+    operator_gmail: {
+      type: String,
+      trim: true,
+      lowercase: true,
     },
     operator_role: {
       type: String,

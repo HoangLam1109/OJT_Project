@@ -1,16 +1,18 @@
 import EventLog, { type IEventLog } from "../db/models/EventLog.model.js";
 import { v4 as uuidv4 } from "uuid";
+import { normalizeServiceName, resolveServiceNameVariants, type ServiceName } from "../constants/event.constant.js";
 
 export interface CreateEventLogPayload {
   event_code: string;
   action: string;
   event_message: string;
-  service_name: string;
+  service_name: ServiceName;
   entity_id?: string;
   old_values?: Record<string, unknown> | null;
   new_values?: Record<string, unknown> | null;
   operator_id: string;
   operator_name?: string;
+  operator_gmail?: string;
   operator_role?: string;
   occurred_at?: Date;
   error_message?: string;
@@ -18,7 +20,7 @@ export interface CreateEventLogPayload {
 
 export interface EventLogFilters {
   event_code?: string;
-  service_name?: string;
+  service_name?: ServiceName;
   operator_id?: string;
   entity_id?: string;
   action?: string;
@@ -31,9 +33,15 @@ class EventLogService {
    * Create a new event log
    */
   async createEventLog(payload: CreateEventLogPayload): Promise<IEventLog> {
+    const normalizedServiceName = normalizeServiceName(payload.service_name);
+    if (!normalizedServiceName) {
+      throw new Error("Invalid service_name provided for event log creation");
+    }
+
     const eventLog = new EventLog({
       event_id: uuidv4(),
       ...payload,
+      service_name: normalizedServiceName,
       received_at: new Date(),
       occurred_at: payload.occurred_at || new Date(),
     });
@@ -54,7 +62,7 @@ class EventLogService {
       query.event_code = filters.event_code;
     }
     if (filters.service_name) {
-      query.service_name = filters.service_name;
+      query.service_name = { $in: resolveServiceNameVariants(filters.service_name) };
     }
     if (filters.operator_id) {
       query.operator_id = filters.operator_id;
@@ -118,8 +126,8 @@ class EventLogService {
   /**
    * Get event logs by service name
    */
-  async getEventLogsByService(serviceName: string, limit: number = 100): Promise<IEventLog[]> {
-    return EventLog.find({ service_name: serviceName })
+  async getEventLogsByService(serviceName: ServiceName, limit: number = 100): Promise<IEventLog[]> {
+    return EventLog.find({ service_name: { $in: resolveServiceNameVariants(serviceName) } })
       .sort({ occurred_at: -1 })
       .limit(limit)
       .lean<IEventLog[]>();
@@ -171,7 +179,8 @@ class EventLogService {
 
     const eventsByService: Record<string, number> = {};
     byService.forEach((item: { _id: string; count: number }) => {
-      eventsByService[item._id] = item.count;
+      const normalized = normalizeServiceName(item._id) ?? item._id;
+      eventsByService[normalized] = (eventsByService[normalized] ?? 0) + item.count;
     });
 
     const eventsByAction: Record<string, number> = {};
