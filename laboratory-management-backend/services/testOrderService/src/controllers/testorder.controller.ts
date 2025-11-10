@@ -89,6 +89,7 @@ export const getTestOrderById = async (req: Request<{ id: string }>, res: Respon
     const enrichedOrder = {
       _id: order._id,
       patient_id: order.patient_id,
+      patient_name: order.patient_name,
       barcode: order.barcode,
       status: order.status,
       created_at: order.created_at,
@@ -101,16 +102,6 @@ export const getTestOrderById = async (req: Request<{ id: string }>, res: Respon
       deleted_by: order.deleted_by,
       testType: order.test_type,
       notes: order.notes,
-
-      user: user
-        ? {
-          fullName: user.fullName,
-          email: user.email,
-          phoneNumber: user.phoneNumber,
-          age: user.age,
-        }
-        : null,
-
       instrument: instrument
         ? {
           instrument_code: instrument.instrument_code,
