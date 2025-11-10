@@ -1,7 +1,41 @@
 import type { Request, Response } from "express";
 import patientAuditLogService from "../services/patientAuditLog.service.js";
 import { errorHandler } from "../utils/error.util.js";
-import iamServiceClient from "../services/iamService.client.js";
+import iamServiceClient, { type IamUser } from "../services/iamService.client.js";
+import { PatientService } from "../services/patient.service.js";
+
+const patientService = new PatientService();
+
+const buildUserSnapshot = (user: IamUser | null | undefined): Record<string, unknown> | null => {
+  if (!user) {
+    return null;
+  }
+  return {
+    id: user._id,
+    email: user.email,
+    fullName: user.fullName,
+    identityNumber: user.identityNumber,
+    phoneNumber: user.phoneNumber ?? null,
+    gender: user.gender,
+    dateOfBirth: user.dateOfBirth,
+    address: user.address ?? null,
+    age: user.age,
+    role: user.role,
+    isActive: user.isActive,
+  };
+};
+
+const buildPatientSnapshot = (
+  user: IamUser | null | undefined
+): Record<string, unknown> | null => {
+  const userData = buildUserSnapshot(user);
+  if (!userData) {
+    return null;
+  }
+  return {
+    user: userData,
+  };
+};
 
 type AuditLogRecord = Record<string, unknown> & { performed_by: string; performed_by_id?: string };
 
@@ -144,11 +178,60 @@ const deleteAuditLog = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    const log = await patientAuditLogService.getAuditLogById(id);
+    if (!log) {
+      res.status(404).json({ message: "Audit log not found" });
+      return;
+    }
+
+    // Tái sử dụng snapshot từ log hiện tại nếu có
+    const logRecord = log as unknown as Record<string, unknown>;
+    let patientSnapshot: Record<string, unknown> | null = null;
+
+    // Kiểm tra snapshot trong old_values hoặc new_values
+    const oldValues = logRecord.old_values as Record<string, unknown> | null | undefined;
+    const newValues = logRecord.new_values as Record<string, unknown> | null | undefined;
+    
+    if (oldValues && typeof oldValues === "object" && oldValues.snapshot) {
+      patientSnapshot = oldValues.snapshot as Record<string, unknown>;
+      console.log("   ♻️  Reusing snapshot from old_values");
+    } else if (newValues && typeof newValues === "object" && newValues.snapshot) {
+      patientSnapshot = newValues.snapshot as Record<string, unknown>;
+      console.log("   ♻️  Reusing snapshot from new_values");
+    } else {
+      // Nếu không có snapshot, tạo mới từ patient hiện tại
+      const patient = await patientService.getPatientById(log.patient_id);
+      if (patient && patient.user_id) {
+        const iamUser = await iamServiceClient.getUserById(patient.user_id);
+        patientSnapshot = buildPatientSnapshot(iamUser);
+        console.log("   🆕 Created new snapshot from current patient");
+      }
+    }
+
+    // Lấy thông tin actor
+    const actorId = (req as any).userId || "system";
+    const actorEmail = (req as any).email || null;
+
     const deleted = await patientAuditLogService.deleteAuditLog(id);
     if (!deleted) {
       res.status(404).json({ message: "Audit log not found" });
       return;
     }
+
+    // Ghi log audit cho việc xóa audit log
+    const deleteOldValues: Record<string, unknown> = { ...logRecord };
+    if (patientSnapshot) {
+      deleteOldValues.snapshot = patientSnapshot;
+    }
+
+    await patientAuditLogService.createAuditLog({
+      patient_id: log.patient_id,
+      performed_by: actorEmail || actorId,
+      action: "DELETE",
+      event_message: "Audit log deleted",
+      old_values: deleteOldValues,
+      new_values: null,
+    });
 
     res.status(200).json({ message: "Audit log deleted" });
   } catch (error) {
