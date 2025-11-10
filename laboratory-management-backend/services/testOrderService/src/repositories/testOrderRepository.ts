@@ -8,11 +8,17 @@ export const TestOrderRepository = {
   },
 
   // Lấy tất cả Test order chưa bị xoá
-  async findAll() {
-    // Lấy tất cả document chưa bị xóa
-    return await TestOrder.find().exec();
-  }
-  ,
+ async findAll(filter = {}, skip = 0, limit = 10) {
+    return TestOrder.find(filter)
+      .skip(skip)
+      .limit(limit)
+      .sort({ created_at: -1 });
+  },
+
+  async count(filter = {}) {
+    return TestOrder.countDocuments(filter);
+  },
+  
 
   // Tìm Test order theo ID
   async findById(id: string): Promise<ITestOrder | null> {
@@ -46,6 +52,8 @@ export const TestOrderRepository = {
       is_deleted: true,
       deleted_at: new Date(),
       deleted_by: deletedBy,
+      updated_at: new Date(),
+      updated_by: deletedBy,
     });
   },
 

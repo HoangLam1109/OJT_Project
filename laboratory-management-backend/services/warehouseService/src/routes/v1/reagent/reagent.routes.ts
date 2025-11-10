@@ -8,13 +8,28 @@ router.get(
   "/",
   /*
   #swagger.tags = ['Reagents']
-  #swagger.summary = 'Get all reagents'
-  #swagger.description = 'Retrieve a list of all reagents in the system, including available, low stock, and expired ones.'
-  #swagger.responses[200] = {
-    description: 'List of reagents',
-    schema: {
-      success: true
-    }
+  #swagger.summary = 'Get all reagents (with pagination)'
+  #swagger.description = `
+    Retrieve a paginated list of reagents in the system.
+    You can specify query parameters to control pagination:
+    - \`page\`: Page number (default = 1)
+    - \`limit\`: Number of items per page (default = 10)
+  `
+
+  #swagger.parameters['page'] = {
+    in: 'query',
+    description: 'Page number for pagination (default = 1)',
+    required: false,
+    type: 'integer',
+    example: 2
+  }
+
+  #swagger.parameters['limit'] = {
+    in: 'query',
+    description: 'Number of items per page (default = 10)',
+    required: false,
+    type: 'integer',
+    example: 10
   }
   */
   reagent.getAllReagents

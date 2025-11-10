@@ -2,8 +2,28 @@
 import Reagent, { IReagent } from "../../db/models/Reagent.model.js";
 
 export class ReagentRepository {
-  async findAll(): Promise<IReagent[]> {
-    return Reagent.find({ is_deleted: false }).sort({ updated_at: -1 });
+  // Lấy tất cả reagents có phân trang
+  async findAll(page?: number, limit?: number): Promise<{
+    data: IReagent[];
+    totalItems: number;
+  }> {
+    const query = { is_deleted: false };
+    // Nếu không có phân trang thì trả hết (giữ tương thích cũ)
+    if (!page || !limit) {
+      const data = await Reagent.find(query).sort({ updated_at: -1 });
+      return { data, totalItems: data.length };
+    }
+    // Tính toán skip
+    const skip = (page - 1) * limit;
+    //  Lấy dữ liệu có phân trang
+    const [data, totalItems] = await Promise.all([
+      Reagent.find(query)
+        .sort({ updated_at: -1 })
+        .skip(skip)
+        .limit(limit),
+      Reagent.countDocuments(query),
+    ]);
+    return { data, totalItems };
   }
 
   async findById(id: string): Promise<IReagent | null> {
@@ -27,34 +47,16 @@ export class ReagentRepository {
     ).exec();
   }
 
-async softDelete(_id: string, deletedBy: string): Promise<IReagent | null> {
-  return Reagent.findOneAndUpdate(
-    { _id }, // filter
-    {
-      is_deleted: true,
-      deleted_at: new Date(),
-      deleted_by: deletedBy,
-    },
-    { new: true } // trả về document sau khi update
-  ).exec();
-}
-
-
-  async findExpiringSoon(days: number): Promise<IReagent[]> {
-    const today = new Date();
-    const threshold = new Date(today);
-    threshold.setDate(today.getDate() + days);
-    return Reagent.find({
-      expiration_date: { $lte: threshold, $gte: today },
-      is_deleted: false,
-    });
+  async softDelete(_id: string, deletedBy: string): Promise<IReagent | null> {
+    return Reagent.findOneAndUpdate(
+      { _id }, // filter
+      {
+        is_deleted: true,
+        deleted_at: new Date(),
+        deleted_by: deletedBy,
+      },
+      { new: true } // trả về document sau khi update
+    ).exec();
   }
 
-  async findExpired(): Promise<IReagent[]> {
-    const today = new Date();
-    return Reagent.find({
-      expiration_date: { $lt: today },
-      is_deleted: false,
-    });
-  }
 }

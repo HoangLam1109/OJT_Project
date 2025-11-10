@@ -4,73 +4,46 @@ import { TestOrderService } from "../services/testorder/testOrderService.js";
 import patientServiceClient from "../services/patient/patientServiceClient.js";
 import iamServiceClient from "../services/iam/iamServiceClient.js";
 import instrumentServiceClient from "../services/warehouse/instrumentServiceClient.js";
+import reagentServiceClient, { Reagent } from "../services/warehouse/reagentServiceClient.js";
+
+
 export const getAllTestOrders = async (req: Request, res: Response) => {
   try {
-    //  Lấy danh sách test order
-    const orders = await TestOrderService.getAllOrders();
+    const page = parseInt(req.query.page as string) || 1;   // trang hiện tại
+    const limit = parseInt(req.query.limit as string) || 10; // số bản ghi mỗi trang
+    const skip = (page - 1) * limit;
 
-    //  Lọc bỏ những order đã soft-delete
-    const activeOrders = orders.filter((o) => !o.is_deleted);
+    // Lấy tất cả orders chưa bị xóa
+    const [orders, total] = await Promise.all([
+      TestOrderService.getAllOrders({ is_deleted: false }, skip, limit),
+      TestOrderService.countOrders({ is_deleted: false }),
+    ]);
 
-    //  Lấy các patientId duy nhất
-    const patientIds = [...new Set(activeOrders.map((o) => o.patient_id))];
-    const instrumentIds = [...new Set(activeOrders.map((o) => o.instrument_id))];
-    console.log("instrumentIds:", instrumentIds);
+    // Chuẩn hóa dữ liệu trả về
+    const enrichedOrders = orders.map((order) => ({
+      _id: order._id,
+      patient_id: order.patient_id,
+      patient_name: order.patient_name,
+      barcode: order.barcode,
+      status: order.status,
+      created_at: order.created_at,
+      created_by: order.created_by,
+      due_date: order.due_date,
+      updated_at: order.updated_at,
+      updated_by: order.updated_by,
+      testType: order.test_type,
+      notes: order.notes,
+    }));
 
-
-    //  Lấy thông tin patient
-    const patientsMap = await patientServiceClient.getPatientsByIds(patientIds);
-    const validInstrumentIds = instrumentIds.filter((id): id is string => typeof id === 'string');
-    const instrumentsMap = await instrumentServiceClient.getInstrumentsByIds(validInstrumentIds);
-
-    console.log("instrumentsMap keys:", Array.from(instrumentsMap.keys()));
-    //  Lấy danh sách userId từ patients
-    const userIds = [...new Set(Array.from(patientsMap.values()).map((p) => p.user_id))];
-    const usersMap = await iamServiceClient.getUsersByIds(userIds);
-
-    //  Kết hợp dữ liệu TestOrder + User
-    const enrichedOrders = activeOrders.map((order) => {
-      const patient = patientsMap.get(order.patient_id);
-      const instrument = instrumentsMap.get(order.instrument_id || '');
-      console.log("instrument:", instrument);
-
-      const user = patient ? usersMap.get(patient.user_id) : null;
-
-      return {
-        _id: order._id,
-        patient_id: order.patient_id,
-        instrument_id: order.instrument_id,
-        barcode: order.barcode,
-        status: order.status,
-        created_at: order.created_at,
-        created_by: order.created_by,
-        due_date: order.due_date,
-        updated_at: order.updated_at,
-        updated_by: order.updated_by,
-        is_deleted: order.is_deleted,
-        deleted_at: order.deleted_at,
-        deleted_by: order.deleted_by,
-        testType: order.test_type,
-        processing: order.processing,
-        notes: order.notes,
-        user: user
-          ? {
-            fullName: user.fullName,
-            email: user.email,
-            phoneNumber: user.phoneNumber,
-            age: user.age,
-          }
-          : null,
-
-        instrument: instrument
-          ? {
-            instrument_name: instrument.instrument_name,
-          }
-          : null,
-      };
+    res.json({
+      data: enrichedOrders,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
     });
-    console.log("enrichedOrders", enrichedOrders);
-    res.json(enrichedOrders);
   } catch (err) {
     console.error("[TestOrderController] Error fetching orders:", err);
     res.status(500).json({ message: "Internal server error" });
@@ -78,13 +51,40 @@ export const getAllTestOrders = async (req: Request, res: Response) => {
 };
 
 
+
 export const getTestOrderById = async (req: Request<{ id: string }>, res: Response) => {
   try {
     const order = await TestOrderService.getOrderById(req.params.id);
     if (!order) return res.status(404).json({ message: "Test order not found" });
 
+    // Lấy thông tin patient & user
     const patient = await patientServiceClient.getPatientById(order.patient_id);
     const user = patient ? await iamServiceClient.getUserById(patient.user_id) : null;
+
+    // Lấy thông tin instrument
+    const instrument = order.instrument_id
+      ? await instrumentServiceClient.getInstrumentById(order.instrument_id)
+      : null;
+
+    // Lấy danh sách reagent, convert Map -> Array nếu client vẫn trả Map
+    const reagentIds = order.reagent_usages?.map(u => u.reagent_id) || [];
+    const reagentsMap = reagentIds.length
+      ? await reagentServiceClient.getReagentsByIds(reagentIds)
+      : new Map<string, Reagent>();
+
+    const reagentsArray = Array.from(reagentsMap.values());
+
+    // Map reagent với số lượng đã dùng từ order.reagent_usages
+    const enrichedReagents = reagentsArray.map((r) => {
+      const usage = order.reagent_usages?.find((u) => u.reagent_id === r._id)?.quantity_used || 0;
+      return {
+        reagent_id: r._id,
+        reagent_name: r.reagent_name,
+        reagent_type: r.reagent_type,
+        status: r.status,
+        quantity_used: usage,
+      };
+    });
 
     const enrichedOrder = {
       _id: order._id,
@@ -100,8 +100,8 @@ export const getTestOrderById = async (req: Request<{ id: string }>, res: Respon
       deleted_at: order.deleted_at,
       deleted_by: order.deleted_by,
       testType: order.test_type,
-      processing: order.processing,
       notes: order.notes,
+
       user: user
         ? {
           fullName: user.fullName,
@@ -110,7 +110,20 @@ export const getTestOrderById = async (req: Request<{ id: string }>, res: Respon
           age: user.age,
         }
         : null,
+
+      instrument: instrument
+        ? {
+          instrument_code: instrument.instrument_code,
+          instrument_name: instrument.instrument_name,
+          instrument_type: instrument.instrument_type,
+          manufacturer: instrument.manufacturer,
+          status: instrument.status,
+        }
+        : null,
+
+      reagents: enrichedReagents,
     };
+
     console.log("enrichedOrder", enrichedOrder);
     res.json(enrichedOrder);
   } catch (err) {
@@ -118,6 +131,8 @@ export const getTestOrderById = async (req: Request<{ id: string }>, res: Respon
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+
 
 export const createTestOrder = async (req: Request, res: Response) => {
   try {

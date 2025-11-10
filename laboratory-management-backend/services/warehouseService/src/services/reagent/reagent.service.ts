@@ -9,59 +9,73 @@ export class ReagentService {
     this.repo = new ReagentRepository();
   }
 
-  async getAll(): Promise<IReagent[]> {
-    return this.repo.findAll();
+  async getAll(page?: number, limit?: number){
+    return await this.repo.findAll(page, limit);
   }
 
   async getById(id: string): Promise<IReagent | null> {
     return this.repo.findById(id);
   }
 
-  async create(data: Partial<IReagent>): Promise<IReagent> {
-    if (!data.low_stock_threshold) {
-      data.low_stock_threshold = Math.round((data.quantity_received ?? 0) * 0.1);
-    }
-    return this.repo.create(data);
+async create(data: Partial<IReagent>): Promise<IReagent> {
+  // Nếu low_stock_threshold chưa set, mặc định = 10% của quantity_received
+  if (!data.low_stock_threshold) {
+    data.low_stock_threshold = Math.round((data.quantity_received ?? 0) * 0.1);
   }
+
+  // Nếu quantity_received có, set luôn quantity_current = quantity_received
+  if (data.quantity_received !== undefined && data.quantity_current === undefined) {
+    data.quantity_current = data.quantity_received;
+  }
+
+  return this.repo.create(data);
+}
+
 
 async update(
   id: string,
   data: Partial<IReagent>,
   updatedBy?: string
 ): Promise<IReagent | null> {
-  // 1. Lấy reagent hiện tại
   const reagent = await this.repo.findById(id);
   if (!reagent) throw new Error("Reagent not found");
 
-  // 2. Không cho update reagent_code
   if ('reagent_code' in data) delete data.reagent_code;
 
-  // 3. Kiểm tra logic số lượng
-  const quantityCurrent = data.quantity_current ?? reagent.quantity_current;
-  const quantityReceived = data.quantity_received ?? reagent.quantity_received;
+  const oldQuantityReceived = reagent.quantity_received ?? 0;
+  const oldQuantityCurrent = reagent.quantity_current ?? 0;
+  const newQuantityReceived = data.quantity_received ?? oldQuantityReceived;
+  let newQuantityCurrent = data.quantity_current ?? oldQuantityCurrent;
 
-  if (quantityCurrent > (quantityReceived ?? 0)) {
+  // Auto increase quantity_current nếu quantity_received tăng
+  if (newQuantityReceived > oldQuantityReceived) {
+    newQuantityCurrent += newQuantityReceived - oldQuantityReceived;
+  }
+
+  // Kiểm tra quantity_current không vượt quantity_received
+  if (newQuantityCurrent > newQuantityReceived) {
     throw new Error(
-      `quantity_current (${quantityCurrent}) không thể lớn hơn quantity_received (${quantityReceived})`
+      `quantity_current (${newQuantityCurrent}) không thể lớn hơn quantity_received (${newQuantityReceived})`
     );
   }
 
-  // 4. Tính status tự động
+  data.quantity_received = newQuantityReceived;
+  data.quantity_current = newQuantityCurrent;
+
+  // Tính status tự động
   const lowStockThreshold = reagent.low_stock_threshold ?? 0;
   const expirationDate = new Date(reagent.expiration_date);
-
   let newStatus: IReagent["status"] = "Available";
-  if (quantityCurrent <= 0) newStatus = "Depleted";
-  else if (quantityCurrent <= lowStockThreshold) newStatus = "LowStock";
+  if (newQuantityCurrent <= 0) newStatus = "Depleted";
+  else if (newQuantityCurrent <= lowStockThreshold) newStatus = "LowStock";
   else if (expirationDate < new Date()) newStatus = "Expired";
 
   data.status = newStatus;
 
-  // 5. Cập nhật metadata
+  // Cập nhật metadata
   data.updated_at = new Date();
   if (updatedBy) data.updated_by = updatedBy;
 
-  // 6. Gọi repo update
   return this.repo.findAndUpdate(id, data);
 }
 
@@ -71,33 +85,4 @@ async update(
     return this.repo.softDelete(id, deletedBy);
   }
 
-  async getExpiringSoon(days = 30): Promise<IReagent[]> {
-    return this.repo.findExpiringSoon(days);
-  }
-
-  async getExpired(): Promise<IReagent[]> {
-    return this.repo.findExpired();
-  }
-
-  async useReagent(id: string, runs: number): Promise<IReagent | null> {
-    const reagent = await this.repo.findById(id);
-    if (!reagent) throw new Error("Reagent not found");
-
-    const usedAmount = runs * reagent.usage_per_run;
-    if (reagent.quantity_current < usedAmount)
-      throw new Error("Not enough reagent available");
-
-    const newQuantity = reagent.quantity_current - usedAmount;
-    const status =
-      newQuantity <= 0
-        ? "Depleted"
-        : newQuantity <= (reagent.low_stock_threshold ?? 0)
-          ? "LowStock"
-          : "InUse";
-
-    return this.repo.findAndUpdate(id, {
-      quantity_current: newQuantity,
-      status,
-    });
-  }
 }
