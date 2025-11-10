@@ -32,13 +32,13 @@ export const TestOrderService = {
       barcode: data.barcode,
       test_type: data.testType,
       status: data.status ?? 'Pending',
-      created_by: data.createdBy,
+      created_by: data.created_by,
       ...(data.instrument_id ? { instrument_id: data.instrument_id } : {}),
       ...(data.due_date ? { due_date: new Date(data.due_date) } : {}),
-      ...(data.updatedBy ? { updated_by: data.updatedBy } : {}),
-      is_deleted: data.isDeleted ?? false,
-      ...(data.deletedAt ? { deleted_at: new Date(data.deletedAt) } : {}),
-      ...(data.deletedBy ? { deleted_by: data.deletedBy } : {}),
+      ...(data.updated_by ? { updated_by: data.updated_by } : {}),
+      is_deleted: data.is_deleted ?? false,
+      ...(data.deleted_at ? { deleted_at: new Date(data.deleted_at) } : {}),
+      ...(data.deleted_by ? { deleted_by: data.deleted_by } : {}),
       notes: data.notes ?? 'have no comment',
     };
     //  Tạo order
@@ -57,7 +57,7 @@ export const TestOrderService = {
   },
 
 
-  async updateOrder(id: string, data: UpdateOrderInput, updatedBy: any): Promise<ITestOrder | null> {
+  async updateOrder(id: string, data: UpdateOrderInput, updated_by: any): Promise<ITestOrder | null> {
     //  Lấy order hiện tại từ DB
     const existingOrder = await TestOrderRepository.findById(id);
     if (!existingOrder) throw new Error(`Order ${id} not found`);
@@ -90,7 +90,7 @@ export const TestOrderService = {
       ...(data.status ? { status: data.status } : {}),
       ...(data.instrument_id ? { instrument_id: data.instrument_id } : {}),
       ...(data.due_date ? { due_date: new Date(data.due_date) } : {}),
-      updated_by: updatedBy,
+      updated_by: updated_by,
       notes: data.notes ?? existingOrder.notes ?? 'have no comment',
     };
 
@@ -119,7 +119,7 @@ export const TestOrderService = {
   async updateStatus(
     id: string,
     status: string,
-    updatedBy: string
+    updated_by: string
   ): Promise<ITestOrder> {
     const order = await TestOrderRepository.findById(id);
     if (!order) throw new Error('Không tìm thấy lệnh xét nghiệm');
@@ -127,13 +127,13 @@ export const TestOrderService = {
     return TestOrderRepository.update(id, {
       ...order.toObject(),
       status,
-      updated_by: updatedBy,
+      updated_by: updated_by,
       updated_at: new Date(),
     });
   },
 
 
-  async softDelete(_id: string, deletedBy: string): Promise<ITestOrder | null> {
+  async softDelete(_id: string, deleted_by: string): Promise<ITestOrder | null> {
     const order = await TestOrderRepository.findById(_id);
     if (!order) throw new Error("Order không tìm thấy!");
     // Chỉ hồi lại tồn kho nếu order chưa thực hiện
@@ -152,7 +152,7 @@ export const TestOrderService = {
       console.log(`Order ${_id} đã hoàn thành, không hồi lại reagent`);
     }
 
-    const softDeleteTestOrder = await TestOrderRepository.softDelete(_id, deletedBy);
+    const softDeleteTestOrder = await TestOrderRepository.softDelete(_id, deleted_by);
     return softDeleteTestOrder;
   },
 

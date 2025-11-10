@@ -35,12 +35,12 @@ export interface CreateOrderInput {
   barcode: string;
   testType: string;
   status?: string;
-  createdBy: string;
+  created_by: string;
   due_date?: string | Date;
-  updatedBy?: string;
-  isDeleted?: boolean;
-  deletedAt?: string | Date;
-  deletedBy?: string;
+  updated_by?: string;
+  is_deleted?: boolean;
+  deleted_at?: string | Date;
+  deleted_by?: string;
   notes?: string;
 }
 

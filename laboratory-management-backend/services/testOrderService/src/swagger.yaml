@@ -27,8 +27,8 @@ paths:
                   barcode: "BC98765"
                   status: "Pending"
                   testType: "Vi sinh"
-                  createdBy: "usr_001"
-                  updatedBy: "usr_001"
+                  created_by: "usr_001"
+                  updated_by: "usr_001"
                   instrument_id: "57ed2161-5913-4bc3-bd9d-2d775477cf43"
                   reagent_usages: 
                     - reagent_id: "R001"
@@ -36,9 +36,9 @@ paths:
                     - reagent_id: "R002"
                       quantity_used: 30
                   due_date: "2025-10-30T10:00:00.000Z"
-                  isDeleted: false
-                  deletedAt: null
-                  deletedBy: null
+                  is_deleted: false
+                  deleted_at: null
+                  deleted_by: null
                   notes: "Có thêm ghi chú nếu cần"
       responses:
         '201':
@@ -198,8 +198,8 @@ paths:
                    barcode: "BC98765"
                    status: "Pending"
                    testType: "Vi sinh"
-                   createdBy: "usr_001"
-                   updatedBy: "usr_001"
+                   created_by: "usr_001"
+                   updated_by: "usr_001"
                    instrument_id: "57ed2161-5913-4bc3-bd9d-2d775477cf43"
                    reagent_usages: 
                     - reagent_id: "R001"
@@ -207,9 +207,9 @@ paths:
                     - reagent_id: "R002"
                       quantity_used: 30
                    due_date: "2025-10-30T10:00:00.000Z"
-                   isDeleted: false
-                   deletedAt: null
-                   deletedBy: null
+                   is_deleted: false
+                   deleted_at: null
+                   deleted_by: null
                    notes: "Có thêm ghi chú nếu cần"
       responses:
         '200':
@@ -287,9 +287,9 @@ components:
     CreateTestOrderRequest:
       type: object
       required:
-        - patientId
+        - patient_id
       properties:
-        patientId:
+        patient_id:
           type: string
           description: ID bệnh nhân
           example: "pat_123"
@@ -356,7 +356,7 @@ components:
         id:
           type: string
           example: "68f89ca5abc36901ef4d6fd1"
-        patientId:
+        patient_id:
           type: string
           example: "9f886139-ebf3-4b22-a277-4384de12bfab"
         barcode:
@@ -397,6 +397,6 @@ components:
         deleted_by:
           type: string
           example: null
-        isDeleted:
+        is_deleted:
           type: boolean
           example: false
