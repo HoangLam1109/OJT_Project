@@ -47,7 +47,8 @@
     "services/iam-service/src/**/*",
     "services/patientService/src/**/*",
     "services/testOrderService/src/**/*",
-    "services/chat-service/src/**/*"
+    "services/chat-service/src/**/*",
+    "services/monitoringService/src/**/*"
   ],
   "ts-node": {
     "esm": true,
