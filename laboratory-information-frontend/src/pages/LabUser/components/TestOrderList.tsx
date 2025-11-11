@@ -35,44 +35,44 @@ const TestOrderList: React.FC<TestOrderListProps> = ({
           <div className="space-y-4">
             {orders.map((order) => (
               <div
-                key={order.id}
+                key={order._id}
                 className="p-4 border rounded-lg bg-white/50 hover:bg-white/80 transition-colors cursor-pointer"
                 onClick={() => onOrderClick(order)}
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      <h4 className="font-mono">{order.barcode || order.id}</h4>
+                      <h4 className="font-mono">{order.barcode || order._id}</h4>
 
                       {getStatusBadge(order.status)}
                     </div>
                     <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
                       <p>Bệnh nhân: <span className="text-gray-900">{order.patient_name}</span></p>
-                      <p>Loại xét nghiệm: <span className="text-gray-900">{order.testType}</span></p>
+                      <p>Loại xét nghiệm: <span className="text-gray-900">{order.test_type}</span></p>
                       <p>Hạn hoàn thành: <span className="text-gray-900">{order.due_date}</span></p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    {order.status === 'Pending' && (
+                    {order.status.toLowerCase() === 'pending' && (
                       <Button
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
-                          onStatusChange(order.id, 'Processing');
+                          onStatusChange(order._id, 'Processing');
                         }}
                       >
                         <PlayCircle className="w-4 h-4" />
                         Bắt đầu
                       </Button>
                     )}
-                    {order.status === 'Processing' && (
+                    {order.status.toLowerCase() === 'processing' && (
                       <>
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={(e) => {
                             e.stopPropagation();
-                            onStatusChange(order.id, 'Pending');
+                            onStatusChange(order._id, 'Pending');
                           }}
                         >
                           <Pause className="w-4 h-4" />
@@ -82,7 +82,7 @@ const TestOrderList: React.FC<TestOrderListProps> = ({
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
-                            onStatusChange(order.id, 'Completed');
+                            onStatusChange(order._id, 'Completed');
                           }}
                         > 
                           <CheckCircle className="w-4 h-4" />
@@ -92,7 +92,7 @@ const TestOrderList: React.FC<TestOrderListProps> = ({
                     )}
                   </div>
                 </div>
-                {order.status?.toLowerCase() === "processing" && order.processing !== undefined && (
+                {order.status.toLowerCase() === "processing" && order.processing !== undefined && (
                   <div className="mt-2">
                     <div className="flex items-center justify-between text-sm mb-1">
                       <span className="text-gray-600">Tiến độ</span>

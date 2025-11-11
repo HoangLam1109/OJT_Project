@@ -330,6 +330,7 @@ components:
       type: object
       required:
         - patient_id
+        - test_type
       properties:
         patient_id:
           type: string
@@ -339,6 +340,10 @@ components:
           type: string
           description: Mã vạch (tự sinh nếu không gửi)
           example: "BC98765"
+        test_type:
+          type: string
+          description: Loại xét nghiệm
+          example: "Vi sinh"
 
     # ==================== RESPONSE: TestOrder trả về ====================
     TestOrder:
@@ -369,6 +374,10 @@ components:
           type: string
           enum: [pending, processing, completed, cancelled]
           example: "pending"
+        test_type:
+          type: string
+          description: Loại xét nghiệm
+          example: "Blood Test"
         created_at:
           type: string
           format: date-time
@@ -409,6 +418,10 @@ components:
           description: Trạng thái mới của order
           enum: [pending, processing, completed, cancelled]
           example: "processing"
+        test_type:
+          type: string
+          description: Loại xét nghiệm
+          example: "Vi sinh"
         run_at:
           type: string
           format: date-time
