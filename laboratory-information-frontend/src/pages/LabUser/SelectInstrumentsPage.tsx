@@ -68,31 +68,8 @@ const SelectInstrumentsPage: React.FC = () => {
     });
   };
 
-  // Get available quantity for an instrument (mock: always 5 for now)
-  // In real app, this would come from API based on instrumentId
-  const getAvailableQuantity = (): number => {
-    return 5;
-  };
-
-  const handleQuantityChange = (instrumentId: string, quantity: number) => {
-    const available = getAvailableQuantity();
-    const newQuantity = Math.max(1, Math.min(quantity, available));
-    
-    setSelectedInstruments(prev => ({
-      ...prev,
-      [instrumentId]: {
-        ...prev[instrumentId],
-        quantity: newQuantity,
-      },
-    }));
-  };
-
-  const getRemainingQuantity = (instrumentId: string): number => {
-    const available = getAvailableQuantity();
-    const selected = selectedInstruments[instrumentId];
-    if (!selected) return available;
-    return Math.max(0, available - selected.quantity);
-  };
+  
+ 
 
   const handleNext = () => {
     if (!state?.formData) {
@@ -247,8 +224,6 @@ const SelectInstrumentsPage: React.FC = () => {
                   <TableHead className="w-12">Chọn</TableHead>
                   <TableHead>Mã số</TableHead>
                   <TableHead>Tên thiết bị</TableHead>
-                  <TableHead className="w-32">Số lượng</TableHead>
-                  <TableHead className="w-32">Còn lại</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -267,9 +242,6 @@ const SelectInstrumentsPage: React.FC = () => {
                 ) : (
                   filteredInstruments.map((instrument) => {
                   const isSelected = !!selectedInstruments[instrument._id];
-                  const selected = selectedInstruments[instrument._id];
-                  const remaining = getRemainingQuantity(instrument._id);
-                  const available = getAvailableQuantity();
 
                   return (
                     <TableRow key={instrument._id}>
@@ -292,26 +264,8 @@ const SelectInstrumentsPage: React.FC = () => {
                       <TableCell className="font-medium">
                         {instrument.instrument_name}
                       </TableCell>
-                      <TableCell>
-                        {isSelected ? (
-                          <input
-                            type="number"
-                            min="1"
-                            max={available}
-                            value={selected.quantity}
-                            onChange={(e) => handleQuantityChange(instrument._id, parseInt(e.target.value) || 1)}
-                            className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          />
-                        ) : (
-                          <span className="text-gray-400">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <span className={`font-medium ${remaining === 0 ? 'text-red-600' : remaining < 2 ? 'text-yellow-600' : 'text-gray-700'}`}>
-                          {remaining}
-                        </span>
-                        <span className="text-gray-500 text-sm ml-1">/ {available}</span>
-                      </TableCell>
+
+
                     </TableRow>
                   );
                   })
@@ -327,11 +281,6 @@ const SelectInstrumentsPage: React.FC = () => {
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold">Thiết bị đã chọn</h3>
-            {selectedInstrumentsList.length > 0 && (
-              <span className="text-sm text-gray-500 bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
-                {selectedInstrumentsList.length}
-              </span>
-            )}
           </div>
         </CardHeader>
         <CardContent>
@@ -359,7 +308,7 @@ const SelectInstrumentsPage: React.FC = () => {
                       {instrument.instrument_code}
                     </p>
                     <p className="text-xs text-gray-600 mt-1">
-                      Số lượng: <span className="font-semibold text-blue-600">{instrument.quantity}</span>
+                      Số lượng: <span className="font-semibold text-blue-600">1</span>
                     </p>
                   </div>
                   <button

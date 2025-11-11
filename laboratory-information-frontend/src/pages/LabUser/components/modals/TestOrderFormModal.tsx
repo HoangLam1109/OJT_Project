@@ -4,10 +4,17 @@ import { Label } from '../../../../components/common/label';
 import Button from '../../../../components/common/button';
 import { Edit3, X, FileText } from 'lucide-react';
 import type { TestOrder } from '../../types/TestOrderTypes';
-import { mockTestTypes } from '../../data/mockTestOrdersData';
+
 import { useAuthContext } from '../../../../hooks/useAuthContext';
 import { patientService, type PatientOption } from '../../../../service/patientService';
+import { instrumentsService } from '../../../../service/instrumentsService';
+import { reagentService } from '../../../../service/reagentService';
+import type { Instrument } from '../../../service/types/Instrument';
+import type { Reagent } from '../../data/mockReagentsData';
+import { SearchableDropdown } from '../common/SearchableDropdown';
+import { SearchableMultiSelect } from '../common/SearchableMultiSelect';
 import { toast } from 'sonner';
+import { testOrderService } from '../../../../service/testOrderService';
 
 interface TestOrderFormModalProps {
   order: TestOrder | null;
@@ -38,12 +45,19 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
   isEdit,
 }) => {
   const { user } = useAuthContext();
-
-  const [formData, setFormData] = useState<Omit<TestOrder, 'id'>>({
+  const testTypes = [
+    "Sinh hóa máu",
+    "Huyết học tổng quát", 
+    "Vi sinh",
+    "Miễn dịch",
+    "Nội tiết",
+    "Ung thư học"
+  ];
+  const [formData, setFormData] = useState<Omit<TestOrder, '_id'>>({
     patient_id: '',
     patient_name: '',
     barcode: '',
-    testType: '',
+    test_type: '',
     status: 'Pending',
     created_by: user?.name ?? '',
     updated_by: user?.name ?? '',
@@ -59,6 +73,12 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [patients, setPatients] = useState<PatientOption[]>([]);
   const [loadingPatients, setLoadingPatients] = useState(false);
+  const [instruments, setInstruments] = useState<Instrument[]>([]);
+  const [loadingInstruments, setLoadingInstruments] = useState(false);
+  const [reagents, setReagents] = useState<Reagent[]>([]);
+  const [loadingReagents, setLoadingReagents] = useState(false);
+  const [instrumentId, setInstrumentId] = useState<string>('');
+  const [reagentUsages, setReagentUsages] = useState<Array<{ reagent_id: string; quantity_used: number }>>([]);
 
   /* =================== RESET KHI MỞ MODAL =================== */
   useEffect(() => {
@@ -66,13 +86,15 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
       setErrors({});
       setIsSubmitting(false);
       loadPatients();
+      loadInstruments();
+      loadReagents();
 
       if (order && isEdit) {
         setFormData({
           patient_id: order.patient_id,
           patient_name: order.patient_name ?? '',
           barcode: order.barcode,
-          testType: order.testType,
+          test_type: order.test_type,
           status: normalizeStatus(order.status),
           created_by: order.created_by ?? user?.name ?? '',
           updated_by: user?.name ?? '',
@@ -83,13 +105,24 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
           deleted_by: order.deleted_by ?? '',
           processing: order.processing ?? 0,
         });
+        // Set reagent_usages if exists
+        if (order.reagents && order.reagents.length > 0) {
+          setReagentUsages(
+            order.reagents.map(r => ({
+              reagent_id: r.reagent_id || '',
+              quantity_used: r.quantity_used || 1,
+            }))
+          );
+        } else {
+          setReagentUsages([]);
+        }
       } else {
         // Tạo mới → reset
         setFormData({
           patient_id: '',
           patient_name: '',
           barcode: '',
-          testType: '',
+          test_type: '',
           status: 'Pending',
           created_by: user?.name ?? '',
           updated_by: user?.name ?? '',
@@ -100,9 +133,23 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
           deleted_by: '',
           processing: 0,
         });
+        setInstrumentId('');
+        setReagentUsages([]);
       }
     }
   }, [isOpen, order, isEdit, user]);
+
+  // Set instrument_id after instruments are loaded (for edit mode)
+  useEffect(() => {
+    if (isOpen && order && isEdit && order.instrument && instruments.length > 0) {
+      const matchedInstrument = instruments.find(
+        inst => inst.instrument_code === order.instrument?.instrument_code
+      );
+      if (matchedInstrument) {
+        setInstrumentId(matchedInstrument._id);
+      }
+    }
+  }, [isOpen, order, isEdit, instruments]);
 
   const loadPatients = async () => {
     try {
@@ -113,6 +160,34 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
       toast.error('Không thể tải danh sách bệnh nhân');
     } finally {
       setLoadingPatients(false);
+    }
+  };
+
+  const loadInstruments = async () => {
+    try {
+      setLoadingInstruments(true);
+      const data = await instrumentsService.getAllInstruments();
+      // Filter only active instruments
+      const activeInstruments = data.filter(inst => inst.is_active && !inst.is_deleted);
+      setInstruments(activeInstruments);
+    } catch (e) {
+      toast.error('Không thể tải danh sách thiết bị');
+    } finally {
+      setLoadingInstruments(false);
+    }
+  };
+
+  const loadReagents = async () => {
+    try {
+      setLoadingReagents(true);
+      const data = await reagentService.getAllReagents();
+      // Filter only available reagents
+      const availableReagents = data.filter(r => r.status !== 'Expired');
+      setReagents(availableReagents);
+    } catch (e) {
+      toast.error('Không thể tải danh sách thuốc thử');
+    } finally {
+      setLoadingReagents(false);
     }
   };
 
@@ -137,7 +212,7 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
 
     const newErrors: Record<string, string> = {};
     if (!formData.patient_id) newErrors.patient_id = 'Chọn bệnh nhân';
-    if (!formData.testType) newErrors.testType = 'Chọn loại xét nghiệm';
+    if (!formData.test_type) newErrors.test_type = 'Chọn loại xét nghiệm';
     if (!formData.due_date) newErrors.due_date = 'Chọn hạn hoàn thành';
 
     if (Object.keys(newErrors).length > 0) {
@@ -152,23 +227,31 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
     const submitData: any = {
       patient_id: formData.patient_id,
       patient_name: formData.patient_name,
-      testType: formData.testType,
+      test_type: formData.test_type,
       due_date: formData.due_date,
       notes: formData.notes,
       created_by: user?.name || 'system',
       updated_by: user?.name ?? 'system',
-      // Chỉ gửi barcode khi TẠO MỚI
       ...(isEdit ? {} : { barcode: generateBarcode() }),
-      // Chỉ gửi status khi cần (thường không thay đổi ở form)
-      ...(formData.status ? { status: formData.status } : {}),
+      // Instrument và reagents
+      ...(instrumentId ? { instrument_id: instrumentId } : {}),
+      reagent_usages: reagentUsages.map(ru => ({
+        reagent_id: ru.reagent_id,
+        quantity_used: ru.quantity_used || 1,
+      })),
     };
 
     try {
+      if (isEdit && order?._id) {
+        // Gọi API updateTestOrder khi ở chế độ chỉnh sửa
+        await testOrderService.updateTestOrder(order._id, submitData);
+        toast.success('Cập nhật thành công!');
+      }
+      // Gọi callback onSubmit để parent component có thể refresh data
       await onSubmit(submitData);
-      toast.success(isEdit ? 'Cập nhật thành công!' : 'Tạo lệnh thành công!');
       onClose();
     } catch (err: any) {
-      const msg = err.response?.data?.message || 'Lỗi hệ thống';
+      const msg = err.response?.data?.message || err.message || 'Lỗi hệ thống';
       toast.error(msg);
     } finally {
       setIsSubmitting(false);
@@ -236,7 +319,7 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
                   } disabled:bg-gray-50 disabled:cursor-not-allowed`}
                 >
                   <option value="">
-                    {loadingPatients ? 'Đang tải...' : 'Chọn bệnh nhân'}
+                    {loadingPatients ? 'Đang tải...' : formData.patient_name}
                   </option>
                   {patients.map(p => (
                     <option key={p.id} value={p.id}>
@@ -251,27 +334,27 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
 
               {/* Loại xét nghiệm */}
               <div className="space-y-2">
-                <Label htmlFor="testType" className="text-sm font-medium">
+                <Label htmlFor="test_type" className="text-sm font-medium">
                   Loại xét nghiệm <span className="text-red-500">*</span>
                 </Label>
                 <select
-                  id="testType"
-                  value={formData.testType}
-                  onChange={(e) => setFormData(prev => ({ ...prev, testType: e.target.value }))}
+                  id="test_type"
+                  value={formData.test_type}
+                  onChange={(e) => setFormData(prev => ({ ...prev, test_type: e.target.value }))}
                   disabled={isSubmitting}
                   className={`w-full rounded-lg border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                    errors.testType 
+                    errors.test_type 
                       ? 'border-red-500 bg-red-50' 
                       : 'border-gray-300 bg-white hover:border-gray-400'
                   } disabled:bg-gray-50 disabled:cursor-not-allowed`}
                 >
                   <option value="">Chọn loại xét nghiệm</option>
-                  {mockTestTypes.map(t => (
+                  {testTypes.map(t => (
                     <option key={t} value={t}>{t}</option>
                   ))}
                 </select>
-                {errors.testType && (
-                  <p className="text-sm text-red-600">{errors.testType}</p>
+                {errors.test_type && (
+                  <p className="text-sm text-red-600">{errors.test_type}</p>
                 )}
               </div>
             </div>
@@ -299,6 +382,49 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
               {errors.due_date && (
                 <p className="text-sm text-red-600">{errors.due_date}</p>
               )}
+            </div>
+
+            {/* Thiết bị và Thuốc thử - cùng hàng */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Thiết bị */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">
+                  Thiết bị
+                </Label>
+                <SearchableDropdown
+                  options={instruments.map(inst => ({
+                    id: inst._id,
+                    label: `${inst.instrument_name} (${inst.instrument_code})`,
+                    ...inst,
+                  }))}
+                  value={instrumentId}
+                  onChange={setInstrumentId}
+                  placeholder={loadingInstruments ? 'Đang tải...' : 'Chọn thiết bị'}
+                  searchPlaceholder="Tìm kiếm thiết bị..."
+                  disabled={loadingInstruments || isSubmitting}
+                  getOptionLabel={(opt) => opt.label}
+                />
+              </div>
+
+              {/* Thuốc thử */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">
+                  Thuốc thử
+                </Label>
+                <SearchableMultiSelect
+                  options={reagents.map(r => ({
+                    id: r.id,
+                    name: r.name,
+                    lotNumber: r.lotNumber,
+                    quantity: r.quantity,
+                  }))}
+                  value={reagentUsages}
+                  onChange={setReagentUsages}
+                  placeholder={loadingReagents ? 'Đang tải...' : 'Chọn thuốc thử'}
+                  searchPlaceholder="Tìm kiếm thuốc thử..."
+                  disabled={loadingReagents || isSubmitting}
+                />
+              </div>
             </div>
 
             {/* Ghi chú */}

@@ -5,21 +5,29 @@ import { Label } from '../../components/common/label';
 import Button from '../../components/common/button';
 import { Edit3, ArrowLeft, ArrowRight } from 'lucide-react';
 import type { TestOrder } from './types/TestOrderTypes';
-import { mockTestTypes } from './data/mockTestOrdersData';
 import { useAuthContext } from '../../hooks/useAuthContext';
 import { patientService, type PatientOption } from '../../service/patientService';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader } from '../../components/common/card';
 
+const testTypes = [
+  "Sinh hóa máu",
+  "Huyết học tổng quát", 
+  "Vi sinh",
+  "Miễn dịch",
+  "Nội tiết",
+  "Ung thư học"
+];
+ 
 const CreateTestOrderPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuthContext();
 
-  const [formData, setFormData] = useState<Omit<TestOrder, 'id'>>({
+  const [formData, setFormData] = useState<Omit<TestOrder, '_id'>>({
     patient_id: '',
     patient_name: '',
     barcode: '',
-    testType: '',
+    test_type: '',
     status: 'Pending',
     created_by: user?.name ?? '',
     updated_by: user?.name ?? '',
@@ -73,7 +81,7 @@ const CreateTestOrderPage: React.FC = () => {
 
     const newErrors: Record<string, string> = {};
     if (!formData.patient_id) newErrors.patient_id = 'Chọn bệnh nhân';
-    if (!formData.testType) newErrors.testType = 'Chọn loại xét nghiệm';
+    if (!formData.test_type) newErrors.test_type = 'Chọn loại xét nghiệm';
     if (!formData.due_date) newErrors.due_date = 'Chọn hạn hoàn thành';
 
     if (Object.keys(newErrors).length > 0) {
@@ -213,22 +221,22 @@ const CreateTestOrderPage: React.FC = () => {
                 </Label>
                 <select
                   id="testType"
-                  value={formData.testType}
-                  onChange={(e) => setFormData(prev => ({ ...prev, testType: e.target.value }))}
+                  value={formData.test_type}
+                  onChange={(e) => setFormData(prev => ({ ...prev, test_type: e.target.value }))}
                   disabled={isSubmitting}
                   className={`w-full rounded-lg border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                    errors.testType 
+                    errors.test_type 
                       ? 'border-red-500 bg-red-50' 
                       : 'border-gray-300 bg-white hover:border-gray-400'
                   } disabled:bg-gray-50 disabled:cursor-not-allowed`}
                 >
                   <option value="">Chọn loại xét nghiệm</option>
-                  {mockTestTypes.map(t => (
+                  {testTypes.map(t => (
                     <option key={t} value={t}>{t}</option>
                   ))}
                 </select>
-                {errors.testType && (
-                  <p className="text-sm text-red-600">{errors.testType}</p>
+                {errors.test_type && (
+                  <p className="text-sm text-red-600">{errors.test_type}</p>
                 )}
               </div>
             </div>
