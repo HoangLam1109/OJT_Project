@@ -23,6 +23,17 @@ interface AuthenticatedUser {
 
 const userService = new UserService();
 
+const resolveActorContext = (req: Request): { id?: string; email?: string } | undefined => {
+  const user = req.user as AuthenticatedUser | undefined;
+  if (!user) {
+    return undefined;
+  }
+  return {
+    id: String(user._id),
+    email: user.email,
+  };
+};
+
 const getCurrentUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   /*
     #swagger.auto = false
@@ -257,7 +268,7 @@ const createUser = async (req: Request, res: Response, next: NextFunction): Prom
     // Auto-create patient record only for normal users
     if (!newUser.role || newUser.role.includes(ROLE_CODES.USER)) {
       console.log('[UserController] Auto-creating patient for user role USER');
-      await patientServiceClient.createPatientForUser(newUser._id);
+      await patientServiceClient.createPatientForUser(String(newUser._id), resolveActorContext(req));
     }
     
     res.status(201).json({
@@ -372,6 +383,10 @@ const deleteUser = async (req: Request, res: Response, next: NextFunction): Prom
     );
     if (!deletedUser) {
       throw new AppError(404, 'User not found');
+    }
+
+    if (!deletedUser.role || deletedUser.role.includes(ROLE_CODES.USER)) {
+      await patientServiceClient.softDeletePatientByUserId(String(deletedUser._id), resolveActorContext(req));
     }
 
     res.status(200).json({

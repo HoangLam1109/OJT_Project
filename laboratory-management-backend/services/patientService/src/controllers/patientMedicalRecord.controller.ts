@@ -2,6 +2,8 @@ import type { Request, Response } from "express";
 import { PatientMedicalRecordService } from "../services/patientMedicalRecord.service.js";
 import { errorHandler } from "../utils/error.util.js";
 import medicalRecordAccessLogService from "../services/medicalRecordAccessLog.service.js";
+import medicalRecordAuditLogService from "../services/medicalRecordAuditLog.service.js";
+import medicalRecordMonitoringService from "../services/medicalRecordMonitoring.service.js";
 import iamServiceClient, { type IamUser } from "../services/iamService.client.js";
 import Patient, { type IPatient } from "../db/models/Patient.model.js";
 
@@ -22,25 +24,75 @@ const fetchActorEmail = async (actorId: string | undefined): Promise<string | nu
   return actorId.includes("@") ? actorId : null;
 };
 
+const fetchActorName = async (actorId: string | undefined): Promise<string | null> => {
+  if (!actorId) {
+    return null;
+  }
+  try {
+    const user = await iamServiceClient.getUserById(actorId);
+    if (user?.fullName && user.fullName.trim().length > 0) {
+      return user.fullName.trim();
+    }
+    if (user?.email && user.email.trim().length > 0) {
+      return user.email.trim();
+    }
+  } catch (error) {
+    console.warn(`[PatientMedicalRecordController] Unable to resolve name for user ${actorId}`, error);
+  }
+  if (actorId.includes("@")) {
+    return actorId;
+  }
+  return null;
+};
+
 const resolveAccessActor = async (
   req: Request
-): Promise<{ actorId: string; actorEmail: string | null }> => {
+): Promise<{ actorId: string; actorEmail: string | null; actorName: string | null }> => {
+  const headerNameRaw =
+    req.headers["x-user-name"] ??
+    req.headers["x-operator-name"] ??
+    req.headers["x-actor-name"];
+  const headerName = Array.isArray(headerNameRaw) ? headerNameRaw[0] : headerNameRaw;
+
   const headerEmailRaw = req.headers["x-user-email"];
   const headerEmail = Array.isArray(headerEmailRaw) ? headerEmailRaw[0] : headerEmailRaw;
   if (typeof headerEmail === "string" && headerEmail.length > 0) {
-    return { actorId: headerEmail, actorEmail: headerEmail };
+    const normalizedEmail = headerEmail.trim();
+    const normalizedName =
+      typeof headerName === "string" && headerName.trim().length > 0
+        ? headerName.trim()
+        : normalizedEmail;
+    return { actorId: normalizedEmail, actorEmail: normalizedEmail, actorName: normalizedName };
   }
 
-  const headerUserIdRaw = req.headers["x-user-id"];
+  const headerUserIdRaw =
+    req.headers["x-user-id"] ?? req.headers["x-operator-id"] ?? req.headers["x-actor-id"];
   const headerUserId = Array.isArray(headerUserIdRaw) ? headerUserIdRaw[0] : headerUserIdRaw;
-  const resolvedUserId = (req as any).userId ?? (typeof headerUserId === "string" ? headerUserId : undefined);
+  const requestUserId = (req as any).userId;
+  const resolvedUserId =
+    typeof requestUserId === "string" && requestUserId.trim().length > 0
+      ? requestUserId.trim()
+      : typeof headerUserId === "string" && headerUserId.trim().length > 0
+      ? headerUserId.trim()
+      : undefined;
 
   if (typeof resolvedUserId === "string" && resolvedUserId.length > 0) {
     const email = await fetchActorEmail(resolvedUserId);
-    return { actorId: resolvedUserId, actorEmail: email };
+    const nameCandidate =
+      typeof headerName === "string" && headerName.trim().length > 0
+        ? headerName.trim()
+        : await fetchActorName(resolvedUserId);
+    return {
+      actorId: resolvedUserId,
+      actorEmail: email,
+      actorName: nameCandidate ?? email ?? resolvedUserId,
+    };
   }
 
-  return { actorId: "system", actorEmail: null };
+  const fallbackName =
+    typeof headerName === "string" && headerName.trim().length > 0 ? headerName.trim() : null;
+
+  return { actorId: "system", actorEmail: null, actorName: fallbackName };
 };
 
 const toPlainRecord = (value: unknown): Record<string, unknown> => {
@@ -168,6 +220,20 @@ const fetchPatientContext = async (
   };
 };
 
+const toIdString = (value: unknown): string => {
+  if (typeof value === "string") {
+    return value;
+  }
+  if (value && typeof value === "object" && "toString" in value) {
+    try {
+      return (value as { toString: () => string }).toString();
+    } catch (error) {
+      console.warn("[PatientMedicalRecordController] Unable to stringify identifier", error);
+    }
+  }
+  return String(value ?? "");
+};
+
 const trackableMedicalRecordFields: string[] = [
   "blood_type",
   "allergies",
@@ -246,17 +312,18 @@ const getPatientRecordDetail = async (req: Request, res: Response): Promise<void
 
     console.log(`   ✅ Found record: ${record.record_code} (Patient: ${record.patient_id})`);
 
-  const actorContext = await resolveAccessActor(req);
+    const actorContext = await resolveAccessActor(req);
     const inlinePatient = (record as { patient?: IPatient | null }).patient ?? null;
     const { user: patientUser } = await fetchPatientContext(record.patient_id, inlinePatient);
     const recordPlain = toPlainRecord(record);
-  const viewSnapshot = buildAccessLogSnapshot(recordPlain, patientUser);
+    const viewSnapshot = buildAccessLogSnapshot(recordPlain, patientUser);
     try {
       await medicalRecordAccessLogService.createAccessLog({
-        medical_record_id: record._id,
-        patient_id: record.patient_id,
+        medical_record_id: toIdString(record._id),
+        patient_id: toIdString(record.patient_id),
         accessed_by: actorContext.actorId,
         accessed_by_email: actorContext.actorEmail,
+        accessed_by_name: actorContext.actorName,
         access_type: "VIEW",
         old_values: null,
         new_values: viewSnapshot ? { snapshot: viewSnapshot } : null,
@@ -333,26 +400,58 @@ const createPatientRecord = async (req: Request, res: Response): Promise<void> =
 
     console.log(`   ✅ Record created: ${record.record_code} (ID: ${record._id})`);
 
-  const actorContext = await resolveAccessActor(req);
+    const actorContext = await resolveAccessActor(req);
+    const recordId = toIdString(record._id);
+    const patientIdValue = toIdString(record.patient_id);
     const { user: patientUser } = await fetchPatientContext(record.patient_id);
-    const createLogValues = toPlainRecord(record);
-    const createSnapshot = buildAccessLogSnapshot(createLogValues, patientUser);
+    const rawRecordValues = toPlainRecord(record);
+    const createSnapshot = buildAccessLogSnapshot(rawRecordValues, patientUser);
+    const accessLogValues = { ...rawRecordValues };
     if (createSnapshot) {
-      createLogValues.snapshot = createSnapshot;
+      accessLogValues.snapshot = createSnapshot;
     }
     try {
       await medicalRecordAccessLogService.createAccessLog({
-        medical_record_id: record._id,
-        patient_id: record.patient_id,
+        medical_record_id: recordId,
+        patient_id: patientIdValue,
         accessed_by: actorContext.actorId,
         accessed_by_email: actorContext.actorEmail,
+        accessed_by_name: actorContext.actorName,
         access_type: "CREATE",
         old_values: null,
-        new_values: createLogValues,
+        new_values: accessLogValues,
       });
     } catch (logError) {
       console.warn("[MedicalRecordAccessLog] Failed to record create event", logError);
     }
+
+    const auditLogValues = { ...accessLogValues };
+    try {
+      await medicalRecordAuditLogService.createAuditLog({
+        medical_record_id: recordId,
+        patient_id: patientIdValue,
+        action: "CREATE",
+        event_message: "Medical record created",
+        performed_by: actorContext.actorId,
+        performed_by_email: actorContext.actorEmail,
+        performed_by_name: actorContext.actorName,
+        old_values: null,
+        new_values: auditLogValues,
+      });
+    } catch (auditError) {
+      console.warn("[MedicalRecordAuditLog] Failed to record create audit event", auditError);
+    }
+
+    await medicalRecordMonitoringService.recordCreated({
+      medicalRecordId: recordId,
+      patientId: patientIdValue,
+      eventMessage: "Medical record created",
+      operatorId: actorContext.actorId,
+      operatorEmail: actorContext.actorEmail,
+      operatorName: actorContext.actorName,
+      oldValues: null,
+      newValues: accessLogValues,
+    });
 
     res.status(201).json({
       message: "Patient medical record created successfully",
@@ -562,31 +661,71 @@ const updatePatientRecord = async (req: Request, res: Response): Promise<void> =
     const existingPlain = toPlainRecord(existingRecord);
     const updatedPlain = toPlainRecord(record);
     const diff = diffChangedFields(existingPlain, updatedPlain, trackableMedicalRecordFields);
+    const recordId = toIdString(record._id);
+    const patientIdValue = toIdString(record.patient_id);
 
     const { user: patientUser } = await fetchPatientContext(record.patient_id);
     const oldSnapshot = buildAccessLogSnapshot(existingPlain, patientUser);
     const newSnapshot = buildAccessLogSnapshot(updatedPlain, patientUser);
 
     if (diff.fields.length > 0) {
+      const accessOldValues = { ...diff.previousValues };
+      const accessNewValues = { ...diff.currentValues };
       if (oldSnapshot) {
-        diff.previousValues.snapshot = oldSnapshot;
+        accessOldValues.snapshot = oldSnapshot;
       }
       if (newSnapshot) {
-        diff.currentValues.snapshot = newSnapshot;
+        accessNewValues.snapshot = newSnapshot;
       }
+
       try {
         await medicalRecordAccessLogService.createAccessLog({
-          medical_record_id: record._id,
-          patient_id: record.patient_id,
+          medical_record_id: recordId,
+          patient_id: patientIdValue,
           accessed_by: actorContext.actorId,
           accessed_by_email: actorContext.actorEmail,
+          accessed_by_name: actorContext.actorName,
           access_type: "UPDATE",
-          old_values: diff.previousValues,
-          new_values: diff.currentValues,
+          old_values: accessOldValues,
+          new_values: accessNewValues,
         });
       } catch (logError) {
         console.warn("[MedicalRecordAccessLog] Failed to record update event", logError);
       }
+
+      const auditOldValues = { ...accessOldValues, changed_fields: diff.fields };
+      const auditNewValues = { ...accessNewValues, changed_fields: diff.fields };
+      const messageSuffix = diff.fields.join(", ");
+      const eventMessage = messageSuffix.length > 0
+        ? `Medical record updated: ${messageSuffix}`
+        : "Medical record updated";
+
+      try {
+        await medicalRecordAuditLogService.createAuditLog({
+          medical_record_id: recordId,
+          patient_id: patientIdValue,
+          action: "UPDATE",
+          event_message: eventMessage,
+          performed_by: actorContext.actorId,
+          performed_by_email: actorContext.actorEmail,
+          performed_by_name: actorContext.actorName,
+          old_values: auditOldValues,
+          new_values: auditNewValues,
+        });
+      } catch (auditError) {
+        console.warn("[MedicalRecordAuditLog] Failed to record update audit event", auditError);
+      }
+
+      await medicalRecordMonitoringService.recordUpdated({
+        medicalRecordId: recordId,
+        patientId: patientIdValue,
+        eventMessage,
+        operatorId: actorContext.actorId,
+        operatorEmail: actorContext.actorEmail,
+        operatorName: actorContext.actorName,
+        oldValues: auditOldValues,
+        newValues: auditNewValues,
+      });
     }
 
     res.status(200).json({
@@ -649,25 +788,60 @@ const deletePatientRecord = async (req: Request, res: Response): Promise<void> =
     const { user: patientUser } = await fetchPatientContext(record.patient_id);
     const deleteOldSnapshot = buildAccessLogSnapshot(existingPlain, patientUser);
     const deleteNewSnapshot = buildAccessLogSnapshot(deletedPlain, patientUser);
+    const accessOldValues = { ...existingPlain };
+    const accessNewValues = { ...deletedPlain };
     if (deleteOldSnapshot) {
-      existingPlain.snapshot = deleteOldSnapshot;
+      accessOldValues.snapshot = deleteOldSnapshot;
     }
     if (deleteNewSnapshot) {
-      deletedPlain.snapshot = deleteNewSnapshot;
+      accessNewValues.snapshot = deleteNewSnapshot;
     }
+
+    const recordId = toIdString(record._id);
+    const patientIdValue = toIdString(record.patient_id);
     try {
       await medicalRecordAccessLogService.createAccessLog({
-        medical_record_id: record._id,
-        patient_id: record.patient_id,
+        medical_record_id: recordId,
+        patient_id: patientIdValue,
         accessed_by: actorContext.actorId,
         accessed_by_email: actorContext.actorEmail,
+        accessed_by_name: actorContext.actorName,
         access_type: "DELETE",
-        old_values: existingPlain,
-        new_values: deletedPlain,
+        old_values: accessOldValues,
+        new_values: accessNewValues,
       });
     } catch (logError) {
       console.warn("[MedicalRecordAccessLog] Failed to record delete event", logError);
     }
+
+    const auditOldValues = { ...accessOldValues };
+    const auditNewValues = { ...accessNewValues };
+    try {
+      await medicalRecordAuditLogService.createAuditLog({
+        medical_record_id: recordId,
+        patient_id: patientIdValue,
+        action: "DELETE",
+        event_message: "Medical record soft deleted",
+        performed_by: actorContext.actorId,
+        performed_by_email: actorContext.actorEmail,
+        performed_by_name: actorContext.actorName,
+        old_values: auditOldValues,
+        new_values: auditNewValues,
+      });
+    } catch (auditError) {
+      console.warn("[MedicalRecordAuditLog] Failed to record delete audit event", auditError);
+    }
+
+    await medicalRecordMonitoringService.recordDeleted({
+      medicalRecordId: recordId,
+      patientId: patientIdValue,
+      eventMessage: "Medical record soft deleted",
+      operatorId: actorContext.actorId,
+      operatorEmail: actorContext.actorEmail,
+      operatorName: actorContext.actorName,
+      oldValues: auditOldValues,
+      newValues: auditNewValues,
+    });
 
     res.status(200).json({
       message: "Patient medical record deleted",
