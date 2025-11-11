@@ -9,8 +9,11 @@ import { apiClient } from "../service/apiClient";
 import { handleGoogleCallback, isGoogleCallback, cleanGoogleCallbackUrl } from "../service/authService/googleOAuthApi";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const location = useLocation(); // THÊM DÒNG NÀY
-  const [user, setUser] = useState<User | null>(null);
+  const location = useLocation();
+  const [user, setUser] = useState<User | null>(() => {
+    const storedUser = localStorage.getItem("limsUser");
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
   const [loading, setLoading] = useState(true);
   const hasInitialized = useRef(false);
 
