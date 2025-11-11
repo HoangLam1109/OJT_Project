@@ -134,6 +134,48 @@ paths:
                         example: 5
         '500':
           description: Lỗi server nội bộ
+
+    # ==================== GET: Search Test Orders ====================
+  /testOrder/search:
+    get:
+      summary: Tìm kiếm Test Orders theo từ khóa
+      description: |
+        Tìm kiếm Test Orders theo từ khóa (`keyword`) khớp với tên bệnh nhân, barcode, hoặc loại xét nghiệm.  
+        Có thể kết hợp phân trang bằng query `page` và `limit`.
+      parameters:
+        - in: query
+          name: keyword
+          schema:
+            type: string
+          required: true
+          description: Từ khóa cần tìm kiếm ( tên bệnh nhân hoặc barcode)
+          example: "Khang"
+        - in: query
+          name: page
+          schema:
+            type: integer
+            example: 1
+          description: Trang hiện tại (mặc định = 1)
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            example: 10
+          description: Số bản ghi mỗi trang (mặc định = 10)
+      responses:
+        '400':
+          description: Thiếu hoặc sai định dạng query parameter
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Keyword is required"
+        '500':
+          description: Lỗi server
+
  # ==================== GET: Lấy tất cả ====================
   /testOrder/result:
     get:
@@ -172,7 +214,7 @@ paths:
         '500':
           description: Lỗi server
 
-   # ==================== PUT: Cập nhật Test Order ====================
+  # ==================== PUT: Cập nhật Test Order ====================
   /testOrder/update/{id}:
     put:
       summary: Cập nhật thông tin Test Order

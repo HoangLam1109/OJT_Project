@@ -3,12 +3,14 @@ import reagentServiceClient from "../warehouse/reagentServiceClient.js";
 import { CreateOrderInput, ReagentUsage, UpdateOrderInput } from "../../db/models/TestOrder.model.js";
 import { ITestOrder } from "../../db/models/TestOrder.model.js";
 export const TestOrderService = {
-  // Lấy tất cả Test Orders
-  async getAllOrders(filter = {}, skip = 0, limit = 10) {
-    const data = await TestOrderRepository.findAll(filter, skip, limit);
-    return Array.isArray(data) ? data : [];
-  }, 
   
+  // Lấy tất cả Test Orders
+  async getAllOrders(filter = {}, skip = 0, limit = 10, sort: any = { created_at: -1 } ) {
+    const data = await TestOrderRepository.findAll(filter, skip, limit, sort);
+    return Array.isArray(data) ? data : [];
+  },
+
+
   async countOrders(filter = {}) {
     return TestOrderRepository.count(filter);
   },
@@ -155,6 +157,27 @@ export const TestOrderService = {
     const softDeleteTestOrder = await TestOrderRepository.softDelete(_id, deleted_by);
     return softDeleteTestOrder;
   },
+
+  async searchOrders(keyword: string, page = 1, limit = 10) {
+    const query: any = {
+      is_deleted: false,
+      $or: [
+        { patient_name: { $regex: keyword, $options: "i" } },
+        { barcode: { $regex: keyword, $options: "i" } },
+        { test_type: { $regex: keyword, $options: "i" } },
+      ],
+    };
+
+    const skip = (page - 1) * limit;
+
+    // Gọi repo, sort theo due_date tăng dần
+    const orders = await TestOrderRepository.find(query, skip, limit, { due_date: 1 });
+    const total = await TestOrderRepository.count(query);
+
+    return { orders, total };
+  }
+
+
 
 }
 

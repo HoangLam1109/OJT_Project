@@ -13,9 +13,9 @@ export const getAllTestOrders = async (req: Request, res: Response) => {
     const limit = parseInt(req.query.limit as string) || 10; // số bản ghi mỗi trang
     const skip = (page - 1) * limit;
 
-    // Lấy tất cả orders chưa bị xóa
+    // Lấy tất cả orders chưa bị xóa, sắp xếp theo due_date tăng dần
     const [orders, total] = await Promise.all([
-      TestOrderService.getAllOrders({ is_deleted: false }, skip, limit),
+      TestOrderService.getAllOrders({ is_deleted: false }, skip, limit, { due_date: 1 }),
       TestOrderService.countOrders({ is_deleted: false }),
     ]);
 
@@ -49,6 +49,7 @@ export const getAllTestOrders = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
 
 
 
@@ -121,6 +122,50 @@ export const getTestOrderById = async (req: Request<{ id: string }>, res: Respon
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+export const searchTestOrders = async (req: Request, res: Response) => {
+  try {
+    const keyword = (req.query.keyword as string) || "";
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+
+    if (!keyword.trim()) {
+      return res.status(400).json({ message: "Keyword is required" });
+    }
+
+    const { orders, total } = await TestOrderService.searchOrders(keyword, page, limit);
+
+    // Chuẩn hóa dữ liệu
+    const enrichedOrders = orders.map(order => ({
+      _id: order._id,
+      patient_id: order.patient_id,
+      patient_name: order.patient_name,
+      barcode: order.barcode,
+      status: order.status,
+      created_at: order.created_at,
+      created_by: order.created_by,
+      due_date: order.due_date,
+      updated_at: order.updated_at,
+      updated_by: order.updated_by,
+      test_type: order.test_type,
+      notes: order.notes,
+    }));
+
+    res.json({
+      data: enrichedOrders,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
+  } catch (err) {
+    console.error("[TestOrderController] Error searching orders:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 
 
 

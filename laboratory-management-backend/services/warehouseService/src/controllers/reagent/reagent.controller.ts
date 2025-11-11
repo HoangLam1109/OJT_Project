@@ -24,6 +24,8 @@ export class ReagentController {
     }
   }
 
+
+
   async getReagentById(req: Request<{ id: string }>, res: Response) {
     try {
       const reagent = await service.getById(req.params.id);
@@ -82,4 +84,29 @@ export class ReagentController {
       res.status(500).json({ message: 'Lỗi server khi xóa reagent' });
     }
   }
+
+  async searchReagents(req: Request, res: Response) {
+    try {
+      const keyword = (req.query.keyword as string || "").trim();
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      if (!keyword) {
+        return res.status(400).json({ success: false, message: "Keyword is required" });
+      }
+      const { data, totalItems } = await service.search(keyword, page, limit);
+      res.json({
+        success: true,
+        data,
+        pagination: {
+          totalItems,
+          totalPages: Math.ceil(totalItems / limit),
+          currentPage: page,
+        },
+      });
+    } catch (err: any) {
+      console.error("[ReagentController] searchReagents error:", err);
+      res.status(500).json({ success: false, message: "Internal server error" });
+    }
+  }
+
 }

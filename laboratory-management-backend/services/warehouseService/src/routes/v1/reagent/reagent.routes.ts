@@ -34,6 +34,59 @@ router.get(
   */
   reagent.getAllReagents
 );
+// ==================== Search Reagents ====================
+router.get(
+  "/search",
+  /*
+  #swagger.tags = ['Reagents']
+  #swagger.summary = 'Search reagents by keyword'
+  #swagger.description = `
+    Search reagents by name, barcode, or notes.
+    Supports pagination and sorting by expiration_date (soonest first) and created_at (newest first).
+    Query parameters:
+      - keyword: string to search for (required)
+      - page: page number (optional, default = 1)
+      - limit: number of items per page (optional, default = 10)
+  `
+  #swagger.parameters['keyword'] = {
+    in: 'query',
+    description: 'Keyword to search reagents by name, barcode, or notes',
+    required: true,
+    type: 'string',
+    example: 'khang'
+  }
+  #swagger.parameters['page'] = {
+    in: 'query',
+    description: 'Page number (default = 1)',
+    required: false,
+    type: 'integer',
+    example: 1
+  }
+  #swagger.parameters['limit'] = {
+    in: 'query',
+    description: 'Number of items per page (default = 10)',
+    required: false,
+    type: 'integer',
+    example: 5
+  }
+  #swagger.responses[200] = {
+    description: 'List of reagents matching the keyword',
+    schema: {
+      success: true,
+      data: [],
+      pagination: {
+        totalItems: 3,
+        totalPages: 1,
+        currentPage: 1
+      }
+    }
+  }
+  #swagger.responses[400] = { description: 'Keyword is required' }
+  #swagger.responses[500] = { description: 'Internal server error' }
+  */
+  reagent.searchReagents
+);
+
 
 router.get(
   "/:id",
@@ -177,6 +230,8 @@ router.delete(
   */
   reagent.deleteReagent
 );
+
+
 
 
 
