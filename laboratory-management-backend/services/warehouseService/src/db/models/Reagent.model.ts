@@ -9,7 +9,6 @@ export interface IReagent extends Document {
   quantity_received?: number;
   quantity_current: number;
   unit_of_measure: string;
-  usage_per_run: number;
   expiration_date: Date;
   received_date: Date;
   status: "Available" | "InUse" | "LowStock" | "Expired" | "Depleted";
@@ -62,10 +61,6 @@ const ReagentSchema = new Schema<IReagent>(
       required: true,
       trim: true,
       maxlength: 20,
-    },
-    usage_per_run: {
-      type: Number,
-      required: true,
     },
     expiration_date: {
       type: Date,
