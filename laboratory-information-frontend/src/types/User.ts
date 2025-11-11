@@ -14,4 +14,4 @@ export interface User {
   date_of_birth?: string;
 }
 
-export type SafeUser = Omit<User, 'email' | 'phone_number' | 'identify_number' | 'address'>;
+export type SafeUser = Pick<User, 'id' | 'name' | 'email' | 'role' | 'active' | 'permissions'>;
