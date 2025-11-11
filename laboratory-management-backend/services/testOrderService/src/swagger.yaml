@@ -22,17 +22,24 @@ paths:
               default:
                 summary: Ví dụ tạo order
                 value:
-                  patientId: "pat_123"
+                  patient_id: "7010eeed-bf3c-4152-b9b0-4eea6838c5d5"
+                  patient_name: "Lu Khang"
                   barcode: "BC98765"
-                  status: "pending"
-                  created_at: "2025-10-30T10:00:00.000Z"
+                  status: "Pending"
+                  test_type: "Vi sinh"
                   created_by: "usr_001"
-                  run_at: null
-                  run_by: null
-                  updated_at: "2025-10-30T10:00:00.000Z"
                   updated_by: "usr_001"
-                  deleted_at:  null
-                  deleted_by:  null
+                  instrument_id: "57ed2161-5913-4bc3-bd9d-2d775477cf43"
+                  reagent_usages: 
+                    - reagent_id: "R001"
+                      quantity_used: 34
+                    - reagent_id: "R002"
+                      quantity_used: 30
+                  due_date: "2025-10-30T10:00:00.000Z"
+                  is_deleted: false
+                  deleted_at: null
+                  deleted_by: null
+                  notes: "Có thêm ghi chú nếu cần"
       responses:
         '201':
           description: Tạo thành công
@@ -44,18 +51,131 @@ paths:
                   message:
                     type: string
                   order:
-                    type: object
+                    $ref: '#/components/schemas/TestOrderResponse'
         '400':
           description: Lỗi dữ liệu đầu vào
-# ==================== GET: Lấy tất cả ====================
+
+  # ==================== GET: Lấy tất cả ====================
   /testOrder/all:
     get:
-      summary: Lấy danh sách tất cả Test Orders
+      summary: Lấy danh sách Test Orders (có phân trang)
+      description: |
+        Lấy danh sách tất cả Test Orders chưa bị xóa mềm (is_deleted = false).
+        Hỗ trợ phân trang qua query params `page` và `limit`.
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            example: 1
+          description: Trang hiện tại (mặc định = 1)
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            example: 10
+          description: Số bản ghi mỗi trang (mặc định = 10)
       responses:
         '200':
-          description: Danh sách Test Orders
+          description: Danh sách Test Orders kèm thông tin phân trang
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        _id:
+                          type: string
+                          example: "6730f41e5b9010f80bfcf69a"
+                        patient_id:
+                          type: string
+                          example: "P001"
+                        patient_name:
+                          type: string
+                          example: "Nguyễn Văn A"
+                        barcode:
+                          type: string
+                          example: "BR123456"
+                        status:
+                          type: string
+                          example: "Pending"
+                        test_type:
+                          type: string
+                          example: "Blood Test"
+                        notes:
+                          type: string
+                          example: "Cần xử lý sớm"
+                        created_at:
+                          type: string
+                          format: date-time
+                          example: "2025-11-10T10:30:00.000Z"
+                        updated_at:
+                          type: string
+                          format: date-time
+                          example: "2025-11-10T12:00:00.000Z"
+                  pagination:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                        example: 42
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 10
+                      totalPages:
+                        type: integer
+                        example: 5
+        '500':
+          description: Lỗi server nội bộ
+
+    # ==================== GET: Search Test Orders ====================
+  /testOrder/search:
+    get:
+      summary: Tìm kiếm Test Orders theo từ khóa
+      description: |
+        Tìm kiếm Test Orders theo từ khóa (`keyword`) khớp với tên bệnh nhân, barcode, hoặc loại xét nghiệm.  
+        Có thể kết hợp phân trang bằng query `page` và `limit`.
+      parameters:
+        - in: query
+          name: keyword
+          schema:
+            type: string
+          required: true
+          description: Từ khóa cần tìm kiếm ( tên bệnh nhân hoặc barcode)
+          example: "Khang"
+        - in: query
+          name: page
+          schema:
+            type: integer
+            example: 1
+          description: Trang hiện tại (mặc định = 1)
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            example: 10
+          description: Số bản ghi mỗi trang (mặc định = 10)
+      responses:
+        '400':
+          description: Thiếu hoặc sai định dạng query parameter
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Keyword is required"
         '500':
           description: Lỗi server
+
  # ==================== GET: Lấy tất cả ====================
   /testOrder/result:
     get:
@@ -94,11 +214,18 @@ paths:
         '500':
           description: Lỗi server
 
-   # ==================== PUT: Cập nhật Test Order ====================
-  /testOrder/update:
+  # ==================== PUT: Cập nhật Test Order ====================
+  /testOrder/update/{id}:
     put:
       summary: Cập nhật thông tin Test Order
-      description: Cập nhật dữ liệu của một Test Order dựa trên ID (lấy từ body). Chỉ cập nhật các bản ghi có isDeleted = false.
+      description: Cập nhật dữ liệu của một Test Order dựa trên ID (lấy từ URL). Chỉ cập nhật các bản ghi có isDeleted = false.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID của Test Order cần cập nhật
       requestBody:
         required: true
         content:
@@ -109,19 +236,23 @@ paths:
               default:
                 summary: Ví dụ cập nhật Test Order
                 value:
-                  id: "68f89ca5abc36901ef4d6fd1"
-                  patientId: "9f886139-ebf3-4b22-a277-4384de12bfab"
-                  barcode: "BC98765"
-                  status: "processing"
-                  run_at: "2025-10-31T10:00:00.000Z"
-                  run_by: "usr_002"
-                  updated_at: "2025-10-31T10:05:00.000Z"
-                  updated_by: "usr_001"
-                  created_at: "2025-10-30T10:00:00.000Z"
-                  created_by: "usr_001"
-                  deleted_at: null
-                  deleted_by: null
-                  isDeleted: false
+                   patient_name: "Lu Khang"
+                   barcode: "BC98765"
+                   status: "Pending"
+                   test_type: "Vi sinh"
+                   created_by: "usr_001"
+                   updated_by: "usr_001"
+                   instrument_id: "57ed2161-5913-4bc3-bd9d-2d775477cf43"
+                   reagent_usages: 
+                    - reagent_id: "R001"
+                      quantity_used: 34
+                    - reagent_id: "R002"
+                      quantity_used: 30
+                   due_date: "2025-10-30T10:00:00.000Z"
+                   is_deleted: false
+                   deleted_at: null
+                   deleted_by: null
+                   notes: "Có thêm ghi chú nếu cần"
       responses:
         '200':
           description: Cập nhật thành công
@@ -143,6 +274,54 @@ paths:
           description: Lỗi server
 
 
+# ==================== DELETE: Soft Delete Test Order ====================
+  /testOrder/delete/{id}:
+    delete:
+      summary: Xóa mềm (soft delete) một Test Order
+      description: |
+        Thực hiện xóa mềm cho Test Order theo ID. 
+        Nếu trạng thái order chưa Completed, sẽ hồi lại tồn kho reagent.
+        Chỉ cập nhật các bản ghi có isDeleted = false.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID của Test Order cần xóa
+      requestBody:
+        description: Thông tin người thực hiện xóa
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - deleted_by
+              properties:
+                deleted_by:
+                  type: string
+                  description: ID người thực hiện xóa
+                  example: "usr_002"
+      responses:
+        '200':
+          description: Xóa thành công, trả về thông tin order đã cập nhật
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestOrder'
+        '404':
+          description: Không tìm thấy order
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Test order not found"
+        '500':
+          description: Lỗi server
 
 components:
   schemas:
@@ -150,9 +329,9 @@ components:
     CreateTestOrderRequest:
       type: object
       required:
-        - patientId
+        - patient_id
       properties:
-        patientId:
+        patient_id:
           type: string
           description: ID bệnh nhân
           example: "pat_123"
@@ -173,8 +352,6 @@ components:
         - created_by
         - updated_at
         - updated_by
-        - run_at
-        - run_by
         - is_deleted
         - deleted_at
         - deleted_by
@@ -196,12 +373,6 @@ components:
           type: string
           format: date-time
         created_by:
-          type: string
-        run_at:
-          type: string
-          format: date-time
-          nullable: true
-        run_by:
           type: string
         updated_at:
           type: string
@@ -227,7 +398,7 @@ components:
         id:
           type: string
           example: "68f89ca5abc36901ef4d6fd1"
-        patientId:
+        patient_id:
           type: string
           example: "9f886139-ebf3-4b22-a277-4384de12bfab"
         barcode:
@@ -268,6 +439,6 @@ components:
         deleted_by:
           type: string
           example: null
-        isDeleted:
+        is_deleted:
           type: boolean
           example: false

@@ -37,8 +37,11 @@ class ReagentServiceClient {
     try {
       const url = `${this.baseUrl}/api/warehouse/reagents/${reagentId}`;
       const headers = { "X-Internal-API-Key": this.internalApiKey };
-      const res = await HttpClient.get<{ reagent: Reagent }>(url, { headers });
-      return res.reagent;
+      const res = await HttpClient.get<{ success: boolean; data: Reagent }>(url, { headers });
+      console.log("thông tin có lấy được reagent client ko nè")
+      console.log(res.data);
+      return res.data;
+
     } catch (err: any) {
       console.error(`[ReagentService] Error fetching reagent ${reagentId}:`, err.message);
       return null;
@@ -58,6 +61,32 @@ class ReagentServiceClient {
     });
 
     return map;
+  }
+
+   // 🔹 Cập nhật reagent (ví dụ: quantity_current, status, ...)
+  async updateReagent(
+    reagentId: string,
+    updateData: Partial<Reagent>
+  ): Promise<Reagent | null> {
+    try {
+      const url = `${this.baseUrl}/api/warehouse/reagents/${reagentId}`;
+      const headers = {
+        "Content-Type": "application/json",
+        "X-Internal-API-Key": this.internalApiKey,
+      };
+
+      const res = await HttpClient.put<{ success: boolean; data: Reagent }>(
+        url,
+        updateData,
+        { headers }
+      );
+
+      console.log(`[ReagentService] Updated reagent ${reagentId}:`, res.data);
+      return res.data;
+    } catch (err: any) {
+      console.error(`[ReagentService] Error updating reagent ${reagentId}:`, err.message);
+      return null;
+    }
   }
 }
 

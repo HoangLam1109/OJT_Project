@@ -1,9 +1,16 @@
 import mongoose, { Schema, Document } from "mongoose";
 import { z } from 'zod';
 
+export interface ReagentUsage {
+  reagent_id: string;
+  quantity_used: number | null;
+}
+
 export interface ITestOrder extends Document {
   patient_id: string;
-  instrument_id?: string ;
+  instrument_id?: string;
+  instrument_name?: string ;
+  reagent_usages: ReagentUsage[]; 
   patient_name?: string;   
   barcode: string;
   test_type: string;       
@@ -20,28 +27,28 @@ export interface ITestOrder extends Document {
   notes?: string | 'have no comment';
 }
 
-
-export interface ITestOrderInput {
+export interface CreateOrderInput {
   patient_id: string;
-  instrument_id?: string ;
-  patient_name?:string,
+  instrument_id?: string;
+  reagent_usages: ReagentUsage[]; 
+  patient_name?: string;
   barcode: string;
-  test_type?: string;
+  test_type: string;
   status?: string;
-  processing?: number;
   created_by: string;
-  due_date?: Date | null;
-  updated_by?: string | null;
+  due_date?: string | Date;
+  updated_by?: string;
   is_deleted?: boolean;
-  deleted_at?: Date | null;
-  deleted_by?: string | null;
-  notes?: string |'have no comment';
+  deleted_at?: string | Date;
+  deleted_by?: string;
+  notes?: string;
 }
 
 
-export interface UpdateTestOrderDto {
+export interface UpdateOrderInput {
   patient_id?: string;
   instrument_id?: string ;
+  reagent_usages: ReagentUsage[]; 
   patient_name?: string;
   barcode?: string;
   test_type?: string;
@@ -50,16 +57,18 @@ export interface UpdateTestOrderDto {
   created_by?: string;
   due_date?: Date | null;
   updated_by?: string | null;
-  is_deleted?: boolean;
-  deleted_at?: Date | null;
-  deleted_by?: string | null;
   notes?: string | 'have no comment' ;
 }
 
+const ReagentUsageSchema = new Schema({
+  reagent_id: { type: String, required: true },
+  quantity_used: { type: Number, required: true, default: 0 },
+});
 const TestOrderSchema: Schema = new Schema(
   {
     patient_id: { type: String, required: true },
     instrument_id: { type: String, default: '' },
+    reagent_usages: { type: [ReagentUsageSchema], default: [] },
     patient_name: { type: String, default: '' },
     barcode: { type: String, required: true, unique: true },
     test_type: { type: String,   required: true  },

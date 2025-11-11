@@ -29,7 +29,8 @@ class IamServiceClient {
       const url = `${this.baseUrl}/api/internal/${userId}`;
       const headers = { "X-Internal-API-Key": this.internalApiKey };
       const res = await HttpClient.get<{ user: IamUser }>(url, { headers });
-      console.log("res",res);
+      console.log("lấy user")
+      console.log("res",res.user);
       return res.user;
      
     } catch (err: any) {
