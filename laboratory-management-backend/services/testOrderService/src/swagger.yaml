@@ -26,7 +26,7 @@ paths:
                   patient_name: "Lu Khang"
                   barcode: "BC98765"
                   status: "Pending"
-                  testType: "Vi sinh"
+                  test_type: "Vi sinh"
                   created_by: "usr_001"
                   updated_by: "usr_001"
                   instrument_id: "57ed2161-5913-4bc3-bd9d-2d775477cf43"
@@ -103,7 +103,7 @@ paths:
                         status:
                           type: string
                           example: "Pending"
-                        testType:
+                        test_type:
                           type: string
                           example: "Blood Test"
                         notes:
@@ -197,7 +197,7 @@ paths:
                    patient_name: "Lu Khang"
                    barcode: "BC98765"
                    status: "Pending"
-                   testType: "Vi sinh"
+                   test_type: "Vi sinh"
                    created_by: "usr_001"
                    updated_by: "usr_001"
                    instrument_id: "57ed2161-5913-4bc3-bd9d-2d775477cf43"

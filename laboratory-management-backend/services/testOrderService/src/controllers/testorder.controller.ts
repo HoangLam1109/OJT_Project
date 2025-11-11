@@ -31,7 +31,7 @@ export const getAllTestOrders = async (req: Request, res: Response) => {
       due_date: order.due_date,
       updated_at: order.updated_at,
       updated_by: order.updated_by,
-      testType: order.test_type,
+      test_type: order.test_type,
       notes: order.notes,
     }));
 
@@ -59,7 +59,6 @@ export const getTestOrderById = async (req: Request<{ id: string }>, res: Respon
 
     // Lấy thông tin patient & user
     const patient = await patientServiceClient.getPatientById(order.patient_id);
-    const user = patient ? await iamServiceClient.getUserById(patient.user_id) : null;
 
     // Lấy thông tin instrument
     const instrument = order.instrument_id
@@ -100,7 +99,7 @@ export const getTestOrderById = async (req: Request<{ id: string }>, res: Respon
       is_deleted: order.is_deleted,
       deleted_at: order.deleted_at,
       deleted_by: order.deleted_by,
-      testType: order.test_type,
+      test_type: order.test_type,
       notes: order.notes,
       instrument: instrument
         ? {

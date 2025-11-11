@@ -33,7 +33,7 @@ export interface CreateOrderInput {
   reagent_usages: ReagentUsage[]; 
   patient_name?: string;
   barcode: string;
-  testType: string;
+  test_type: string;
   status?: string;
   created_by: string;
   due_date?: string | Date;

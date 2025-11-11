@@ -30,7 +30,7 @@ export const TestOrderService = {
       reagent_usages: reagentUsages,
       patient_name: data.patient_name ?? '',
       barcode: data.barcode,
-      test_type: data.testType,
+      test_type: data.test_type,
       status: data.status ?? 'Pending',
       created_by: data.created_by,
       ...(data.instrument_id ? { instrument_id: data.instrument_id } : {}),
