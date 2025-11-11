@@ -27,20 +27,22 @@ const SelectReagentsPage: React.FC = () => {
   const { user } = useAuthContext();
   const state = location.state as LocationState | null;
 
+  const [baseReagents, setBaseReagents] = useState<Reagent[]>([]);
   const [reagents, setReagents] = useState<Reagent[]>([]);
   const [selectedReagents, setSelectedReagents] = useState<Record<string, SelectedReagent>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchLoading, setSearchLoading] = useState(false);
 
   // Available quantity for each reagent (using reagent.quantity)
   const availableQuantities = useMemo(() => {
     const initial: Record<string, number> = {};
-    reagents.forEach(reagent => {
+    [...baseReagents, ...reagents].forEach(reagent => {
       initial[reagent.id] = reagent.quantity;
     });
     return initial;
-  }, [reagents]);
+  }, [baseReagents, reagents]);
 
   useEffect(() => {
     if (!state?.formData || !state?.instruments) {
@@ -59,10 +61,12 @@ const SelectReagentsPage: React.FC = () => {
         const availableReagents = allReagents.filter(
           r => r.status === 'Available' || r.status === 'In Use'
         );
+        setBaseReagents(availableReagents);
         setReagents(availableReagents);
       } catch (error: any) {
         console.error('Error fetching reagents:', error);
         toast.error(error.message || 'Không thể tải danh sách thuốc thử');
+        setBaseReagents([]);
         setReagents([]);
       } finally {
         setIsLoading(false);
@@ -71,6 +75,43 @@ const SelectReagentsPage: React.FC = () => {
 
     fetchReagents();
   }, []);
+
+  useEffect(() => {
+    const trimmedQuery = searchQuery.trim();
+
+    if (!trimmedQuery) {
+      setReagents(baseReagents);
+      setSearchLoading(false);
+      return;
+    }
+
+    let isCancelled = false;
+    setSearchLoading(true);
+    const debounceTimer = setTimeout(async () => {
+      try {
+        const result = await reagentService.searchReagents(trimmedQuery, 1, 20);
+        if (isCancelled) return;
+
+        const selectableReagents = result.items.filter(
+          reagent => reagent.status === 'Available' || reagent.status === 'In Use'
+        );
+        setReagents(selectableReagents);
+      } catch (error: any) {
+        if (isCancelled) return;
+        console.error('Error searching reagents:', error);
+        toast.error(error.message || 'Không thể tìm kiếm thuốc thử');
+      } finally {
+        if (!isCancelled) {
+          setSearchLoading(false);
+        }
+      }
+    }, 350);
+
+    return () => {
+      isCancelled = true;
+      clearTimeout(debounceTimer);
+    };
+  }, [searchQuery, baseReagents]);
 
   const handleToggleSelect = (reagentId: string) => {
     setSelectedReagents(prev => {
@@ -135,29 +176,19 @@ const SelectReagentsPage: React.FC = () => {
     }
   };
 
-  // Filter reagents based on search query
-  const filteredReagents = useMemo(() => {
-    if (!searchQuery.trim()) {
-      return reagents;
-    }
-    const query = searchQuery.toLowerCase().trim();
-    return reagents.filter(
-      (reagent) =>
-        reagent.name.toLowerCase().includes(query) ||
-        reagent.lotNumber?.toLowerCase().includes(query) ||
-        reagent.id.toLowerCase().includes(query)
-    );
-  }, [reagents, searchQuery]);
-
   // Get selected reagents with full details
   const selectedReagentsList = useMemo(() => {
+    const detailMap = new Map<string, Reagent>();
+    baseReagents.forEach(reagent => detailMap.set(reagent.id, reagent));
+    reagents.forEach(reagent => detailMap.set(reagent.id, reagent));
+
     return Object.values(selectedReagents)
       .map((selected) => {
-        const reagent = reagents.find((r) => r.id === selected.reagentId);
+        const reagent = detailMap.get(selected.reagentId);
         return reagent ? { ...reagent, quantity: selected.quantity } : null;
       })
       .filter((item): item is Reagent & { quantity: number } => item !== null);
-  }, [selectedReagents, reagents]);
+  }, [selectedReagents, reagents, baseReagents]);
 
   return (
     <div className="space-y-6 p-6">
@@ -260,7 +291,7 @@ const SelectReagentsPage: React.FC = () => {
               </div>
               {searchQuery && (
                 <span className="text-sm text-gray-500 whitespace-nowrap">
-                  Tìm thấy {filteredReagents.length} thuốc thử
+                  {searchLoading ? 'Đang tìm...' : `Tìm thấy ${reagents.length} thuốc thử`}
                 </span>
               )}
             </div>
@@ -280,23 +311,25 @@ const SelectReagentsPage: React.FC = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {isLoading ? (
+                {isLoading || searchLoading ? (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center py-8">
                       <div className="flex flex-col items-center justify-center gap-2">
                         <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                        <span className="text-sm text-gray-500">Đang tải danh sách thuốc thử...</span>
+                        <span className="text-sm text-gray-500">
+                          {isLoading ? 'Đang tải danh sách thuốc thử...' : 'Đang tìm thuốc thử...'}
+                        </span>
                       </div>
                     </TableCell>
                   </TableRow>
-                ) : filteredReagents.length === 0 ? (
+                ) : reagents.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center py-8 text-gray-500">
                       Không tìm thấy thuốc thử nào
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredReagents.map((reagent) => {
+                  reagents.map((reagent) => {
                   const isSelected = !!selectedReagents[reagent.id];
                   const selected = selectedReagents[reagent.id];
                   const remaining = getRemainingQuantity(reagent.id);

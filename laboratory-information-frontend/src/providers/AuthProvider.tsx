@@ -8,9 +8,32 @@ import type { User, SafeUser } from "../types/User";
 import { apiClient } from "../service/apiClient";
 import { handleGoogleCallback, isGoogleCallback, cleanGoogleCallbackUrl } from "../service/authService/googleOAuthApi";
 
+const rehydrateStoredUser = (): User | null => {
+  if (typeof window === "undefined") return null;
+  try {
+    const stored = localStorage.getItem("limsUser");
+    if (!stored) return null;
+
+    const parsed: SafeUser = JSON.parse(stored);
+    if (!parsed?.id) return null;
+
+    return {
+      id: parsed.id,
+      name: parsed.name,
+      email: parsed.email ?? "",
+      role: Array.isArray(parsed.role) ? parsed.role : [],
+      active: parsed.active ?? true,
+      permissions: parsed.permissions ?? [],
+    };
+  } catch (error) {
+    console.warn("Failed to rehydrate stored user:", error);
+    return null;
+  }
+};
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const location = useLocation(); // THÊM DÒNG NÀY
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(() => rehydrateStoredUser());
   const [loading, setLoading] = useState(true);
   const hasInitialized = useRef(false);
 
@@ -47,14 +70,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // 2. NẾU ĐÃ CÓ USER HOẶC ĐÃ INITIALIZE, KHÔNG CẦN GỌI API LẠI
-    if (user || hasInitialized.current) {
+    // 2. Nếu đã initialize cho phiên hiện tại, không cần gọi API lại
+    if (hasInitialized.current) {
       setLoading(false);
       return;
     }
 
     const initializeAuth = async () => {
       hasInitialized.current = true; // Đánh dấu đã bắt đầu initialize
+      setLoading(true);
+
+      if (!user) {
+        const storedUser = rehydrateStoredUser();
+        if (storedUser) {
+          setUser(storedUser);
+        }
+      }
 
       // Google OAuth
       if (isGoogleCallback()) {
@@ -87,7 +118,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         onLogin(authenticatedUser);
       } catch (error: unknown) {
         if (axios.isAxiosError(error)) {
-          if (error.response?.status !== 401) {
+          if (error.response?.status === 401) {
+            localStorage.removeItem("limsUser");
+            setUser(null);
+          } else {
             console.error('Auth check failed:', error);
           }
         } else {
@@ -108,6 +142,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const safeUser: SafeUser = {
       id: userData.id,
       name: userData.name,
+      email: userData.email,
       role: Array.isArray(userData.role) ? userData.role : [userData.role],
       active: userData.active ?? true,
       permissions: userData.permissions || [],

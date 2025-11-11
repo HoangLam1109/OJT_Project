@@ -62,6 +62,18 @@ interface BackendReagentResponse {
   message?: string;
 }
 
+interface BackendReagentSearchResponse {
+  success: boolean;
+  data: BackendReagent[];
+  pagination?: {
+    totalItems?: number;
+    totalPages?: number;
+    currentPage?: number;
+    limit?: number;
+  };
+  message?: string;
+}
+
 // Transform backend response to frontend format
 const transformBackendReagent = (backendReagent: BackendReagent): Reagent => {
   // Map status from backend to frontend
@@ -174,6 +186,47 @@ export const reagentService = {
         throw new Error('Không thể kết nối đến Warehouse Service (port 5003). Vui lòng kiểm tra backend service đã chạy chưa.');
       }
       
+      throw new Error(apiUtils.getErrorMessage(error));
+    }
+  },
+
+  async searchReagents(keyword: string, page = 1, limit = 10) {
+    try {
+      const response = await reagentApiClient.get<BackendReagentSearchResponse>(
+        `${REAGENT_API_BASE_URL}/search`,
+        {
+          params: {
+            keyword,
+            page,
+            limit,
+          },
+        }
+      );
+
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Failed to search reagents');
+      }
+
+      const activeReagents = (response.data.data || []).filter(
+        (reagent: BackendReagent) => !reagent.is_deleted
+      );
+
+      return {
+        items: activeReagents.map(transformBackendReagent),
+        pagination: {
+          totalItems: response.data.pagination?.totalItems ?? activeReagents.length,
+          totalPages: response.data.pagination?.totalPages ?? 1,
+          currentPage: response.data.pagination?.currentPage ?? page,
+          limit,
+        },
+      };
+    } catch (error: any) {
+      console.error('Error searching reagents:', error);
+
+      if (error.code === 'ERR_NETWORK' || error.code === 'ERR_CONNECTION_REFUSED') {
+        throw new Error('Không thể kết nối đến Warehouse Service (port 5003). Vui lòng kiểm tra backend service đã chạy chưa.');
+      }
+
       throw new Error(apiUtils.getErrorMessage(error));
     }
   },
