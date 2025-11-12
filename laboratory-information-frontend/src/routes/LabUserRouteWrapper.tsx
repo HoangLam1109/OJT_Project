@@ -11,7 +11,7 @@ interface LabUserRouteWrapperProps {
   children: React.ReactNode;
 }
 
-function LabUserLayoutWithActions({
+export function LabUserRouteWrapper({
   currentUser,
   onLogout,
   currentPage,
@@ -19,21 +19,15 @@ function LabUserLayoutWithActions({
   children,
 }: LabUserRouteWrapperProps) {
   return (
-    <LabUserLayout
-      currentUser={currentUser}
-      onLogout={onLogout}
-      currentPage={currentPage}
-      onNavigate={onNavigate}
-    >
-      {children}
-    </LabUserLayout>
-  );
-}
-
-export function LabUserRouteWrapper(props: LabUserRouteWrapperProps) {
-  return (
     <TestOrderActionsProvider>
-      <LabUserLayoutWithActions {...props} />
+      <LabUserLayout
+        currentUser={currentUser}
+        onLogout={onLogout}
+        currentPage={currentPage}
+        onNavigate={onNavigate}
+      >
+        {children}
+      </LabUserLayout>
     </TestOrderActionsProvider>
   );
 }

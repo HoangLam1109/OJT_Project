@@ -1,5 +1,3 @@
-import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
 import { LabUserRouteWrapper } from './LabUserRouteWrapper';
 import type { User } from '../types/User';
 
@@ -8,7 +6,7 @@ interface LabUserRouteElementProps {
   onLogout: () => void;
   currentPage: string;
   onNavigate: (page: string) => void;
-  setLabUserPage: (page: string) => void;
+  setLabUserPage?: (page: string) => void; // Kept for compatibility but not used
   children: React.ReactNode;
 }
 
@@ -17,17 +15,8 @@ export function LabUserRouteElement({
   onLogout,
   currentPage,
   onNavigate,
-  setLabUserPage,
   children,
 }: LabUserRouteElementProps) {
-  const location = useLocation();
-
-  useEffect(() => {
-    if (location.state?.page) {
-      setLabUserPage(location.state.page);
-    }
-  }, [location.state, setLabUserPage]);
-
   return (
     <LabUserRouteWrapper
       currentUser={currentUser}
