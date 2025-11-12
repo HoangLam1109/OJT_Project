@@ -10,10 +10,10 @@ export class PaginationUtils {
     return {
       limit,
       cursor: query.cursor,
-      sortBy: query.sortBy || "_id",
+      sortBy: query.sortBy || "updatedAt",
       search: query.search,
       searchField: query.searchField,
-      sortOrder: query.sortOrder || "asc",
+      sortOrder: query.sortOrder || "desc",
       filters: query.filters,
     };
   }

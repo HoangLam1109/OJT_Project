@@ -84,7 +84,7 @@ export class RoleRepository implements IRoleRepository {
     }
 
     if (cursor) {
-      const cursorField = sortBy || "updatedAt";
+      const cursorField = sortBy || "_id";
 
       // For proper cursor pagination, we need to find items that come AFTER the cursor
       // in the sort order, not just exclude the cursor item

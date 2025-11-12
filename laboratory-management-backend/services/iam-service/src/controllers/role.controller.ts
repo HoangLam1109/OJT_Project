@@ -98,7 +98,7 @@ const getRolesWithPagination = async (
       required: false,
       type: 'string',
       enum: ['updatedAt', '_id', 'roleCode', 'roleName'],
-      default: '_id'
+      default: 'updatedAt'
     }
     #swagger.parameters['search'] = {
       in: 'query',
@@ -120,7 +120,7 @@ const getRolesWithPagination = async (
       required: false,
       type: 'string',
       enum: ['asc', 'desc'],
-      default: 'asc'
+      default: 'desc'
     }
     #swagger.responses[200] = {
       description: 'Roles retrieved successfully',

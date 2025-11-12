@@ -64,7 +64,7 @@ export class AuditLogRepository implements IAuditLogRepository {
     const sortObj = { [sortBy || "_id"]: sortDirection };
 
     if (search && searchField) {
-      if (searchField == "performedAt") {
+      if (searchField == "performedAt" || searchField == "createdAt") {
         const dateSearch = new Date(search);
         if (!isNaN(dateSearch.getTime())) {
           const dateStart = new Date(dateSearch);
