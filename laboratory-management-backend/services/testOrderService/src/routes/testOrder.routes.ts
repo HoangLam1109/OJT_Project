@@ -7,20 +7,27 @@ import {
   updateTestOrder,
   softDeleteTestOrder,
   updateTestOrderStatus,
+  searchTestOrders
 } from "../controllers/testorder.controller.js";
 import { validateCreateTestOrder } from "../middlewares/validate.middleware.js";
 import AuthenticateUser from "../middlewares/authenticate.middleware.js";
 import { TestOrderResultController } from "../controllers/testOrderResult.controller.js";
+
 const router = express.Router();
 const controller = new TestOrderResultController();
 
-// Backwards-compatible routes matching older naming convention used elsewhere
+// ✅ Static routes first
 router.get("/testOrder/all", getAllTestOrders);
+router.get("/testOrder/search", searchTestOrders);
 router.get("/testOrder/result", controller.getListResults);
+
+// ✅ Dynamic routes after static routes
 router.get("/testOrder/:id", getTestOrderById);
-router.post("/testOrder/create",createTestOrder);
-router.put("/testOrder/update/:id",updateTestOrder);
+
+// CRUD
+router.post("/testOrder/create", createTestOrder);
+router.put("/testOrder/update/:id", updateTestOrder);
 router.delete("/testOrder/delete/:id", softDeleteTestOrder);
-router.patch('/testOrder/:id/status', updateTestOrderStatus);
+router.patch("/testOrder/:id/status", updateTestOrderStatus);
 
 export default router;

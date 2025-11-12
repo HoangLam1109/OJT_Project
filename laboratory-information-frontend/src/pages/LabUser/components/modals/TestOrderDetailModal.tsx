@@ -2,7 +2,7 @@ import React from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../../components/common/dialog';
 import Button from '../../../../components/common/button';
 import Badge from '../../../../components/common/badge';
-import { Clock, User, TestTube } from 'lucide-react';
+import { Clock, User, TestTube, Microscope, FlaskConical } from 'lucide-react';
 import type { TestOrder } from '../../types/TestOrderTypes';
 
 interface TestOrderDetailModalProps {
@@ -36,22 +36,7 @@ const TestOrderDetailModal: React.FC<TestOrderDetailModalProps> = ({
     }
   };
 
-  // const getPriorityBadge = (priority: string) => {
-  //   switch (priority) {
-  //     case 'Emergency':
-  //     case 'Urgent':
-  //     case 'urgent':
-  //       return <Badge variant="destructive">Khẩn cấp</Badge>;
-  //     case 'Normal':
-  //     case 'normal':
-  //       return <Badge variant="default">Bình thường</Badge>;
-  //     case 'Routine':
-  //     case 'routine':
-  //       return <Badge variant="secondary">Thường quy</Badge>;
-  //     default:
-  //       return <Badge variant="default">{priority}</Badge>;
-  //   }
-  // };
+
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -71,7 +56,7 @@ const TestOrderDetailModal: React.FC<TestOrderDetailModalProps> = ({
           <div className="space-y-4">
             <div className="flex items-center gap-4 pb-3 border-b">
               <div>
-                <h3 className="font-mono text-lg font-semibold">{order.barcode || order.id}</h3>
+                <h3 className="font-mono text-lg font-semibold">{order.barcode || order._id}</h3>
               </div>
               {getStatusBadge(order.status)}
             </div>
@@ -103,7 +88,7 @@ const TestOrderDetailModal: React.FC<TestOrderDetailModalProps> = ({
               <div className="grid grid-cols-2 gap-3 pl-6">
                 <div>
                   <span className="text-sm text-gray-600">Loại xét nghiệm:</span>
-                  <p className="font-medium">{order.testType}</p>
+                  <p className="font-medium">{order.test_type}</p>
                 </div>
                 {order.created_at && (
                   <div>
@@ -119,14 +104,80 @@ const TestOrderDetailModal: React.FC<TestOrderDetailModalProps> = ({
                   <span className="text-sm text-gray-600">Hạn hoàn thành:</span>
                   <p className="font-medium">{order.due_date}</p>
                 </div>
-                {order.created_at && (
-                  <div>
-                    <span className="text-sm text-gray-600">Tiến độ:</span>
-                    <p className="font-medium">{order.processing}%</p>
-                  </div>
-                )}
               </div>
             </div>
+
+            {/* Instrument Information */}
+            {order.instrument && (
+              <div>
+                <h4 className="font-semibold text-sm text-gray-700 mb-3 flex items-center gap-2">
+                  <Microscope className="w-4 h-4" />
+                  Thông tin Thiết bị
+                </h4>
+                <div className="grid grid-cols-2 gap-3 pl-6">
+                  <div>
+                    <span className="text-sm text-gray-600">Mã thiết bị:</span>
+                    <p className="font-mono text-sm">{order.instrument.instrument_code}</p>
+                  </div>
+                  <div>
+                    <span className="text-sm text-gray-600">Tên thiết bị:</span>
+                    <p className="font-medium">{order.instrument.instrument_name}</p>
+                  </div>
+                  <div>
+                    <span className="text-sm text-gray-600">Loại thiết bị:</span>
+                    <p className="font-medium">{order.instrument.instrument_type}</p>
+                  </div>
+                  <div>
+                    <span className="text-sm text-gray-600">Nhà sản xuất:</span>
+                    <p className="font-medium">{order.instrument.manufacturer}</p>
+                  </div>
+                  <div>
+                    <span className="text-sm text-gray-600">Trạng thái:</span>
+                    <Badge variant={order.instrument.status === 'Ready' ? 'default' : 'secondary'} className="mt-1">
+                      {order.instrument.status}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Reagents Information */}
+            {order.reagents && order.reagents.length > 0 && (
+              <div>
+                <h4 className="font-semibold text-sm text-gray-700 mb-3 flex items-center gap-2">
+                  <FlaskConical className="w-4 h-4" />
+                  Thông tin Hóa chất
+                </h4>
+                <div className="pl-6">
+                  <div className="space-y-2">
+                    {order.reagents.map((reagent, index) => (
+                      <div key={reagent.reagent_id || index} className="bg-gray-50 p-3 rounded-lg border">
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <span className="text-sm text-gray-600">Tên hóa chất:</span>
+                            <p className="font-medium">{reagent.reagent_name}</p>
+                          </div>
+                          <div>
+                            <span className="text-sm text-gray-600">Loại:</span>
+                            <p className="font-medium">{reagent.reagent_type}</p>
+                          </div>
+                          <div>
+                            <span className="text-sm text-gray-600">Số lượng đã dùng:</span>
+                            <p className="font-medium">{reagent.quantity_used}</p>
+                          </div>
+                          <div>
+                            <span className="text-sm text-gray-600">Trạng thái:</span>
+                            <Badge variant={reagent.status === 'Available' ? 'default' : 'secondary'} className="mt-1">
+                              {reagent.status}
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Notes */}
             <div>

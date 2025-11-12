@@ -46,7 +46,7 @@ interface BackendTestOrder {
   patient_id: string;
   barcode: string;
   status: string;
-  testType: string
+  test_type: string
   created_at: string;
   created_by: string;
   due_date?: string;
@@ -55,14 +55,37 @@ interface BackendTestOrder {
   deleted_by?: string;
   processing?: number;
   notes?: string;
+  patient_name?: string;
   user?: {
     fullName: string;
     email: string;
     phoneNumber?: string;
     age?: number;
+  };  
+  instrument?: {
+    instrument_code: string;
+    instrument_name: string;
+    instrument_type: string;
+    manufacturer: string;
+    status: string;
+  };
+  reagents?: {
+    reagent_id: string;
+    reagent_name: string;
+    reagent_type: string;
+    status: string;
+    quantity_used: number;
+  }[];
+}
+interface PaginatedResponse<T> {
+  data: T[];
+  pagination?: {
+    page?: number;
+    limit?: number;
+    total?: number;
+    totalPages?: number;
   };
 }
-
 // Transform backend response to frontend format
 const transformBackendOrder = (backendOrder: BackendTestOrder): TestOrder => {
   const formatDate = (dateStr?: string | null): string => {
@@ -75,69 +98,65 @@ const transformBackendOrder = (backendOrder: BackendTestOrder): TestOrder => {
     }
   };
 
-  const mapStatus = (status?: string): TestOrder['status'] => {
-    if (!status) return 'Pending';
 
-    const lower = status.toLowerCase();
-    switch (lower) {
-      case 'pending':
-        return 'Pending';
-      case 'processing':
-        return 'Processing';
-      case 'completed':
-        return 'Completed';
-      default:
-        return 'Pending';
-    }
-  };
 
   return {
-    id: backendOrder._id,
+    _id: backendOrder._id,
     barcode: backendOrder.barcode,
-    patient_name: backendOrder.user?.fullName || 'N/A',
+    patient_name: backendOrder.patient_name || 'N/A',
     patient_id: backendOrder.patient_id,
-    testType: backendOrder.testType,
+    test_type: backendOrder.test_type,
     created_at: formatDate(backendOrder.created_at),
-    created_by: backendOrder.created_by,
-    status: mapStatus(backendOrder.status),
+    created_by: backendOrder.user?.fullName,
+    status: backendOrder.status,
     due_date: formatDate(backendOrder.due_date),
     is_deleted: backendOrder.is_deleted || undefined,
     deleted_at: backendOrder.deleted_at,
     deleted_by: backendOrder.deleted_by,
-    progress: backendOrder.processing,
     notes: backendOrder.notes,
+    instrument: backendOrder.instrument ? {
+      instrument_code: backendOrder.instrument.instrument_code,
+      instrument_name: backendOrder.instrument.instrument_name,
+      instrument_type: backendOrder.instrument.instrument_type,
+      manufacturer: backendOrder.instrument.manufacturer,
+      status: backendOrder.instrument.status,
+    } : undefined,
+    reagents: backendOrder.reagents ? backendOrder.reagents.map(reagent => ({
+      reagent_id: reagent.reagent_id,
+      reagent_name: reagent.reagent_name,
+      reagent_type: reagent.reagent_type,
+      status: reagent.status,
+      quantity_used: reagent.quantity_used,
+    })) : undefined,
   };
 };
+
+
 
 // TestOrder Service API
 export const testOrderService = {
   // Get all test orders
   async getAllTestOrders(): Promise<TestOrder[]> {
     try {
-      const response = await testOrderApiClient.get<BackendTestOrder[]>(`${TEST_ORDER_API_BASE_URL}/all`);
+      const response = await testOrderApiClient.get<PaginatedResponse<BackendTestOrder>>(`${TEST_ORDER_API_BASE_URL}/all`);
       console.log("response", response.data)
-      return response.data.map(transformBackendOrder);
+      // Handle both paginated response and direct array response
+      const ordersArray = Array.isArray(response.data) 
+        ? response.data 
+        : (response.data.data || []);
+      return ordersArray.map(transformBackendOrder);
     } catch (error) {
       console.error('Error fetching test orders:', error);
       throw new Error(apiUtils.getErrorMessage(error));
     }
   },
 
-  // Get all test orders via Swagger path (/testOrder/all)
-  async getAllTestOrdersDirect(): Promise<TestOrder[]> {
-    try {
-      const response = await testOrderApiClient.get<BackendTestOrder[]>(`${TEST_ORDER_API_BASE_URL}/all`);
-      return response.data.map(transformBackendOrder);
-    } catch (error) {
-      console.error('Error fetching test orders (direct):', error);
-      throw new Error(apiUtils.getErrorMessage(error));
-    }
-  },
+
 
   // Get test order by ID
-  async getTestOrderById(id: string): Promise<TestOrder | null> {
+  async getTestOrderById(_id: string): Promise<TestOrder | null> {
     try {
-      const response = await testOrderApiClient.get<BackendTestOrder>(`${TEST_ORDER_API_BASE_URL}/${id}`);
+      const response = await testOrderApiClient.get<BackendTestOrder>(`${TEST_ORDER_API_BASE_URL}/${_id}`);
       console.log("response", response.data)
       return transformBackendOrder(response.data);
     } catch (error) {
@@ -149,23 +168,61 @@ export const testOrderService = {
   // Create new test order
   // testOrderService.ts
   async createTestOrder(orderData: Partial<TestOrder>): Promise<TestOrder> {
+    console.log("orderData", orderData)
     try {
-
-      const backendData = {
-        ...orderData,  //  từ submitData ở trang TestOrderForm
-
+      if (!orderData.created_by) {
+        throw new Error('created_by is required to create a test order');
+      }
+      
+      const backendData: any = {
+        ...orderData,
         status: (orderData.status && isValidStatus(orderData.status))
           ? orderData.status
           : 'Pending',
+        created_by: orderData.created_by,
       };
-      console.log('Sending to backend:', backendData); // DEBUG
 
+      // Transform testType (camelCase) to test_type (snake_case) if needed
+      // if ((orderData as any).testType) {
+      //   // Use testType if test_type is not already set
+      //   if (!backendData.test_type) {
+      //     backendData.test_type = (orderData as any).testType;
+      //   }
+      //   // Always remove testType to avoid sending both fields
+      //   delete backendData.testType;
+      // }
+      // // Ensure test_type is set from orderData.test_type if it exists
+      // if (orderData.test_type) {
+      //   backendData.test_type = orderData.test_type;
+      // }
+
+      if ((orderData as any).instruments && Array.isArray((orderData as any).instruments)) {
+        const instruments = (orderData as any).instruments;
+        if (instruments.length > 0) {
+          // Take the first instrument's instrumentId (which is the _id)
+          backendData.instrument_id = instruments[0].instrumentId;
+        }
+        delete backendData.instruments;
+      }
+
+      if ((orderData as any).reagents && Array.isArray((orderData as any).reagents)) {
+        const reagents = (orderData as any).reagents;
+        backendData.reagent_usages = reagents.map((r: { reagentId: string; quantity: number }) => ({
+          reagent_id: r.reagentId,
+          quantity_used: r.quantity || 1,
+        }));
+        delete backendData.reagents;
+      }
+
+      console.log('Sending to backend:', backendData); // DEBUG
+ 
       const response = await testOrderApiClient.post<BackendTestOrder>(
         `${TEST_ORDER_API_BASE_URL}/create`,
         backendData
       );
 
       return transformBackendOrder(response.data);
+      
     } catch (error) {
       console.error('Error creating test order:', error);
       throw new Error(apiUtils.getErrorMessage(error));
@@ -176,14 +233,16 @@ export const testOrderService = {
   async updateTestOrder(id: string, orderData: Partial<TestOrder>): Promise<TestOrder> {
     try {
       // Transform frontend data to backend format
-      const backendData: Partial<BackendTestOrder> = {
+      const backendData: any = {
         ...orderData
       };
+
+
 
       if (orderData.status) {
         backendData.status = orderData.status.toLowerCase();
       }
-      //by Add other fields as needed
+
 
       const response = await testOrderApiClient.put<BackendTestOrder>(
         `${TEST_ORDER_API_BASE_URL}/update/${id}`,

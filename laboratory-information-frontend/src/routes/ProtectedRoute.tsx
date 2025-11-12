@@ -8,8 +8,11 @@ interface ProtectedRouteProps {
 
 export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
   const { user, loading } = useAuthContext();
+  const hasPersistedUser = typeof window !== "undefined" ? localStorage.getItem("limsUser") : null;
 
-  if (loading) return <div className="text-center mt-10">Đang tải...</div>;
+  if (loading || (!user && hasPersistedUser)) {
+    return <div className="text-center mt-10">Đang tải...</div>;
+  }
   if (!user) return <Navigate to="/login" replace />;
 
   if (allowedRoles && !user.role.some(r => allowedRoles.includes(r))) {

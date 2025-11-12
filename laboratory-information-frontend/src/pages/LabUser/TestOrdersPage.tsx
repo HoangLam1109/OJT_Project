@@ -17,7 +17,6 @@ import TestOrderDetailModal from './components/modals/TestOrderDetailModal';
 import { calculateStats, filterTestOrders } from './utils/testOrderUtils';
 import { Card, CardContent, CardHeader } from '@/components/common/card';
 import { Skeleton } from '@/components/common/skeleton';
-import { TrendingUpDownIcon } from 'lucide-react';
 
 const TestOrdersPage: React.FC = () => {
   const { user } = useAuthContext();
@@ -62,27 +61,12 @@ const TestOrdersPage: React.FC = () => {
 
     return () => clearInterval(interval);
   }, []);
+  
   const loadTestOrders = async () => {
     try {
       setLoading(true);
       const data = await testOrderService.getAllTestOrders();
-
-      // ⚙️ Chuẩn hóa field từ backend về đúng định dạng interface
-      const normalized = data.map((o: TestOrder) => ({
-        id: o.id,
-        barcode: o.barcode,
-        patient_id: o.patient_id,
-        patient_name: o.patient_name,
-        testType: o.testType,
-        status: o.status,
-        created_at: o.created_at,
-        updated_at: o.updated_at,
-        due_date: o.due_date,
-        processing: o.processing ?? o.progress ?? 0,
-        notes: o.notes,
-      }));
-
-      setOrders(normalized);
+      setOrders(data);
     } catch (error) {
       toast.error('Không thể tải danh sách lệnh xét nghiệm');
       console.error('Error loading test orders:', error);
@@ -105,20 +89,15 @@ const TestOrdersPage: React.FC = () => {
   }, [handleCreate, setOnCreateTestOrder]);
 
 
-  const handleFormSubmit = async (orderData: Omit<TestOrder, 'id'> | Partial<TestOrder>) => {
+  const handleFormSubmit = async (_orderData: Omit<TestOrder, '_id'> | Partial<TestOrder> | TestOrder) => {
     try {
-      if (isEdit && selectedOrder) {
-        await testOrderService.updateTestOrder(selectedOrder.id, orderData);
-        toast.success('Đã cập nhật lệnh xét nghiệm thành công');
-      } else {
-        await testOrderService.createTestOrder(orderData as Omit<TestOrder, 'id'>);
-        toast.success('Đã tạo lệnh xét nghiệm thành công');
-      }
+      // TestOrderFormModal đã gọi API trực tiếp, chỉ cần refresh data
       setFormModalOpen(false);
+      setIsEdit(false);
+      setSelectedOrder(null);
       await loadTestOrders();
-    } catch (error) {
-      toast.error('Không thể lưu lệnh xét nghiệm');
-      console.error('Error saving test order:', error);
+    } catch (error) { 
+      console.error('Error refreshing test orders:', error);
     }
   };
 
@@ -132,7 +111,7 @@ const handleStatusChange = async (
 
     // Optimistic UI – cập nhật ngay, không cần reload
     setOrders(prev => prev.map(o =>
-      o.id === orderId
+      o._id === orderId
         ? {
             ...o,
             status: newStatus,
@@ -149,8 +128,8 @@ const handleStatusChange = async (
   const handleDeleteConfirm = async () => {
     if (!selectedOrder) return;
     try {
-      await testOrderService.deleteTestOrder(selectedOrder.id, user?.name ?? 'system');
-      toast.success(`Đã xóa lệnh xét nghiệm ${selectedOrder.id} thành công`);
+      await testOrderService.deleteTestOrder(selectedOrder._id, user?.name ?? 'system');
+      toast.success(`Đã xóa lệnh xét nghiệm ${selectedOrder._id} thành công`);
       setDeleteModalOpen(false);
       await loadTestOrders();
     } catch (error) {
@@ -178,11 +157,11 @@ const handleStatusChange = async (
 
     try {
       // GỌI API ĐỔI STATUS + CẬP NHẬT INSTRUMENT
-      await testOrderService.changeStatus(selectedOrder.id, 'Processing', user?.name ??'');
+      await testOrderService.changeStatus(selectedOrder._id, 'Processing', user?.name ??'');
 
       // Cập nhật UI tức thì (optimistic)
       setOrders(prev => prev.map(o =>
-        o.id === selectedOrder.id
+        o._id === selectedOrder._id
           ? { ...o, status: 'Processing', processing: 10 }
           : o
       ));
@@ -200,9 +179,23 @@ const handleStatusChange = async (
   };
 
 
-  const handleOrderClick = (order: TestOrder) => {
-    setSelectedOrder(order);
-    setShowDetailDialog(true);
+  const handleOrderClick = async (order: TestOrder) => {
+    try {
+      // Fetch full order details including instrument and reagents
+      const fullOrderDetails = await testOrderService.getTestOrderById(order._id);
+      if (fullOrderDetails) {
+        setSelectedOrder(fullOrderDetails);
+        setShowDetailDialog(true);
+      } else {
+        toast.error('Không thể tải chi tiết lệnh xét nghiệm');
+      }
+    } catch (error) {
+      toast.error('Không thể tải chi tiết lệnh xét nghiệm');
+      console.error('Error loading order details:', error);
+      // Fallback to basic order info if fetch fails
+      setSelectedOrder(order);
+      setShowDetailDialog(true);
+    }
   };
 
   const availableInstruments = instruments.filter(i => i.status === 'Ready' && i.is_active === true);
@@ -264,6 +257,7 @@ const handleStatusChange = async (
       <TestOrderToolbar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
+        onCreateTestOrder={handleCreate}
       />
 
       <TestOrderStatsCards stats={stats} loading={loading} />

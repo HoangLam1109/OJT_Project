@@ -1,8 +1,16 @@
 import mongoose, { Schema, Document } from "mongoose";
 import { z } from 'zod';
 
+export interface ReagentUsage {
+  reagent_id: string;
+  quantity_used: number | null;
+}
+
 export interface ITestOrder extends Document {
   patient_id: string;
+  instrument_id?: string;
+  instrument_name?: string ;
+  reagent_usages: ReagentUsage[]; 
   patient_name?: string;   
   barcode: string;
   test_type: string;       
@@ -19,26 +27,28 @@ export interface ITestOrder extends Document {
   notes?: string | 'have no comment';
 }
 
-
-export interface ITestOrderInput {
+export interface CreateOrderInput {
   patient_id: string;
-  patient_name?:string,
+  instrument_id?: string;
+  reagent_usages: ReagentUsage[]; 
+  patient_name?: string;
   barcode: string;
-  test_type?: string;
+  test_type: string;
   status?: string;
-  processing?: number;
   created_by: string;
-  due_date?: Date | null;
-  updated_by?: string | null;
+  due_date?: string | Date;
+  updated_by?: string;
   is_deleted?: boolean;
-  deleted_at?: Date | null;
-  deleted_by?: string | null;
-  notes?: string |'have no comment';
+  deleted_at?: string | Date;
+  deleted_by?: string;
+  notes?: string;
 }
 
 
-export interface UpdateTestOrderDto {
+export interface UpdateOrderInput {
   patient_id?: string;
+  instrument_id?: string ;
+  reagent_usages: ReagentUsage[]; 
   patient_name?: string;
   barcode?: string;
   test_type?: string;
@@ -47,15 +57,18 @@ export interface UpdateTestOrderDto {
   created_by?: string;
   due_date?: Date | null;
   updated_by?: string | null;
-  is_deleted?: boolean;
-  deleted_at?: Date | null;
-  deleted_by?: string | null;
   notes?: string | 'have no comment' ;
 }
 
+const ReagentUsageSchema = new Schema({
+  reagent_id: { type: String, required: true },
+  quantity_used: { type: Number, required: true, default: 0 },
+});
 const TestOrderSchema: Schema = new Schema(
   {
     patient_id: { type: String, required: true },
+    instrument_id: { type: String, default: '' },
+    reagent_usages: { type: [ReagentUsageSchema], default: [] },
     patient_name: { type: String, default: '' },
     barcode: { type: String, required: true, unique: true },
     test_type: { type: String,   required: true  },
@@ -71,7 +84,7 @@ const TestOrderSchema: Schema = new Schema(
     is_deleted: { type: Boolean, default: false },
     deleted_at: { type: Date, default: null },
     deleted_by: { type: String, default: null },
-    notes: {type: String, default: 'Have no comment'}
+    notes: {type: String, default: 'Have no comment'},
   },
   {
     timestamps: false, // We're handling created_at/updated_at manually
@@ -100,7 +113,10 @@ export const UpdateTestOrderSchema = z.object({
   processing: z.number().min(0).max(100).optional(),
   due_date: z.string().datetime().optional().nullable(),
   isDeleted: z.boolean().optional(),
-  notes: z.string().optional()
+  notes: z.string().optional(),
+
+  instrument_id: z.string().optional().nullable(),
+  reagents: z.array(z.string()).optional().nullable(),
 });
 
 export default mongoose.model<ITestOrder>("TestOrder", TestOrderSchema,"testOrders" );

@@ -11,21 +11,33 @@ export interface TestOrderSample {
   barcode: string;
   patient_id: string;
   patient_name: string;
-  testType: string;
-  status: 'Pending' | 'processing' | 'Completed' ;
+  test_type: string;
+  status: string;
   progress?: number;
   startTime?: string;
   processing?:number;
 }
-
+export interface Instrument {
+  instrument_code: string;
+  instrument_name: string;
+  instrument_type: string;
+  manufacturer: string;
+  status: string;
+}
+export interface Reagent {
+  reagent_id: string;
+  reagent_name: string;
+  reagent_type: string;
+  status: string;
+  quantity_used: number;
+}
 export interface TestOrder {
-  id: string;
+  _id: string;
   barcode?: string;
   patient_id: string;
-  testType: string;
+  test_type: string;
   patient_name: string
-  status: 'Pending' | 'Processing' | 'Completed'  ;
-  progress?: number; 
+  status: string;
   created_at?:string;
   created_by?:string;
   due_date?: string; 
@@ -36,7 +48,8 @@ export interface TestOrder {
   deleted_by?:string;
   notes?: string;
   processing?:number;
-  assignedInstrument?:string
+  instrument?:Instrument;
+  reagents?: Reagent[];
 }
 
 export interface TestResult {

@@ -8,17 +8,85 @@ router.get(
   "/",
   /*
   #swagger.tags = ['Reagents']
-  #swagger.summary = 'Get all reagents'
-  #swagger.description = 'Retrieve a list of all reagents in the system, including available, low stock, and expired ones.'
-  #swagger.responses[200] = {
-    description: 'List of reagents',
-    schema: {
-      success: true
-    }
+  #swagger.summary = 'Get all reagents (with pagination)'
+  #swagger.description = `
+    Retrieve a paginated list of reagents in the system.
+    You can specify query parameters to control pagination:
+    - \`page\`: Page number (default = 1)
+    - \`limit\`: Number of items per page (default = 10)
+  `
+
+  #swagger.parameters['page'] = {
+    in: 'query',
+    description: 'Page number for pagination (default = 1)',
+    required: false,
+    type: 'integer',
+    example: 2
+  }
+
+  #swagger.parameters['limit'] = {
+    in: 'query',
+    description: 'Number of items per page (default = 10)',
+    required: false,
+    type: 'integer',
+    example: 10
   }
   */
   reagent.getAllReagents
 );
+// ==================== Search Reagents ====================
+router.get(
+  "/search",
+  /*
+  #swagger.tags = ['Reagents']
+  #swagger.summary = 'Search reagents by keyword'
+  #swagger.description = `
+    Search reagents by name, barcode, or notes.
+    Supports pagination and sorting by expiration_date (soonest first) and created_at (newest first).
+    Query parameters:
+      - keyword: string to search for (required)
+      - page: page number (optional, default = 1)
+      - limit: number of items per page (optional, default = 10)
+  `
+  #swagger.parameters['keyword'] = {
+    in: 'query',
+    description: 'Keyword to search reagents by name, barcode, or notes',
+    required: true,
+    type: 'string',
+    example: 'khang'
+  }
+  #swagger.parameters['page'] = {
+    in: 'query',
+    description: 'Page number (default = 1)',
+    required: false,
+    type: 'integer',
+    example: 1
+  }
+  #swagger.parameters['limit'] = {
+    in: 'query',
+    description: 'Number of items per page (default = 10)',
+    required: false,
+    type: 'integer',
+    example: 5
+  }
+  #swagger.responses[200] = {
+    description: 'List of reagents matching the keyword',
+    schema: {
+      success: true,
+      data: [],
+      pagination: {
+        totalItems: 3,
+        totalPages: 1,
+        currentPage: 1
+      }
+    }
+  }
+  #swagger.responses[400] = { description: 'Keyword is required' }
+  #swagger.responses[500] = { description: 'Internal server error' }
+  */
+  reagent.searchReagents
+);
+
 
 router.get(
   "/:id",
@@ -62,7 +130,6 @@ router.post(
   "quantity_received": 5000,
   "quantity_current": 5000,
   "unit_of_measure": "ml",
-  "usage_per_run": 5,
   "expiration_date": "2026-10-01T00:00:00.000Z",
   "received_date": "2025-10-01T09:00:00.000Z",
   "status": "Available",
@@ -105,7 +172,6 @@ router.put(
       "reagent_name": "Updated Diluent Solution",
       "quantity_received": 5000,
       "quantity_current": 4500,
-      "usage_per_run": 5,
       "unit_of_measure": "ml",
       "expiration_date": "2026-10-01T00:00:00.000Z",
       "received_date": "2025-10-01T09:00:00.000Z",
@@ -162,6 +228,8 @@ router.delete(
   */
   reagent.deleteReagent
 );
+
+
 
 
 

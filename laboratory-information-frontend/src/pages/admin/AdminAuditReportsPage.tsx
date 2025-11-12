@@ -1,71 +1,57 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/common/card';
-import { FileText, Download, Filter, Calendar, Eye, AlertTriangle, CheckCircle, XCircle, Clock, User, Shield, Database } from 'lucide-react';
+import { FileText, Download, Filter, Eye, Trash2, Shield, Database } from 'lucide-react';
 import Button from '../../components/common/button';
 import { Input } from '../../components/common/input';
-import { mockAuditLogs } from './data/mockAuditLogs';
-import type { AuditLog } from './data/mockAuditLogs';
+import { patientAuditLogService, type PatientAuditLog } from '../../service/patientAuditLogService';
+import { DeleteConfirmDialog } from './components/DeleteConfirmDialog';
+import { PatientAuditLogModal } from './components/PatientAuditLogModal';
+import { toast } from 'sonner';
 
 export function AdminAuditReportsPage() {
-  const [auditLogs] = useState<AuditLog[]>(mockAuditLogs);
+  const [auditLogs, setAuditLogs] = useState<PatientAuditLog[]>([]);
+  const [page, setPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState<string>('all');
-  const [selectedSeverity, setSelectedSeverity] = useState<string>('all');
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name?: string } | null>(null);
+  const [viewLogId, setViewLogId] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      setLoading(true);
+      try {
+        const res = await patientAuditLogService.getAuditLogs({ page, limit: 10 });
+        if (!mounted) return;
+        setAuditLogs(res.logs || []);
+        if (res.totalPages) setTotalPages(Number(res.totalPages));
+      } catch (e) {
+        console.error('Failed to load audit logs', e);
+        if (mounted) setError('Không thể tải nhật ký kiểm toán');
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+    load();
+    return () => { mounted = false; };
+  }, [page]);
 
   const filteredLogs = auditLogs.filter(log => {
-    const matchesSearch = log.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         log.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         log.resource.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         log.details.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = selectedStatus === 'all' || log.status === selectedStatus;
-    const matchesSeverity = selectedSeverity === 'all' || log.severity === selectedSeverity;
-    return matchesSearch && matchesStatus && matchesSeverity;
+    const performedBy = String(log.performed_by ?? '').toLowerCase();
+    const action = String(log.action ?? '').toLowerCase();
+    const message = String(log.event_message ?? '').toLowerCase();
+    const term = searchTerm.toLowerCase();
+    return performedBy.includes(term) || action.includes(term) || message.includes(term);
   });
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'success': return 'bg-green-100 text-green-800';
-      case 'failed': return 'bg-red-100 text-red-800';
-      case 'warning': return 'bg-yellow-100 text-yellow-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'success': return 'Thành công';
-      case 'failed': return 'Thất bại';
-      case 'warning': return 'Cảnh báo';
-      default: return status;
-    }
-  };
-
-  const getSeverityColor = (severity: string) => {
-    switch (severity) {
-      case 'critical': return 'bg-red-100 text-red-800';
-      case 'high': return 'bg-orange-100 text-orange-800';
-      case 'medium': return 'bg-yellow-100 text-yellow-800';
-      case 'low': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getSeverityLabel = (severity: string) => {
-    switch (severity) {
-      case 'critical': return 'Nghiêm trọng';
-      case 'high': return 'Cao';
-      case 'medium': return 'Trung bình';
-      case 'low': return 'Thấp';
-      default: return severity;
-    }
-  };
-
   const getActionIcon = (action: string) => {
-    switch (action.toLowerCase()) {
+    switch (String(action).toLowerCase()) {
       case 'login': return <Shield className="h-4 w-4" />;
       case 'create': return <Database className="h-4 w-4" />;
       case 'update': return <FileText className="h-4 w-4" />;
-      case 'delete': return <XCircle className="h-4 w-4" />;
+      case 'delete': return <Trash2 className="h-4 w-4" />;
       case 'view': return <Eye className="h-4 w-4" />;
       case 'export': return <Download className="h-4 w-4" />;
       default: return <FileText className="h-4 w-4" />;
@@ -94,6 +80,12 @@ export function AdminAuditReportsPage() {
           </Button>
         </div>
       </div>
+      {loading && (
+        <div className="text-sm text-gray-500">Đang tải dữ liệu...</div>
+      )}
+      {error && (
+        <div className="text-sm text-red-600">{error}</div>
+      )}
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -106,54 +98,6 @@ export function AdminAuditReportsPage() {
               </div>
               <div className="p-3 bg-blue-100 rounded-lg">
                 <FileText className="h-6 w-6 text-blue-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Thành công</p>
-                <p className="text-2xl font-bold text-green-600">
-                  {auditLogs.filter(l => l.status === 'success').length}
-                </p>
-              </div>
-              <div className="p-3 bg-green-100 rounded-lg">
-                <CheckCircle className="h-6 w-6 text-green-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Thất bại</p>
-                <p className="text-2xl font-bold text-red-600">
-                  {auditLogs.filter(l => l.status === 'failed').length}
-                </p>
-              </div>
-              <div className="p-3 bg-red-100 rounded-lg">
-                <XCircle className="h-6 w-6 text-red-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Cảnh báo</p>
-                <p className="text-2xl font-bold text-yellow-600">
-                  {auditLogs.filter(l => l.status === 'warning').length}
-                </p>
-              </div>
-              <div className="p-3 bg-yellow-100 rounded-lg">
-                <AlertTriangle className="h-6 w-6 text-yellow-600" />
               </div>
             </div>
           </CardContent>
@@ -175,31 +119,7 @@ export function AdminAuditReportsPage() {
                 />
               </div>
             </div>
-            <div className="lg:w-48">
-              <select
-                value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="all">Tất cả trạng thái</option>
-                <option value="success">Thành công</option>
-                <option value="failed">Thất bại</option>
-                <option value="warning">Cảnh báo</option>
-              </select>
-            </div>
-            <div className="lg:w-48">
-              <select
-                value={selectedSeverity}
-                onChange={(e) => setSelectedSeverity(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="all">Tất cả mức độ</option>
-                <option value="critical">Nghiêm trọng</option>
-                <option value="high">Cao</option>
-                <option value="medium">Trung bình</option>
-                <option value="low">Thấp</option>
-              </select>
-            </div>
+            {/* Optional future filters can go here */}
           </div>
         </CardContent>
       </Card>
@@ -212,72 +132,137 @@ export function AdminAuditReportsPage() {
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">Thời gian</th>
-                  <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">Người dùng</th>
-                  <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">Hành động</th>
-                  <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">Tài nguyên</th>
-                  <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">Trạng thái</th>
-                  <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">Mức độ</th>
-                  <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">IP Address</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredLogs.map((log) => (
-                  <tr key={log.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                    <td className="py-3 px-4">
-                      <div className="text-sm text-gray-900">{formatDate(log.timestamp)}</div>
-                    </td>
-                    <td className="py-3 px-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-sm font-semibold">
-                          {log.userName.charAt(0)}
-                        </div>
-                        <div>
-                          <div className="font-medium text-gray-900">{log.userName}</div>
-                          <div className="text-sm text-gray-500">{log.userRole}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4">
-                      <div className="flex items-center gap-2">
-                        {getActionIcon(log.action)}
-                        <div>
-                          <div className="font-medium text-gray-900">{log.action}</div>
-                          <div className="text-sm text-gray-500">{log.details}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4">
-                      <div>
-                        <div className="font-medium text-gray-900">{log.resource}</div>
-                        {log.resourceId && (
-                          <div className="text-sm text-gray-500">ID: {log.resourceId}</div>
-                        )}
-                      </div>
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(log.status)}`}>
-                        {getStatusLabel(log.status)}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getSeverityColor(log.severity)}`}>
-                        {getSeverityLabel(log.severity)}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4">
-                      <div className="text-sm text-gray-600">{log.ipAddress}</div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+  <table className="w-full border-collapse table-fixed">
+    <thead>
+      <tr className="border-b border-gray-200">
+        <th className="w-[18%] text-left py-3 px-4 font-semibold text-sm text-gray-700">Thời gian</th>
+        <th className="w-[30%] text-left py-3 px-4 font-semibold text-sm text-gray-700">Người dùng</th>
+        <th className="w-[40%] text-left py-3 px-4 font-semibold text-sm text-gray-700">Hành động</th>
+        <th className="w-[12%] text-center py-3 px-4 font-semibold text-sm text-gray-700">
+  Thao tác
+</th>
+      </tr>
+    </thead>
+    <tbody>
+      {filteredLogs.map((log) => (
+        <tr key={log._id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+          {/* Thời gian */}
+          <td className="py-3 px-4 truncate max-w-[180px]" title={formatDate(log.performed_at)}>
+            <div className="text-sm text-gray-900">{formatDate(log.performed_at)}</div>
+          </td>
+
+          {/* Người dùng */}
+          <td className="py-3 px-4 truncate max-w-[260px]" title={log.performed_by}>
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-sm font-semibold">
+                {String(log.performed_by ?? 'U').charAt(0).toUpperCase()}
+              </div>
+              <div className="font-medium text-gray-900 truncate">{log.performed_by || 'Không rõ'}</div>
+            </div>
+          </td>
+
+          {/* Hành động */}
+          <td className="py-3 px-4 truncate max-w-[340px]" title={log.event_message}>
+            <div className="flex items-center gap-2">
+              {getActionIcon(String(log.action))}
+              <div>
+                <div className="font-medium text-gray-900 truncate">{String(log.action)}</div>
+                {log.event_message && (
+                  <div className="text-sm text-gray-500 truncate">{log.event_message}</div>
+                )}
+              </div>
+            </div>
+          </td>
+
+          {/* Thao tác */}
+          <td className="py-3 px-4 text-center">
+  <div className="flex items-center justify-center gap-2">
+    <Button
+      variant="ghost"
+      size="icon"
+      title="Xem chi tiết"
+      onClick={() => setViewLogId(log._id)}
+    >
+      <Eye className="w-4 h-4" />
+    </Button>
+    <Button
+      variant="ghost"
+      size="icon"
+      title="Xóa"
+      className="text-red-600 hover:text-red-700"
+      onClick={() => setDeleteTarget({ id: log._id, name: log.performed_by })}
+    >
+      <Trash2 className="w-4 h-4" />
+    </Button>
+  </div>
+</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+
         </CardContent>
       </Card>
+
+      {/* Pagination */}
+      <div className="flex justify-center items-center gap-2 mt-4">
+        <button
+          className="px-2 py-1 rounded border disabled:opacity-50"
+          onClick={() => setPage((p) => Math.max(1, p - 1))}
+          disabled={page === 1}
+          aria-label="Trang trước"
+        >
+          ‹
+        </button>
+        {Array.from({ length: totalPages }, (_, i) => (
+          <button
+            key={i + 1}
+            className={`px-3 py-1 rounded border ${page === i + 1 ? 'bg-blue-600 text-white' : 'bg-white text-blue-600'}`}
+            onClick={() => setPage(i + 1)}
+          >
+            {i + 1}
+          </button>
+        ))}
+        <button
+          className="px-2 py-1 rounded border disabled:opacity-50"
+          onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+          disabled={page === totalPages}
+          aria-label="Trang sau"
+        >
+          ›
+        </button>
+      </div>
+
+      {/* Delete confirm */}
+      <DeleteConfirmDialog
+        open={Boolean(deleteTarget)}
+        itemName={deleteTarget?.name}
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={async () => {
+          if (!deleteTarget) return;
+          try {
+            const ok = await patientAuditLogService.deleteAuditLog(deleteTarget.id);
+            if (ok) {
+              setAuditLogs((prev) => prev.filter((l) => l._id !== deleteTarget.id));
+              toast.success('Xóa nhật ký thành công'); 
+            } else {
+              toast.error('Xóa nhật ký thất bại'); 
+            }
+          } catch (err) {
+            console.error('Failed to delete audit log', err);
+            toast.error('Xóa nhật ký thất bại');
+          } finally {
+            setDeleteTarget(null);
+          }
+        }}
+      />
+
+      <PatientAuditLogModal
+        isOpen={Boolean(viewLogId)}
+        logId={viewLogId}
+        onClose={() => setViewLogId(null)}
+      />
     </div>
   );
 }

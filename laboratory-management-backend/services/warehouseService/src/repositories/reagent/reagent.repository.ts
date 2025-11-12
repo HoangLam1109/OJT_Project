@@ -2,8 +2,17 @@
 import Reagent, { IReagent } from "../../db/models/Reagent.model.js";
 
 export class ReagentRepository {
-  async findAll(): Promise<IReagent[]> {
-    return Reagent.find({ is_deleted: false }).sort({ updated_at: -1 });
+  // Lấy tất cả reagents có phân trang
+  async findAll(
+    query: any = { is_deleted: false },
+    skip = 0,
+    limit = 10,
+    sort: any = { expiration_date: 1, created_at: -1 }
+  ): Promise<IReagent[]> {
+    return await Reagent.find(query)
+      .skip(skip)
+      .limit(limit)
+      .sort(sort);
   }
 
   async findById(id: string): Promise<IReagent | null> {
@@ -27,34 +36,48 @@ export class ReagentRepository {
     ).exec();
   }
 
-async softDelete(_id: string, deletedBy: string): Promise<IReagent | null> {
-  return Reagent.findOneAndUpdate(
-    { _id }, // filter
-    {
-      is_deleted: true,
-      deleted_at: new Date(),
-      deleted_by: deletedBy,
-    },
-    { new: true } // trả về document sau khi update
-  ).exec();
-}
-
-
-  async findExpiringSoon(days: number): Promise<IReagent[]> {
-    const today = new Date();
-    const threshold = new Date(today);
-    threshold.setDate(today.getDate() + days);
-    return Reagent.find({
-      expiration_date: { $lte: threshold, $gte: today },
-      is_deleted: false,
-    });
+  async softDelete(_id: string, deletedBy: string): Promise<IReagent | null> {
+    return Reagent.findOneAndUpdate(
+      { _id }, // filter
+      {
+        is_deleted: true,
+        deleted_at: new Date(),
+        deleted_by: deletedBy,
+      },
+      { new: true } // trả về document sau khi update
+    ).exec();
+  }
+  async count(query: any = { is_deleted: false }): Promise<number> {
+    return await Reagent.countDocuments(query);
   }
 
-  async findExpired(): Promise<IReagent[]> {
-    const today = new Date();
-    return Reagent.find({
-      expiration_date: { $lt: today },
-      is_deleted: false,
-    });
+  async countSearch(keyword: string, query: any = { is_deleted: false }) {
+    const searchQuery = {
+      ...query,
+      $or: [
+        { name: { $regex: keyword, $options: "i" } },
+        { barcode: { $regex: keyword, $options: "i" } },
+        { notes: { $regex: keyword, $options: "i" } },
+      ],
+    };
+    return Reagent.countDocuments(searchQuery);
   }
+
+  async search(keyword: string, skip = 0, limit = 10, sort: any = { expiration_date: 1, created_at: -1 }) {
+    const query: any = { is_deleted: false };
+    if (keyword) {
+      query.$or = [
+        { reagent_name: { $regex: keyword, $options: "i" } },
+        { barcode: { $regex: keyword, $options: "i" } },
+        { notes: { $regex: keyword, $options: "i" } },
+      ];
+    }
+    const [data, totalItems] = await Promise.all([
+      Reagent.find(query).skip(skip).limit(limit).sort(sort),
+      Reagent.countDocuments(query),
+    ]);
+
+    return { data, totalItems };
+  }
+
 }
