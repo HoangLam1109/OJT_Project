@@ -167,7 +167,8 @@ const SelectReagentsPage: React.FC = () => {
 
       await testOrderService.createTestOrder(submitData);
       toast.success('Tạo lệnh thành công!');
-      navigate('/labuser', { state: { page: 'test-orders' } });
+      navigate('/labuser/test-orders');
+
     } catch (err: any) {
       const msg = err.response?.data?.message || 'Lỗi hệ thống';
       toast.error(msg);
