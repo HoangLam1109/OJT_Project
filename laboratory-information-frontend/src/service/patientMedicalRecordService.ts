@@ -79,13 +79,40 @@ const ENDPOINTS = {
 };
 
 async function tryGet<T>(path: string): Promise<T> {
+  // Helper: strip '/api' prefix for alt paths
+  const stripApi = (p: string) => (p.startsWith('/api/') ? p.replace('/api/', '/') : p);
+  const altPath = stripApi(path);
+
+  // Try authenticated to 5001
   try {
     const res = await pmrApiClient.get<T>(path);
-    // axios returns { data, status, ... }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (res as any).data as T;
   } catch {
-    return await apiService.get<T>(path);
+    // Try authenticated to 5001 with stripped '/api'
+    try {
+      const res2 = await pmrApiClient.get<T>(altPath);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return (res2 as any).data as T;
+  } catch {
+      // Try anonymous (no Authorization header) to 5001
+      try {
+        const anon = axios.create({ baseURL: PATIENT_SERVICE_URL, withCredentials: true });
+        const res3 = await anon.get<T>(path);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return (res3 as any).data as T;
+  } catch {
+        try {
+          const anon = axios.create({ baseURL: PATIENT_SERVICE_URL, withCredentials: true });
+          const res4 = await anon.get<T>(altPath);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          return (res4 as any).data as T;
+        } catch {
+          // Final fallback to main API service (likely 3000)
+          return await apiService.get<T>(path);
+        }
+      }
+    }
   }
 }
 
@@ -113,16 +140,21 @@ function isAltPMRList(v: unknown): v is AltPMRListResponse {
 }
 
 export const patientMedicalRecordService = {
-  async getAll(params?: { page?: number; limit?: number; search?: string; sort?: string; testType?: string; instrument?: string; fromDate?: string; toDate?: string; }): Promise<PMRListResponse> {
+  async getAll(params?: { page?: number; limit?: number; search?: string; sort?: string; testType?: string; instrument?: string; fromDate?: string; toDate?: string; patientId?: string; }): Promise<PMRListResponse> {
     const page = params?.page ?? 1;
     const limit = params?.limit ?? 10;
-    const q: Record<string, string> = { page: String(page), limit: String(limit) };
+  const q: Record<string, string> = { page: String(page), limit: String(limit) };
     if (params?.search) q.search = params.search;
     if (params?.sort) q.sort = params.sort;
     if (params?.testType) q.testType = params.testType;
     if (params?.instrument) q.instrument = params.instrument;
     if (params?.fromDate) q.fromDate = params.fromDate;
     if (params?.toDate) q.toDate = params.toDate;
+    if (params?.patientId) {
+      q.patientId = params.patientId;
+      // also send alternate param commonly used by backends
+      q.patient_id = params.patientId;
+    }
     const query = `?${new URLSearchParams(q).toString()}`;
 
     // Try a wide range of possible list endpoints
@@ -132,6 +164,9 @@ export const patientMedicalRecordService = {
       '/patient-medical-records',
       '/api/patient-medical-records/list',
       '/patient-medical-records/list',
+      // possible custom endpoints by patient
+      `/api/patient-medical-records/by-patient/${params?.patientId ?? ''}`,
+      `/patient-medical-records/by-patient/${params?.patientId ?? ''}`,
     ];
 
     for (const base of candidates) {

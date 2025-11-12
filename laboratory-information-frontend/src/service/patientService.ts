@@ -192,22 +192,41 @@ export const patientService = {
   // Get patient by ID
   async getPatientById(id: string): Promise<PatientOption | null> {
     try {
-      const endpoint = `${PATIENT_API_BASE_URL}/viewDetail/${id}?populateUser=true`;
-      
-      let responseData: BackendPatient;
-      try {
-        const response = await patientApiClient.get<BackendPatient>(endpoint);
-        responseData = response.data;
-      } catch {
-        console.warn('Patient service dedicated client failed, trying main API client');
-        responseData = await apiService.get<BackendPatient>(endpoint);
+      const endpoints = [
+        `${PATIENT_API_BASE_URL}/viewDetail/${id}?populateUser=true`,
+        `/patients/viewDetail/${id}`,
+      ];
+
+      // Try multiple endpoints and clients
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let raw: any | null = null;
+      for (const ep of endpoints) {
+        try {
+          const res = await patientApiClient.get(ep);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          raw = (res as any).data ?? res;
+          break;
+        } catch {
+          try {
+            raw = await apiService.get(ep);
+            break;
+          } catch {
+            // try next
+          }
+        }
       }
 
-      if (!responseData || responseData.is_deleted) {
+      if (!raw) return null;
+
+      // Normalize possible shapes: { patient: {...} } | direct object | { data: {...} }
+      const obj = raw as Record<string, unknown>;
+      const backendPatient = (obj.patient || obj.data || obj) as BackendPatient;
+
+      if (!backendPatient || (backendPatient as unknown as { is_deleted?: boolean }).is_deleted) {
         return null;
       }
 
-      return transformBackendPatient(responseData);
+      return transformBackendPatient(backendPatient);
     } catch (error) {
       console.error('Error fetching patient:', error);
       throw new Error(apiUtils.getErrorMessage(error));
