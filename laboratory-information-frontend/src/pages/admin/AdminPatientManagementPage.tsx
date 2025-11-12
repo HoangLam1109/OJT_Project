@@ -1,29 +1,36 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/common/card';
-import { Users, Plus, Search, Eye, Edit, Trash2, Phone, Mail, MapPin, Heart, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Users, Search, Eye, Edit, Trash2, Phone, Mail, MapPin, Heart, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import Button from '../../components/common/button';
 import { Input } from '../../components/common/input';
 import type { Patient } from './data/mockPatients';
 import { fetchPatients as fetchPatientsFromApi, deletePatient as deletePatientApi, updatePatient as updatePatientApi } from '../../service/patientService';
+import { patientMedicalRecordService, type PatientMedicalRecord } from '../../service/patientMedicalRecordService';
 import { usePatientModal } from './hooks/usePatientModal';
 import { PatientModal } from './components/PatientModal';
 import { DeleteConfirmDialog } from './components/DeleteConfirmDialog';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/common/skeleton';
+import { useAuthContext } from '../../hooks/useAuthContext';
+import AddPatientMedicalRecord from '../LabUser/components/AddPatientMedicalRecord';
 
 
 export function AdminPatientManagementPage() {
+  const { user } = useAuthContext();
+  const isLabUser = Array.isArray(user?.role) ? user!.role.includes('LAB_USER') : user?.role === 'LAB_USER';
   const [patients, setPatients] = useState<Patient[]>([]);
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+  // const [error, setError] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name?: string } | null>(null);
+  const [mrCreateOpen, setMrCreateOpen] = useState(false);
 
-
-  const { modalState, openCreateModal, openViewModal, openEditModal, closeModal } = usePatientModal();
+  const { modalState, openEditModal, closeModal } = usePatientModal();
+  const navigate = useNavigate();
 
   // render pagination controls
   const renderPagination = () => (
@@ -83,7 +90,7 @@ export function AdminPatientManagementPage() {
   };
 
   // Return color classes for blood type badge (kept simple)
-  const getBloodTypeColor = (bloodType?: string) => {
+  const getBloodTypeColor = () => {
     // You can adjust colors per bloodType if needed
     return 'bg-blue-100 text-blue-800';
   };
@@ -95,6 +102,7 @@ export function AdminPatientManagementPage() {
       try {
         const backend = await fetchPatientsFromApi(page, 10);
         const backendArr = backend.patients ?? [];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const mapped: Patient[] = backendArr.map((b: any) => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const bb: any = b;
@@ -143,10 +151,35 @@ export function AdminPatientManagementPage() {
           } as Patient;
         });
         if (mounted) setPatients(mapped);
+        // Enrich bloodType from latest medical record per patient
+        try {
+          const bloodTypeUpdates: Record<string, string> = {};
+          await Promise.all(mapped.map(async (p) => {
+            if (!p.id) return;
+            try {
+              const res = await patientMedicalRecordService.getAll({ page: 1, limit: 20, patientId: p.id });
+              const records: PatientMedicalRecord[] = (res.records || []).filter(r => r.patient_id === p.id);
+              if (records.length) {
+                // Sort by updated_at then created_at desc
+                records.sort((a,b) => new Date(b.updated_at || b.created_at || 0).getTime() - new Date(a.updated_at || a.created_at || 0).getTime());
+                const latest = records[0];
+                if (latest.blood_type) bloodTypeUpdates[p.id] = latest.blood_type;
+              }
+            } catch {/* ignore per patient */}
+          }));
+          if (mounted && Object.keys(bloodTypeUpdates).length) {
+            const allowedBT = ['O+','A+','A-','B+','B-','AB+','AB-','O-'];
+            setPatients(prev => prev.map(pt => {
+              const newBT = bloodTypeUpdates[pt.id];
+              if (!newBT) return pt;
+              return { ...pt, bloodType: (allowedBT.includes(newBT) ? newBT : pt.bloodType) as Patient['bloodType'] };
+            }));
+          }
+        } catch {/* ignore global enrich */}
         if (backend.totalPages) setTotalPages(Number(backend.totalPages));
       } catch (err) {
         console.error('Error loading patients:', err);
-        if (mounted) setError('Không thể tải danh sách bệnh nhân');
+        // if (mounted) setError('Không thể tải danh sách bệnh nhân');
       } finally {
         if (mounted) setLoading(false);
       }
@@ -169,16 +202,12 @@ export function AdminPatientManagementPage() {
           <h1 className="text-3xl font-bold text-gray-900">Quản lý bệnh nhân</h1>
           <p className="text-gray-600 mt-1">Quản lý thông tin bệnh nhân và hồ sơ y tế</p>
         </div>
-        {/* <div className="flex space-x-3">
-          <Button onClick={openCreateModal} className="bg-blue-600 hover:bg-blue-700 text-white">
+        <div className="flex space-x-3">
+          <Button onClick={() => setMrCreateOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white">
             <Plus className="h-4 w-4 mr-2" />
-            Thêm bệnh nhân
+            Tạo hồ sơ y tế
           </Button>
-          <Button variant="outline">
-            <Search className="h-4 w-4 mr-2" />
-            Xuất báo cáo
-          </Button>
-        </div> */}
+        </div>
       </div>
     )}
 
@@ -340,9 +369,8 @@ export function AdminPatientManagementPage() {
                   <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">Bệnh nhân</th>
                   <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">Thông tin liên hệ</th>
                   <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">Nhóm máu</th>
-                  <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">Trạng thái</th>
-                  <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">Lần khám cuối</th>
-                  <th className="text-right py-3 px-4 font-semibold text-sm text-gray-700">Hành động</th>
+                  <th className="text-left py-3 px-6 font-semibold text-sm text-gray-700">Trạng thái</th>
+                  <th className="text-right py-3 px-10 font-semibold text-sm text-gray-700">Hành động</th>
                 </tr>
               </thead>
               <tbody>
@@ -379,7 +407,7 @@ export function AdminPatientManagementPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="py-3 px-4">
+                    <td className="py-3 px-8">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getBloodTypeColor()}`}>
                         {patient.bloodType}
                       </span>
@@ -389,16 +417,13 @@ export function AdminPatientManagementPage() {
                         {getStatusLabel(patient.status)}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-sm text-gray-600">
-                      {patient.lastVisit ? new Date(patient.lastVisit).toLocaleDateString('vi-VN') : 'Chưa có'}
-                    </td>
                     <td className="py-3 px-4">
                       <div className="flex items-center justify-end gap-1">
                         <Button
                           variant="ghost"
                           size="icon"
                           title="Xem chi tiết"
-                          onClick={() => openViewModal(patient.id)}
+                          onClick={() => navigate(`${isLabUser ? '/labuser/patients' : '/admin/patient-management'}/${patient.id}`)}
                         >
                           <Eye className="w-4 h-4" />
                         </Button>
@@ -513,6 +538,17 @@ export function AdminPatientManagementPage() {
             console.error('Failed to delete patient', deleteTarget.id);
           }
           setDeleteTarget(null);
+        }}
+      />
+      <AddPatientMedicalRecord
+        open={mrCreateOpen}
+        onOpenChange={setMrCreateOpen}
+        onCreated={(created) => {
+          if (!created) return;
+          const allowedBT = ['O+','A+','A-','B+','B-','AB+','AB-','O-'];
+          setPatients(prev => prev.map(p => p.id === created.patient_id
+            ? { ...p, bloodType: (allowedBT.includes(created.blood_type || '') ? created.blood_type as Patient['bloodType'] : p.bloodType) }
+            : p));
         }}
       />
       </>
