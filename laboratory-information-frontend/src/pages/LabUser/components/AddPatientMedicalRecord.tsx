@@ -6,18 +6,19 @@ import { Input } from '../../../components/common/input';
 import { Textarea } from '../../../components/common/textarea';
 import Button from '../../../components/common/button';
 import { patientService, type PatientOption } from '../../../service/patientService';
-import { patientMedicalRecordService } from '../../../service/patientMedicalRecordService';
+import { patientMedicalRecordService, type PatientMedicalRecord } from '../../../service/patientMedicalRecordService';
 import { toast } from 'sonner';
 
 interface AddPatientMedicalRecordProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    onCreated?: () => void;
+    onCreated?: (record?: PatientMedicalRecord | null) => void;
+    patientId?: string;
 }
 
 const BLOOD_TYPES = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
-export default function AddPatientMedicalRecord({ open, onOpenChange, onCreated }: AddPatientMedicalRecordProps) {
+export default function AddPatientMedicalRecord({ open, onOpenChange, onCreated, patientId }: AddPatientMedicalRecordProps) {
     const [patients, setPatients] = useState<PatientOption[]>([]);
     const [creating, setCreating] = useState(false);
     const [form, setForm] = useState({
@@ -45,8 +46,12 @@ export default function AddPatientMedicalRecord({ open, onOpenChange, onCreated 
             }
         };
         load();
+        // Preselect patient when provided
+        if (open && patientId) {
+            setForm((prev) => ({ ...prev, patient_id: patientId! }));
+        }
         return () => { mounted = false; };
-    }, [open]);
+    }, [open, patientId]);
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -59,7 +64,7 @@ export default function AddPatientMedicalRecord({ open, onOpenChange, onCreated 
                         <div className="space-y-2">
                             <Label>Bệnh nhân</Label>
                             <Select value={form.patient_id} onValueChange={(v) => setForm(prev => ({ ...prev, patient_id: v }))}>
-                                <SelectTrigger>
+                                <SelectTrigger disabled={Boolean(patientId)}>
                                     <SelectValue placeholder="Chọn bệnh nhân" />
                                 </SelectTrigger>
                                 <SelectContent className="bg-white shadow-lg z-[60] max-h-72 overflow-auto">
@@ -133,7 +138,7 @@ export default function AddPatientMedicalRecord({ open, onOpenChange, onCreated 
                             if (created) {
                                 toast.success('Tạo hồ sơ thành công');
                                 onOpenChange(false);
-                                onCreated?.();
+                                onCreated?.(created);
                                 setForm({
                                     patient_id: '', blood_type: '', allergies: '', chronic_conditions: '', current_medications: '',
                                     medical_history: '', clinical_notes: '', recent_test_summary: '', recent_instruments_used: '', recent_reagents_info: ''

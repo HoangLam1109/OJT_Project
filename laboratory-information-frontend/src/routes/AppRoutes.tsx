@@ -36,9 +36,9 @@ import ServiceInstrumentPage from "../pages/service/ServiceInstrumentPage";
 import { GoogleCallbackPage } from "../pages/login/GoogleCallbackPage";
 import { TestOrderActionsProvider } from "../context/TestOrderActionsContext";
 import SelectInstrumentsPage from "@/pages/LabUser/SelectInstrumentsPage";
-import PatientMedicalRecordsPage from "@/pages/LabUser/PatientMedicalRecordsPage";
-import PatientMedicalRecordDetailPage from "@/pages/LabUser/PatientMedicalRecordDetailPage";
-import MedicalRecordAccessLogsPage from "@/pages/LabUser/MedicalRecordAccessLogsPage";
+// removed MedicalRecordAccessLogsPage for LabUser
+import PatientDetailPage from "@/pages/LabUser/PatientDetailPage";
+import EventLogDetailPage from "@/pages/admin/EventLogDetailPage";
 import type { User } from "../types/User";
 
 // ============================================================================
@@ -70,10 +70,13 @@ interface PageConfig {
   /** Path của page (ví dụ: "dashboard", "test-orders") */
   path: string;
   /** Component của page */
+  // Dùng generic component với props tự do (React.FC<any>) vì nhiều page không có props cụ thể
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   component: ComponentType<any>;
   /** Wrapper component tùy chọn (ví dụ: TestOrderActionsProvider) */
   wrapper?: ComponentType<{ children: ReactNode }>;
   /** Props tùy chọn để truyền vào component */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   componentProps?: Record<string, any>;
 }
 
@@ -176,7 +179,7 @@ const roleRoutes: Record<string, RoleRouteConfig> = {
       { path: "test-results", component: TestResultsPage },
       { path: "instruments", component: ServiceInstrumentPage },
       { path: "reagents", component: ReagentManagementPage },
-      { path: "mr-access-logs", component: MedicalRecordAccessLogsPage },
+  // removed: medical record access logs feature
       {
         path: "reports",
         component: () => (
@@ -353,7 +356,8 @@ export function AppRoutes() {
           (location.pathname.includes("/create-test-order") ||
             location.pathname.includes("/select-instruments") ||
             location.pathname.includes("/select-reagents") ||
-            location.pathname.includes("/patient-medical-records"))
+            location.pathname.includes("/patient-medical-records") ||
+            location.pathname.includes("/patients/"))
         ) {
           return;
         }
@@ -368,7 +372,7 @@ export function AppRoutes() {
         }
       }
     });
-  }, [location.pathname]);
+  }, [location.pathname, pageStates]);
 
   // Auto-redirect base paths đến default pages
   useEffect(() => {
@@ -467,39 +471,64 @@ export function AppRoutes() {
           </ProtectedRoute>
         }
       />
+   
+
+      {/* LabUser Patient Detail Route */}
       <Route
-        path="/labuser/patient-medical-records"
+        path="/labuser/patients/:id"
         element={
           <ProtectedRoute allowedRoles={["LAB_USER"]}>
             <LabUserRouteWrapper
               currentUser={user!}
               onLogout={onLogout}
-              currentPage="patient-medical-records"
+              currentPage="patients"
               onNavigate={(page) => {
                 setCurrentPage("LAB_USER", page);
                 navigate(`/labuser`);
               }}
             >
-              <PatientMedicalRecordsPage />
+              <PatientDetailPage />
             </LabUserRouteWrapper>
           </ProtectedRoute>
         }
       />
+
+      {/* Admin Patient Detail Route */}
       <Route
-        path="/labuser/patient-medical-records/:id"
+        path="/admin/patient-management/:id"
         element={
-          <ProtectedRoute allowedRoles={["LAB_USER"]}>
-            <LabUserRouteWrapper
+          <ProtectedRoute allowedRoles={["ADMIN"]}>
+            <AdminLayout
               currentUser={user!}
               onLogout={onLogout}
-              currentPage="patient-medical-records"
+              currentPage="patient-management"
               onNavigate={(page) => {
-                setCurrentPage("LAB_USER", page);
-                navigate(`/labuser`);
+                setCurrentPage("ADMIN", page);
+                navigate(`/admin`);
               }}
             >
-              <PatientMedicalRecordDetailPage />
-            </LabUserRouteWrapper>
+              {<PatientDetailPage />}
+            </AdminLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Admin Event Log Detail Route */}
+      <Route
+        path="/admin/audit-reports/:id"
+        element={
+          <ProtectedRoute allowedRoles={["ADMIN"]}>
+            <AdminLayout
+              currentUser={user!}
+              onLogout={onLogout}
+              currentPage="audit-reports"
+              onNavigate={(page) => {
+                setCurrentPage("ADMIN", page);
+                navigate(`/admin`);
+              }}
+            >
+              {<EventLogDetailPage />}
+            </AdminLayout>
           </ProtectedRoute>
         }
       />

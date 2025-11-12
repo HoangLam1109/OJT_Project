@@ -9,7 +9,7 @@ import { PatientAPI, type Patient } from './data/mockPatientsData';
 import PatientTable from './components/PatientTable';
 import PatientToolbar from './components/PatientToolbar';
 import PatientFormModal from './components/modals/PatientFormModal';
-import PatientDetailModal from './components/modals/PatientDetailModal';
+// Modal chi tiết bệnh nhân không còn dùng nữa; điều hướng sang trang mới
 import { filterPatients } from './utils/patientUtils';
 
 const PatientManagementPage: React.FC = () => {
@@ -29,7 +29,7 @@ const PatientManagementPage: React.FC = () => {
   const [genderFilter, setGenderFilter] = useState('All');
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [formModalOpen, setFormModalOpen] = useState(false);
-  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  // detail modal không dùng nữa
   const [isEdit, setIsEdit] = useState(false);
 
   useEffect(() => {
@@ -67,8 +67,7 @@ const PatientManagementPage: React.FC = () => {
   };
 
   const handleView = (patient: Patient) => {
-    setSelectedPatient(patient);
-    setDetailModalOpen(true);
+    navigate(`/labuser/patients/${patient.id}`);
     console.log(`[AUDIT] E_00015 | Patient viewed by ${user?.name || 'Lab User'}`);
   };
 
@@ -164,11 +163,7 @@ const PatientManagementPage: React.FC = () => {
         isEdit={isEdit}
       />
 
-      <PatientDetailModal
-        patient={selectedPatient}
-        isOpen={detailModalOpen}
-        onClose={() => setDetailModalOpen(false)}
-      />
+      {/* Modal xem chi tiết bệnh nhân đã bị thay bằng trang điều hướng */}
     </div>
   );
 };

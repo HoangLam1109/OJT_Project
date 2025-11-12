@@ -34,11 +34,6 @@ export const LabUserLayout: React.FC<LabUserLayoutProps> = ({
         icon: (props) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
       },
       {
-        id: 'patient-medical-records',
-        label: 'Quản lý Hồ sơ y tế BN',
-        icon: (props) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 7h-4l-2-2h-4L8 7H4v13h16V7z" /><path d="M12 11v6" /><path d="M9 14h6" /></svg>
-      },
-      {
         id: 'test-orders',
         label: 'Lệnh Xét nghiệm',
         icon: (props) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14,2 14,8 20,8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10,9 9,9 8,9" /></svg>,
@@ -64,11 +59,7 @@ export const LabUserLayout: React.FC<LabUserLayoutProps> = ({
         icon: (props) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 20V10" /><path d="M12 20V4" /><path d="M6 20v-6" /></svg>
       },
       {
-        id: 'mr-access-logs',
-        label: 'Nhật ký truy cập HSYT',
-        icon: (props) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 4h18v14H3z" /><path d="M7 20h10" /></svg>
-      },
-      {
+      // removed medical record access logs item
         id: 'profile',
         label: 'Hồ sơ cá nhân',
         icon: (props) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
