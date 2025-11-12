@@ -3,6 +3,7 @@ import { PaginationOptions } from "../types/pagination.type.js";
 // User repository interface
 export interface IUserRepository {
   findById(id: string, fields?: string): Promise<any>;
+  getUserBasicInfo(id: string): Promise<{ email: string; fullName: string } | null>;
   findByEmail(email: string): Promise<any>;
   findByPhoneNumber(identityNumber: string): Promise<any>;
   create(userData: any): Promise<any>;
@@ -26,6 +27,12 @@ export class UserRepository implements IUserRepository {
       fields ||
         "_id email fullName phoneNumber identityNumber gender age dateOfBirth phoneNumber address isActive isDeleted provider providerId"
     );
+  }
+
+  async getUserBasicInfo(
+    id: string
+  ): Promise<{ email: string; fullName: string } | null> {
+    return this.userModel.findById(id, "email fullName");
   }
 
   async findByEmail(email: string): Promise<any> {
@@ -60,7 +67,8 @@ export class UserRepository implements IUserRepository {
   async findWithPagination(
     options: PaginationOptions
   ): Promise<{ data: any[]; hasNextPage: boolean; totalCount?: number }> {
-    const { limit, sortBy, sortOrder, cursor, filters, search, searchField } = options;
+    const { limit, sortBy, sortOrder, cursor, filters, search, searchField } =
+      options;
     const query: any = { ...filters };
     const sortDirection = sortOrder === "asc" ? 1 : -1;
     const sortObj = { [sortBy || "_id"]: sortDirection };
@@ -105,7 +113,7 @@ export class UserRepository implements IUserRepository {
     const data = await this.userModel
       .find(query)
       .sort(sortObj)
-      .collation({ locale: 'en', strength: 2 })
+      .collation({ locale: "en", strength: 2 })
       .limit(limit + 1);
     const hasNextPage = data.length > limit;
     return {

@@ -8,22 +8,25 @@ import { NoOpLoggerAdapter } from "../adapters/logger.noop.adapter.js";
  */
 export class LoggerFactory {
   static createLogger(): ILoggerPort {
-    const loggerType = process.env.LOGGER_TYPE || "noop"; // Default to noop for safety
-    
+    const loggerType = process.env.LOGGER_TYPE || "http"; // Default to noop for safety
+
     switch (loggerType.toLowerCase()) {
       case "http":
         return LoggerFactory.createHttpLogger();
-      
+
       case "noop":
       default:
-        console.log("[LoggerFactory] Using NoOp logger - events logged locally only");
+        console.log(
+          "[LoggerFactory] Using NoOp logger - events logged locally only"
+        );
         return new NoOpLoggerAdapter("IAM Service");
     }
   }
 
   private static createHttpLogger(): ILoggerPort {
-    const baseUrl = process.env.MONITORING_SERVICE_URL;
-    
+    const baseUrl =
+      process.env.MONITORING_SERVICE_URL || "http://localhost:5004/api";
+
     if (!baseUrl) {
       console.warn(
         "[LoggerFactory] MONITORING_SERVICE_URL not configured - falling back to NoOp logger"
@@ -32,7 +35,7 @@ export class LoggerFactory {
     }
 
     console.log(`[LoggerFactory] Using HTTP logger - sending to ${baseUrl}`);
-    
+
     const config: {
       baseUrl: string;
       apiKey?: string;
@@ -40,9 +43,7 @@ export class LoggerFactory {
       maxRetries?: number;
     } = { baseUrl };
 
-    if (process.env.MONITORING_API_KEY) {
-      config.apiKey = process.env.MONITORING_API_KEY;
-    }
+    config.apiKey = process.env.MONITORING_API_KEY || "internal-service-secret-key-2025";
     if (process.env.MONITORING_TIMEOUT) {
       config.timeout = parseInt(process.env.MONITORING_TIMEOUT, 10);
     }

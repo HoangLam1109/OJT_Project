@@ -1652,7 +1652,7 @@
               "roleCode",
               "roleName"
             ],
-            "default": "_id"
+            "default": "updatedAt"
           },
           {
             "name": "search",
@@ -1684,7 +1684,7 @@
               "asc",
               "desc"
             ],
-            "default": "asc"
+            "default": "desc"
           }
         ],
         "responses": {
@@ -2331,7 +2331,7 @@
               "performedAt",
               "serviceName"
             ],
-            "default": "_id"
+            "default": "performedAt"
           },
           {
             "name": "search",
@@ -2364,7 +2364,7 @@
               "asc",
               "desc"
             ],
-            "default": "asc"
+            "default": "desc"
           }
         ],
         "responses": {

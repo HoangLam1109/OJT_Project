@@ -82,7 +82,7 @@ export class HttpLoggerAdapter implements ILoggerPort {
       };
 
       if (this.apiKey) {
-        headers["X-API-Key"] = this.apiKey;
+        headers["X-Internal-API-Key"] = this.apiKey;
       }
 
       const response = await fetch(`${this.baseUrl}/event-logs`, {

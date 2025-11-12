@@ -11,9 +11,5 @@ export interface ILoggerPort {
    * Should never throw - failures are logged but don't block business logic
    */
   emitEvent(event: MonitoringEvent): Promise<void>;
-
-  /**
-   * Check if the logger is healthy/available
-   */
   isHealthy(): boolean;
 }

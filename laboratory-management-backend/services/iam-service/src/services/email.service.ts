@@ -1,10 +1,9 @@
-import { IAuditLog } from "../db/models/AuditLog.model.js";
-import { auditLogRepository } from "../repositories/index.js";
 import { AppError } from "../utils/error.util.js";
 import { userRepository } from "../repositories/index.js";
 import { transporter } from "../utils/email.util.js";
 import { UserService } from "./user.service.js";
 import jwt, { SignOptions } from "jsonwebtoken";
+import { logEvent } from "../utils/logging.util.js";
 
 const userSerivce = new UserService();
 
@@ -49,13 +48,6 @@ export class EmailService {
           </div>
         `,
       });
-
-      await this._logEvent(
-        "E_00001",
-        "CREATE",
-        "Password reset link sent to your email account",
-        user._id
-      );
     } catch (error) {
       console.log(error);
       throw error;
@@ -70,41 +62,29 @@ export class EmailService {
         userId: string;
       };
 
-      const user = await userRepository.findById(decoded.userId);
-      if (!user) throw new AppError(400, "User ID doesn't exist");
+      const userFound = await userRepository.findById(decoded.userId);
+      if (!userFound) throw new AppError(400, "User ID doesn't exist");
 
       await userSerivce.updateUser(
-        user._id,
+        userFound._id,
         {
           password: password,
         },
       );
 
-      await this._logEvent(
-        "E_00002",
-        "UPDATE",
-        "Password has been reset through reset link",
-        user._id
-      );
+      await logEvent({
+        eventCode: "E_00024",
+        action: "UPDATE",
+        eventMessage: `User ${userFound?.fullName} changed password through email successfully`,
+        performedBy: userFound._id,
+        serviceName: "IAM_SERVICE",
+        entityId: userFound._id,
+        newValues: { passwordChanged: true } as Record<string, unknown>,
+      });
     } catch (error) {
       console.log(error);
       throw error;
     }
   }
 
-  private async _logEvent(
-    eventCode: string,
-    action: string,
-    eventMessage: string,
-    perfomedBy: string
-  ): Promise<void> {
-    await auditLogRepository.create({
-      eventCode,
-      action,
-      eventMessage,
-      userId: perfomedBy,
-      performedAt: new Date(),
-      serviceName: "Password Reset Service",
-    });
-  }
 }

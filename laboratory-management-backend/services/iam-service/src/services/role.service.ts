@@ -1,5 +1,5 @@
 import { roleRepository } from "../repositories/index.js";
-import { auditLogRepository } from "../repositories/index.js";
+import { logEvent } from "../utils/logging.util.js";
 
 import type { IRole } from "../db/models/Role.model.js";
 import { PaginationResponse, PaginationOptions } from "../types/pagination.type.js";
@@ -54,12 +54,22 @@ export class RoleService {
 
     const newRole = await roleRepository.create(roleData);
 
-    await this._logEvent(
-      "E_00001",
-      "CREATE",
-      `Role ${newRole.roleCode} created successfully!`,
-      performedBy || "Unknown"
-    );
+    await logEvent({
+      eventCode: "E_00028",
+      action: "CREATE",
+      eventMessage: `Role ${newRole.roleCode} created successfully!`,
+      performedBy: performedBy || "Unknown",
+      serviceName: "IAM_SERVICE",
+      entityId: newRole._id,
+      newValues: {
+        roleCode: newRole.roleCode,
+        roleName: newRole.roleName,
+        description: newRole.description,
+        isSystemRole: newRole.isSystemRole,
+        isActive: newRole.isActive,
+        privileges: newRole.privileges,
+      },
+    });
     return newRole;
   }
 
@@ -96,14 +106,36 @@ export class RoleService {
       }
     }
 
+    const oldValues = {
+      roleCode: role.roleCode,
+      roleName: role.roleName,
+      description: role.description,
+      isSystemRole: role.isSystemRole,
+      isActive: role.isActive,
+      privileges: role.privileges,
+    } as Record<string, unknown>;
+
     const updatedRole = await roleRepository.updateById(roleId, roleData);
 
-    await this._logEvent(
-      "E_00002",
-      "UPDATE",
-      `Role ${updatedRole?.roleCode} updated successfully!`,
-      performedBy || "Unknown"
-    );
+    const newValues = {
+      roleCode: updatedRole?.roleCode,
+      roleName: updatedRole?.roleName,
+      description: updatedRole?.description,
+      isSystemRole: updatedRole?.isSystemRole,
+      isActive: updatedRole?.isActive,
+      privileges: updatedRole?.privileges,
+    } as Record<string, unknown>;
+
+    await logEvent({
+      eventCode: "E_00029",
+      action: "UPDATE",
+      eventMessage: `Role ${updatedRole?.roleCode} updated successfully!`,
+      performedBy: performedBy || "Unknown",
+      serviceName: "IAM_SERVICE",
+      entityId: roleId,
+      oldValues,
+      newValues,
+    });
 
     return updatedRole;
   }
@@ -123,13 +155,25 @@ export class RoleService {
       throw new Error('Cannot delete system roles');
     }
 
+    const oldValues = {
+      roleCode: role.roleCode,
+      roleName: role.roleName,
+      description: role.description,
+      isSystemRole: role.isSystemRole,
+      isActive: role.isActive,
+      privileges: role.privileges,
+    } as Record<string, unknown>;
+
     const deletedRole = await roleRepository.deleteById(roleId);
-    await this._logEvent(
-      "E_00003",
-      "DELETE",
-      `Role ${deletedRole?.roleCode} deleted successfully!`,
-      performedBy || "Unknown"
-    );
+    await logEvent({
+      eventCode: "E_00030",
+      action: "DELETE",
+      eventMessage: `Role ${deletedRole?.roleCode} deleted successfully!`,
+      performedBy: performedBy || "Unknown",
+      serviceName: "IAM_SERVICE",
+      entityId: roleId,
+      oldValues,
+    });
     return deletedRole;
   }
 
@@ -183,21 +227,5 @@ export class RoleService {
   ): Promise<PaginationResponse<IRole>> {
     const result = await roleRepository.findWithPagination(options);
     return PaginationUtils.formatResponse(result.data, result.hasNextPage, options, result.totalCount);
-  }
-
-  private async _logEvent(
-    eventCode: string,
-    action: string,
-    eventMessage: string,
-    perfomedBy: string
-  ): Promise<void> {
-    await auditLogRepository.create({
-      eventCode,
-      action,
-      eventMessage,
-      userId: perfomedBy,
-      performedAt: new Date(),
-      serviceName: "Role Service",
-    });
   }
 }
