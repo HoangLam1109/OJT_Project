@@ -1,6 +1,6 @@
 import express from "express";
 import { authenticateInternalApi } from "../middlewares/internalApi.middleware.js";
-import { getUser } from "../controllers/user.controller.js";
+import { getUser, searchUsersInternal } from "../controllers/user.controller.js";
 import userRoutes from "./v1/user.routes.js";
 import authRoutes from "./v1/auth.routes.js";
 import roleRoutes from "./v1/role.routes.js";
@@ -13,6 +13,7 @@ const router = express.Router();
 
 // ✅ Internal routes (không yêu cầu JWT)
 router.get("/internal/:id", authenticateInternalApi, getUser);
+router.get("/internal/users/search", authenticateInternalApi, searchUsersInternal);
 
 router.use("/", authRoutes);
 router.use("/reset-password", emailRoutes);

@@ -1,7 +1,6 @@
 import express from "express";
-import reagentRoutes from "./v1/reagent/reagent.routes.js"
+import reagentRoutes from "./v1/reagent/reagent.routes.js";
 import instrumentRoutes from "./v1/instrument/instrument.routes.js";
-import instrumentHistoryRoutes from "./v1/instrument/instrumentHistory.routes.js";
 
 const router = express.Router();
 
@@ -12,15 +11,6 @@ router.use(
   #swagger.description = 'Retrieve a list of all reagents in the system, including available, low stock, and expired ones.'
   */
   reagentRoutes
-);
-
-router.use(
-  "/warehouse/instruments/history",
-  /*
-  #swagger.tags = ['InstrumentHistory']
-  #swagger.description = 'Instrument history log endpoints'
-  */
-  instrumentHistoryRoutes
 );
 
 router.use(
