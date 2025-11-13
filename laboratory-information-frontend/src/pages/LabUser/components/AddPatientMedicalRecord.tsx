@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '../../../components/common/dialog';
 import { Label } from '../../../components/common/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/common/select';
 import { Input } from '../../../components/common/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/common/select';
 import { Textarea } from '../../../components/common/textarea';
 import Button from '../../../components/common/button';
 import { patientService, type PatientOption } from '../../../service/patientService';
@@ -19,7 +19,6 @@ interface AddPatientMedicalRecordProps {
 const BLOOD_TYPES = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
 export default function AddPatientMedicalRecord({ open, onOpenChange, onCreated, patientId }: AddPatientMedicalRecordProps) {
-    const [patients, setPatients] = useState<PatientOption[]>([]);
     const [creating, setCreating] = useState(false);
     const [form, setForm] = useState({
         patient_id: '',
@@ -33,25 +32,140 @@ export default function AddPatientMedicalRecord({ open, onOpenChange, onCreated,
         recent_instruments_used: '',
         recent_reagents_info: '',
     });
+    const [patientQuery, setPatientQuery] = useState('');
+    const [patientSuggestions, setPatientSuggestions] = useState<PatientOption[]>([]);
+    const [patientSearchLoading, setPatientSearchLoading] = useState(false);
+    const [showPatientSuggestions, setShowPatientSuggestions] = useState(false);
+    const [highlightedPatientIndex, setHighlightedPatientIndex] = useState(-1);
+    const [selectedPatient, setSelectedPatient] = useState<PatientOption | null>(null);
+    const patientSearchDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const patientSearchContainerRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
-        let mounted = true;
-        const load = async () => {
-            if (!open) return;
+        if (!open || !patientId) return;
+        let active = true;
+        setPatientSearchLoading(true);
+        patientService.getPatientById(patientId)
+            .then((patient) => {
+                if (!active) return;
+                if (patient) {
+                    setSelectedPatient(patient);
+                    setPatientQuery(patient.fullName ?? '');
+                    setForm((prev) => ({ ...prev, patient_id: patient.id }));
+                } else {
+                    setSelectedPatient(null);
+                    setPatientQuery('');
+                    setForm((prev) => ({ ...prev, patient_id: patientId }));
+                }
+            })
+            .catch(() => {
+                if (!active) return;
+                setSelectedPatient(null);
+                setPatientQuery('');
+            })
+            .finally(() => {
+                if (active) {
+                    setPatientSearchLoading(false);
+                }
+            });
+        return () => { active = false; };
+    }, [open, patientId]);
+
+    useEffect(() => {
+        if (!open || patientId) return;
+
+        if (patientSearchDebounce.current) {
+            clearTimeout(patientSearchDebounce.current);
+        }
+
+        if (!patientQuery.trim()) {
+            setPatientSuggestions([]);
+            setPatientSearchLoading(false);
+            setShowPatientSuggestions(false);
+            setHighlightedPatientIndex(-1);
+            return;
+        }
+
+        setShowPatientSuggestions(true);
+        setPatientSearchLoading(true);
+
+        let active = true;
+        patientSearchDebounce.current = window.setTimeout(async () => {
             try {
-                const list = await patientService.getAllPatients({ page: 1, limit: 100, populateUser: true, isActive: true });
-                if (mounted) setPatients(list);
+                const list = await patientService.getAllPatients({
+                    search: patientQuery.trim(),
+                    limit: 10,
+                    page: 1,
+                    isActive: true,
+                    populateUser: true,
+                });
+                if (!active) return;
+                setPatientSuggestions(list);
+                setHighlightedPatientIndex(list.length ? 0 : -1);
             } catch {
-                // ignore
+                if (!active) return;
+                setPatientSuggestions([]);
+                setHighlightedPatientIndex(-1);
+            } finally {
+                if (active) {
+                    setPatientSearchLoading(false);
+                }
+            }
+        }, 300);
+
+        return () => {
+            active = false;
+            if (patientSearchDebounce.current) {
+                clearTimeout(patientSearchDebounce.current);
+                patientSearchDebounce.current = null;
             }
         };
-        load();
-        // Preselect patient when provided
-        if (open && patientId) {
-            setForm((prev) => ({ ...prev, patient_id: patientId! }));
+    }, [open, patientId, patientQuery]);
+
+    useEffect(() => {
+        if (!showPatientSuggestions) return;
+
+        const handleClickOutside = (event: MouseEvent) => {
+            if (!patientSearchContainerRef.current?.contains(event.target as Node)) {
+                setShowPatientSuggestions(false);
+                setHighlightedPatientIndex(-1);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [showPatientSuggestions]);
+
+    const handleSelectPatient = (patient: PatientOption) => {
+        setSelectedPatient(patient);
+        setPatientQuery(patient.fullName ?? '');
+        setForm((prev) => ({ ...prev, patient_id: patient.id }));
+        setPatientSuggestions([]);
+        setShowPatientSuggestions(false);
+        setHighlightedPatientIndex(-1);
+    };
+
+    const handlePatientKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+        if (!showPatientSuggestions || !patientSuggestions.length) return;
+
+        if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            setHighlightedPatientIndex((prev) => (prev + 1) % patientSuggestions.length);
+        } else if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            setHighlightedPatientIndex((prev) => (prev - 1 + patientSuggestions.length) % patientSuggestions.length);
+        } else if (event.key === 'Enter') {
+            if (highlightedPatientIndex >= 0) {
+                event.preventDefault();
+                handleSelectPatient(patientSuggestions[highlightedPatientIndex]);
+            }
+        } else if (event.key === 'Escape') {
+            setShowPatientSuggestions(false);
+            setHighlightedPatientIndex(-1);
         }
-        return () => { mounted = false; };
-    }, [open, patientId]);
+    };
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -63,16 +177,63 @@ export default function AddPatientMedicalRecord({ open, onOpenChange, onCreated,
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <Label>Bệnh nhân</Label>
-                            <Select value={form.patient_id} onValueChange={(v) => setForm(prev => ({ ...prev, patient_id: v }))}>
-                                <SelectTrigger disabled={Boolean(patientId)}>
-                                    <SelectValue placeholder="Chọn bệnh nhân" />
-                                </SelectTrigger>
-                                <SelectContent className="bg-white shadow-lg z-[60] max-h-72 overflow-auto">
-                                    {patients.map(p => (
-                                        <SelectItem key={p.id} value={p.id}>{p.fullName}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            <div ref={patientSearchContainerRef} className="relative">
+                                <Input
+                                    value={patientQuery}
+                                    onChange={(event) => {
+                                        const value = event.target.value;
+                                        setPatientQuery(value);
+                                        if (selectedPatient && value !== (selectedPatient.fullName ?? '')) {
+                                            setSelectedPatient(null);
+                                            setForm((prev) => ({ ...prev, patient_id: '' }));
+                                        }
+                                    }}
+                                    onFocus={() => {
+                                        if (patientSuggestions.length) {
+                                            setShowPatientSuggestions(true);
+                                        }
+                                    }}
+                                    onKeyDown={handlePatientKeyDown}
+                                    placeholder="Nhập tên bệnh nhân"
+                                    disabled={Boolean(patientId)}
+                                />
+                                {showPatientSuggestions && (
+                                    <div className="absolute z-[70] mt-1 w-full overflow-hidden rounded-md border border-border bg-white shadow-lg">
+                                        {patientSearchLoading ? (
+                                            <div className="px-4 py-2 text-sm text-muted-foreground">Đang tìm...</div>
+                                        ) : patientSuggestions.length ? (
+                                            <ul className="max-h-64 overflow-auto py-1 text-sm">
+                                                {patientSuggestions.map((patient, index) => (
+                                                    <li key={patient.id}>
+                                                        <button
+                                                            type="button"
+                                                            className={`flex w-full flex-col items-start gap-0.5 px-4 py-2 text-left transition-colors ${index === highlightedPatientIndex ? 'bg-primary text-primary-foreground' : 'hover:bg-muted focus-visible:bg-muted'}`}
+                                                            onMouseDown={(event) => {
+                                                                event.preventDefault();
+                                                                handleSelectPatient(patient);
+                                                            }}
+                                                            onMouseEnter={() => setHighlightedPatientIndex(index)}
+                                                        >
+                                                            <span className="text-sm font-medium">{patient.fullName}</span>
+                                                            {patient.patientCode && (
+                                                                <span className="text-xs opacity-80">Mã bệnh nhân: {patient.patientCode}</span>
+                                                            )}
+                                                            {patient.email && (
+                                                                <span className="text-xs opacity-80">Email: {patient.email}</span>
+                                                            )}
+                                                        </button>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        ) : (
+                                            <div className="px-4 py-2 text-sm text-muted-foreground">Không tìm thấy bệnh nhân</div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                            {selectedPatient?.patientCode && (
+                                <p className="text-xs text-muted-foreground">Mã bệnh nhân hiện chọn: {selectedPatient.patientCode}</p>
+                            )}
                         </div>
                         <div className="space-y-2">
                             <Label>Nhóm máu</Label>
@@ -143,6 +304,11 @@ export default function AddPatientMedicalRecord({ open, onOpenChange, onCreated,
                                     patient_id: '', blood_type: '', allergies: '', chronic_conditions: '', current_medications: '',
                                     medical_history: '', clinical_notes: '', recent_test_summary: '', recent_instruments_used: '', recent_reagents_info: ''
                                 });
+                                setSelectedPatient(null);
+                                setPatientQuery('');
+                                setPatientSuggestions([]);
+                                setHighlightedPatientIndex(-1);
+                                setShowPatientSuggestions(false);
                             } else {
                                 toast.error('Tạo hồ sơ thất bại');
                             }

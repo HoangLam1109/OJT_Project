@@ -13,7 +13,7 @@ import {
 } from "../../validators/instrument/instrument.validator.js";
 import type { InstrumentListResponse, InstrumentResponse } from "../../dtos/instrument.dto.js";
 import iamServiceClient from "../../services/iamService/client/index.js";
-import instrumentHistoryService from "../../services/instrument/instrumentHistory.service.js";
+import instrumentMonitoringService from "../../services/instrument/instrumentMonitoring.service.js";
 import type { IInstrument } from "../../db/models/Instrument.model.js";
 
 const fetchUserEmail = async (userId: string | null | undefined): Promise<string | null> => {
@@ -28,6 +28,82 @@ const fetchUserEmail = async (userId: string | null | undefined): Promise<string
   } catch (error) {
     console.warn(`[InstrumentController] Unable to resolve email for user ${userId}`, error);
   }
+  return null;
+};
+
+const fetchUserName = async (userId: string | null | undefined): Promise<string | null> => {
+  if (!userId || typeof userId !== "string") {
+    return null;
+  }
+  try {
+    const user = await iamServiceClient.getUserById(userId);
+    if (user?.fullName && user.fullName.trim().length > 0) {
+      return user.fullName.trim();
+    }
+    if (user?.email && user.email.trim().length > 0) {
+      return user.email.trim();
+    }
+  } catch (error) {
+    console.warn(`[InstrumentController] Unable to resolve name for user ${userId}`, error);
+  }
+  return null;
+};
+
+const resolveOperatorId = (req: Request, fallback?: string): string | undefined => {
+  const requestUserId = (req as any).userId;
+  if (typeof requestUserId === "string" && requestUserId.trim().length > 0) {
+    return requestUserId.trim();
+  }
+
+  const headerSources = ["x-user-id", "x-operator-id", "x-actor-id"] as const;
+  for (const headerKey of headerSources) {
+    const rawValue = req.headers[headerKey];
+    const headerValue = Array.isArray(rawValue) ? rawValue[0] : rawValue;
+    if (typeof headerValue === "string" && headerValue.trim().length > 0) {
+      return headerValue.trim();
+    }
+  }
+
+  if (typeof fallback === "string" && fallback.trim().length > 0) {
+    return fallback.trim();
+  }
+
+  return undefined;
+};
+
+const resolveOperatorName = async (
+  req: Request,
+  operatorId: string | undefined,
+  fallbackName?: string | null
+): Promise<string | null> => {
+  const headerNameSources = ["x-user-name", "x-operator-name", "x-actor-name"] as const;
+  for (const headerKey of headerNameSources) {
+    const rawValue = req.headers[headerKey];
+    const headerValue = Array.isArray(rawValue) ? rawValue[0] : rawValue;
+    if (typeof headerValue === "string" && headerValue.trim().length > 0) {
+      const normalized = headerValue.trim();
+      (req as any).userFullName = normalized;
+      return normalized;
+    }
+  }
+
+  const cachedName = (req as any).userFullName;
+  if (typeof cachedName === "string" && cachedName.trim().length > 0) {
+    return cachedName.trim();
+  }
+
+  if (operatorId) {
+    const resolved = await fetchUserName(operatorId);
+    if (resolved) {
+      (req as any).userFullName = resolved;
+      return resolved;
+    }
+  }
+
+  if (typeof fallbackName === "string" && fallbackName.trim().length > 0) {
+    return fallbackName.trim();
+  }
+
   return null;
 };
 
@@ -117,11 +193,17 @@ export const addInstrumentController = async (req: Request, res: Response<Instru
       return;
     }
 
-    const actorEmail = await resolvePerformedBy(req, "system");
-    
+    const operatorId = resolveOperatorId(req);
+    const operatorEmail = await resolvePerformedBy(req, operatorId ?? "system");
+    const operatorName = await resolveOperatorName(
+      req,
+      operatorId,
+      operatorEmail === "system" ? undefined : operatorEmail
+    );
+
     const instrument = await createInstrumentService({
       ...value,
-      created_by: actorEmail,
+      created_by: operatorEmail,
     });
 
     const snapshot = buildInstrumentSnapshot(instrument);
@@ -132,19 +214,17 @@ export const addInstrumentController = async (req: Request, res: Response<Instru
         newValues.snapshot = snapshot;
       }
     }
-    try {
-      await instrumentHistoryService.recordHistory({
-        instrument_id: instrument._id,
-        instrument_code: instrument.instrument_code,
-        history_type: "CREATE",
-        old_values: null,
-        new_values: newValues,
-        instrument_snapshot: snapshot,
-        performed_by: actorEmail,
-      });
-    } catch (historyError) {
-      console.error("[InstrumentHistory] Failed to record create history", historyError);
-    }
+
+    await instrumentMonitoringService.recordCreated({
+      instrumentId: `${instrument._id}`,
+      instrumentCode: instrument.instrument_code,
+      eventMessage: "Instrument created",
+      operatorId: operatorId ?? operatorEmail ?? "system",
+      operatorEmail,
+      operatorName,
+      oldValues: null,
+      newValues,
+    });
 
     res.status(201).json({ message: "Instrument created", data: instrument });
   } catch (err) {
@@ -224,17 +304,23 @@ export const updateInstrumentController = async (
       return;
     }
 
-    const actorEmail = await resolvePerformedBy(req, "system");
-
     const existingInstrument = await getInstrumentByIdService(id);
     if (!existingInstrument) {
       res.status(404).json({ message: "Instrument not found" });
       return;
     }
 
+    const operatorId = resolveOperatorId(req, existingInstrument.updated_by ?? existingInstrument.created_by ?? undefined);
+    const operatorEmail = await resolvePerformedBy(req, operatorId ?? "system");
+    const operatorName = await resolveOperatorName(
+      req,
+      operatorId,
+      operatorEmail === "system" ? undefined : operatorEmail
+    );
+
     const instrument = await updateInstrumentService(id, {
       ...value,
-      updated_by: actorEmail,
+      updated_by: operatorEmail,
     });
     if (!instrument) {
       res.status(404).json({ message: "Instrument not found" });
@@ -243,8 +329,17 @@ export const updateInstrumentController = async (
 
     const candidateFields = Object.keys(value);
     if (candidateFields.length > 0) {
-      const oldValues = pickInstrumentFields(existingInstrument, candidateFields);
-      const newValues = pickInstrumentFields(instrument, candidateFields);
+      const changedFields = candidateFields.filter((field) => {
+        const before = (existingInstrument as Record<string, unknown>)[field];
+        const after = (instrument as Record<string, unknown>)[field];
+        const beforeJson = before === undefined ? undefined : JSON.stringify(before);
+        const afterJson = after === undefined ? undefined : JSON.stringify(after);
+        return beforeJson !== afterJson;
+      });
+
+      if (changedFields.length > 0) {
+        const oldValues = pickInstrumentFields(existingInstrument, changedFields);
+        const newValues = pickInstrumentFields(instrument, changedFields);
       const oldSnapshot = buildInstrumentSnapshot(existingInstrument);
       const newSnapshot = buildInstrumentSnapshot(instrument);
       if (oldSnapshot) {
@@ -253,18 +348,21 @@ export const updateInstrumentController = async (
       if (newSnapshot) {
         newValues.snapshot = newSnapshot;
       }
-      try {
-        await instrumentHistoryService.recordHistory({
-          instrument_id: instrument._id,
-          instrument_code: instrument.instrument_code,
-          history_type: "UPDATE",
-          old_values: oldValues,
-          new_values: newValues,
-          instrument_snapshot: newSnapshot,
-          performed_by: actorEmail,
+        const messageSuffix = changedFields.join(", ");
+        const eventMessage = messageSuffix.length > 0
+          ? `Instrument updated (${messageSuffix})`
+          : "Instrument updated";
+
+        await instrumentMonitoringService.recordUpdated({
+          instrumentId: `${instrument._id}`,
+          instrumentCode: instrument.instrument_code,
+          eventMessage,
+          operatorId: operatorId ?? operatorEmail ?? "system",
+          operatorEmail,
+          operatorName,
+          oldValues,
+          newValues,
         });
-      } catch (historyError) {
-        console.error("[InstrumentHistory] Failed to record update history", historyError);
       }
     }
 
@@ -287,15 +385,21 @@ export const deleteInstrumentController = async (
       return;
     }
 
-    const actorEmail = await resolvePerformedBy(req, "system");
-
     const existingInstrument = await getInstrumentByIdService(id);
     if (!existingInstrument) {
       res.status(404).json({ message: "Instrument not found" });
       return;
     }
 
-    const instrument = await deleteInstrumentService(id, actorEmail);
+    const operatorId = resolveOperatorId(req, existingInstrument.deleted_by ?? existingInstrument.updated_by ?? existingInstrument.created_by ?? undefined);
+    const operatorEmail = await resolvePerformedBy(req, operatorId ?? "system");
+    const operatorName = await resolveOperatorName(
+      req,
+      operatorId,
+      operatorEmail === "system" ? undefined : operatorEmail
+    );
+
+    const instrument = await deleteInstrumentService(id, operatorEmail);
     if (!instrument) {
       res.status(404).json({ message: "Instrument not found" });
       return;
@@ -312,19 +416,17 @@ export const deleteInstrumentController = async (
     if (newSnapshot) {
       newValues.snapshot = newSnapshot;
     }
-    try {
-      await instrumentHistoryService.recordHistory({
-        instrument_id: instrument._id,
-        instrument_code: instrument.instrument_code,
-        history_type: "DELETE",
-        old_values: oldValues,
-        new_values: newValues,
-        instrument_snapshot: newSnapshot,
-        performed_by: actorEmail,
-      });
-    } catch (historyError) {
-      console.error("[InstrumentHistory] Failed to record delete history", historyError);
-    }
+
+    await instrumentMonitoringService.recordDeleted({
+      instrumentId: `${instrument._id}`,
+      instrumentCode: instrument.instrument_code,
+      eventMessage: "Instrument deleted",
+      operatorId: operatorId ?? operatorEmail ?? "system",
+      operatorEmail,
+      operatorName,
+      oldValues,
+      newValues,
+    });
 
     res.status(200).json({ message: "Instrument deleted", data: instrument });
   } catch (err) {

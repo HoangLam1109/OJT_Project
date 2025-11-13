@@ -1,7 +1,6 @@
 import type { Request, Response } from "express";
 import { PatientService, type CreatePatientPayload } from "../services/patient.service.js";
 import { errorHandler } from "../utils/error.util.js";
-import patientAuditLogService, { type CreateAuditLogPayload } from "../services/patientAuditLog.service.js";
 import iamServiceClient, { type IamUser } from "../services/iamService.client.js";
 import patientMonitoringService from "../services/patientMonitoring.service.js";
 
@@ -244,12 +243,24 @@ const getAllPatients = async (req: Request, res: Response): Promise<void> => {
     
     const filters: Record<string, unknown> = {};
     if (typeof search === "string" && search.trim().length > 0) {
-      const regex = { $regex: search.trim(), $options: "i" };
-      filters.$or = [
+      const trimmedSearch = search.trim();
+      const regex = { $regex: trimmedSearch, $options: "i" };
+      const orFilters: Record<string, unknown>[] = [
         { patient_code: regex },
         { user_id: regex },
-        { last_test_type: regex },
       ];
+
+      try {
+        const matchedUsers = await iamServiceClient.searchUsersByFullName(trimmedSearch);
+        const matchedUserIds = matchedUsers.map((user) => user._id).filter(Boolean);
+        if (matchedUserIds.length > 0) {
+          orFilters.push({ user_id: { $in: matchedUserIds } });
+        }
+      } catch (userSearchError) {
+        console.warn('[PatientController] Unable to search users by full name:', userSearchError);
+      }
+
+      filters.$or = orFilters;
     }
     if (typeof isActive === "string") {
       filters.is_active = isActive.toLowerCase() === "true";
@@ -383,20 +394,6 @@ const createPatient = async (req: Request, res: Response): Promise<void> => {
     const createSnapshot = buildPatientSnapshot(iamUserSnapshot, patientRecord);
     if (createSnapshot) {
       newValues.snapshot = createSnapshot;
-    }
-
-    const createAuditPayload: CreateAuditLogPayload = {
-      patient_id: patient._id,
-      action: "CREATE",
-      event_message: "Patient record created",
-      old_values: null,
-      new_values: newValues,
-      performed_by: actorEmail,
-    };
-    try {
-      await patientAuditLogService.createAuditLog(createAuditPayload);
-    } catch (logError) {
-      console.error("[PatientAuditLog] Failed to record create event", logError);
     }
 
     await patientMonitoringService.recordPatientCreated({
@@ -540,20 +537,6 @@ const updatePatient = async (req: Request, res: Response): Promise<void> => {
       if (newSnapshot) {
         newValues.snapshot = newSnapshot;
       }
-      const updateAuditPayload: CreateAuditLogPayload = {
-        patient_id: updatedPatient._id,
-        action: "UPDATE",
-        event_message: `Patient record updated (${changedFields.join(", ")})`,
-        old_values: oldValues,
-        new_values: newValues,
-        performed_by: actorEmail,
-      };
-      try {
-        await patientAuditLogService.createAuditLog(updateAuditPayload);
-      } catch (logError) {
-        console.error("[PatientAuditLog] Failed to record update event", logError);
-      }
-
       await patientMonitoringService.recordPatientUpdated({
         patientId: `${updatedPatient._id}`,
         eventMessage: `Patient record updated (${changedFields.join(", ")})`,
@@ -636,20 +619,6 @@ const deletePatient = async (req: Request, res: Response): Promise<void> => {
       if (existingSnapshot) {
         hardDeleteOldValues.snapshot = existingSnapshot;
       }
-      const deleteAuditPayload: CreateAuditLogPayload = {
-        patient_id: existingPatient._id,
-        action: "DELETE",
-        event_message: "Patient record hard deleted",
-        old_values: hardDeleteOldValues,
-        new_values: null,
-        performed_by: actorEmail,
-      };
-      try {
-        await patientAuditLogService.createAuditLog(deleteAuditPayload);
-      } catch (logError) {
-        console.error("[PatientAuditLog] Failed to record hard delete event", logError);
-      }
-
       await patientMonitoringService.recordPatientDeleted({
         patientId: `${existingPatient._id}`,
         eventMessage: "Patient record hard deleted",
@@ -686,20 +655,6 @@ const deletePatient = async (req: Request, res: Response): Promise<void> => {
     if (newSnapshot) {
       softDeleteNewValues.snapshot = newSnapshot;
     }
-    const softDeleteAuditPayload: CreateAuditLogPayload = {
-      patient_id: patient._id,
-      action: "DELETE",
-      event_message: "Patient record soft deleted",
-      old_values: softDeleteOldValues,
-      new_values: softDeleteNewValues,
-      performed_by: actorEmail,
-    };
-    try {
-      await patientAuditLogService.createAuditLog(softDeleteAuditPayload);
-    } catch (logError) {
-      console.error("[PatientAuditLog] Failed to record soft delete event", logError);
-    }
-
     await patientMonitoringService.recordPatientDeleted({
       patientId: `${patient._id}`,
       eventMessage: "Patient record soft deleted",
@@ -782,20 +737,6 @@ const softDeletePatientByUserId = async (req: Request, res: Response): Promise<v
 
     const operatorIdForMonitoring = resolveOperatorId(req, fallbackOperatorId);
     const actorEmail = await resolvePerformedBy(req, operatorIdForMonitoring ?? fallbackActor ?? "system");
-    const softDeleteAuditPayload: CreateAuditLogPayload = {
-      patient_id: patient._id,
-      action: "DELETE",
-      event_message: "Patient record soft deleted by user ID",
-      old_values: softDeleteOldValues,
-      new_values: softDeleteNewValues,
-      performed_by: actorEmail,
-    };
-    try {
-      await patientAuditLogService.createAuditLog(softDeleteAuditPayload);
-    } catch (logError) {
-      console.error("[PatientAuditLog] Failed to record soft delete by user event", logError);
-    }
-
     await patientMonitoringService.recordPatientDeleted({
       patientId: `${patient._id}`,
       eventMessage: "Patient record soft deleted by user ID",

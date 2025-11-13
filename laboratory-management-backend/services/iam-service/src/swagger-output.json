@@ -150,6 +150,44 @@
         ]
       }
     },
+    "/internal/users/search": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "x-internal-api-key",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "X-Internal-API-Key",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
     "/register": {
       "post": {
         "tags": [

@@ -57,6 +57,14 @@ export class UserRepository implements IUserRepository {
     return await this.userModel.find({}, fields);
   }
 
+  async searchByFullName(keyword: string, fields?: string, limit: number = 20): Promise<any[]> {
+    const regex = new RegExp(keyword, "i");
+    return await this.userModel
+      .find({ fullName: regex }, fields)
+      .limit(limit)
+      .lean();
+  }
+
   async findWithPagination(
     options: PaginationOptions
   ): Promise<{ data: any[]; hasNextPage: boolean; totalCount?: number }> {
