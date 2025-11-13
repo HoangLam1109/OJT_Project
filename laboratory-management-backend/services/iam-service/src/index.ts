@@ -38,7 +38,7 @@ const app = express();
 // Configure CORS to reflect the incoming origin and allow credentials.
 // When credentials are used, Access-Control-Allow-Origin must not be '*'.
 const corsOptions = {
-  origin: "http://localhost:5173",
+  origin: process.env.WEB_URL,
   credentials: true,
   methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],

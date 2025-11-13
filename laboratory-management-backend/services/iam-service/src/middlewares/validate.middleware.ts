@@ -1,6 +1,7 @@
 import type {Request, Response, NextFunction} from "express";
 import { createUserSchema, updateUserSchema } from "../validators/user.validator.js";
 import { createRoleSchema, updateRoleSchema } from "../validators/role.validator.js";
+import { emailLinkSchema, resetPasswordSchema } from "../validators/resetPassword.validator.js";
 
 export const validateCreateUser = (req: Request, res: Response, next: NextFunction) => {
   const { error } = createUserSchema.validate(req.body);
@@ -28,6 +29,22 @@ export const validateCreateRole = (req: Request, res: Response, next: NextFuncti
 
 export const validateUpdateRole = (req: Request, res: Response, next: NextFunction) => {
   const { error } = updateRoleSchema.validate(req.body);
+  if (error?.details?.[0]?.message) {
+    return res.status(400).json({ message: error.details[0].message });
+  }
+  next();
+};
+
+export const validateEmailLink = (req: Request, res: Response, next: NextFunction) => {
+  const { error } = emailLinkSchema.validate(req.body);
+  if (error?.details?.[0]?.message) {
+    return res.status(400).json({ message: error.details[0].message });
+  }
+  next();
+};
+
+export const validateResetPassword = (req: Request, res: Response, next: NextFunction) => {
+  const { error } = resetPasswordSchema.validate(req.body);
   if (error?.details?.[0]?.message) {
     return res.status(400).json({ message: error.details[0].message });
   }

@@ -158,8 +158,8 @@ const getUsersWithPagination = async (
       description: 'Field to sort by',
       required: false,
       type: 'string',
-      enum: ['createdAt', '_id', 'fullName', 'email'],
-      default: '_id'
+      enum: ['updatedAt', '_id', 'fullName', 'email'],
+      default: 'updatedAt'
     }
     #swagger.parameters['search'] = {
       in: 'query',
@@ -181,7 +181,7 @@ const getUsersWithPagination = async (
       required: false,
       type: 'string',
       enum: ['asc', 'desc'],
-      default: 'asc'
+      default: 'desc'
     }
     #swagger.responses[200] = {
       description: 'Users retrieved successfully',

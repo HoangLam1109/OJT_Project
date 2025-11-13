@@ -101,7 +101,7 @@ const getLogsWithPagination = async (
       required: false,
       type: 'string',
       enum: ['createdAt', '_id', 'action', 'eventMessage', 'performedAt', 'serviceName'],
-      default: '_id'
+      default: 'performedAt'
     }
     #swagger.parameters['search'] = {
       in: 'query',
@@ -123,7 +123,7 @@ const getLogsWithPagination = async (
       required: false,
       type: 'string',
       enum: ['asc', 'desc'],
-      default: 'asc'
+      default: 'desc'
     }
     #swagger.responses[200] = {
       description: 'Logs retrieved successfully',
