@@ -157,6 +157,17 @@ export class UserService {
     return await userRepository.findByPhoneNumber(phoneNumber);
   }
 
+  async searchUsersByFullName(keyword: string, limit: number = 20): Promise<IUser[]> {
+    if (!keyword || keyword.trim().length === 0) {
+      return [];
+    }
+    return await userRepository.searchByFullName(
+      keyword.trim(),
+      "_id fullName email phoneNumber",
+      limit
+    );
+  }
+
   async assignRoleToUser(
     userId: string,
     role: string[],

@@ -130,6 +130,27 @@ const getUser = async (req: Request, res: Response, next: NextFunction): Promise
   }
 };
 
+const searchUsersInternal = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const keywordRaw = req.query.q;
+    const limitRaw = req.query.limit;
+
+    const keyword = typeof keywordRaw === "string" ? keywordRaw : "";
+    const limit = typeof limitRaw === "string" ? Number(limitRaw) : undefined;
+
+    if (keyword.trim().length === 0) {
+      res.json({ users: [] });
+      return;
+    }
+
+    const safeLimit = Number.isFinite(limit) && limit ? Math.min(Math.max(Math.floor(limit), 1), 50) : 20;
+    const users = await userService.searchUsersByFullName(keyword, safeLimit);
+    res.json({ users });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const getUsersWithPagination = async (
   req: Request,
   res: Response,
@@ -616,6 +637,7 @@ const lockUser = async (req: Request, res: Response, next: NextFunction): Promis
 
 export {
   getUser,
+  searchUsersInternal,
   createUser,
   updateUser,
   deleteUser,
