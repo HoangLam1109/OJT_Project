@@ -299,6 +299,7 @@ const updateUser = async (req: Request, res: Response, next: NextFunction): Prom
       schema: {
         email: 'string@example.com',
         fullName: 'string',
+        password: 'string',
         identityNumber: 'string',
         gender: 'Male',
         age: '22',

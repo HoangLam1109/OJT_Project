@@ -10,6 +10,8 @@ import {
 } from "../types/pagination.type.js";
 import { PaginationUtils } from "../utils/pagination.util.js";
 import { logEvent } from "../utils/logging.util.js";
+import { computeChanges } from "../utils/diff.util.js";
+import { AppError } from "../utils/error.util.js";
 
 export interface CreateUserData {
   email: string;
@@ -50,7 +52,7 @@ export class UserService {
     userData: CreateUserData,
     performedBy?: string
   ): Promise<IUser> {
-    const newUser = await this._passwordCheck("", userData, performedBy);
+    const { data: newUser } = await this._passwordCheck("", userData, performedBy);
     if (!userData.role) {
       newUser.role = ["USER"];
     }
@@ -81,9 +83,29 @@ export class UserService {
     userData: UpdateUserData,
     performedBy?: string
   ): Promise<IUser | null> {
+
     const before = await userRepository.findById(userId);
-    const newUser = await this._passwordCheck(userId, userData, performedBy);
+    const { data: newUser, passwordChanged } = await this._passwordCheck(userId, userData, performedBy);
     const updatedUser = await userRepository.updateById(userId, newUser);
+
+    const fields: (keyof IUser)[] = [
+      "email",
+      "fullName",
+      "phoneNumber",
+      "address",
+      "isActive",
+    ];
+
+    if (typeof userData.role !== "undefined") {
+      fields.push("role");
+    }
+
+    const diffs = computeChanges<IUser>(
+      before ?? undefined,
+      updatedUser ?? undefined,
+      fields,
+      passwordChanged ? { passwordChanged: true } : undefined
+    );
 
     await logEvent({
       eventCode: "E_00025",
@@ -92,30 +114,7 @@ export class UserService {
       performedBy: performedBy || userId,
       serviceName: "IAM_SERVICE",
       entityId: userId,
-      ...(before
-        ? {
-            oldValues: {
-              email: before.email,
-              fullName: before.fullName,
-              phoneNumber: before.phoneNumber,
-              address: before.address,
-              role: before.role,
-              isActive: before.isActive,
-            } as Record<string, unknown>,
-          }
-        : {}),
-      ...(updatedUser
-        ? {
-            newValues: {
-              email: updatedUser.email,
-              fullName: updatedUser.fullName,
-              phoneNumber: updatedUser.phoneNumber,
-              address: updatedUser.address,
-              role: updatedUser.role,
-              isActive: updatedUser.isActive,
-            } as Record<string, unknown>,
-          }
-        : {}),
+      ...diffs,
     });
 
     return updatedUser;
@@ -175,24 +174,14 @@ export class UserService {
       ...(before
         ? {
             oldValues: {
-              email: before.email,
-              fullName: before.fullName,
-              phoneNumber: before.phoneNumber,
-              address: before.address,
               role: before.role,
-              isActive: before.isActive,
             } as Record<string, unknown>,
           }
         : {}),
       ...(updatedUser
         ? {
             newValues: {
-              email: updatedUser.email,
-              fullName: updatedUser.fullName,
-              phoneNumber: updatedUser.phoneNumber,
-              address: updatedUser.address,
               role: updatedUser.role,
-              isActive: updatedUser.isActive,
             } as Record<string, unknown>,
           }
         : {}),
@@ -217,11 +206,6 @@ export class UserService {
       ...(before
         ? {
             oldValues: {
-              email: before.email,
-              fullName: before.fullName,
-              phoneNumber: before.phoneNumber,
-              address: before.address,
-              role: before.role,
               isActive: before.isActive,
             } as Record<string, unknown>,
           }
@@ -229,11 +213,6 @@ export class UserService {
       ...(updatedUser
         ? {
             newValues: {
-              email: updatedUser.email,
-              fullName: updatedUser.fullName,
-              phoneNumber: updatedUser.phoneNumber,
-              address: updatedUser.address,
-              role: updatedUser.role,
               isActive: updatedUser.isActive,
             } as Record<string, unknown>,
           }
@@ -295,9 +274,23 @@ export class UserService {
     userId: string,
     userData: UpdateUserData | CreateUserData,
     performedBy?: string
-  ): Promise<UpdateUserData | CreateUserData> {
+  ): Promise<{data: UpdateUserData | CreateUserData; passwordChanged: boolean}> {
+    const existing = userId ? await userRepository.findById(userId, "passwordHash") : null;
     // Skip password hashing for OAuth users
     if (userData.password) {
+      if (existing?.passwordHash) {
+        const isMatch = await bcrypt.compare(
+          userData.password,
+          existing.passwordHash as string
+        );
+        if (isMatch) {
+          throw new AppError(
+            400,
+            "New password must be different from the current password"
+          );
+        }
+      }
+
       const saltRounds = 10;
       const hashedPassword = await bcrypt.hash(userData.password, saltRounds);
 
@@ -321,7 +314,7 @@ export class UserService {
       }
 
       delete (newUser as any).password;
-      return newUser;
-    } else return userData;
+      return { data: newUser, passwordChanged: true};
+    } else return {data: userData, passwordChanged: false};
   }
 }
