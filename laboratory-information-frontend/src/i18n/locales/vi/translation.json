@@ -1,0 +1,61 @@
+{
+  "header": {
+    "appName": "LIMS Pro",
+    "appDescription": "Hệ thống Quản lý Thông tin Phòng thí nghiệm",
+    "register": "Đăng ký",
+    "login": "Đăng nhập"
+  },
+  "register": {
+    "title": "Đăng ký",
+    "description": "Đăng ký tài khoản mới",
+    "name": "Họ và tên",
+    "email": "Email",
+    "password": "Mật khẩu",
+    "confirmPassword": "Xác nhận mật khẩu",
+    "register": "Đăng ký"
+  },
+  "login": {
+    "welcome": "Chào mừng trở lại",
+    "description": "Đăng nhập vào tài khoản của bạn để tiếp tục sử dụng hệ thống",
+
+    "title": "Đăng nhập",
+    "email": "Email",
+    "password": "Mật khẩu",
+    "login": "Đăng nhập",
+    "forgotPassword": "Quên mật khẩu?",
+    "noAccount": "Chưa có tài khoản?",
+    "registerNow": "Đăng ký ngay",
+    "backToHome": "Quay lại trang chủ",
+    "or": "Hoặc",
+    "googleLogin": "Đăng nhập với Google",
+    "email/phone": "Email/Số điện thoại",
+    "email/phonePlaceholder": "Email hoặc Số điện thoại",
+    "passwordPlaceholder": "Nhập mật khẩu"
+  },
+  "hero": {
+    "title": "Hệ thống Quản lý",
+    "subtitle": "Phòng thí nghiệm Tiên tiến",
+    "description": "Tối ưu hóa hoạt động phòng thí nghiệm với máy phân tích huyết học hiện đại, quản lý bệnh nhân toàn diện và phân tích dữ liệu thời gian thực.",
+    "button": "Dùng thử miễn phí",
+    "demo": "Xem Demo",
+    "laboratory": "Phòng thí nghiệm",
+    "test": "Xét nghiệm thực hiện",
+    "time": "Thời gian hoạt động",
+    "support": "Hỗ trợ"
+  },
+  "features": {
+    "sampleManagement": "Quản lý mẫu xét nghiệm",
+    "sampleManagementDescription": "Theo dõi mẫu bằng mã vạch, quản lý quy trình xét nghiệm từ A-Z",
+    "patientManagement": "Quản lý bệnh nhân",
+    "patientManagementDescription": "Đăng ký bệnh nhân với ID duy nhất, lưu trữ thông tin chi tiết",
+    "reportAnalysis": "Báo cáo & Phân tích",
+    "reportAnalysisDescription": "Dashboard thông minh với báo cáo tài chính và phân tích dữ liệu",
+    "inventoryManagement": "Quản lý tồn kho",
+    "inventoryManagementDescription": "Theo dõi hóa chất, thiết bị với cảnh báo tự động",
+    "securityManagement": "Bảo mật cao",
+    "securityManagementDescription": "Kiểm soát truy cập dựa trên vai trò, mã hóa dữ liệu",
+    "automationManagement": "Tự động hóa",
+    "automationManagementDescription": "Nhắc nhở, cảnh báo và ghi log kiểm toán tự động"
+  }
+}
+

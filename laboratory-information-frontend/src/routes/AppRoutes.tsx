@@ -30,13 +30,10 @@ import TestResultsPage from "../pages/LabUser/TestResultsPage";
 import ReagentManagementPage from "../pages/LabUser/ReagentManagementPage";
 import { ServiceLayout } from "../layouts/ServiceLayout";
 import ServiceDashboardPage from "../pages/service/ServiceDashboardPage";
-import ServiceEventLogPage from "../pages/service/ServiceEventLogPage";
-import ServiceReagentPage from "../pages/service/ServiceReagentPage";
 import ServiceInstrumentPage from "../pages/service/ServiceInstrumentPage";
 import { GoogleCallbackPage } from "../pages/login/GoogleCallbackPage";
 import { TestOrderActionsProvider } from "../context/TestOrderActionsContext";
-import SelectInstrumentsPage from "@/pages/LabUser/SelectInstrumentsPage";
-// removed MedicalRecordAccessLogsPage for LabUser
+import SelectInstrumentsPage from "@/pages/LabUser/SelectInstrumentsPage"
 import PatientDetailPage from "@/pages/LabUser/PatientDetailPage";
 import EventLogDetailPage from "@/pages/admin/EventLogDetailPage";
 import type { User } from "../types/User";
@@ -199,8 +196,8 @@ const roleRoutes: Record<string, RoleRouteConfig> = {
     defaultPage: "dashboard",
     pages: [
       { path: "dashboard", component: ServiceDashboardPage },
-      { path: "event-logs", component: ServiceEventLogPage },
-      { path: "reagents", component: ServiceReagentPage },
+      { path: "event-logs", component: AdminAuditReportsPage },
+      { path: "reagents", component: ReagentManagementPage },
       { path: "instruments", component: ServiceInstrumentPage },
       {
         path: "test-orders",

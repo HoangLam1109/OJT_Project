@@ -1,0 +1,79 @@
+{
+  "header": {
+    "appName": "LIMS Pro",
+    "appDescription": "Laboratory Information Management System",
+    "register": "Register",
+    "login": "Login"
+  },
+  "register": {
+    "title": "Register",
+    "description": "Register a new account",
+    "name": "Name",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "register": "Register"
+  },
+  "login": {
+    "welcome": "Welcome back",  
+    "description": "Login to your account to continue using the system",
+    "title": "Login",
+    "email": "Email",
+    "password": "Password",
+    "login": "Login",
+    "forgotPassword": "Forgot Password?",
+    "noAccount": "Don't have an account?",
+    "registerNow": "Register now",
+    "backToHome": "Back to Home",
+    "or": "Or",
+    "googleLogin": "Login with Google",
+    "email/phone": "Email/Phone",
+    "email/phonePlaceholder": "Email or Phone",
+    "passwordPlaceholder": "Enter your password"
+  },
+  "hero": {
+    "title": "Management System",
+    "subtitle": "Advanced Laboratory",
+    "description": "Optimize laboratory operations with modern hematology analyzers, manage patients comprehensively, and analyze real-time data.",
+    "button": "Free Trial",
+    "demo": "Watch Demo",
+    "laboratory": "Laboratory",
+    "test": "Test",
+    "time": "Time",
+    "support": "Support"
+  },
+  "features": {
+    "sampleManagement": "Sample Management",
+    "sampleManagementDescription": "Track samples with barcode, manage test procedures from A-Z",
+    "patientManagement": "Patient Management",
+    "patientManagementDescription": "Register patients with unique ID, store detailed information",
+    "reportAnalysis": "Report Analysis",
+    "reportAnalysisDescription": "Smart dashboard with financial reports and data analysis",
+    "inventoryManagement": "Inventory Management",
+    "inventoryManagementDescription": "Track chemicals, equipment with automatic alerts",
+    "securityManagement": "Security Management",
+    "securityManagementDescription": "Control access based on roles, encrypt data",
+    "automationManagement": "Automation Management",
+    "automationManagementDescription": "Reminders, alerts and automatic audit logs"
+  },
+  "about": {
+    "speed": "Fast Processing",
+    "speedDescription": "Results in 24-48 hours, automatic reports",
+    "absoluteSecurity": "Absolute Security",
+    "absoluteSecurityDescription": "End-to-end data encryption, compliant with HIPAA",
+    "highAccuracy": "High Accuracy",
+    "highAccuracyDescription": "99.9% accuracy with AI support for analysis",
+    "smartInterface": "Smart Interface",
+    "smartInterfaceDescription": "Intuitive dashboard, easy to use for everyone",
+    "title": "About Us",
+    "description": "About the company",
+    "demo": "Watch Demo",
+    "button": "Learn More",
+    "trustedPartner": "Trusted Partner for Your Laboratory",
+    "trustedPartnerDescription": "With over 10 years of experience in the field of medical technology, we understand the challenges that laboratories are facing.",
+    
+    "trustedPartnerMetricsDescription": "Laboratories using our system"
+  }
+}
+
+

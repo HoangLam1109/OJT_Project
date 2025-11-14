@@ -7,38 +7,39 @@ import {
   Shield,
   Settings
 } from 'lucide-react';
-
+import { useTranslation } from 'react-i18next';
 export function FeaturesSection() {
+  const { t } = useTranslation();
   const features = [
     {
       icon: <TestTube2 className="h-8 w-8 text-blue-600" />,
-      title: "Quản lý mẫu xét nghiệm",
-      description: "Theo dõi mẫu bằng mã vạch, quản lý quy trình xét nghiệm từ A-Z"
+      title: t("features.sampleManagement"),
+      description: t("features.sampleManagementDescription")
     },
     {
       icon: <Users className="h-8 w-8 text-green-600" />,
-      title: "Quản lý bệnh nhân",
-      description: "Đăng ký bệnh nhân với ID duy nhất, lưu trữ thông tin chi tiết"
+      title: t("features.patientManagement"),
+      description: t("features.patientManagementDescription")
     },
     {
       icon: <BarChart3 className="h-8 w-8 text-purple-600" />,
-      title: "Báo cáo & Phân tích",
-      description: "Dashboard thông minh với báo cáo tài chính và phân tích dữ liệu"
+      title: t("features.reportAnalysis"),
+      description: t("features.reportAnalysisDescription")
     },
     {
       icon: <Database className="h-8 w-8 text-orange-600" />,
-      title: "Quản lý tồn kho",
-      description: "Theo dõi hóa chất, thiết bị với cảnh báo tự động"
+      title: t("features.inventoryManagement"),
+      description: t("features.inventoryManagementDescription")
     },
     {
       icon: <Shield className="h-8 w-8 text-red-600" />,
-      title: "Bảo mật cao",
-      description: "Kiểm soát truy cập dựa trên vai trò, mã hóa dữ liệu"
+      title: t("features.securityManagement"),
+      description: t("features.securityManagementDescription")
     },
     {
       icon: <Settings className="h-8 w-8 text-indigo-600" />,
-      title: "Tự động hóa",
-      description: "Nhắc nhở, cảnh báo và ghi log kiểm toán tự động"
+      title: t("features.automationManagement"),
+      description: t("features.automationManagementDescription")
     }
   ];
 

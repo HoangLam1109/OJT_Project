@@ -6,8 +6,9 @@ import { authenticateUser } from "../../service/authService/loginApi";
 import type { LoginFormProps } from "../../types/Login.type";
 import { LoginInputField } from "./LoginFormInputField";
 import { GoogleLoginButton } from "../../components/common/GoogleLoginButton";
-
+import { useTranslation } from "react-i18next";
 export function LoginForm({ onLogin, onShowRegister, onBackToHome }: LoginFormProps) {
+  const { t } = useTranslation();
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -35,10 +36,10 @@ export function LoginForm({ onLogin, onShowRegister, onBackToHome }: LoginFormPr
         </div>
         
         <h1 className="text-2xl font-bold text-gray-900 mb-2">
-          Chào mừng trở lại
+          {t("login.welcome")}
         </h1>
         <p className="text-gray-600 text-sm">
-          Đăng nhập để tiếp tục sử dụng hệ thống
+          {t("login.description")}
         </p>
       </div>
 
@@ -46,8 +47,8 @@ export function LoginForm({ onLogin, onShowRegister, onBackToHome }: LoginFormPr
       <form onSubmit={handleSubmit} className="space-y-4">
         <LoginInputField
           id="identifier"
-          label="Email/Số điện thoại"
-          placeholder="Email hoặc Số điện thoại"
+          label={t("login.email/phone")}
+          placeholder={t("login.email/phonePlaceholder")}
           type="text"
           value={identifier}
           onChange={(e) => setIdentifier(e.target.value)}
@@ -55,8 +56,8 @@ export function LoginForm({ onLogin, onShowRegister, onBackToHome }: LoginFormPr
         />
         <LoginInputField
           id="password"
-          label="Mật khẩu"
-          placeholder="Nhập mật khẩu"
+          label={t("login.password")}
+          placeholder={t("login.passwordPlaceholder")}
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -73,7 +74,7 @@ export function LoginForm({ onLogin, onShowRegister, onBackToHome }: LoginFormPr
           type="submit"
           className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg active:scale-95 transform transition-all duration-150 hover:from-blue-700 hover:to-indigo-700 focus:from-blue-700 focus:to-indigo-700 hover:shadow-lg hover:-translate-y-0.5"
         >
-          Đăng nhập
+          {t("login.login")}
         </Button>
 
       </form>
@@ -84,7 +85,7 @@ export function LoginForm({ onLogin, onShowRegister, onBackToHome }: LoginFormPr
           <div className="w-full border-t border-gray-300" />
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="px-2 bg-white text-gray-500">Hoặc</span>
+          <span className="px-2 bg-white text-gray-500">{t("login.or")}</span>
         </div>
       </div>
 
@@ -97,17 +98,17 @@ export function LoginForm({ onLogin, onShowRegister, onBackToHome }: LoginFormPr
           type="button"
           className="text-sm text-blue-600 hover:text-blue-800 hover:underline font-medium"
         >
-          Quên mật khẩu?
+          {t("login.forgotPassword")}
         </button>
 
         <div className="text-sm text-gray-600">
-          Chưa có tài khoản?{' '}
+          {t("login.noAccount")}
           <button
             type="button"
             onClick={onShowRegister}
             className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
           >
-            Đăng ký ngay
+            {t("login.registerNow")}
           </button>
         </div>
 
@@ -116,7 +117,7 @@ export function LoginForm({ onLogin, onShowRegister, onBackToHome }: LoginFormPr
           onClick={() => onBackToHome?.()}
           className="text-sm text-gray-500 hover:text-gray-700 hover:underline flex items-center justify-center gap-1 mx-auto"
         >
-          ← Quay lại trang chủ
+          ← {t("login.backToHome")}
         </button>
       </div>
     </div>

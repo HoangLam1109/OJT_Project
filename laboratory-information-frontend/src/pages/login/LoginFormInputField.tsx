@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Input } from '../../components/common/input';
 import { Label } from '../../components/common/label';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import {useTranslation} from 'react-i18next';
 
 interface Props {
   id: string;
@@ -15,7 +16,7 @@ interface Props {
 
 export function LoginInputField({ id, label, type = 'text', placeholder, value, onChange, icon }: Props) {
   const [showPassword, setShowPassword] = useState(false);
-  
+  const { t } = useTranslation();
   const Icon = icon === 'mail' ? Mail : icon === 'lock' ? Lock : null;
   const isPasswordField = type === 'password';
   const inputType = isPasswordField && showPassword ? 'text' : type;
