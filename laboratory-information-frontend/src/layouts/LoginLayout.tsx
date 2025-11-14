@@ -6,15 +6,18 @@ import { BubbleBackground } from "@/components/common/bubble-background";
 import { useAuthContext } from "../hooks/useAuthContext";
 import React, { useEffect } from "react";
 import type { User } from "../types/User";
+import { useTranslation } from "react-i18next";
+
+
 export const LoginLayout = () => {
   const navigate = useNavigate();
   const { user, onLogin, loading } = useAuthContext(); // ✅ lấy onLogin từ context
   const [hasRedirected, setHasRedirected] = React.useState(false);
-
+  const { t } = useTranslation();
   // ✅ định nghĩa hàm login
   const handleLogin = (userData: User) => {
     onLogin(userData); // lưu vào context và localStorage
-    toast.success("Đăng nhập thành công!");
+    toast.success(t("login.success"));
   };
 
   useEffect(() => {
