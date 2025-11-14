@@ -56,20 +56,25 @@ export class IamServiceClient {
     }
   }
 
-  /**
-   * Get all users from IAM Service
-   */
-  async getAllUsers(): Promise<IamUser[]> {
+  async searchUsersByFullName(keyword: string, limit: number = 20): Promise<IamUser[]> {
+    const trimmed = keyword.trim();
+    if (!trimmed) {
+      return [];
+    }
+
     try {
-      const url = `${this.baseUrl}/api/user/all`;
+      const url = `${this.baseUrl}/api/internal/users/search?q=${encodeURIComponent(trimmed)}&limit=${limit}`;
       const headers = {
         'X-Internal-API-Key': this.internalApiKey,
       };
 
-      const response = await HttpClient.get<IamUser[]>(url, headers);
-      return response;
+      const response = await HttpClient.get<{ users: IamUser[] }>(url, headers);
+      if (response && Array.isArray(response.users)) {
+        return response.users;
+      }
+      return [];
     } catch (error: any) {
-      console.error('[IAM Service] Error fetching all users:', error.message);
+      console.error('[IAM Service] Error searching users by full name:', error.message);
       return [];
     }
   }
@@ -88,8 +93,9 @@ export class IamServiceClient {
       const users = await Promise.all(userPromises);
 
       users.forEach((user, index) => {
-        if (user) {
-          userMap.set(userIds[index], user);
+        const userId = userIds[index];
+        if (user && userId) {
+          userMap.set(userId, user);
         }
       });
 

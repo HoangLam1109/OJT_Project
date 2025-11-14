@@ -1,8 +1,6 @@
 import type { Request, Response } from "express";
 import { PatientMedicalRecordService } from "../services/patientMedicalRecord.service.js";
 import { errorHandler } from "../utils/error.util.js";
-import medicalRecordAccessLogService from "../services/medicalRecordAccessLog.service.js";
-import medicalRecordAuditLogService from "../services/medicalRecordAuditLog.service.js";
 import medicalRecordMonitoringService from "../services/medicalRecordMonitoring.service.js";
 import iamServiceClient, { type IamUser } from "../services/iamService.client.js";
 import Patient, { type IPatient } from "../db/models/Patient.model.js";
@@ -312,26 +310,6 @@ const getPatientRecordDetail = async (req: Request, res: Response): Promise<void
 
     console.log(`   ✅ Found record: ${record.record_code} (Patient: ${record.patient_id})`);
 
-    const actorContext = await resolveAccessActor(req);
-    const inlinePatient = (record as { patient?: IPatient | null }).patient ?? null;
-    const { user: patientUser } = await fetchPatientContext(record.patient_id, inlinePatient);
-    const recordPlain = toPlainRecord(record);
-    const viewSnapshot = buildAccessLogSnapshot(recordPlain, patientUser);
-    try {
-      await medicalRecordAccessLogService.createAccessLog({
-        medical_record_id: toIdString(record._id),
-        patient_id: toIdString(record.patient_id),
-        accessed_by: actorContext.actorId,
-        accessed_by_email: actorContext.actorEmail,
-        accessed_by_name: actorContext.actorName,
-        access_type: "VIEW",
-        old_values: null,
-        new_values: viewSnapshot ? { snapshot: viewSnapshot } : null,
-      });
-    } catch (logError) {
-      console.warn("[MedicalRecordAccessLog] Failed to record view event", logError);
-    }
-
     res.status(200).json({ record });
   } catch (error) {
     console.log(`   ⚠️  Error: ${error instanceof Error ? error.message : String(error)}`);
@@ -410,38 +388,6 @@ const createPatientRecord = async (req: Request, res: Response): Promise<void> =
     if (createSnapshot) {
       accessLogValues.snapshot = createSnapshot;
     }
-    try {
-      await medicalRecordAccessLogService.createAccessLog({
-        medical_record_id: recordId,
-        patient_id: patientIdValue,
-        accessed_by: actorContext.actorId,
-        accessed_by_email: actorContext.actorEmail,
-        accessed_by_name: actorContext.actorName,
-        access_type: "CREATE",
-        old_values: null,
-        new_values: accessLogValues,
-      });
-    } catch (logError) {
-      console.warn("[MedicalRecordAccessLog] Failed to record create event", logError);
-    }
-
-    const auditLogValues = { ...accessLogValues };
-    try {
-      await medicalRecordAuditLogService.createAuditLog({
-        medical_record_id: recordId,
-        patient_id: patientIdValue,
-        action: "CREATE",
-        event_message: "Medical record created",
-        performed_by: actorContext.actorId,
-        performed_by_email: actorContext.actorEmail,
-        performed_by_name: actorContext.actorName,
-        old_values: null,
-        new_values: auditLogValues,
-      });
-    } catch (auditError) {
-      console.warn("[MedicalRecordAuditLog] Failed to record create audit event", auditError);
-    }
-
     await medicalRecordMonitoringService.recordCreated({
       medicalRecordId: recordId,
       patientId: patientIdValue,
@@ -678,43 +624,12 @@ const updatePatientRecord = async (req: Request, res: Response): Promise<void> =
         accessNewValues.snapshot = newSnapshot;
       }
 
-      try {
-        await medicalRecordAccessLogService.createAccessLog({
-          medical_record_id: recordId,
-          patient_id: patientIdValue,
-          accessed_by: actorContext.actorId,
-          accessed_by_email: actorContext.actorEmail,
-          accessed_by_name: actorContext.actorName,
-          access_type: "UPDATE",
-          old_values: accessOldValues,
-          new_values: accessNewValues,
-        });
-      } catch (logError) {
-        console.warn("[MedicalRecordAccessLog] Failed to record update event", logError);
-      }
-
       const auditOldValues = { ...accessOldValues, changed_fields: diff.fields };
       const auditNewValues = { ...accessNewValues, changed_fields: diff.fields };
       const messageSuffix = diff.fields.join(", ");
       const eventMessage = messageSuffix.length > 0
         ? `Medical record updated: ${messageSuffix}`
         : "Medical record updated";
-
-      try {
-        await medicalRecordAuditLogService.createAuditLog({
-          medical_record_id: recordId,
-          patient_id: patientIdValue,
-          action: "UPDATE",
-          event_message: eventMessage,
-          performed_by: actorContext.actorId,
-          performed_by_email: actorContext.actorEmail,
-          performed_by_name: actorContext.actorName,
-          old_values: auditOldValues,
-          new_values: auditNewValues,
-        });
-      } catch (auditError) {
-        console.warn("[MedicalRecordAuditLog] Failed to record update audit event", auditError);
-      }
 
       await medicalRecordMonitoringService.recordUpdated({
         medicalRecordId: recordId,
@@ -799,39 +714,8 @@ const deletePatientRecord = async (req: Request, res: Response): Promise<void> =
 
     const recordId = toIdString(record._id);
     const patientIdValue = toIdString(record.patient_id);
-    try {
-      await medicalRecordAccessLogService.createAccessLog({
-        medical_record_id: recordId,
-        patient_id: patientIdValue,
-        accessed_by: actorContext.actorId,
-        accessed_by_email: actorContext.actorEmail,
-        accessed_by_name: actorContext.actorName,
-        access_type: "DELETE",
-        old_values: accessOldValues,
-        new_values: accessNewValues,
-      });
-    } catch (logError) {
-      console.warn("[MedicalRecordAccessLog] Failed to record delete event", logError);
-    }
-
     const auditOldValues = { ...accessOldValues };
     const auditNewValues = { ...accessNewValues };
-    try {
-      await medicalRecordAuditLogService.createAuditLog({
-        medical_record_id: recordId,
-        patient_id: patientIdValue,
-        action: "DELETE",
-        event_message: "Medical record soft deleted",
-        performed_by: actorContext.actorId,
-        performed_by_email: actorContext.actorEmail,
-        performed_by_name: actorContext.actorName,
-        old_values: auditOldValues,
-        new_values: auditNewValues,
-      });
-    } catch (auditError) {
-      console.warn("[MedicalRecordAuditLog] Failed to record delete audit event", auditError);
-    }
-
     await medicalRecordMonitoringService.recordDeleted({
       medicalRecordId: recordId,
       patientId: patientIdValue,
