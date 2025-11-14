@@ -126,6 +126,15 @@ export class UserService {
   ): Promise<IUser | null> {
     const before = await userRepository.findById(userId);
     const deletedUser = await userRepository.deleteById(userId);
+    const deleteFields: (keyof IUser)[] = [
+      "email",
+      "fullName",
+      "phoneNumber",
+      "address",
+      "role",
+      "isActive",
+    ];
+    const deleteDiffs = computeChanges<IUser>(before ?? undefined, undefined, deleteFields);
     await logEvent({
       eventCode: "E_00026",
       action: "DELETE",
@@ -133,18 +142,7 @@ export class UserService {
       performedBy: performedBy || userId,
       serviceName: "IAM_SERVICE",
       entityId: userId,
-      ...(before
-        ? {
-            oldValues: {
-              email: before.email,
-              fullName: before.fullName,
-              phoneNumber: before.phoneNumber,
-              address: before.address,
-              role: before.role,
-              isActive: before.isActive,
-            } as Record<string, unknown>,
-          }
-        : {}),
+      ...deleteDiffs,
     });
     return deletedUser;
   }
@@ -175,6 +173,8 @@ export class UserService {
   ): Promise<IUser | null> {
     const before = await userRepository.findById(userId);
     const updatedUser = await userRepository.updateById(userId, { role });
+    const roleFields: (keyof IUser)[] = ["role"];
+    const roleDiffs = computeChanges<IUser>(before ?? undefined, updatedUser ?? undefined, roleFields);
     await logEvent({
       eventCode: "E_00025",
       action: "UPDATE",
@@ -182,20 +182,7 @@ export class UserService {
       performedBy: performedBy || userId,
       serviceName: "IAM_SERVICE",
       entityId: userId,
-      ...(before
-        ? {
-            oldValues: {
-              role: before.role,
-            } as Record<string, unknown>,
-          }
-        : {}),
-      ...(updatedUser
-        ? {
-            newValues: {
-              role: updatedUser.role,
-            } as Record<string, unknown>,
-          }
-        : {}),
+      ...roleDiffs,
     });
     return updatedUser;
   }
@@ -207,6 +194,8 @@ export class UserService {
   ): Promise<IUser | null> {
     const before = await userRepository.findById(userId);
     const updatedUser = await userRepository.updateById(userId, { isActive });
+    const lockFields: (keyof IUser)[] = ["isActive"];
+    const lockDiffs = computeChanges<IUser>(before ?? undefined, updatedUser ?? undefined, lockFields);
     await logEvent({
       eventCode: "E_00027",
       action: `${isActive ? "UNLOCK" : "LOCK"}`,
@@ -214,20 +203,7 @@ export class UserService {
       performedBy: performedBy || userId,
       serviceName: "IAM_SERVICE",
       entityId: userId,
-      ...(before
-        ? {
-            oldValues: {
-              isActive: before.isActive,
-            } as Record<string, unknown>,
-          }
-        : {}),
-      ...(updatedUser
-        ? {
-            newValues: {
-              isActive: updatedUser.isActive,
-            } as Record<string, unknown>,
-          }
-        : {}),
+      ...lockDiffs,
     });
     return updatedUser;
   }
