@@ -62,6 +62,16 @@ export class RoleService {
 
     const newRole = await roleRepository.create(roleData);
 
+    const createFields: (keyof IRole)[] = [
+      "roleCode",
+      "roleName",
+      "description",
+      "isSystemRole",
+      "isActive",
+      "privileges",
+    ];
+    const createDiffs = computeChanges<IRole>(undefined, newRole ?? undefined, createFields);
+
     await logEvent({
       eventCode: "E_00028",
       action: "CREATE",
@@ -69,14 +79,7 @@ export class RoleService {
       performedBy: performedBy || "Unknown",
       serviceName: "IAM_SERVICE",
       entityId: newRole._id,
-      newValues: {
-        roleCode: newRole.roleCode,
-        roleName: newRole.roleName,
-        description: newRole.description,
-        isSystemRole: newRole.isSystemRole,
-        isActive: newRole.isActive,
-        privileges: newRole.privileges,
-      },
+      ...createDiffs,
     });
     return newRole;
   }
@@ -184,16 +187,16 @@ export class RoleService {
       throw new Error("Cannot delete system roles");
     }
 
-    const oldValues = {
-      roleCode: role.roleCode,
-      roleName: role.roleName,
-      description: role.description,
-      isSystemRole: role.isSystemRole,
-      isActive: role.isActive,
-      privileges: role.privileges,
-    } as Record<string, unknown>;
-
     const deletedRole = await roleRepository.deleteById(roleId);
+    const deleteFields: (keyof IRole)[] = [
+      "roleCode",
+      "roleName",
+      "description",
+      "isSystemRole",
+      "isActive",
+      "privileges",
+    ];
+    const deleteDiffs = computeChanges<IRole>(role ?? undefined, undefined, deleteFields);
     await logEvent({
       eventCode: "E_00030",
       action: "DELETE",
@@ -201,7 +204,7 @@ export class RoleService {
       performedBy: performedBy || "Unknown",
       serviceName: "IAM_SERVICE",
       entityId: roleId,
-      oldValues,
+      ...deleteDiffs,
     });
     return deletedRole;
   }
