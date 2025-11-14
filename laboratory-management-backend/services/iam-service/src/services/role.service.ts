@@ -1,10 +1,14 @@
 import { roleRepository } from "../repositories/index.js";
-import { auditLogRepository } from "../repositories/index.js";
+import { logEvent } from "../utils/logging.util.js";
 
 import type { IRole } from "../db/models/Role.model.js";
-import { PaginationResponse, PaginationOptions } from "../types/pagination.type.js";
+import {
+  PaginationResponse,
+  PaginationOptions,
+} from "../types/pagination.type.js";
 import { PaginationUtils } from "../utils/pagination.util.js";
 import { isValidPrivilegeCode } from "../constants/privileges.constant.js";
+import { computeChanges } from "../utils/diff.util.js";
 
 export interface CreateRoleData {
   roleCode: string;
@@ -37,29 +41,46 @@ export class RoleService {
     performedBy?: string
   ): Promise<IRole> {
     // Check for duplicate role code
-    const existingRole = await roleRepository.findOne({ roleCode: roleData.roleCode });
+    const existingRole = await roleRepository.findOne({
+      roleCode: roleData.roleCode,
+    });
     if (existingRole) {
-      throw new Error('Role with this code already exists');
+      throw new Error("Role with this code already exists");
     }
 
     // Validate privileges if provided
     if (roleData.privileges && roleData.privileges.length > 0) {
       const invalidPrivileges = roleData.privileges.filter(
-        priv => !isValidPrivilegeCode(priv)
+        (priv) => !isValidPrivilegeCode(priv)
       );
       if (invalidPrivileges.length > 0) {
-        throw new Error(`Invalid privilege codes: ${invalidPrivileges.join(', ')}`);
+        throw new Error(
+          `Invalid privilege codes: ${invalidPrivileges.join(", ")}`
+        );
       }
     }
 
     const newRole = await roleRepository.create(roleData);
 
-    await this._logEvent(
-      "E_00001",
-      "CREATE",
-      `Role ${newRole.roleCode} created successfully!`,
-      performedBy || "Unknown"
-    );
+    const createFields: (keyof IRole)[] = [
+      "roleCode",
+      "roleName",
+      "description",
+      "isSystemRole",
+      "isActive",
+      "privileges",
+    ];
+    const createDiffs = computeChanges<IRole>(undefined, newRole ?? undefined, createFields);
+
+    await logEvent({
+      eventCode: "E_00028",
+      action: "CREATE",
+      eventMessage: `Role ${newRole.roleCode} created successfully!`,
+      performedBy: performedBy || "Unknown",
+      serviceName: "IAM_SERVICE",
+      entityId: newRole._id,
+      ...createDiffs,
+    });
     return newRole;
   }
 
@@ -71,39 +92,82 @@ export class RoleService {
     // Check if role exists
     const role = await roleRepository.findById(roleId);
     if (!role) {
-      throw new Error('Role not found');
+      throw new Error("Role not found");
     }
 
     // Prevent modification of system roles
-    if (role.isSystemRole && (roleData.roleCode || roleData.isSystemRole === false)) {
-      throw new Error('Cannot modify system role code or system role status');
+    if (
+      role.isSystemRole &&
+      (roleData.roleCode || roleData.isSystemRole === false)
+    ) {
+      throw new Error("Cannot modify system role code or system role status");
     }
 
     if (roleData.roleCode && roleData.roleCode !== role.roleCode) {
-      const existingRole = await roleRepository.findOne({ roleCode: roleData.roleCode });
+      const existingRole = await roleRepository.findOne({
+        roleCode: roleData.roleCode,
+      });
       if (existingRole) {
-        throw new Error('Role with this code already exists');
+        throw new Error("Role with this code already exists");
       }
     }
 
     // Validate privileges if being updated
     if (roleData.privileges && roleData.privileges.length > 0) {
       const invalidPrivileges = roleData.privileges.filter(
-        priv => !isValidPrivilegeCode(priv)
+        (priv) => !isValidPrivilegeCode(priv)
       );
       if (invalidPrivileges.length > 0) {
-        throw new Error(`Invalid privilege codes: ${invalidPrivileges.join(', ')}`);
+        throw new Error(
+          `Invalid privilege codes: ${invalidPrivileges.join(", ")}`
+        );
       }
     }
 
+    const oldValues = {
+      roleCode: role.roleCode,
+      roleName: role.roleName,
+      description: role.description,
+      isSystemRole: role.isSystemRole,
+      isActive: role.isActive,
+      privileges: role.privileges,
+    } as Record<string, unknown>;
+
     const updatedRole = await roleRepository.updateById(roleId, roleData);
 
-    await this._logEvent(
-      "E_00002",
-      "UPDATE",
-      `Role ${updatedRole?.roleCode} updated successfully!`,
-      performedBy || "Unknown"
+    const newValues = {
+      roleCode: updatedRole?.roleCode,
+      roleName: updatedRole?.roleName,
+      description: updatedRole?.description,
+      isSystemRole: updatedRole?.isSystemRole,
+      isActive: updatedRole?.isActive,
+      privileges: updatedRole?.privileges,
+    } as Record<string, unknown>;
+
+    const fields: (keyof IRole)[] = [
+      "roleCode",
+      "roleName",
+      "description",
+      "isSystemRole",
+      "isActive",
+      "privileges",
+    ];
+
+    const diffs = computeChanges<IRole>(
+      oldValues ?? undefined,
+      newValues ?? undefined,
+      fields
     );
+
+    await logEvent({
+      eventCode: "E_00029",
+      action: "UPDATE",
+      eventMessage: `Role ${updatedRole?.roleCode} updated successfully!`,
+      performedBy: performedBy || "Unknown",
+      serviceName: "IAM_SERVICE",
+      entityId: roleId,
+      ...diffs,
+    });
 
     return updatedRole;
   }
@@ -115,34 +179,54 @@ export class RoleService {
     // Check if role exists
     const role = await roleRepository.findById(roleId);
     if (!role) {
-      throw new Error('Role not found');
+      throw new Error("Role not found");
     }
 
     // Prevent deletion of system roles
     if (role.isSystemRole) {
-      throw new Error('Cannot delete system roles');
+      throw new Error("Cannot delete system roles");
     }
 
     const deletedRole = await roleRepository.deleteById(roleId);
-    await this._logEvent(
-      "E_00003",
-      "DELETE",
-      `Role ${deletedRole?.roleCode} deleted successfully!`,
-      performedBy || "Unknown"
-    );
+    const deleteFields: (keyof IRole)[] = [
+      "roleCode",
+      "roleName",
+      "description",
+      "isSystemRole",
+      "isActive",
+      "privileges",
+    ];
+    const deleteDiffs = computeChanges<IRole>(role ?? undefined, undefined, deleteFields);
+    await logEvent({
+      eventCode: "E_00030",
+      action: "DELETE",
+      eventMessage: `Role ${deletedRole?.roleCode} deleted successfully!`,
+      performedBy: performedBy || "Unknown",
+      serviceName: "IAM_SERVICE",
+      entityId: roleId,
+      ...deleteDiffs,
+    });
     return deletedRole;
   }
 
-  async assignPrivilegesToRole(roleId: string, privileges: string[], performedBy: string = 'system'): Promise<IRole | null> {
+  async assignPrivilegesToRole(
+    roleId: string,
+    privileges: string[],
+    performedBy: string = "system"
+  ): Promise<IRole | null> {
     const role = await roleRepository.findById(roleId);
     if (!role) {
-      throw new Error('Role not found');
+      throw new Error("Role not found");
     }
 
     // Validate privileges
-    const invalidPrivileges = privileges.filter(priv => !isValidPrivilegeCode(priv));
+    const invalidPrivileges = privileges.filter(
+      (priv) => !isValidPrivilegeCode(priv)
+    );
     if (invalidPrivileges.length > 0) {
-      throw new Error(`Invalid privilege codes: ${invalidPrivileges.join(', ')}`);
+      throw new Error(
+        `Invalid privilege codes: ${invalidPrivileges.join(", ")}`
+      );
     }
 
     const updatedPrivileges = [...new Set([...role.privileges, ...privileges])];
@@ -153,10 +237,14 @@ export class RoleService {
     );
   }
 
-  async removePrivilegesFromRole(roleId: string, privileges: string[], performedBy: string = 'system'): Promise<IRole | null> {
+  async removePrivilegesFromRole(
+    roleId: string,
+    privileges: string[],
+    performedBy: string = "system"
+  ): Promise<IRole | null> {
     const role = await roleRepository.findById(roleId);
     if (!role) {
-      throw new Error('Role not found');
+      throw new Error("Role not found");
     }
 
     const updatedPrivileges = role.privileges.filter(
@@ -170,7 +258,7 @@ export class RoleService {
   }
 
   async roleExists(roleId: string): Promise<boolean> {
-    const role = await roleRepository.findById(roleId, '_id');
+    const role = await roleRepository.findById(roleId, "_id");
     return !!role;
   }
 
@@ -182,22 +270,11 @@ export class RoleService {
     options: PaginationOptions
   ): Promise<PaginationResponse<IRole>> {
     const result = await roleRepository.findWithPagination(options);
-    return PaginationUtils.formatResponse(result.data, result.hasNextPage, options, result.totalCount);
-  }
-
-  private async _logEvent(
-    eventCode: string,
-    action: string,
-    eventMessage: string,
-    perfomedBy: string
-  ): Promise<void> {
-    await auditLogRepository.create({
-      eventCode,
-      action,
-      eventMessage,
-      userId: perfomedBy,
-      performedAt: new Date(),
-      serviceName: "Role Service",
-    });
+    return PaginationUtils.formatResponse(
+      result.data,
+      result.hasNextPage,
+      options,
+      result.totalCount
+    );
   }
 }

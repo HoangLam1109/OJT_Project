@@ -5,7 +5,7 @@ import { userRepository } from "../repositories/index.js";
 export interface CreateOAuthUserData {
   email: string;
   fullName: string;
-  provider: "google" | "facebook";
+  provider: "google";
   providerId: string;
   avatar?: string | undefined;
 }
@@ -48,7 +48,7 @@ export class OAuthService {
   }
 
   async findUserByProvider(
-    provider: "google" | "facebook",
+    provider: "google",
     providerId: string
   ): Promise<IUser | null> {
     return await userRepository.findOne({
@@ -59,7 +59,7 @@ export class OAuthService {
 
   async findUserByEmailAndProvider(
     email: string,
-    provider: "google" | "facebook" | "local"
+    provider: "google" | "local"
   ): Promise<IUser | null> {
     return await userRepository.findOne({
       email,

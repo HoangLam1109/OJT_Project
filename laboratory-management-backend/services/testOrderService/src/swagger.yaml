@@ -59,6 +59,8 @@ paths:
   /testOrder/all:
     get:
       summary: Lấy danh sách Test Orders (có phân trang)
+      tags:
+        - Get
       description: |
         Lấy danh sách tất cả Test Orders chưa bị xóa mềm (is_deleted = false).
         Hỗ trợ phân trang qua query params `page` và `limit`.
@@ -139,6 +141,8 @@ paths:
   /testOrder/search:
     get:
       summary: Tìm kiếm Test Orders theo từ khóa
+      tags:
+        - Search
       description: |
         Tìm kiếm Test Orders theo từ khóa (`keyword`) khớp với tên bệnh nhân, barcode, hoặc loại xét nghiệm.  
         Có thể kết hợp phân trang bằng query `page` và `limit`.
@@ -180,16 +184,20 @@ paths:
   /testOrder/result:
     get:
       summary: Lấy danh sách kết quả tất cả Test Orders Result
+      tags:
+        - Get
       responses:
         '200':
           description: Danh sách Test Orders Result
         '500':
           description: Lỗi server
-
+  
   # ==================== GET: Lấy theo ID ====================
   /testOrder/{id}:
     get:
       summary: Lấy Test Order theo ID
+      tags:
+        - Get
       parameters:
         - in: path
           name: id
@@ -213,7 +221,28 @@ paths:
                     example: "Test order not found"
         '500':
           description: Lỗi server
-
+  # ==================== GET: Lấy tất cả Test Order của mỗi patient====================
+  /testOrder/group-by-patient:
+    get:
+      summary: Lấy tất cả TestOrder group theo patient
+      tags:
+        - Get
+      responses:
+        '200':
+          description: Danh sách các patient với test order
+        '500':
+          description: Lỗi server
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Internal server error
   # ==================== PUT: Cập nhật Test Order ====================
   /testOrder/update/{id}:
     put:

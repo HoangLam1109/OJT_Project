@@ -11,7 +11,11 @@ dotenv.config();
 
 const userService = new UserService();
 
-const registerUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+const registerUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   /*
     #swagger.auto = false
     #swagger.tags = ['Authentication']
@@ -59,29 +63,15 @@ const registerUser = async (req: Request, res: Response, next: NextFunction): Pr
       address,
     } = req.body;
 
-    if (
-      !email ||
-      !fullName ||
-      !identityNumber ||
-      !gender ||
-      !age ||
-      !phoneNumber ||
-      !dateOfBirth ||
-      !password ||
-      !phoneNumber ||
-      !address
-    ) {
-      throw new AppError(400, "Missing required fields!");
-    }
-
     const existingEmail = await userService.getUserByEmail(email);
     const existingPhoneNumber = await userService.getUserByPhoneNumber(
       identityNumber
     );
     if (existingEmail || existingPhoneNumber) {
-      throw new AppError(400, existingEmail
-          ? "Email already exists!"
-          : "Phone number already exists!");
+      throw new AppError(
+        400,
+        existingEmail ? "Email already exists!" : "Phone number already exists!"
+      );
     }
 
     const newUser = await userService.createUser(
@@ -99,10 +89,10 @@ const registerUser = async (req: Request, res: Response, next: NextFunction): Pr
       undefined
     );
 
-    console.log('[AuthController] Created user role:', newUser.role);
+    console.log("[AuthController] Created user role:", newUser.role);
     // Auto-create patient record only for normal users
     if (!newUser.role || newUser.role[0] === ROLE_CODES.USER) {
-      console.log('[AuthController] Auto-creating patient for user role USER');
+      console.log("[AuthController] Auto-creating patient for user role USER");
       await patientServiceClient.createPatientForUser(String(newUser._id), {
         id: String(newUser._id),
         email: newUser.email,
@@ -117,7 +107,11 @@ const registerUser = async (req: Request, res: Response, next: NextFunction): Pr
   }
 };
 
-const loginUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+const loginUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   /*
     #swagger.auto = false
     #swagger.tags = ['Authentication']
@@ -191,7 +185,11 @@ const loginUser = async (req: Request, res: Response, next: NextFunction): Promi
   }
 };
 
-const logoutUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+const logoutUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   /*
     #swagger.auto = false
     #swagger.tags = ['Authentication']
@@ -217,7 +215,11 @@ const logoutUser = async (req: Request, res: Response, next: NextFunction): Prom
   }
 };
 
-const refreshToken = async (req: Request, res: Response, next: NextFunction) => {
+const refreshToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   /*
     #swagger.auto = false
     #swagger.tags = ['Authentication']
@@ -244,7 +246,7 @@ const refreshToken = async (req: Request, res: Response, next: NextFunction) => 
     if (!refreshToken) {
       throw new AppError(401, "No refresh token provided");
     }
-    
+
     // Generate new access token
     refreshJWT(res, userId);
 
