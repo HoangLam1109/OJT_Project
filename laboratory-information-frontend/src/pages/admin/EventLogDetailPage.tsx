@@ -433,10 +433,6 @@ const EventLogDetailPage: React.FC = () => {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <Label className="text-sm text-gray-600">ID người dùng</Label>
-              <p className="text-lg font-semibold mt-1">{log.operator_id || '-'}</p>
-            </div>
-            <div>
               <Label className="text-sm text-gray-600">Họ và tên</Label>
               <p className="text-lg mt-1">{log.operator_name || '-'}</p>
             </div>

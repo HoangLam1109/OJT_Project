@@ -19,7 +19,7 @@ export function AdminAuditReportsPage() {
   const [error, setError] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name?: string } | null>(null);
   // removed modal-based viewing; now navigate to detail page
-  const [serviceFilter, setServiceFilter] = useState<'all' | 'IAM_SERVICE' | 'PATIENT_SERVICE' | 'TEST_ORDER_SERVICE' | 'MONITORING_SERVICE' | 'CHAT_SERVICE'>('all');
+  const [serviceFilter, setServiceFilter] = useState<'all' | 'IAM_SERVICE' | 'PATIENT_SERVICE' | 'TEST_ORDER_SERVICE' | 'WAREHOUSE_SERVICE' | 'MONITORING_SERVICE' | 'CHAT_SERVICE'>('all');
   const [actionFilter, setActionFilter] = useState<'all' | 'CREATE' | 'DELETE' | 'UPDATE'>('all');
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
 
@@ -70,6 +70,18 @@ export function AdminAuditReportsPage() {
       case 'view': return <Eye className="h-4 w-4" />;
       case 'export': return <Download className="h-4 w-4" />;
       default: return <FileText className="h-4 w-4" />;
+    }
+  };
+
+  const getServiceDisplayName = (serviceName: string) => {
+    switch (serviceName) {
+      case 'PATIENT_SERVICE': return 'Quản lý bệnh nhân';
+      case 'IAM_SERVICE': return 'Quản lý người dùng';
+      case 'TEST_ORDER_SERVICE': return 'Quản lý xét nghiệm';
+      case 'WAREHOUSE_SERVICE': return 'Quản lý nhà kho';
+      case 'MONITORING_SERVICE': return 'Dịch vụ giám sát';
+      case 'CHAT_SERVICE': return 'Quản lý tin nhắn';
+      default: return serviceName || '—';
     }
   };
 
@@ -142,11 +154,12 @@ export function AdminAuditReportsPage() {
                 </SelectTrigger>
                 <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
                   <SelectItem value="all">Tất cả chức năng</SelectItem>
-                  <SelectItem value="IAM_SERVICE">IAM_SERVICE</SelectItem>
-                  <SelectItem value="PATIENT_SERVICE">PATIENT_SERVICE</SelectItem>
-                  <SelectItem value="TEST_ORDER_SERVICE">TEST_ORDER_SERVICE</SelectItem>
-                  <SelectItem value="MONITORING_SERVICE">MONITORING_SERVICE</SelectItem>
-                  <SelectItem value="CHAT_SERVICE">CHAT_SERVICE</SelectItem>
+                  <SelectItem value="IAM_SERVICE">Quản lý người dùng</SelectItem>
+                  <SelectItem value="PATIENT_SERVICE">Quản lý bệnh nhân</SelectItem>
+                  <SelectItem value="TEST_ORDER_SERVICE">Quản lý xét nghiệm</SelectItem>
+                  <SelectItem value="WAREHOUSE_SERVICE">Quản lý nhà kho</SelectItem>
+                  <SelectItem value="MONITORING_SERVICE">Dịch vụ giám sát</SelectItem>
+                  <SelectItem value="CHAT_SERVICE">Quản lý tin nhắn</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -232,7 +245,7 @@ export function AdminAuditReportsPage() {
                 </div>
               </div>
             </td>
-            <td className="py-3 px-4 text-sm truncate" title={log.service_name}>{log.service_name || '—'}</td>
+            <td className="py-3 px-4 text-sm truncate" title={log.service_name}>{getServiceDisplayName(log.service_name)}</td>
             <td className="py-3 px-4">
               <div className="flex items-start gap-2">
                 {getActionIcon(String(log.action))}
