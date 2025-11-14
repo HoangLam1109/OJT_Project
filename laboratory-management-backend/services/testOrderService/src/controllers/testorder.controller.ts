@@ -123,6 +123,30 @@ export const getTestOrderById = async (req: Request<{ id: string }>, res: Respon
   }
 };
 
+export const getAllOrdersGroupedByPatient = async (req: Request, res: Response) => {
+  try {
+    const data = await TestOrderService.getOrdersGroupedByPatient();
+
+    const orderedData = data.map(d => ({
+      patient_id: d.patient_id,
+      patient_name: d.patient_name,
+      orders: d.orders
+    }));
+
+    return res.json({
+      success: true,
+      data: orderedData
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error instanceof Error ? error.message : "Unknown error"
+    });
+  }
+};
+
+
 export const searchTestOrders = async (req: Request, res: Response) => {
   try {
     const keyword = (req.query.keyword as string) || "";
