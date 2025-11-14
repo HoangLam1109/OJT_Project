@@ -23,6 +23,14 @@ const SelectInstrumentsPage: React.FC = () => {
   const location = useLocation();
   const state = location.state as LocationState | null;
 
+  // Detect current route base path (service or labuser)
+  const getBasePath = () => {
+    if (location.pathname.startsWith('/service')) {
+      return '/service';
+    }
+    return '/labuser';
+  };
+
   const [instruments, setInstruments] = useState<Instrument[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedInstruments, setSelectedInstruments] = useState<Record<string, SelectedInstrument>>({});
@@ -31,7 +39,8 @@ const SelectInstrumentsPage: React.FC = () => {
   useEffect(() => {
     if (!state?.formData) {
       toast.error('Thiếu thông tin form');
-      navigate('/labuser/create-test-order');
+      const basePath = getBasePath();
+      navigate(`${basePath}/create-test-order`);
     }
   }, [state, navigate]);
 
@@ -83,7 +92,8 @@ const SelectInstrumentsPage: React.FC = () => {
     }
 
     // Navigate to select reagents page with form data and selected instruments
-    navigate('/labuser/select-reagents', {
+    const basePath = getBasePath();
+    navigate(`${basePath}/select-reagents`, {
       state: {
         formData: state.formData,
         instruments: Object.values(selectedInstruments),
@@ -175,7 +185,10 @@ const SelectInstrumentsPage: React.FC = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate('/labuser/create-test-order', { state })}
+            onClick={() => {
+              const basePath = getBasePath();
+              navigate(`${basePath}/create-test-order`, { state });
+            }}
             className="flex items-center gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -331,7 +344,10 @@ const SelectInstrumentsPage: React.FC = () => {
         <Button
           type="button"
           variant="outline"
-          onClick={() => navigate('/labuser/create-test-order', { state })}
+          onClick={() => {
+            const basePath = getBasePath();
+            navigate(`${basePath}/create-test-order`, { state });
+          }}
           className="px-6 py-2.5 border-gray-300 text-gray-700 hover:bg-gray-50"
         >
           Hủy

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useAuthContext } from '../../hooks/useAuthContext';
 import { useTestOrderActions } from '../../context/TestOrderActionsContext';
@@ -22,6 +22,7 @@ const TestOrdersPage: React.FC = () => {
   const { user } = useAuthContext();
   const { setOnCreateTestOrder } = useTestOrderActions();
   const navigate = useNavigate();
+  const location = useLocation();
   
 
   const [orders, setOrders] = useState<TestOrder[]>([]);
@@ -76,9 +77,18 @@ const TestOrdersPage: React.FC = () => {
   };
 
 
+  // Detect current route base path (service or labuser)
+  const getBasePath = () => {
+    if (location.pathname.startsWith('/service')) {
+      return '/service';
+    }
+    return '/labuser';
+  };
+
   const handleCreate = React.useCallback(() => {
-    navigate('/labuser/create-test-order');
-  }, [navigate]);
+    const basePath = getBasePath();
+    navigate(`${basePath}/create-test-order`);
+  }, [navigate, location.pathname]);
 
   // Đăng ký callback với context
   useEffect(() => {

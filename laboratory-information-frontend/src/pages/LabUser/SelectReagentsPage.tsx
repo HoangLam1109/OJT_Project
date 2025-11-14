@@ -27,6 +27,14 @@ const SelectReagentsPage: React.FC = () => {
   const { user } = useAuthContext();
   const state = location.state as LocationState | null;
 
+  // Detect current route base path (service or labuser)
+  const getBasePath = () => {
+    if (location.pathname.startsWith('/service')) {
+      return '/service';
+    }
+    return '/labuser';
+  };
+
   const [baseReagents, setBaseReagents] = useState<Reagent[]>([]);
   const [reagents, setReagents] = useState<Reagent[]>([]);
   const [selectedReagents, setSelectedReagents] = useState<Record<string, SelectedReagent>>({});
@@ -47,7 +55,8 @@ const SelectReagentsPage: React.FC = () => {
   useEffect(() => {
     if (!state?.formData || !state?.instruments) {
       toast.error('Thiếu thông tin form');
-      navigate('/labuser/create-test-order');
+      const basePath = getBasePath();
+      navigate(`${basePath}/create-test-order`);
     }
   }, [state, navigate]);
 
@@ -167,7 +176,8 @@ const SelectReagentsPage: React.FC = () => {
 
       await testOrderService.createTestOrder(submitData);
       toast.success('Tạo lệnh thành công!');
-      navigate('/labuser/test-orders');
+      const basePath = getBasePath();
+      navigate(`${basePath}/test-orders`);
 
     } catch (err: any) {
       const msg = err.response?.data?.message || 'Lỗi hệ thống';
@@ -257,7 +267,10 @@ const SelectReagentsPage: React.FC = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate('/labuser/select-instruments', { state })}
+            onClick={() => {
+              const basePath = getBasePath();
+              navigate(`${basePath}/select-instruments`, { state });
+            }}
             className="flex items-center gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -450,7 +463,10 @@ const SelectReagentsPage: React.FC = () => {
         <Button
           type="button"
           variant="outline"
-          onClick={() => navigate('/labuser/select-instruments', { state })}
+          onClick={() => {
+            const basePath = getBasePath();
+            navigate(`${basePath}/select-instruments`, { state });
+          }}
           disabled={isSubmitting}
           className="px-6 py-2.5 border-gray-300 text-gray-700 hover:bg-gray-50"
         >
