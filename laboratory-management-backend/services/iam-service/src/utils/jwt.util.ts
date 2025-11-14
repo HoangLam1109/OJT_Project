@@ -39,6 +39,7 @@ const refreshJWT = (res: Response, userId: string) => {
     maxAge: 15 * 60 * 1000,
     path: "/",
   });
+  console.log("New access Token has been assigned");
 };
 
 const clearJWT = (res: Response) => {

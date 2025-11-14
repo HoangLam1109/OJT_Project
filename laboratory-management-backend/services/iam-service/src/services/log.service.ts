@@ -18,14 +18,8 @@ export class LogService {
     eventId: string,
     performedBy?: string
   ): Promise<IAuditLog | null> {
-    const deletedUser = await auditLogRepository.deleteById(eventId);
-    await this._logEvent(
-      "E_00003",
-      "DELETE",
-      "Log deleted successfully!",
-      performedBy || "Unknown"
-    );
-    return deletedUser;
+    const deletedLog = await auditLogRepository.deleteById(eventId);
+    return deletedLog;
   }
 
   async getLogsWithPagination(
@@ -38,21 +32,5 @@ export class LogService {
       options,
       result.totalCount
     );
-  }
-
-  private async _logEvent(
-    eventCode: string,
-    action: string,
-    eventMessage: string,
-    perfomedBy: string
-  ): Promise<void> {
-    await auditLogRepository.create({
-      eventCode,
-      action,
-      eventMessage,
-      userId: perfomedBy,
-      performedAt: new Date(),
-      serviceName: "Log Service",
-    });
   }
 }

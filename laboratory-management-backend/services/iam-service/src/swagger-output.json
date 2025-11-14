@@ -1375,6 +1375,10 @@
                   "type": "string",
                   "example": "string"
                 },
+                "password": {
+                  "type": "string",
+                  "example": "string"
+                },
                 "identityNumber": {
                   "type": "string",
                   "example": "string"
