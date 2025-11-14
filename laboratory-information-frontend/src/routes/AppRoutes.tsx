@@ -24,14 +24,12 @@ import LabUserDashboard from "../pages/LabUser/Dashboard";
 import TestOrdersPage from "../pages/LabUser/TestOrdersPage";
 import CreateTestOrderPage from "../pages/LabUser/CreateTestOrderPage";
 import SelectReagentsPage from "../pages/LabUser/SelectReagentsPage";
-import { LabUserRouteWrapper } from "./LabUserRouteWrapper";
-import { LabUserRouteElement } from "./LabUserRouteElement";
+import { LabUserLayout } from "../layouts/LabUserLayout";
 import TestResultsPage from "../pages/LabUser/TestResultsPage";
 import ReagentManagementPage from "../pages/LabUser/ReagentManagementPage";
 import { ServiceLayout } from "../layouts/ServiceLayout";
 import ServiceDashboardPage from "../pages/service/ServiceDashboardPage";
 import ServiceEventLogPage from "../pages/service/ServiceEventLogPage";
-import ServiceReagentPage from "../pages/service/ServiceReagentPage";
 import ServiceInstrumentPage from "../pages/service/ServiceInstrumentPage";
 import { GoogleCallbackPage } from "../pages/login/GoogleCallbackPage";
 import { TestOrderActionsProvider } from "../context/TestOrderActionsContext";
@@ -56,12 +54,6 @@ interface LayoutProps {
   children?: ReactNode;
 }
 
-/**
- * Props interface cho LabUserRouteElement (có thêm setLabUserPage)
- */
-interface LabUserLayoutProps extends LayoutProps {
-  setLabUserPage: (page: string) => void;
-}
 
 /**
  * Cấu hình cho một page con trong role routes
@@ -89,13 +81,11 @@ interface RoleRouteConfig {
   /** Roles được phép truy cập */
   allowedRoles: string[];
   /** Layout component */
-  Layout: ComponentType<LayoutProps | LabUserLayoutProps>;
+  Layout: ComponentType<LayoutProps>;
   /** Default page khi truy cập base path */
   defaultPage: string;
   /** Danh sách các page con */
   pages: PageConfig[];
-  /** Có phải LabUserRouteElement không (cần setLabUserPage) */
-  isLabUserRoute?: boolean;
 }
 
 // ============================================================================
@@ -169,9 +159,12 @@ const roleRoutes: Record<string, RoleRouteConfig> = {
   LAB_USER: {
     basePath: "/labuser",
     allowedRoles: ["LAB_USER"],
-    Layout: LabUserRouteElement as ComponentType<LayoutProps | LabUserLayoutProps>,
+    Layout: ((props: LayoutProps) => (
+      <TestOrderActionsProvider>
+        <LabUserLayout {...props} />
+      </TestOrderActionsProvider>
+    )) as ComponentType<LayoutProps>,
     defaultPage: "dashboard",
-    isLabUserRoute: true,
     pages: [
       { path: "dashboard", component: LabUserDashboard },
       { path: "patients", component: AdminPatientManagementPage },
@@ -200,7 +193,7 @@ const roleRoutes: Record<string, RoleRouteConfig> = {
     pages: [
       { path: "dashboard", component: ServiceDashboardPage },
       { path: "event-logs", component: ServiceEventLogPage },
-      { path: "reagents", component: ServiceReagentPage },
+      { path: "reagents", component: ReagentManagementPage },
       { path: "instruments", component: ServiceInstrumentPage },
       {
         path: "test-orders",
@@ -252,7 +245,7 @@ function createRoleRoutes(
   setCurrentPage: (page: string) => void,
   navigate: ReturnType<typeof useNavigate>
 ): ReactElement[] {
-  const { basePath, allowedRoles, Layout, defaultPage, pages, isLabUserRoute } = config;
+  const { basePath, allowedRoles, Layout, defaultPage, pages } = config;
 
   // Handler để navigate và update state
   const handleNavigate = (page: string) => {
@@ -279,9 +272,7 @@ function createRoleRoutes(
       element={
         <ProtectedRoute allowedRoles={allowedRoles}>
           <Layout
-            {...(isLabUserRoute
-              ? { ...baseLayoutProps, setLabUserPage: setCurrentPage }
-              : baseLayoutProps)}
+            {...baseLayoutProps}
           >
             {renderPage(defaultPageConfig, user)}
           </Layout>
@@ -300,9 +291,8 @@ function createRoleRoutes(
         element={
           <ProtectedRoute allowedRoles={allowedRoles}>
             <Layout
-              {...(isLabUserRoute
-                ? { ...baseLayoutProps, setLabUserPage: setCurrentPage, currentPage: pageConfig.path }
-                : { ...baseLayoutProps, currentPage: pageConfig.path })}
+              {...baseLayoutProps}
+              currentPage={pageConfig.path}
             >
               {renderPage(pageConfig, user)}
             </Layout>
@@ -358,6 +348,16 @@ export function AppRoutes() {
             location.pathname.includes("/select-reagents") ||
             location.pathname.includes("/patient-medical-records") ||
             location.pathname.includes("/patients/"))
+        ) {
+          return;
+        }
+
+        // Bỏ qua các routes đặc biệt của service
+        if (
+          basePath === "/service" &&
+          (location.pathname.includes("/create-test-order") ||
+            location.pathname.includes("/select-instruments") ||
+            location.pathname.includes("/select-reagents"))
         ) {
           return;
         }
@@ -421,17 +421,19 @@ export function AppRoutes() {
         path="/labuser/create-test-order"
         element={
           <ProtectedRoute allowedRoles={["LAB_USER"]}>
-            <LabUserRouteWrapper
-              currentUser={user!}
-              onLogout={onLogout}
-              currentPage="test-orders"
-              onNavigate={(page) => {
-                setCurrentPage("LAB_USER", page);
-                navigate(`/labuser`);
-              }}
-            >
-              <CreateTestOrderPage />
-            </LabUserRouteWrapper>
+            <TestOrderActionsProvider>
+              <LabUserLayout
+                currentUser={user!}
+                onLogout={onLogout}
+                currentPage="test-orders"
+                onNavigate={(page) => {
+                  setCurrentPage("LAB_USER", page);
+                  navigate(`/labuser`);
+                }}
+              >
+                <CreateTestOrderPage />
+              </LabUserLayout>
+            </TestOrderActionsProvider>
           </ProtectedRoute>
         }
       />
@@ -439,17 +441,19 @@ export function AppRoutes() {
         path="/labuser/select-instruments"
         element={
           <ProtectedRoute allowedRoles={["LAB_USER"]}>
-            <LabUserRouteWrapper
-              currentUser={user!}
-              onLogout={onLogout}
-              currentPage="test-orders"
-              onNavigate={(page) => {
-                setCurrentPage("LAB_USER", page);
-                navigate(`/labuser`);
-              }}
-            >
-              <SelectInstrumentsPage />
-            </LabUserRouteWrapper>
+            <TestOrderActionsProvider>
+              <LabUserLayout
+                currentUser={user!}
+                onLogout={onLogout}
+                currentPage="test-orders"
+                onNavigate={(page) => {
+                  setCurrentPage("LAB_USER", page);
+                  navigate(`/labuser`);
+                }}
+              >
+                <SelectInstrumentsPage />
+              </LabUserLayout>
+            </TestOrderActionsProvider>
           </ProtectedRoute>
         }
       />
@@ -457,38 +461,97 @@ export function AppRoutes() {
         path="/labuser/select-reagents"
         element={
           <ProtectedRoute allowedRoles={["LAB_USER"]}>
-            <LabUserRouteWrapper
-              currentUser={user!}
-              onLogout={onLogout}
-              currentPage="test-orders"
-              onNavigate={(page) => {
-                setCurrentPage("LAB_USER", page);
-                navigate(`/labuser`);
-              }}
-            >
-              <SelectReagentsPage />
-            </LabUserRouteWrapper>
+            <TestOrderActionsProvider>
+              <LabUserLayout
+                currentUser={user!}
+                onLogout={onLogout}
+                currentPage="test-orders"
+                onNavigate={(page) => {
+                  setCurrentPage("LAB_USER", page);
+                  navigate(`/labuser`);
+                }}
+              >
+                <SelectReagentsPage />
+              </LabUserLayout>
+            </TestOrderActionsProvider>
           </ProtectedRoute>
         }
       />
    
+      {/* Special Service Routes - Các routes đặc biệt không nằm trong cấu hình chính */}
+      <Route
+        path="/service/create-test-order"
+        element={
+          <ProtectedRoute allowedRoles={["SERVICE"]}>
+            <ServiceLayout
+              currentUser={user!}
+              onLogout={onLogout}
+              currentPage="test-orders"
+              onNavigate={(page) => {
+                setCurrentPage("SERVICE", page);
+                navigate(`/service`);
+              }}
+            >
+              <CreateTestOrderPage />
+            </ServiceLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/service/select-instruments"
+        element={
+          <ProtectedRoute allowedRoles={["SERVICE"]}>
+            <ServiceLayout
+              currentUser={user!}
+              onLogout={onLogout}
+              currentPage="test-orders"
+              onNavigate={(page) => {
+                setCurrentPage("SERVICE", page);
+                navigate(`/service`);
+              }}
+            >
+              <SelectInstrumentsPage />
+            </ServiceLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/service/select-reagents"
+        element={
+          <ProtectedRoute allowedRoles={["SERVICE"]}>
+            <ServiceLayout
+              currentUser={user!}
+              onLogout={onLogout}
+              currentPage="test-orders"
+              onNavigate={(page) => {
+                setCurrentPage("SERVICE", page);
+                navigate(`/service`);
+              }}
+            >
+              <SelectReagentsPage />
+            </ServiceLayout>
+          </ProtectedRoute>
+        }
+      />
 
       {/* LabUser Patient Detail Route */}
       <Route
         path="/labuser/patients/:id"
         element={
           <ProtectedRoute allowedRoles={["LAB_USER"]}>
-            <LabUserRouteWrapper
-              currentUser={user!}
-              onLogout={onLogout}
-              currentPage="patients"
-              onNavigate={(page) => {
-                setCurrentPage("LAB_USER", page);
-                navigate(`/labuser`);
-              }}
-            >
-              <PatientDetailPage />
-            </LabUserRouteWrapper>
+            <TestOrderActionsProvider>
+              <LabUserLayout
+                currentUser={user!}
+                onLogout={onLogout}
+                currentPage="patients"
+                onNavigate={(page) => {
+                  setCurrentPage("LAB_USER", page);
+                  navigate(`/labuser`);
+                }}
+              >
+                <PatientDetailPage />
+              </LabUserLayout>
+            </TestOrderActionsProvider>
           </ProtectedRoute>
         }
       />
