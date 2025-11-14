@@ -2,10 +2,11 @@ import { TestOrderRepository } from "../../repositories/testOrderRepository.js";
 import reagentServiceClient from "../warehouse/reagentServiceClient.js";
 import { CreateOrderInput, ReagentUsage, UpdateOrderInput } from "../../db/models/TestOrder.model.js";
 import { ITestOrder } from "../../db/models/TestOrder.model.js";
+import TestOrder from "../../db/models/TestOrder.model.js";
 export const TestOrderService = {
-  
+
   // Lấy tất cả Test Orders
-  async getAllOrders(filter = {}, skip = 0, limit = 10, sort: any = { created_at: -1 } ) {
+  async getAllOrders(filter = {}, skip = 0, limit = 10, sort: any = { created_at: -1 }) {
     const data = await TestOrderRepository.findAll(filter, skip, limit, sort);
     return Array.isArray(data) ? data : [];
   },
@@ -19,6 +20,31 @@ export const TestOrderService = {
   async getOrderById(id: string) {
     return await TestOrderRepository.findById(id);
   },
+
+  
+  async getOrdersGroupedByPatient(): Promise<any[]> {
+    return TestOrder.aggregate([
+      {
+        $match: {is_deleted: false }
+      },
+      {
+        $group: {
+          _id: "$patient_id",
+          patient_name: { $first: "$patient_name" },
+          orders: { $push: "$$ROOT" }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          patient_id: "$_id",
+          patient_name: 1,
+          orders: 1
+        }
+      }
+    ]);
+  },
+
 
   async createOrder(data: CreateOrderInput): Promise<ITestOrder> {
     // Dùng reagent_usages từ request, ép quantity_used về number, default 1 nếu null
