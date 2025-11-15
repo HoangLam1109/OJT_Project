@@ -6,7 +6,7 @@ export interface Reagent {
   receivedDate: string;
   expiryDate: string;
   quantity: number;
-  status: "Available" | "Low Stock" | "Expired" | "In Use";
+  status: "Available" | "Low Stock" | "Expired" | "Depleted";
   storageLocation: string;
   usedInTests: string[];
   notes?: string;
@@ -72,7 +72,7 @@ export const mockReagents: Reagent[] = [
     receivedDate: "2025-02-10",
     expiryDate: "2026-02-10",
     quantity: 15,
-    status: "In Use",
+    status: "Available",
     storageLocation: "Tủ lạnh 2°C",
     usedInTests: ["CREA-4001", "CREA-4002", "CREA-4003"],
     notes: "Đang sử dụng cho các xét nghiệm chức năng thận",
@@ -218,6 +218,6 @@ export const mockAuditLogs = [
     action: "Modified",
     performedBy: "lab_user_02",
     timestamp: "2025-10-21T09:15:00Z",
-    details: "Status changed to In Use"
+    details: "Status changed to Available"
   }
 ];

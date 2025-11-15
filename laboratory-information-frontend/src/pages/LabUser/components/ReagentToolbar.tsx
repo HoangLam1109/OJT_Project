@@ -42,7 +42,7 @@ const ReagentToolbar: React.FC<ReagentToolbarProps> = ({
               <option value="Available">Có sẵn</option>
               <option value="Low Stock">Sắp hết</option>
               <option value="Expired">Hết hạn</option>
-              <option value="In Use">Đang sử dụng</option>
+              <option value="Depleted">Hết hàng</option>
             </select>
           </div>
         </div>

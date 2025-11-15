@@ -5,13 +5,12 @@ export interface Reagent {
   reagent_code: string;
   reagent_name: string;
   reagent_type: string;
-  quantity_received?: number;
   quantity_current: number;
   unit_of_measure: string;
   usage_per_run: number;
   expiration_date: Date;
   received_date: Date;
-  status: "Available" | "InUse" | "LowStock" | "Expired" | "Depleted";
+  status: "Available" | "LowStock" | "Expired" | "Depleted";
   low_stock_threshold?: number;
   storage_location?: string;
   created_at: Date;

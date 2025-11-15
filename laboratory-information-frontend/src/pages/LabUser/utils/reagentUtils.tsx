@@ -6,7 +6,7 @@ export const getStatusBadge = (status: string): React.JSX.Element => {
     Available: 'bg-green-100 text-green-800',
     'Low Stock': 'bg-yellow-100 text-yellow-800',
     Expired: 'bg-red-100 text-red-800',
-    'In Use': 'bg-blue-100 text-blue-800'
+    Depleted: 'bg-gray-100 text-gray-700'
   };
 
   return (
