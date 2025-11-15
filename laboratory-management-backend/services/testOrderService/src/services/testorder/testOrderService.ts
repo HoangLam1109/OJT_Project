@@ -22,14 +22,17 @@ export const TestOrderService = {
   },
 
 
-  async getOrdersGroupedByOnePatient(patient_id: string, created_at: Date): Promise<any[]> {
+  async getOrdersGroupedByOnePatient(
+    patient_id: string,
+    created_at: Date,
+    page = 1,
+    limit = 3
+  ): Promise<any[]> {
+    const skip = (page - 1) * limit;
+
     return TestOrder.aggregate([
-      {
-        $match: { is_deleted: false, patient_id: patient_id }
-      },
-      {
-        $sort: { created_at: -1 }
-      },
+      { $match: { is_deleted: false, patient_id: patient_id } },
+      { $sort: { created_at: -1 } },
       {
         $group: {
           _id: "$patient_id",
@@ -42,11 +45,13 @@ export const TestOrderService = {
           _id: 0,
           patient_id: "$_id",
           patient_name: 1,
-          orders: 1
+          totalOrders: { $size: "$orders" },              
+          orders: { $slice: ["$orders", skip, limit] }
         }
       }
     ]);
   },
+
 
 
   async createOrder(data: CreateOrderInput): Promise<ITestOrder> {

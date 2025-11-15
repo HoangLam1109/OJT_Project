@@ -232,6 +232,22 @@ paths:
           schema:
           type: string
           description: ID của patient
+        - in: query
+          name: page
+          required: false
+          schema:
+          type: integer
+          default: 1
+          minimum: 1
+          description: Trang muốn lấy
+        - in: query
+          name: limit
+          required: false
+          schema:
+          type: integer
+          default: 3
+          minimum: 1
+          description: Số lượng orders mỗi trang
       tags:
         - Get
       responses:
