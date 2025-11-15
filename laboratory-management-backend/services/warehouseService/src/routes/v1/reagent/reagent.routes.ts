@@ -1,8 +1,23 @@
 import express from "express";
 import { ReagentController } from "../../../controllers/reagent/reagent.controller.js";
+import authenticateUser from "../../../middlewares/authenticate.middleware.js";
+import { isInternalApiKeyValid } from "../../../middlewares/internalApi.middleware.js";
 
 const reagent = new ReagentController();
 const router = express.Router();
+
+const authorizeWriteAccess = (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) => {
+  if (isInternalApiKeyValid(req)) {
+    next();
+    return;
+  }
+
+  authenticateUser.authenticateUser(req, res, next);
+};
 
 router.get(
   "/",
@@ -31,60 +46,16 @@ router.get(
     type: 'integer',
     example: 10
   }
-  */
-  reagent.getAllReagents
-);
-// ==================== Search Reagents ====================
-router.get(
-  "/search",
-  /*
-  #swagger.tags = ['Reagents']
-  #swagger.summary = 'Search reagents by keyword'
-  #swagger.description = `
-    Search reagents by name, barcode, or notes.
-    Supports pagination and sorting by expiration_date (soonest first) and created_at (newest first).
-    Query parameters:
-      - keyword: string to search for (required)
-      - page: page number (optional, default = 1)
-      - limit: number of items per page (optional, default = 10)
-  `
+
   #swagger.parameters['keyword'] = {
     in: 'query',
-    description: 'Keyword to search reagents by name, barcode, or notes',
-    required: true,
+    description: 'Optional keyword to filter by name, barcode, or notes',
+    required: false,
     type: 'string',
-    example: 'khang'
+    example: 'Diluent'
   }
-  #swagger.parameters['page'] = {
-    in: 'query',
-    description: 'Page number (default = 1)',
-    required: false,
-    type: 'integer',
-    example: 1
-  }
-  #swagger.parameters['limit'] = {
-    in: 'query',
-    description: 'Number of items per page (default = 10)',
-    required: false,
-    type: 'integer',
-    example: 5
-  }
-  #swagger.responses[200] = {
-    description: 'List of reagents matching the keyword',
-    schema: {
-      success: true,
-      data: [],
-      pagination: {
-        totalItems: 3,
-        totalPages: 1,
-        currentPage: 1
-      }
-    }
-  }
-  #swagger.responses[400] = { description: 'Keyword is required' }
-  #swagger.responses[500] = { description: 'Internal server error' }
   */
-  reagent.searchReagents
+  reagent.getAllReagents
 );
 
 
@@ -118,25 +89,21 @@ router.post(
   /*
   #swagger.tags = ['Reagents']
   #swagger.summary = 'Create a new reagent'
-  #swagger.description = 'Add a new reagent to the system. If low_stock_threshold is not provided, it will default to 10% of quantity_received.'
+  #swagger.description = 'Add a new reagent to the system. If low_stock_threshold is not provided, it will default to 10% of quantity_current.'
   #swagger.parameters['body'] = {
   in: 'body',
   description: 'Reagent object that needs to be added',
   required: true,
   schema: {
-  "reagent_code": "RG20251109673",
   "reagent_name": "Diluent Solution",
   "reagent_type": "Diluent",
-  "quantity_received": 5000,
   "quantity_current": 5000,
   "unit_of_measure": "ml",
   "expiration_date": "2026-10-01T00:00:00.000Z",
   "received_date": "2025-10-01T09:00:00.000Z",
   "status": "Available",
   "low_stock_threshold": 500,
-  "storage_location": "Shelf A - Lab Room 1",
-  "created_by": "USER001",
-  "updated_by": "USER001"
+  "storage_location": "Shelf A - Lab Room 1"
   }
   }
   #swagger.responses[201] = {
@@ -149,6 +116,7 @@ router.post(
   description: 'Invalid input data'
   }
   */
+  authorizeWriteAccess,
   reagent.createReagent
 );
 
@@ -170,14 +138,12 @@ router.put(
     required: true,
     schema: {
       "reagent_name": "Updated Diluent Solution",
-      "quantity_received": 5000,
       "quantity_current": 4500,
       "unit_of_measure": "ml",
       "expiration_date": "2026-10-01T00:00:00.000Z",
       "received_date": "2025-10-01T09:00:00.000Z",
       "low_stock_threshold": 500,
-      "storage_location": "Shelf A - Lab Room 1",
-      "updated_by": "USER001"
+      "storage_location": "Shelf A - Lab Room 1"
     }
   }
   #swagger.responses[200] = {
@@ -189,6 +155,7 @@ router.put(
   #swagger.responses[404] = { description: 'Reagent not found' }
   #swagger.responses[500] = { description: 'Server error' }
   */
+  authorizeWriteAccess,
   reagent.updateReagent
 );
 
@@ -226,6 +193,7 @@ router.delete(
     description: 'Server error'
   }
   */
+  authorizeWriteAccess,
   reagent.deleteReagent
 );
 

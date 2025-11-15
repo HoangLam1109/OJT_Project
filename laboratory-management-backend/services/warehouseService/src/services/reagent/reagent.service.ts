@@ -2,6 +2,25 @@
 import { ReagentRepository } from "../../repositories/reagent/reagent.repository.js";
 import { IReagent } from "../../db/models/Reagent.model.js";
 
+const computeReagentStatus = (
+  quantityCurrent: number,
+  lowStockThreshold?: number,
+  expirationDate?: Date | string
+): IReagent["status"] => {
+  const parsedExpiration = expirationDate ? new Date(expirationDate) : undefined;
+  const now = new Date();
+  if (parsedExpiration && !isNaN(parsedExpiration.getTime()) && parsedExpiration < now) {
+    return "Expired";
+  }
+  if (quantityCurrent <= 0) {
+    return "Depleted";
+  }
+  if (typeof lowStockThreshold === "number" && quantityCurrent < lowStockThreshold) {
+    return "LowStock";
+  }
+  return "Available";
+};
+
 export class ReagentService {
   private repo: ReagentRepository;
 
@@ -28,17 +47,29 @@ export class ReagentService {
   }
 
   async create(data: Partial<IReagent>): Promise<IReagent> {
-    // Nếu low_stock_threshold chưa set, mặc định = 10% của quantity_received
-    if (!data.low_stock_threshold) {
-      data.low_stock_threshold = Math.round((data.quantity_received ?? 0) * 0.1);
+    const payload: Partial<IReagent> = { ...data };
+
+    if ("reagent_code" in payload) {
+      delete payload.reagent_code;
     }
 
-    // Nếu quantity_received có, set luôn quantity_current = quantity_received
-    if (data.quantity_received !== undefined && data.quantity_current === undefined) {
-      data.quantity_current = data.quantity_received;
+    // Nếu low_stock_threshold chưa set, mặc định = 10% của quantity_current
+    if (!payload.low_stock_threshold && typeof payload.quantity_current === "number") {
+      payload.low_stock_threshold = Math.round(payload.quantity_current * 0.1);
     }
 
-    return this.repo.create(data);
+    const normalizedQuantityCurrent = typeof payload.quantity_current === "number" ? payload.quantity_current : 0;
+    payload.status = computeReagentStatus(
+      normalizedQuantityCurrent,
+      payload.low_stock_threshold,
+      payload.expiration_date
+    );
+
+    if (payload.created_by && !payload.updated_by) {
+      payload.updated_by = payload.created_by;
+    }
+
+    return this.repo.create(payload);
   }
 
 
@@ -52,35 +83,27 @@ export class ReagentService {
 
     if ('reagent_code' in data) delete data.reagent_code;
 
-    const oldQuantityReceived = reagent.quantity_received ?? 0;
     const oldQuantityCurrent = reagent.quantity_current ?? 0;
-    const newQuantityReceived = data.quantity_received ?? oldQuantityReceived;
-    let newQuantityCurrent = data.quantity_current ?? oldQuantityCurrent;
+    const newQuantityCurrent = data.quantity_current ?? oldQuantityCurrent;
 
-    // Auto increase quantity_current nếu quantity_received tăng
-    if (newQuantityReceived > oldQuantityReceived) {
-      newQuantityCurrent += newQuantityReceived - oldQuantityReceived;
+    if (newQuantityCurrent < 0) {
+      throw new Error("quantity_current không thể âm");
     }
 
-    // Kiểm tra quantity_current không vượt quantity_received
-    if (newQuantityCurrent > newQuantityReceived) {
-      throw new Error(
-        `quantity_current (${newQuantityCurrent}) không thể lớn hơn quantity_received (${newQuantityReceived})`
-      );
-    }
-
-    data.quantity_received = newQuantityReceived;
     data.quantity_current = newQuantityCurrent;
 
-    // Tính status tự động
-    const lowStockThreshold = reagent.low_stock_threshold ?? 0;
-    const expirationDate = new Date(reagent.expiration_date);
-    let newStatus: IReagent["status"] = "Available";
-    if (newQuantityCurrent <= 0) newStatus = "Depleted";
-    else if (newQuantityCurrent <= lowStockThreshold) newStatus = "LowStock";
-    else if (expirationDate < new Date()) newStatus = "Expired";
+    const effectiveLowStockThreshold =
+      typeof data.low_stock_threshold === "number"
+        ? data.low_stock_threshold
+        : reagent.low_stock_threshold;
 
-    data.status = newStatus;
+    const effectiveExpirationDate = data.expiration_date ?? reagent.expiration_date;
+
+    data.status = computeReagentStatus(
+      newQuantityCurrent,
+      effectiveLowStockThreshold,
+      effectiveExpirationDate
+    );
 
     // Cập nhật metadata
     data.updated_at = new Date();

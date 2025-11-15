@@ -39,13 +39,12 @@ interface BackendReagent {
   reagent_code: string;
   reagent_name: string;
   reagent_type: string;
-  quantity_received: number;
   quantity_current: number;
   unit_of_measure: string;
   usage_per_run: number;
   expiration_date: string | Date;
   received_date: string | Date;
-  status: 'Available' | 'InUse' | 'LowStock' | 'Expired' | 'Depleted';
+  status: 'Available' | 'LowStock' | 'Expired' | 'Depleted';
   low_stock_threshold?: number;
   storage_location?: string;
   created_at?: string | Date;
@@ -81,14 +80,12 @@ const transformBackendReagent = (backendReagent: BackendReagent): Reagent => {
     switch (status) {
       case 'Available':
         return 'Available';
-      case 'InUse':
-        return 'In Use';
       case 'LowStock':
         return 'Low Stock';
       case 'Expired':
         return 'Expired';
       case 'Depleted':
-        return 'Expired'; // Map Depleted to Expired for frontend
+        return 'Depleted';
       default:
         return 'Available';
     }
@@ -238,12 +235,12 @@ export const reagentService = {
       switch (status) {
         case 'Available':
           return 'Available';
-        case 'In Use':
-          return 'InUse';
         case 'Low Stock':
           return 'LowStock';
         case 'Expired':
           return 'Expired';
+        case 'Depleted':
+          return 'Depleted';
         default:
           return 'Available';
       }
@@ -261,8 +258,8 @@ export const reagentService = {
       }
     };
 
-    // Ensure quantity_received and quantity_current have values
-    const quantity = reagent.quantity || 0;
+    // Ensure quantity_current has a value
+    const quantity = typeof reagent.quantity === 'number' ? reagent.quantity : 0;
 
     const backendData: Partial<BackendReagent> = {
       reagent_name: reagent.name || '',
@@ -275,16 +272,9 @@ export const reagentService = {
       storage_location: reagent.storageLocation || '',
     };
 
-    if (reagent.id) {
-      // Update case: only update quantity_current, not quantity_received
-      // Backend will keep quantity_received unchanged
-      backendData.quantity_current = quantity;
-      // Don't include reagent_code (backend doesn't allow updating it)
-      backendData.updated_by = userId;
-    } else {
-      // Create case: set both quantity_received and quantity_current
-      backendData.quantity_received = quantity;
-      backendData.quantity_current = quantity;
+    backendData.quantity_current = quantity;
+
+    if (!reagent.id) {
       backendData.reagent_code = reagent.lotNumber || '';
       backendData.created_by = userId;
     }
