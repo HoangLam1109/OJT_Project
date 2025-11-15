@@ -224,7 +224,14 @@ paths:
   # ==================== GET: Lấy tất cả Test Order của mỗi patient====================
   /testOrder/group-by-patient:
     get:
-      summary: Lấy tất cả TestOrder group theo patient
+      summary: Lấy test orders của 1 patient
+      parameters:
+        - in: query
+          name: patient_id
+          required: true
+          schema:
+          type: string
+          description: ID của patient
       tags:
         - Get
       responses:
