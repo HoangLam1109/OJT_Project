@@ -192,6 +192,7 @@ export const TestOrderService = {
       is_deleted: false,
       $or: [
         { patient_name: { $regex: keyword, $options: "i" } },
+        { patient_id: { $regex: keyword, $options: "i" } },
         { barcode: { $regex: keyword, $options: "i" } },
         { test_type: { $regex: keyword, $options: "i" } },
       ],
