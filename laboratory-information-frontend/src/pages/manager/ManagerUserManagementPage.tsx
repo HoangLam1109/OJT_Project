@@ -8,6 +8,7 @@ import { UserFilters } from './components/UserFilters';
 import { UserStatistics } from './components/UserStatistics';
 import { DeleteConfirmDialog } from './components/DeleteConfirmDialog';
 import { useUserManagement } from './hooks/useUserManagement';
+import { useAllUsers } from './hooks/useAllUsers';
 import { useUserFilters } from './hooks/useUserFilters';
 import { useUserStatistics } from './hooks/useUserStatistics';
 import { useUserModal } from './hooks/useUserModal';
@@ -16,22 +17,30 @@ import { Skeleton } from '@/components/common/skeleton';
 
 
 export function ManagerUserManagementPage() {
+  // Fetch all users for filtering
+  const { allUsers, isLoadingAll } = useAllUsers();
+  
   // Custom hooks
   const { 
-    users, 
-    pagination, 
-    loadNextPage, 
-    loadPrevPage,
-    loadFirstPage, 
-    loadLastPage,
     createUser, 
     updateUser, 
     deleteUser, 
     toggleUserLock,
-    isLoading 
   } = useUserManagement();
-  const { filters, setFilters, filteredUsers } = useUserFilters(users);
-  const statistics = useUserStatistics(users, pagination.total);
+  
+  const { 
+    filters, 
+    setFilters, 
+    filteredUsers, 
+    totalFiltered,
+    currentPage,
+    totalPages,
+    setCurrentPage,
+    hasNextPage,
+    hasPrevPage 
+  } = useUserFilters(allUsers);
+  
+  const statistics = useUserStatistics(allUsers, allUsers.length);
   const { modalState, openCreateModal, openViewModal, openEditModal, closeModal } = useUserModal();
   
   // Local state
@@ -49,6 +58,8 @@ export function ManagerUserManagementPage() {
     
     if (success) {
       closeModal();
+      // Reload the page to refresh all users
+      window.location.reload();
     }
   };
 
@@ -57,17 +68,43 @@ export function ManagerUserManagementPage() {
       const success = await deleteUser(deleteUserState.id);
       if (success) {
         setDeleteUserState(null);
+        // Reload the page to refresh all users
+        window.location.reload();
       }
     }
   };
 
   const handleToggleLock = async (user: ManagerUser) => {
-    await toggleUserLock(user.id, user.active);
+    const success = await toggleUserLock(user.id, user.active);
+    if (success) {
+      // Reload the page to refresh all users
+      window.location.reload();
+    }
+  };
+
+  const handleNextPage = () => {
+    if (hasNextPage) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (hasPrevPage) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleFirstPage = () => {
+    setCurrentPage(1);
+  };
+
+  const handleLastPage = () => {
+    setCurrentPage(totalPages);
   };
 
   return (
   <div className="space-y-6">
-    {isLoading ? (
+    {isLoadingAll ? (
       // 🔹 Hiển thị Skeleton cho toàn trang
       <div className="space-y-6">
         {/* Header Skeleton */}
@@ -94,7 +131,7 @@ export function ManagerUserManagementPage() {
           </CardContent>
         </Card>
 
-        {/* Table Skeleton (tận dụng lại phần bạn đã có) */}
+        {/* Table Skeleton */}
         <Card>
           <CardHeader>
             <Skeleton className="h-6 w-1/4" />
@@ -125,17 +162,19 @@ export function ManagerUserManagementPage() {
 
         <UsersTableCard
           users={filteredUsers}
-          totalUsers={pagination.total}
-          pagination={pagination}
+          totalUsers={totalFiltered}
+          currentPage={currentPage}
+          totalPages={totalPages}
           onView={openViewModal}
           onEdit={openEditModal}
           onDelete={setDeleteUserState}
           onToggleLock={handleToggleLock}
-          onPrevPage={loadPrevPage}
-          onNextPage={loadNextPage}
-          onFirstPage={loadFirstPage}
-          onLastPage={loadLastPage}
-          isLoading={isLoading}
+          onPrevPage={handlePrevPage}
+          onNextPage={handleNextPage}
+          onFirstPage={handleFirstPage}
+          onLastPage={handleLastPage}
+          hasNext={hasNextPage}
+          hasPrev={hasPrevPage}
         />
 
         {modalState.isOpen && (
@@ -189,11 +228,8 @@ function PageHeader({ onCreate }: PageHeaderProps) {
 interface UsersTableCardProps {
   users: ManagerUser[];
   totalUsers: number;
-  pagination: {
-    hasNext: boolean;
-    hasPrev: boolean;
-    total: number;
-  };
+  currentPage: number;
+  totalPages: number;
   onView: (user: ManagerUser) => void;
   onEdit: (user: ManagerUser) => void;
   onDelete: (user: ManagerUser) => void;
@@ -202,13 +238,15 @@ interface UsersTableCardProps {
   onNextPage: () => void;
   onFirstPage: () => void;
   onLastPage: () => void;
-  isLoading: boolean;
+  hasNext: boolean;
+  hasPrev: boolean;
 }
 
 function UsersTableCard({
   users,
   totalUsers,
-  pagination,
+  currentPage,
+  totalPages,
   onView,
   onEdit,
   onDelete,
@@ -217,46 +255,32 @@ function UsersTableCard({
   onNextPage,
   onFirstPage,
   onLastPage,
-  isLoading,
+  hasNext,
+  hasPrev,
 }: UsersTableCardProps) {
   return (
     <Card>
       <CardHeader>
         <CardTitle>Danh sách người dùng</CardTitle>
         <CardDescription>
-          Hiển thị {users.length} / {totalUsers} người dùng
+          Hiển thị {users.length} / {totalUsers} người dùng (Trang {currentPage}/{totalPages})
         </CardDescription>
       </CardHeader>
-       <CardContent>
-        {isLoading ? (
-          <div className="flex flex-col items-start justify-start space-y-4 w-full">
-            {[...Array(7)].map((_, i) => (
-              <div key={i} className="flex items-center w-full gap-6 px-4">
-                <Skeleton className="h-10 w-10 rounded-full" />
-                <Skeleton className="h-5 w-[30%]" />
-                <Skeleton className="h-4 w-[20%]" />
-                <Skeleton className="h-4 w-[15%]" />
-                <Skeleton className="h-4 w-[10%]" />
-                <Skeleton className="h-4 w-[10%]" />
-              </div>
-            ))}
-          </div>
-        ) : (
-          <UserTable
-            users={users}
-            onView={onView}
-            onEdit={onEdit}
-            onDelete={onDelete}
-            onToggleLock={onToggleLock}
-            onFirstPage={onFirstPage}
-            onPrevPage={onPrevPage}
-            onNextPage={onNextPage}
-            onLastPage={onLastPage}
-            hasPrev={pagination.hasPrev}
-            hasNext={pagination.hasNext}
-            pageLabel={`Trang hiện tại - ${users.length} người dùng`}
-          />
-        )}
+      <CardContent>
+        <UserTable
+          users={users}
+          onView={onView}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          onToggleLock={onToggleLock}
+          onFirstPage={onFirstPage}
+          onPrevPage={onPrevPage}
+          onNextPage={onNextPage}
+          onLastPage={onLastPage}
+          hasPrev={hasPrev}
+          hasNext={hasNext}
+          pageLabel={`Trang ${currentPage} / ${totalPages}`}
+        />
       </CardContent>
     </Card>
   );

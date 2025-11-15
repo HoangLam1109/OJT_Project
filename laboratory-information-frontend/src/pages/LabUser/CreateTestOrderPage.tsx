@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Input } from '../../components/common/input';
 import { Label } from '../../components/common/label';
 import Button from '../../components/common/button';
@@ -21,7 +21,16 @@ const testTypes = [
  
 const CreateTestOrderPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuthContext();
+
+  // Detect current route base path (service or labuser)
+  const getBasePath = () => {
+    if (location.pathname.startsWith('/service')) {
+      return '/service';
+    }
+    return '/labuser';
+  };
 
   const [formData, setFormData] = useState<Omit<TestOrder, '_id'>>({
     patient_id: '',
@@ -91,7 +100,8 @@ const CreateTestOrderPage: React.FC = () => {
     }
 
     // Navigate to select instruments page with form data
-    navigate('/labuser/select-instruments', {
+    const basePath = getBasePath();
+    navigate(`${basePath}/select-instruments`, {
       state: {
         formData: {
           ...formData,
@@ -153,7 +163,10 @@ const CreateTestOrderPage: React.FC = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate('/labuser?page=test-orders')}
+            onClick={() => {
+              const basePath = getBasePath();
+              navigate(`${basePath}?page=test-orders`);
+            }}
             className="flex items-center gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -287,7 +300,10 @@ const CreateTestOrderPage: React.FC = () => {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => navigate('/labuser?page=test-orders')}
+                onClick={() => {
+                  const basePath = getBasePath();
+                  navigate(`${basePath}?page=test-orders`);
+                }}
                 disabled={isSubmitting}
                 className="px-6 py-2.5 border-gray-300 text-gray-700 hover:bg-gray-50"
               >

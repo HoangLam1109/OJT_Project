@@ -10,28 +10,29 @@ import {
   TrendingUp
 } from 'lucide-react';
 import type { LoginType } from '../../types/Login.type';
-
+import { useTranslation } from 'react-i18next';
 export function AboutSection({ onShowLogin }: LoginType) {
+  const { t } = useTranslation();
   const benefits = [
     {
       icon: <Zap className="h-8 w-8 text-yellow-600" />,
-      title: "Tốc độ xử lý nhanh",
-      description: "Kết quả xét nghiệm trong 24-48h, báo cáo tự động"
+      title: t("about.speed"),
+      description: t("about.speedDescription")
     },
     {
       icon: <Shield className="h-8 w-8 text-blue-600" />,
-      title: "Bảo mật tuyệt đối",
-      description: "Mã hóa dữ liệu end-to-end, tuân thủ HIPAA"
+      title: t("about.absoluteSecurity"),
+      description: t("about.absoluteSecurityDescription")
     },
     {
       icon: <Target className="h-8 w-8 text-green-600" />,
-      title: "Độ chính xác cao",
-      description: "99.9% độ chính xác với AI hỗ trợ phân tích"
+      title: t("about.highAccuracy"),
+      description: t("about.highAccuracyDescription")
     },
     {
       icon: <Lightbulb className="h-8 w-8 text-orange-600" />,
-      title: "Giao diện thông minh",
-      description: "Dashboard trực quan, dễ sử dụng cho mọi người"
+      title: t("about.smartInterface"),
+      description: t("about.smartInterfaceDescription")
     }
   ];
 
@@ -50,10 +51,10 @@ export function AboutSection({ onShowLogin }: LoginType) {
                 <span className="text-sm text-green-700">Về chúng tôi</span>
               </div>
               <h2 className="text-4xl text-gray-900">
-                Đối tác tin cậy cho <span className="bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">phòng thí nghiệm</span> của bạn
+                {t("about.trustedPartner")} <span className="bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">{t("about.trustedPartnerDescription")}</span>
               </h2>
               <p className="text-xl text-gray-600 leading-relaxed">
-                Với hơn 10 năm kinh nghiệm trong lĩnh vực công nghệ y tế, chúng tôi hiểu rõ những thách thức mà các phòng thí nghiệm đang gặp phải.
+                {t("about.trustedPartnerDescription")}
               </p>
             </div>
             
@@ -76,11 +77,11 @@ export function AboutSection({ onShowLogin }: LoginType) {
                 onClick={onShowLogin}
                 className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white"
               >
-                Tìm hiểu thêm
+                {t("about.button")}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
               <Button variant="outline">
-                Xem demo trực tiếp
+                {t("about.demo")}
               </Button>
             </div>
           </div>
@@ -103,7 +104,7 @@ export function AboutSection({ onShowLogin }: LoginType) {
                 </div>
                 <div>
                   <div className="text-2xl text-gray-900">500+</div>
-                  <div className="text-sm text-gray-600">Phòng lab tin dùng</div>
+                  <div className="text-sm text-gray-600">{t("about.trustedPartnerMetricsDescription")}</div>
                 </div>
               </div>
             </div>

@@ -1,6 +1,5 @@
 import bcrypt from "bcryptjs";
 import { userRepository } from "../repositories/index.js";
-import { auditLogRepository } from "../repositories/index.js";
 import { passwordHistoryRepository } from "../repositories/index.js";
 
 import type { IUser } from "../db/models/User.model.js";
@@ -10,6 +9,9 @@ import {
   PaginationOptions,
 } from "../types/pagination.type.js";
 import { PaginationUtils } from "../utils/pagination.util.js";
+import { logEvent } from "../utils/logging.util.js";
+import { computeChanges } from "../utils/diff.util.js";
+import { AppError } from "../utils/error.util.js";
 
 export interface CreateUserData {
   email: string;
@@ -50,19 +52,29 @@ export class UserService {
     userData: CreateUserData,
     performedBy?: string
   ): Promise<IUser> {
-    const newUser = await this._passwordCheck("", userData, performedBy);
-    if(!userData.role){
+    const { data: newUser } = await this._passwordCheck("", userData, performedBy);
+    if (!userData.role) {
       newUser.role = ["USER"];
     }
     const createdUser = await userRepository.create(newUser);
     console.log(createdUser);
 
-    await this._logEvent(
-      "E_00001",
-      "CREATE",
-      "User created successfully!",
-      performedBy || createdUser._id
-    );
+    await logEvent({
+      eventCode: "E_00023",
+      action: "CREATE",
+      eventMessage: "User created successfully!",
+      performedBy: performedBy || createdUser._id,
+      serviceName: "IAM_SERVICE",
+      entityId: createdUser._id,
+      newValues: {
+        email: createdUser.email,
+        fullName: createdUser.fullName,
+        phoneNumber: createdUser.phoneNumber,
+        address: createdUser.address,
+        role: createdUser.role,
+        isActive: createdUser.isActive,
+      },
+    });
     return createdUser;
   }
 
@@ -71,15 +83,39 @@ export class UserService {
     userData: UpdateUserData,
     performedBy?: string
   ): Promise<IUser | null> {
-    const newUser = await this._passwordCheck(userId, userData, performedBy);
+
+    const before = await userRepository.findById(userId);
+    const { data: newUser, passwordChanged } = await this._passwordCheck(userId, userData, performedBy);
     const updatedUser = await userRepository.updateById(userId, newUser);
 
-    await this._logEvent(
-      "E_00002",
-      "UPDATE",
-      "User updated successfully!",
-      performedBy || userId
+    const fields: (keyof IUser)[] = [
+      "email",
+      "fullName",
+      "phoneNumber",
+      "address",
+      "isActive",
+    ];
+
+    if (typeof userData.role !== "undefined") {
+      fields.push("role");
+    }
+
+    const diffs = computeChanges<IUser>(
+      before ?? undefined,
+      updatedUser ?? undefined,
+      fields,
+      passwordChanged ? { passwordChanged: true } : undefined
     );
+
+    await logEvent({
+      eventCode: "E_00025",
+      action: "UPDATE",
+      eventMessage: "User updated successfully!",
+      performedBy: performedBy || userId,
+      serviceName: "IAM_SERVICE",
+      entityId: userId,
+      ...diffs,
+    });
 
     return updatedUser;
   }
@@ -88,13 +124,26 @@ export class UserService {
     userId: string,
     performedBy?: string
   ): Promise<IUser | null> {
+    const before = await userRepository.findById(userId);
     const deletedUser = await userRepository.deleteById(userId);
-    await this._logEvent(
-      "E_00003",
-      "DELETE",
-      "User deleted successfully!",
-      performedBy || userId
-    );
+    const deleteFields: (keyof IUser)[] = [
+      "email",
+      "fullName",
+      "phoneNumber",
+      "address",
+      "role",
+      "isActive",
+    ];
+    const deleteDiffs = computeChanges<IUser>(before ?? undefined, undefined, deleteFields);
+    await logEvent({
+      eventCode: "E_00026",
+      action: "DELETE",
+      eventMessage: "User deleted successfully!",
+      performedBy: performedBy || userId,
+      serviceName: "IAM_SERVICE",
+      entityId: userId,
+      ...deleteDiffs,
+    });
     return deletedUser;
   }
 
@@ -117,25 +166,45 @@ export class UserService {
     );
   }
 
-  async assignRoleToUser(userId: string, role: string[], performedBy?: string): Promise<IUser | null> {
+  async assignRoleToUser(
+    userId: string,
+    role: string[],
+    performedBy?: string
+  ): Promise<IUser | null> {
+    const before = await userRepository.findById(userId);
     const updatedUser = await userRepository.updateById(userId, { role });
-    await this._logEvent(
-      "E_00002",
-      "UPDATE",
-      "User updated successfully!",
-      performedBy || userId
-    );
+    const roleFields: (keyof IUser)[] = ["role"];
+    const roleDiffs = computeChanges<IUser>(before ?? undefined, updatedUser ?? undefined, roleFields);
+    await logEvent({
+      eventCode: "E_00025",
+      action: "UPDATE",
+      eventMessage: "User updated successfully!",
+      performedBy: performedBy || userId,
+      serviceName: "IAM_SERVICE",
+      entityId: userId,
+      ...roleDiffs,
+    });
     return updatedUser;
   }
 
-  async lockUser(userId: string, isActive: boolean, performedBy?: string): Promise<IUser | null> {
+  async lockUser(
+    userId: string,
+    isActive: boolean,
+    performedBy?: string
+  ): Promise<IUser | null> {
+    const before = await userRepository.findById(userId);
     const updatedUser = await userRepository.updateById(userId, { isActive });
-    await this._logEvent(
-      "E_00004",
-      "UPDATE",
-      "User locked successfully!",
-      performedBy || userId
-    );
+    const lockFields: (keyof IUser)[] = ["isActive"];
+    const lockDiffs = computeChanges<IUser>(before ?? undefined, updatedUser ?? undefined, lockFields);
+    await logEvent({
+      eventCode: "E_00027",
+      action: `${isActive ? "UNLOCK" : "LOCK"}`,
+      eventMessage: "User locked/unlocked successfully!",
+      performedBy: performedBy || userId,
+      serviceName: "IAM_SERVICE",
+      entityId: userId,
+      ...lockDiffs,
+    });
     return updatedUser;
   }
 
@@ -187,30 +256,28 @@ export class UserService {
     };
   }
 
-  private async _logEvent(
-    eventCode: string,
-    action: string,
-    eventMessage: string,
-    perfomedBy: string
-  ): Promise<void> {
-    await auditLogRepository.create({
-      eventCode,
-      action,
-      eventMessage,
-      userId: perfomedBy,
-      performedAt: new Date(),
-      serviceName: "User Service",
-    });
-  }
-
-   // Private helper method to hash passwords (skip for OAuth users)
+  // Private helper method to hash passwords (skip for OAuth users)
   private async _passwordCheck(
     userId: string,
     userData: UpdateUserData | CreateUserData,
     performedBy?: string
-  ): Promise<UpdateUserData | CreateUserData> {
+  ): Promise<{data: UpdateUserData | CreateUserData; passwordChanged: boolean}> {
+    const existing = userId ? await userRepository.findById(userId, "passwordHash") : null;
     // Skip password hashing for OAuth users
     if (userData.password) {
+      if (existing?.passwordHash) {
+        const isMatch = await bcrypt.compare(
+          userData.password,
+          existing.passwordHash as string
+        );
+        if (isMatch) {
+          throw new AppError(
+            400,
+            "New password must be different from the current password"
+          );
+        }
+      }
+
       const saltRounds = 10;
       const hashedPassword = await bcrypt.hash(userData.password, saltRounds);
 
@@ -234,7 +301,7 @@ export class UserService {
       }
 
       delete (newUser as any).password;
-      return newUser;
-    } else return userData;
+      return { data: newUser, passwordChanged: true};
+    } else return {data: userData, passwordChanged: false};
   }
 }
