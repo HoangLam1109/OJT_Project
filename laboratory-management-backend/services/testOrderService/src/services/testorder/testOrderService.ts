@@ -21,11 +21,14 @@ export const TestOrderService = {
     return await TestOrderRepository.findById(id);
   },
 
-  
-  async getOrdersGroupedByPatient(): Promise<any[]> {
+
+  async getOrdersGroupedByOnePatient(patient_id: string, created_at: Date): Promise<any[]> {
     return TestOrder.aggregate([
       {
-        $match: {is_deleted: false }
+        $match: { is_deleted: false, patient_id: patient_id }
+      },
+      {
+        $sort: { created_at: -1 }
       },
       {
         $group: {

@@ -123,19 +123,22 @@ export const getTestOrderById = async (req: Request<{ id: string }>, res: Respon
   }
 };
 
-export const getAllOrdersGroupedByPatient = async (req: Request, res: Response) => {
+export const getAllOrdersGroupedByPatientId = async (req: Request, res: Response) => {
   try {
-    const data = await TestOrderService.getOrdersGroupedByPatient();
 
-    const orderedData = data.map(d => ({
-      patient_id: d.patient_id,
-      patient_name: d.patient_name,
-      orders: d.orders
-    }));
-
+    const patient_id = req.query.patient_id as string;
+    const created_atByString = req.query.created_at as string; 
+    const created_at = new Date(created_atByString);
+    const GroupOfOnePatientData = await TestOrderService.getOrdersGroupedByOnePatient(patient_id, created_at);
+    
+    const GroupOfOnePatient = {
+      patient_id: GroupOfOnePatientData[0].patient_id,
+      patient_name: GroupOfOnePatientData[0].patient_name,
+      orders: GroupOfOnePatientData[0].orders
+    }
     return res.json({
       success: true,
-      data: orderedData
+      data: GroupOfOnePatient
     });
 
   } catch (error) {
