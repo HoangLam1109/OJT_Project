@@ -14,7 +14,7 @@ import TestOrderFormModal from './components/modals/TestOrderFormModal';
 import ReviewResultModal from './components/modals/ReviewResultModal';
 import DeleteConfirmModal from './components/modals/DeleteConfirmModal';
 import TestOrderDetailModal from './components/modals/TestOrderDetailModal';
-import { calculateStats, filterTestOrders } from './utils/testOrderUtils';
+import { calculateStats } from './utils/testOrderUtils';
 import { Card, CardContent, CardHeader } from '@/components/common/card';
 import { Skeleton } from '@/components/common/skeleton';
 
@@ -28,7 +28,9 @@ const TestOrdersPage: React.FC = () => {
   const [orders, setOrders] = useState<TestOrder[]>([]);
   const [filteredOrders, setFilteredOrders] = useState<TestOrder[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [isInitialLoad, setIsInitialLoad] = useState(true); // Track if it's the first load
+  const [searchInput, setSearchInput] = useState(''); // Input value (immediate)
+  const [searchTerm, setSearchTerm] = useState(''); // Debounced search term (for API)
   const [selectedOrder, setSelectedOrder] = useState<TestOrder | null>(null);
   const [formModalOpen, setFormModalOpen] = useState(false);
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
@@ -38,15 +40,36 @@ const TestOrdersPage: React.FC = () => {
   const [showStartTestDialog, setShowStartTestDialog] = useState(false);
   const [selectedInstrument, setSelectedInstrument] = useState('');
   const [showDetailDialog, setShowDetailDialog] = useState(false);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 1
+  });
 
+  // Debounce search input - update searchTerm after 500ms of no typing
   useEffect(() => {
-    loadTestOrders();
-  }, []);
+    const timer = setTimeout(() => {
+      setSearchTerm(searchInput);
+      // Reset to page 1 when search term changes
+      setCurrentPage(1);
+    }, 500);
 
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
+  // Load data when page or searchTerm changes
   useEffect(() => {
-    const filtered = filterTestOrders(orders, searchTerm, 'All');
-    setFilteredOrders(filtered);
-  }, [orders, searchTerm]);
+    if (searchTerm.trim()) {
+      loadSearchResults(searchTerm, currentPage);
+    } else {
+      loadTestOrders(currentPage);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, searchTerm]);
 
 
   // Tự động tăng % khi đang Processing
@@ -63,17 +86,43 @@ const TestOrdersPage: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
   
-  const loadTestOrders = async () => {
+  const loadTestOrders = async (page: number = 1) => {
     try {
       setLoading(true);
-      const data = await testOrderService.getAllTestOrders();
+      const { orders: data, pagination: paginationInfo } = await testOrderService.getAllTestOrders(page, 10);
       setOrders(data);
+      setFilteredOrders(data); // Set filtered orders to all orders when not searching
+      setPagination(paginationInfo);
     } catch (error) {
       toast.error('Không thể tải danh sách lệnh xét nghiệm');
       console.error('Error loading test orders:', error);
     } finally {
       setLoading(false);
+      setIsInitialLoad(false);
     }
+  };
+
+  const loadSearchResults = async (keyword: string, page: number = 1) => {
+    try {
+      setLoading(true);
+      const { orders: data, pagination: paginationInfo } = await testOrderService.searchTestOrders(keyword, page, 10);
+      setOrders(data);
+      setFilteredOrders(data); // Set filtered orders to search results
+      setPagination(paginationInfo);
+    } catch (error) {
+      toast.error('Không thể tìm kiếm lệnh xét nghiệm');
+      console.error('Error searching test orders:', error);
+      // On error, clear results
+      setOrders([]);
+      setFilteredOrders([]);
+    } finally {
+      setLoading(false);
+      setIsInitialLoad(false);
+    }
+  };
+  
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
 
@@ -105,7 +154,7 @@ const TestOrdersPage: React.FC = () => {
       setFormModalOpen(false);
       setIsEdit(false);
       setSelectedOrder(null);
-      await loadTestOrders();
+      await loadTestOrders(currentPage);
     } catch (error) { 
       console.error('Error refreshing test orders:', error);
     }
@@ -141,7 +190,7 @@ const handleStatusChange = async (
       await testOrderService.deleteTestOrder(selectedOrder._id, user?.name ?? 'system');
       toast.success(`Đã xóa lệnh xét nghiệm ${selectedOrder._id} thành công`);
       setDeleteModalOpen(false);
-      await loadTestOrders();
+      await loadTestOrders(currentPage);
     } catch (error) {
       toast.error('Không thể xóa lệnh xét nghiệm');
       console.error('Error deleting test order:', error);
@@ -152,7 +201,7 @@ const handleStatusChange = async (
     try {
       toast.success('Đã cập nhật kết quả xét nghiệm thành công');
       setReviewModalOpen(false);
-      loadTestOrders();
+      loadTestOrders(currentPage);
     } catch (error) {
       toast.error('Không thể cập nhật kết quả xét nghiệm');
       console.error('Error updating test result:', error);
@@ -210,7 +259,8 @@ const handleStatusChange = async (
 
   const availableInstruments = instruments.filter(i => i.status === 'Ready' && i.is_active === true);
 
-  if (loading) {
+  // Only show full skeleton on initial load, not during search
+  if (loading && isInitialLoad) {
   return (
     <div className="space-y-6 p-4">
       {/* Toolbar skeleton */}
@@ -265,8 +315,8 @@ const handleStatusChange = async (
   return (
     <div className="space-y-6 p-4">
       <TestOrderToolbar
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
+        searchTerm={searchInput}
+        onSearchChange={setSearchInput}
         onCreateTestOrder={handleCreate}
       />
 
@@ -276,6 +326,10 @@ const handleStatusChange = async (
         orders={filteredOrders}
         onOrderClick={handleOrderClick}
         onStatusChange={handleStatusChange}
+        currentPage={pagination.page}
+        totalPages={pagination.totalPages}
+        onPageChange={handlePageChange}
+        isLoading={loading && !isInitialLoad}
       />
 
       <StartTestDialog

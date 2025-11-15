@@ -5,17 +5,26 @@ import { Progress } from '../../../components/common/progress';
 import { TestTube, PlayCircle, Pause, CheckCircle } from 'lucide-react';
 import type { TestOrder } from '../types/TestOrderTypes';
 import { getStatusBadge } from '../utils/testOrderUtils';
+import Pagination from '../../../components/common/pagination';
 
 interface TestOrderListProps {
   orders: TestOrder[];
   onOrderClick: (order: TestOrder) => void;
   onStatusChange: (orderId: string, newStatus: 'Pending' | 'Processing' | 'Completed') => void;
+  currentPage?: number;
+  totalPages?: number;
+  onPageChange?: (page: number) => void;
+  isLoading?: boolean;
 }
 
 const TestOrderList: React.FC<TestOrderListProps> = ({
   orders,
   onOrderClick,
-  onStatusChange
+  onStatusChange,
+  currentPage,
+  totalPages,
+  onPageChange,
+  isLoading = false
 }) => {
 
 
@@ -25,6 +34,9 @@ const TestOrderList: React.FC<TestOrderListProps> = ({
         <CardTitle className="flex items-center gap-2">
           <TestTube className="w-5 h-5" />
           Danh sách Mẫu
+          {isLoading && (
+            <span className="ml-2 text-sm text-gray-500 animate-pulse">Đang tìm kiếm...</span>
+          )}
         </CardTitle>
         <CardDescription>
           Quản lý và theo dõi tiến độ xét nghiệm
@@ -114,6 +126,15 @@ const TestOrderList: React.FC<TestOrderListProps> = ({
             <TestTube className="w-12 h-12 mx-auto mb-4 opacity-50" />
             <p>Không có mẫu nào</p>
           </div>
+        )}
+        
+        {/* Pagination */}
+        {currentPage !== undefined && totalPages !== undefined && onPageChange && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={onPageChange}
+          />
         )}
       </CardContent>
     </Card>
