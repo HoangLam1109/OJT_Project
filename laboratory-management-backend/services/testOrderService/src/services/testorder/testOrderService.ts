@@ -3,6 +3,8 @@ import reagentServiceClient from "../warehouse/reagentServiceClient.js";
 import { CreateOrderInput, ReagentUsage, UpdateOrderInput } from "../../db/models/TestOrder.model.js";
 import { ITestOrder } from "../../db/models/TestOrder.model.js";
 import TestOrder from "../../db/models/TestOrder.model.js";
+import mongoose from "mongoose";
+
 export const TestOrderService = {
 
   // Lấy tất cả Test Orders
@@ -45,7 +47,7 @@ export const TestOrderService = {
           _id: 0,
           patient_id: "$_id",
           patient_name: 1,
-          totalOrders: { $size: "$orders" },              
+          totalOrders: { $size: "$orders" },
           orders: { $slice: ["$orders", skip, limit] }
         }
       }
@@ -67,6 +69,7 @@ export const TestOrderService = {
       patient_name: data.patient_name ?? '',
       barcode: data.barcode,
       test_type: data.test_type,
+      test_item_ids: data.test_item_ids?.map(id => new mongoose.Types.ObjectId(id)),
       status: data.status ?? 'Pending',
       created_by: data.created_by,
       ...(data.instrument_id ? { instrument_id: data.instrument_id } : {}),
@@ -123,6 +126,10 @@ export const TestOrderService = {
       ...(data.patient_name ? { patient_name: data.patient_name } : {}),
       ...(data.barcode ? { barcode: data.barcode } : {}),
       ...(data.test_type ? { test_type: data.test_type } : {}),
+      ...(data.test_item_ids && Array.isArray(data.test_item_ids)
+        ? { test_item_ids: data.test_item_ids.map(id => new mongoose.Types.ObjectId(id)) }
+        : {}),
+
       ...(data.status ? { status: data.status } : {}),
       ...(data.instrument_id ? { instrument_id: data.instrument_id } : {}),
       ...(data.due_date ? { due_date: new Date(data.due_date) } : {}),
