@@ -165,7 +165,7 @@ const CreateTestOrderPage: React.FC = () => {
             size="sm"
             onClick={() => {
               const basePath = getBasePath();
-              navigate(`${basePath}?page=test-orders`);
+              navigate(`${basePath}/test-orders`);
             }}
             className="flex items-center gap-2"
           >
@@ -302,7 +302,7 @@ const CreateTestOrderPage: React.FC = () => {
                 variant="outline"
                 onClick={() => {
                   const basePath = getBasePath();
-                  navigate(`${basePath}?page=test-orders`);
+                  navigate(`${basePath}/test-orders`);
                 }}
                 disabled={isSubmitting}
                 className="px-6 py-2.5 border-gray-300 text-gray-700 hover:bg-gray-50"
