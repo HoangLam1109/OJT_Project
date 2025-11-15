@@ -125,20 +125,39 @@ export const getTestOrderById = async (req: Request<{ id: string }>, res: Respon
 
 export const getAllOrdersGroupedByPatientId = async (req: Request, res: Response) => {
   try {
-
     const patient_id = req.query.patient_id as string;
     const created_atByString = req.query.created_at as string; 
     const created_at = new Date(created_atByString);
-    const GroupOfOnePatientData = await TestOrderService.getOrdersGroupedByOnePatient(patient_id, created_at);
-    
-    const GroupOfOnePatient = {
-      patient_id: GroupOfOnePatientData[0].patient_id,
-      patient_name: GroupOfOnePatientData[0].patient_name,
-      orders: GroupOfOnePatientData[0].orders
+
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+
+    const GroupOfOnePatientData = await TestOrderService.getOrdersGroupedByOnePatient(
+      patient_id,
+      created_at,
+      page,
+      limit
+    );
+
+    if (!GroupOfOnePatientData.length) {
+      return res.json({ success: true, data: null });
     }
+
+    const { patient_name, orders, totalOrders } = GroupOfOnePatientData[0];
+    const totalPages = Math.ceil(totalOrders / limit); // tính số trang
+
     return res.json({
       success: true,
-      data: GroupOfOnePatient
+      data: {
+        patient_id,
+        patient_name,
+        orders,
+        pagination: {
+          page,
+          limit,
+          totalPages
+        }
+      }
     });
 
   } catch (error) {
@@ -148,6 +167,8 @@ export const getAllOrdersGroupedByPatientId = async (req: Request, res: Response
     });
   }
 };
+
+
 
 
 export const searchTestOrders = async (req: Request, res: Response) => {
