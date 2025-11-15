@@ -6,6 +6,8 @@ import swaggerUi from "swagger-ui-express";
 import { readFileSync } from "fs";
 import connectDB from "./config/database.config.js";
 import testOrderRoutes from "./routes/testOrder.routes.js";
+import testItemRoutes from "./routes/testItem.routes.js"
+import testResultRoutes from "./routes/testResult.routes.js"
 import { writeFileSync } from "fs";
 import yaml from 'js-yaml';
 // Load environment variables
@@ -27,6 +29,9 @@ const swaggerDocument = yaml.load(swaggerYaml) as Record<string, any>;
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 // Routes
 app.use("/api", testOrderRoutes);
+app.use("/api", testItemRoutes);
+app.use("/api/testResult", testResultRoutes);
+
 
 // Health check
 app.get("/", (req, res) => {

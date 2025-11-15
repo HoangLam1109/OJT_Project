@@ -1,55 +1,19 @@
-import mongoose, { Schema, Document } from "mongoose";
+import { Schema, model, Types } from "mongoose";
 
-export interface IResult {
-  parameter: string;
-  value: number | string;
-  unit?: string;
-  reference_range?: string;
-  flag?: string;
-}
+const TestOrderResultSchema = new Schema({
+  test_order_id: { type: Schema.Types.ObjectId, ref: "TestOrder", required: true },
+  test_item_id: { type: String, required: true },
 
-export interface ITestOrderResult extends Document {
-  order_id: mongoose.Types.ObjectId;
-  patient_id: mongoose.Types.ObjectId;
-  test_type: string;
-  results: IResult[];
-  remarks?: string;
-  verified_by?: string;
-  status: "Pending" | "Completed" | "Reviewed" | "AI Reviewed";
-  completed_at?: Date;
-}
+  name: { type: String },
+  code: { type: String },
+  unit: { type: String },
 
-const ResultSchema = new Schema<IResult>({
-  parameter: { type: String, required: true },
-  value: { type: Schema.Types.Mixed, required: true },
-  unit: String,
-  reference_range: String,
-  flag: String,
-});
+  result_value: { type: Number },
+  result_status: { type: String, enum: ["normal", "high", "low"], default: null },
+  reviewed: { type: Boolean, default: false },
+  reviewer_comment: { type: String },
+  patient_name: {type: String},
+}, { timestamps: true }); // sẽ tự tạo createdAt, updatedAt
 
-const TestOrderResultSchema = new Schema<ITestOrderResult>(
-  {
-    order_id: { type: Schema.Types.ObjectId, ref: "TestOrder", required: true },
-    patient_id: { type: Schema.Types.ObjectId, ref: "Patient", required: true },
-    test_type: { type: String, required: true },
-    results: [ResultSchema],
-    remarks: String,
-    verified_by: String,
-    status: {
-      type: String,
-      enum: ["Pending", "Completed", "Reviewed", "AI Reviewed"],
-      default: "Completed",
-    },
-    completed_at: Date,
-  },
-  { timestamps: true }
-);
-
-TestOrderResultSchema.index({ patient_id: 1 });
-TestOrderResultSchema.index({ order_id: 1 });
-
-export default mongoose.model<ITestOrderResult>(
-  "TestOrderResult",
-  TestOrderResultSchema,
-  "testResults"
-);
+// Named export để import chuẩn ES Module
+export const TestOrderResult = model("TestOrderResult", TestOrderResultSchema, "testResults");
