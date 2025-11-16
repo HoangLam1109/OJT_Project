@@ -461,11 +461,13 @@ paths:
                     type: string
                     example: Internal server error
   
-  # ==================== Get: Test Result By testorderId====================
-  /testResult/test-orders-summary:
+  # ==================== Get: All Test Result====================
+  /testResult/all:
     get:
-      summary: Lấy danh sách test orders kèm tổng hợp kết quả
-      description: Trả về các test order với patient_name, tổng số result và sample result. Phân trang theo test order.
+      tags:
+        - Test Result
+      summary: Lấy danh sách test results kèm tổng hợp kết quả
+      description: Trả về các test result với patient_name, tổng số result và sample result. Phân trang theo test result.
       parameters:
         - in: query
           name: page
@@ -478,7 +480,7 @@ paths:
           schema:
             type: integer
             default: 10
-          description: Số lượng test order trên mỗi trang
+          description: Số lượng test result trên mỗi trang
       responses:
         '200':
           description: Thành công
@@ -508,6 +510,51 @@ paths:
                   message:
                     type: string
                     example: "Unknown error"
+  
+  # ==================== Get: Test Result By testorderId====================
+  /testResult/getById/{id}:
+    get:
+      tags:
+        - Test Result
+      summary: Lấy thông tin chi tiết của một Test Result theo ID
+      description: |
+        Trả về thông tin một Test Result, bao gồm tên bệnh nhân, tổng số kết quả và toàn bộ danh sách kết quả xét nghiệm.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID của Test Order
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công – Trả về thông tin chi tiết test result
+        "404":
+          description: Không tìm thấy test order theo ID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Test Result not found
+        "500":
+          description: Lỗi server
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Unknown error                  
 components:
   schemas:
     # ==================== REQUEST: Dữ liệu gửi lên ====================

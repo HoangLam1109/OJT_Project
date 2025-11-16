@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { TestResultService } from "../services/testorder/testResultService.js";
+import { Types } from "mongoose";
 
 
 
@@ -36,6 +37,39 @@ export const getTestOrdersWithResultsSummary = async (req: Request, res: Respons
         limit,
         totalPages: totalPages 
       }
+    });
+
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: error instanceof Error ? error.message : "Unknown error"
+    });
+  }
+};
+
+export const getTestOrderById = async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id;
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing id"
+      });
+    }
+
+    const result = await TestResultService.getTestOrderById(id);
+
+    if (!result || result.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Test Order not found"
+      });
+    }
+
+    return res.json({
+      success: true,
+      data: result[0]
     });
 
   } catch (error: any) {
