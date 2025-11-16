@@ -114,6 +114,16 @@ const transformBackendOrder = (backendOrder: BackendTestOrder): TestOrder => {
     return ids.map(id => typeof id === 'string' ? id : id.toString());
   };
 
+  // Normalize status to ensure consistent format (capitalize first letter)
+  const normalizeStatus = (status?: string): string => {
+    if (!status) return 'Pending';
+    const statusLower = status.toLowerCase();
+    if (statusLower === 'pending') return 'Pending';
+    if (statusLower === 'processing') return 'Processing';
+    if (statusLower === 'completed') return 'Completed';
+    return status; // Return as-is if unknown
+  };
+
   return {
     _id: backendOrder._id,
     barcode: backendOrder.barcode,
@@ -122,7 +132,7 @@ const transformBackendOrder = (backendOrder: BackendTestOrder): TestOrder => {
     test_type: backendOrder.test_type,
     created_at: formatDate(backendOrder.created_at),
     created_by: backendOrder.user?.fullName,
-    status: backendOrder.status,
+    status: normalizeStatus(backendOrder.status),
     due_date: formatDate(backendOrder.due_date),
     is_deleted: backendOrder.is_deleted || undefined,
     deleted_at: backendOrder.deleted_at,
