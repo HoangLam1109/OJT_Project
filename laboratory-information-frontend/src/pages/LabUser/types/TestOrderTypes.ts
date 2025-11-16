@@ -50,6 +50,7 @@ export interface TestOrder {
   processing?:number;
   instrument?:Instrument;
   reagents?: Reagent[];
+  test_item_ids?: string[];
 }
 
 export interface TestResult {

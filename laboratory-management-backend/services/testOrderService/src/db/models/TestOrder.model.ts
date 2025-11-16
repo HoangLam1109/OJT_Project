@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from "mongoose";
 import { z } from 'zod';
-
+import { Types } from "mongoose";
 export interface ReagentUsage {
   reagent_id: string;
   quantity_used: number | null;
@@ -11,6 +11,7 @@ export interface ITestOrder extends Document {
   instrument_id?: string;
   instrument_name?: string ;
   reagent_usages: ReagentUsage[]; 
+  test_item_ids?: Types.ObjectId[];
   patient_name?: string;   
   barcode: string;
   test_type: string;       
@@ -31,6 +32,7 @@ export interface CreateOrderInput {
   patient_id: string;
   instrument_id?: string;
   reagent_usages: ReagentUsage[]; 
+  test_item_ids: string[]; 
   patient_name?: string;
   barcode: string;
   test_type: string;
@@ -49,6 +51,7 @@ export interface UpdateOrderInput {
   patient_id?: string;
   instrument_id?: string ;
   reagent_usages: ReagentUsage[]; 
+  test_item_ids?: string[];
   patient_name?: string;
   barcode?: string;
   test_type?: string;
@@ -69,6 +72,8 @@ const TestOrderSchema: Schema = new Schema(
     patient_id: { type: String, required: true },
     instrument_id: { type: String, default: '' },
     reagent_usages: { type: [ReagentUsageSchema], default: [] },
+    test_item_ids: [{ type: Schema.Types.ObjectId, ref: "TestItem" }],
+
     patient_name: { type: String, default: '' },
     barcode: { type: String, required: true, unique: true },
     test_type: { type: String,   required: true  },
@@ -76,7 +81,6 @@ const TestOrderSchema: Schema = new Schema(
     processing: { type: Number, default: 0 },
     created_at: { type: Date, default: Date.now },
     created_by: { type: String, required: true },
-
     due_date: { type: Date, default: null },
     updated_at: { type: Date, default: Date.now },
     updated_by: { type: String, default: null },

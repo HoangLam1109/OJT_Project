@@ -118,20 +118,6 @@ const MedicalRecordViewModal: React.FC<MedicalRecordViewModalProps> = ({ recordI
               </div>
 
               <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="font-medium mb-4">Thông tin thiết bị</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-sm text-gray-600">Thiết bị sử dụng gần đây</Label>
-                    <p className="text-lg break-words">{record.recent_instruments_used || '-'}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm text-gray-600">Thuốc thử</Label>
-                    <p className="text-lg break-words">{record.recent_reagents_info || '-'}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-gray-50 p-4 rounded-lg">
                 <h3 className="font-medium mb-4">Thông tin hệ thống</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>

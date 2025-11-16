@@ -38,13 +38,14 @@ export interface UpdateUserData {
   address?: string;
   role?: string[];
   isActive?: boolean;
+  avatar?: string;
 }
 
 export class UserService {
   async getUser(userId: string): Promise<IUser | null> {
     return await userRepository.findById(
       userId,
-      "_id email fullName phoneNumber identityNumber gender age dateOfBirth address"
+      "_id email fullName phoneNumber identityNumber gender age dateOfBirth address role isActive"
     );
   }
 
@@ -94,6 +95,7 @@ export class UserService {
       "phoneNumber",
       "address",
       "isActive",
+      "avatar",
     ];
 
     if (typeof userData.role !== "undefined") {

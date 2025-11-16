@@ -25,7 +25,7 @@ export class UserRepository implements IUserRepository {
     return await this.userModel.findById(
       id,
       fields ||
-        "_id email fullName phoneNumber identityNumber gender age dateOfBirth phoneNumber address isActive isDeleted provider providerId"
+        "_id email fullName phoneNumber identityNumber gender age dateOfBirth phoneNumber address isActive isDeleted provider providerId avatar"
     );
   }
 

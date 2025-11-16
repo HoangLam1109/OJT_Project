@@ -56,6 +56,7 @@ interface BackendTestOrder {
   processing?: number;
   notes?: string;
   patient_name?: string;
+  test_item_ids?: string[];
   user?: {
     fullName: string;
     email: string;
@@ -107,6 +108,22 @@ const transformBackendOrder = (backendOrder: BackendTestOrder): TestOrder => {
 
 
 
+  // Transform test_item_ids from ObjectId to string array
+  const transformTestItemIds = (ids?: string[] | any[]): string[] | undefined => {
+    if (!ids || !Array.isArray(ids)) return undefined;
+    return ids.map(id => typeof id === 'string' ? id : id.toString());
+  };
+
+  // Normalize status to ensure consistent format (capitalize first letter)
+  const normalizeStatus = (status?: string): string => {
+    if (!status) return 'Pending';
+    const statusLower = status.toLowerCase();
+    if (statusLower === 'pending') return 'Pending';
+    if (statusLower === 'processing') return 'Processing';
+    if (statusLower === 'completed') return 'Completed';
+    return status; // Return as-is if unknown
+  };
+
   return {
     _id: backendOrder._id,
     barcode: backendOrder.barcode,
@@ -115,12 +132,13 @@ const transformBackendOrder = (backendOrder: BackendTestOrder): TestOrder => {
     test_type: backendOrder.test_type,
     created_at: formatDate(backendOrder.created_at),
     created_by: backendOrder.user?.fullName,
-    status: backendOrder.status,
+    status: normalizeStatus(backendOrder.status),
     due_date: formatDate(backendOrder.due_date),
     is_deleted: backendOrder.is_deleted || undefined,
     deleted_at: backendOrder.deleted_at,
     deleted_by: backendOrder.deleted_by,
     notes: backendOrder.notes,
+    test_item_ids: transformTestItemIds(backendOrder.test_item_ids),
     instrument: backendOrder.instrument ? {
       instrument_code: backendOrder.instrument.instrument_code,
       instrument_name: backendOrder.instrument.instrument_name,
@@ -300,11 +318,19 @@ export const testOrderService = {
     status: 'Pending' | 'Processing' | 'Completed',
     updated_by: string
   ) {
-    const response = await testOrderApiClient.patch(`api/testOrder/${id}/status`, {
-      status,
-      updated_by,
-    });
-    return response.data.data;
+    try {
+      const response = await testOrderApiClient.put<{ success: boolean; data: BackendTestOrder }>(
+        `${TEST_ORDER_API_BASE_URL}/${id}/status`,
+        {
+          status,
+          updated_by,
+        }
+      );
+      return transformBackendOrder(response.data.data);
+    } catch (error) {
+      console.error('Error updating test order status:', error);
+      throw new Error(apiUtils.getErrorMessage(error));
+    }
   },
 
   // Search test orders with pagination

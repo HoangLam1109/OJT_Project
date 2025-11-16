@@ -121,10 +121,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         onLogin(authenticatedUser);
       } catch (error: unknown) {
         if (axios.isAxiosError(error)) {
+          // Xử lý lỗi 401 (Unauthorized) - token không hợp lệ
           if (error.response?.status === 401) {
             localStorage.removeItem("limsUser");
             setUser(null);
-          } else {
+          } 
+          // Bỏ qua lỗi network khi backend chưa chạy (development)
+          else if (error.code === 'ERR_NETWORK' || error.code === 'ERR_CONNECTION_REFUSED') {
+            // Chỉ log ở development mode
+            if (import.meta.env.DEV) {
+              console.warn('Backend không khả dụng. Vui lòng kiểm tra backend service đã chạy chưa.');
+            }
+            // Nếu có user trong localStorage, giữ lại để offline mode
+            const storedUser = rehydrateStoredUser();
+            if (storedUser) {
+              setUser(storedUser);
+            } else {
+              setUser(null);
+            }
+          } 
+          // Các lỗi khác
+          else {
             console.error('Auth check failed:', error);
           }
         } else {

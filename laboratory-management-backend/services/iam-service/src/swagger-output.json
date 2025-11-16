@@ -25,6 +25,10 @@
       "description": "Send reset password through email"
     },
     {
+      "name": "User Profile",
+      "description": "User profile operations (requires authentication)"
+    },
+    {
       "name": "Authentication",
       "description": "Authentication and authorization operations"
     },
@@ -95,35 +99,44 @@
                 },
                 "gender": {
                   "type": "string",
-                  "example": "string"
+                  "example": "Male"
                 },
                 "age": {
-                  "type": "string",
-                  "example": "number"
+                  "type": "number",
+                  "example": 22
                 },
                 "dateOfBirth": {
                   "type": "string",
-                  "example": "string"
+                  "example": "2002-01-01"
                 },
                 "phoneNumber": {
                   "type": "string",
-                  "example": "string"
+                  "example": "0123456789"
                 },
                 "address": {
                   "type": "string",
                   "example": "string"
                 },
-                "role": {
+                "avatar": {
                   "type": "string",
-                  "example": "string[]"
+                  "example": "https://example.com/avatar.png"
+                },
+                "role": {
+                  "type": "array",
+                  "example": [
+                    "USER"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
                 },
                 "createdAt": {
                   "type": "string",
-                  "example": "string"
+                  "example": "2025-01-01T00:00:00.000Z"
                 },
                 "updatedAt": {
                   "type": "string",
-                  "example": "string"
+                  "example": "2025-01-01T00:00:00.000Z"
                 }
               },
               "xml": {
@@ -857,35 +870,44 @@
                         },
                         "gender": {
                           "type": "string",
-                          "example": "string"
+                          "example": "Male"
                         },
                         "age": {
-                          "type": "string",
-                          "example": "number"
+                          "type": "number",
+                          "example": 22
                         },
                         "dateOfBirth": {
                           "type": "string",
-                          "example": "string"
+                          "example": "2002-01-01"
                         },
                         "phoneNumber": {
                           "type": "string",
-                          "example": "string"
+                          "example": "0123456789"
                         },
                         "address": {
                           "type": "string",
                           "example": "string"
                         },
-                        "role": {
+                        "avatar": {
                           "type": "string",
-                          "example": "string"
+                          "example": "https://example.com/avatar.png"
+                        },
+                        "role": {
+                          "type": "array",
+                          "example": [
+                            "USER"
+                          ],
+                          "items": {
+                            "type": "string"
+                          }
                         },
                         "createdAt": {
                           "type": "string",
-                          "example": "string"
+                          "example": "2025-01-01T00:00:00.000Z"
                         },
                         "updatedAt": {
                           "type": "string",
-                          "example": "string"
+                          "example": "2025-01-01T00:00:00.000Z"
                         }
                       }
                     }
@@ -895,12 +917,12 @@
                   "type": "object",
                   "properties": {
                     "hasNextPage": {
-                      "type": "string",
-                      "example": "boolean"
+                      "type": "boolean",
+                      "example": true
                     },
                     "hasPreviousPage": {
-                      "type": "string",
-                      "example": "boolean"
+                      "type": "boolean",
+                      "example": false
                     },
                     "nextCursor": {
                       "type": "string",
@@ -911,12 +933,12 @@
                       "example": "string"
                     },
                     "totalCount": {
-                      "type": "string",
-                      "example": "number"
+                      "type": "number",
+                      "example": 100
                     },
                     "limit": {
-                      "type": "string",
-                      "example": "number"
+                      "type": "number",
+                      "example": 10
                     }
                   }
                 }
@@ -1188,33 +1210,141 @@
                 },
                 "gender": {
                   "type": "string",
-                  "example": "string"
+                  "example": "Male"
                 },
                 "age": {
-                  "type": "string",
-                  "example": "number"
+                  "type": "number",
+                  "example": 22
                 },
                 "dateOfBirth": {
                   "type": "string",
-                  "example": "string"
+                  "example": "2002-01-01"
                 },
                 "phoneNumber": {
                   "type": "string",
-                  "example": "string"
+                  "example": "0123456789"
                 },
                 "address": {
                   "type": "string",
                   "example": "string"
                 },
-                "role": {
+                "avatar": {
                   "type": "string",
-                  "example": "string[]"
+                  "example": "https://example.com/avatar.png"
+                },
+                "role": {
+                  "type": "array",
+                  "example": [
+                    "USER"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
                 },
                 "createdAt": {
                   "type": "string",
-                  "example": "string"
+                  "example": "2025-01-01T00:00:00.000Z"
                 },
                 "updatedAt": {
+                  "type": "string",
+                  "example": "2025-01-01T00:00:00.000Z"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "User ID is required"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/user/profile": {
+      "post": {
+        "tags": [
+          "User Profile"
+        ],
+        "description": "Update current authenticated user profile",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Profile update data (uses updateUserSchema validator)",
+            "required": false,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "example": "user@example.com"
+                },
+                "fullName": {
+                  "type": "string",
+                  "example": "John Doe"
+                },
+                "identityNumber": {
+                  "type": "string",
+                  "example": "012345678901"
+                },
+                "gender": {
+                  "type": "string",
+                  "example": "Male"
+                },
+                "age": {
+                  "type": "number",
+                  "example": 22
+                },
+                "dateOfBirth": {
+                  "type": "string",
+                  "example": "2002-01-01"
+                },
+                "phoneNumber": {
+                  "type": "string",
+                  "example": "0123456789"
+                },
+                "address": {
+                  "type": "string",
+                  "example": "123 Main St"
+                },
+                "password": {
+                  "type": "string",
+                  "example": "secret123"
+                },
+                "isActive": {
+                  "type": "boolean",
+                  "example": true
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Profile updated successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Profile updated successfully!"
+                },
+                "userId": {
                   "type": "string",
                   "example": "string"
                 }
@@ -1225,7 +1355,62 @@
             }
           },
           "400": {
-            "description": "User ID is required"
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/user/profile/avatar": {
+      "post": {
+        "tags": [
+          "User Profile"
+        ],
+        "description": "Update current authenticated user avatar",
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "parameters": [
+          {
+            "name": "avatar",
+            "in": "formData",
+            "type": "file",
+            "required": true,
+            "description": "Avatar image file (max 5MB, image )"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Avatar updated successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Avatar updated successfully!"
+                },
+                "avatarUrl": {
+                  "type": "string",
+                  "example": "https://res.cloudinary.com/.../image/upload/v123/avatar.png"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "401": {
             "description": "Authentication required"
@@ -1254,46 +1439,46 @@
           {
             "name": "body",
             "in": "body",
-            "description": "User data",
+            "description": "User data (matches createUserSchema)",
             "required": true,
             "schema": {
               "type": "object",
               "properties": {
                 "email": {
                   "type": "string",
-                  "example": "string@example.com"
+                  "example": "user@example.com"
                 },
                 "fullName": {
                   "type": "string",
-                  "example": "string"
+                  "example": "John Doe"
                 },
                 "identityNumber": {
                   "type": "string",
-                  "example": "string"
+                  "example": "012345678901"
                 },
                 "gender": {
                   "type": "string",
                   "example": "Male"
                 },
                 "age": {
-                  "type": "string",
-                  "example": "12"
+                  "type": "number",
+                  "example": 22
                 },
                 "dateOfBirth": {
                   "type": "string",
-                  "example": "01/01/2002"
-                },
-                "password": {
-                  "type": "string",
-                  "example": "string"
+                  "example": "2002-01-01"
                 },
                 "phoneNumber": {
                   "type": "string",
-                  "example": "string"
+                  "example": "0123456789"
                 },
                 "address": {
                   "type": "string",
-                  "example": "string"
+                  "example": "123 Main St"
+                },
+                "password": {
+                  "type": "string",
+                  "example": "secret123"
                 },
                 "role": {
                   "type": "array",
@@ -1362,55 +1547,59 @@
           {
             "name": "body",
             "in": "body",
-            "description": "User update data",
+            "description": "User update data (matches  )",
             "required": false,
             "schema": {
               "type": "object",
               "properties": {
                 "email": {
                   "type": "string",
-                  "example": "string@example.com"
+                  "example": "user@example.com"
                 },
                 "fullName": {
                   "type": "string",
-                  "example": "string"
-                },
-                "password": {
-                  "type": "string",
-                  "example": "string"
+                  "example": "John Doe"
                 },
                 "identityNumber": {
                   "type": "string",
-                  "example": "string"
+                  "example": "012345678901"
                 },
                 "gender": {
                   "type": "string",
                   "example": "Male"
                 },
                 "age": {
-                  "type": "string",
-                  "example": "22"
+                  "type": "number",
+                  "example": 22
                 },
                 "dateOfBirth": {
                   "type": "string",
-                  "example": "01/01/2002"
+                  "example": "2002-01-01"
                 },
                 "phoneNumber": {
                   "type": "string",
-                  "example": "string"
+                  "example": "0123456789"
                 },
                 "address": {
                   "type": "string",
-                  "example": "string"
+                  "example": "123 Main St"
+                },
+                "avatar": {
+                  "type": "string",
+                  "example": "https://example.com/avatar.png"
+                },
+                "password": {
+                  "type": "string",
+                  "example": "secret123"
                 },
                 "isActive": {
-                  "type": "string",
-                  "example": "boolean"
+                  "type": "boolean",
+                  "example": true
                 },
                 "role": {
                   "type": "array",
                   "example": [
-                    ""
+                    "USER"
                   ],
                   "items": {
                     "type": "string"

@@ -72,12 +72,14 @@ const TestOrdersPage: React.FC = () => {
   // Tự động tăng % khi đang Processing
   useEffect(() => {
     const interval = setInterval(() => {
-      setOrders(prev => prev.map(order => {
+      const updateProcessing = (order: TestOrder) => {
         if (order.status === 'Processing' && (order.processing ?? 0) < 95) {
           return { ...order, processing: (order.processing ?? 0) + 5 };
         }
         return order;
-      }));
+      };
+      setOrders(prev => prev.map(updateProcessing));
+      setFilteredOrders(prev => prev.map(updateProcessing));
     }, 3000);
 
     return () => clearInterval(interval);
@@ -133,6 +135,9 @@ const TestOrdersPage: React.FC = () => {
     if (location.pathname.startsWith('/service')) {
       return '/service';
     }
+    if (location.pathname.startsWith('/admin')) {
+      return '/admin';
+    }
     return '/labuser';
   };
 
@@ -163,15 +168,17 @@ const handleStatusChange = async (
     toast.success(`Đã chuyển sang ${newStatus}`);
 
     // Optimistic UI – cập nhật ngay, không cần reload
-    setOrders(prev => prev.map(o =>
+    const updateOrder = (o: TestOrder) =>
       o._id === orderId
         ? {
             ...o,
             status: newStatus,
             processing: newStatus === 'Processing' ? 10 : newStatus === 'Completed' ? 100 : 0
           }
-        : o
-    ));
+        : o;
+
+    setOrders(prev => prev.map(updateOrder));
+    setFilteredOrders(prev => prev.map(updateOrder));
   } catch (error: any) {
     toast.error(error.response?.data?.message || 'Cập nhật thất bại');
     console.error('Status change error:', error.response?.data);
@@ -213,11 +220,13 @@ const handleStatusChange = async (
       await testOrderService.changeStatus(selectedOrder._id, 'Processing', user?.name ??'');
 
       // Cập nhật UI tức thì (optimistic)
-      setOrders(prev => prev.map(o =>
+      const updateOrder = (o: TestOrder) =>
         o._id === selectedOrder._id
           ? { ...o, status: 'Processing', processing: 10 }
-          : o
-      ));
+          : o;
+
+      setOrders(prev => prev.map(updateOrder));
+      setFilteredOrders(prev => prev.map(updateOrder));
 
       toast.success('Đã bắt đầu xét nghiệm');
     } catch (error: any) {

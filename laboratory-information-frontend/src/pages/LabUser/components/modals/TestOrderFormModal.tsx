@@ -15,6 +15,8 @@ import { SearchableDropdown } from '../common/SearchableDropdown';
 import { SearchableMultiSelect } from '../common/SearchableMultiSelect';
 import { toast } from 'sonner';
 import { testOrderService } from '../../../../service/testOrderService';
+import { testItemService, type TestItem } from '../../../../service/testItemService';
+import { TestItemMultiSelect } from '../common/TestItemMultiSelect';
 
 interface TestOrderFormModalProps {
   order: TestOrder | null;
@@ -79,6 +81,9 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
   const [loadingReagents, setLoadingReagents] = useState(false);
   const [instrumentId, setInstrumentId] = useState<string>('');
   const [reagentUsages, setReagentUsages] = useState<Array<{ reagent_id: string; quantity_used: number }>>([]);
+  const [testItems, setTestItems] = useState<TestItem[]>([]);
+  const [loadingTestItems, setLoadingTestItems] = useState(false);
+  const [selectedTestItemIds, setSelectedTestItemIds] = useState<string[]>([]);
 
   /* =================== RESET KHI MỞ MODAL =================== */
   useEffect(() => {
@@ -151,6 +156,26 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
     }
   }, [isOpen, order, isEdit, instruments]);
 
+  // Load test items when test_type changes
+  useEffect(() => {
+    if (isOpen && formData.test_type) {
+      loadTestItems(formData.test_type);
+    } else {
+      setTestItems([]);
+      if (!formData.test_type) {
+        setSelectedTestItemIds([]);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, formData.test_type]);
+
+  // Load test items for edit mode
+  useEffect(() => {
+    if (isOpen && order && isEdit && order.test_item_ids && order.test_item_ids.length > 0) {
+      setSelectedTestItemIds(order.test_item_ids);
+    }
+  }, [isOpen, order, isEdit]);
+
   const loadPatients = async () => {
     try {
       setLoadingPatients(true);
@@ -188,6 +213,23 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
       toast.error('Không thể tải danh sách thuốc thử');
     } finally {
       setLoadingReagents(false);
+    }
+  };
+
+  const loadTestItems = async (testType: string) => {
+    try {
+      setLoadingTestItems(true);
+      const items = await testItemService.getAllTestItems(testType);
+      setTestItems(items);
+      // Only reset selected items if not in edit mode or if test type changed
+      if (!isEdit || !order?.test_item_ids) {
+        setSelectedTestItemIds([]);
+      }
+    } catch (e) {
+      toast.error('Không thể tải danh sách test items');
+      setTestItems([]);
+    } finally {
+      setLoadingTestItems(false);
     }
   };
 
@@ -239,6 +281,8 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
         reagent_id: ru.reagent_id,
         quantity_used: ru.quantity_used || 1,
       })),
+      // Test items
+      test_item_ids: selectedTestItemIds,
     };
 
     try {
@@ -358,6 +402,23 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
                 )}
               </div>
             </div>
+
+            {/* Test Items - hiển thị khi đã chọn loại xét nghiệm */}
+            {formData.test_type && (
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">
+                  Test Items
+                </Label>
+                <TestItemMultiSelect
+                  options={testItems}
+                  value={selectedTestItemIds}
+                  onChange={setSelectedTestItemIds}
+                  placeholder={loadingTestItems ? 'Đang tải...' : 'Chọn test items'}
+                  searchPlaceholder="Tìm kiếm test items..."
+                  disabled={loadingTestItems || isSubmitting}
+                />
+              </div>
+            )}
 
             {/* Hạn hoàn thành - full width */}
             <div className="space-y-2">
