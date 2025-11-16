@@ -360,6 +360,18 @@ export function AppRoutes() {
           return;
         }
 
+        // Bỏ qua các routes đặc biệt của admin
+        if (
+          basePath === "/admin" &&
+          (location.pathname.includes("/create-test-order") ||
+            location.pathname.includes("/select-instruments") ||
+            location.pathname.includes("/select-reagents") ||
+            location.pathname.includes("/patient-management") ||
+            location.pathname.includes("/audit-reports"))
+        ) {
+          return;
+        }
+
         const page = getPageFromPath(location.pathname, basePath);
         const roleKey = Object.keys(roleRoutes).find(
           (key) => roleRoutes[key].basePath === basePath
@@ -528,6 +540,68 @@ export function AppRoutes() {
             >
               <SelectReagentsPage />
             </ServiceLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Special Admin Routes - Các routes đặc biệt không nằm trong cấu hình chính */}
+      <Route
+        path="/admin/create-test-order"
+        element={
+          <ProtectedRoute allowedRoles={["ADMIN"]}>
+            <TestOrderActionsProvider>
+              <AdminLayout
+                currentUser={user!}
+                onLogout={onLogout}
+                currentPage="test-orders"
+                onNavigate={(page) => {
+                  setCurrentPage("ADMIN", page);
+                  navigate(`/admin`);
+                }}
+              >
+                <CreateTestOrderPage />
+              </AdminLayout>
+            </TestOrderActionsProvider>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/select-instruments"
+        element={
+          <ProtectedRoute allowedRoles={["ADMIN"]}>
+            <TestOrderActionsProvider>
+              <AdminLayout
+                currentUser={user!}
+                onLogout={onLogout}
+                currentPage="test-orders"
+                onNavigate={(page) => {
+                  setCurrentPage("ADMIN", page);
+                  navigate(`/admin`);
+                }}
+              >
+                <SelectInstrumentsPage />
+              </AdminLayout>
+            </TestOrderActionsProvider>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/select-reagents"
+        element={
+          <ProtectedRoute allowedRoles={["ADMIN"]}>
+            <TestOrderActionsProvider>
+              <AdminLayout
+                currentUser={user!}
+                onLogout={onLogout}
+                currentPage="test-orders"
+                onNavigate={(page) => {
+                  setCurrentPage("ADMIN", page);
+                  navigate(`/admin`);
+                }}
+              >
+                <SelectReagentsPage />
+              </AdminLayout>
+            </TestOrderActionsProvider>
           </ProtectedRoute>
         }
       />
