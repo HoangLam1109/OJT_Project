@@ -21,6 +21,11 @@ export class PatientMedicalRecordService {
       throw new Error("Patient not found");
     }
 
+    const existingRecord = await PatientMedicalRecord.findOne({ patient_id: patientId, is_deleted: false }).lean();
+    if (existingRecord) {
+      throw new Error("Patient already has a medical record");
+    }
+
     // Generate record_code automatically
     const now = new Date();
     const year = now.getFullYear();
@@ -45,8 +50,6 @@ export class PatientMedicalRecordService {
       medical_history: payload.medical_history,
       clinical_notes: payload.clinical_notes,
       recent_test_summary: payload.recent_test_summary,
-      recent_instruments_used: payload.recent_instruments_used,
-      recent_reagents_info: payload.recent_reagents_info,
       created_by: payload.created_by || createdBy,
       updated_by: payload.updated_by || createdBy,
       is_deleted: false,
@@ -81,8 +84,6 @@ export class PatientMedicalRecordService {
       medical_history: 1,
       clinical_notes: 1,
       recent_test_summary: 1,
-      recent_instruments_used: 1,
-      recent_reagents_info: 1,
       created_at: 1,
       updated_at: 1,
       created_by: 1,
@@ -163,8 +164,6 @@ export class PatientMedicalRecordService {
       "medical_history",
       "clinical_notes",
       "recent_test_summary",
-      "recent_instruments_used",
-      "recent_reagents_info",
     ];
 
     const payload: Partial<PatientMedicalRecordDTO> = {};
