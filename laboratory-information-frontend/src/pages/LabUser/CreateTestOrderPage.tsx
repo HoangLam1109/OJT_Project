@@ -26,10 +26,13 @@ const CreateTestOrderPage: React.FC = () => {
   const location = useLocation();
   const { user } = useAuthContext();
 
-  // Detect current route base path (service or labuser)
+  // Detect current route base path (service, labuser, or admin)
   const getBasePath = () => {
     if (location.pathname.startsWith('/service')) {
       return '/service';
+    }
+    if (location.pathname.startsWith('/admin')) {
+      return '/admin';
     }
     return '/labuser';
   };
