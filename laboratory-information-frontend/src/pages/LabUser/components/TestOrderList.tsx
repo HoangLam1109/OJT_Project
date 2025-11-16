@@ -129,12 +129,14 @@ const TestOrderList: React.FC<TestOrderListProps> = ({
         )}
         
         {/* Pagination */}
-        {currentPage !== undefined && totalPages !== undefined && onPageChange && (
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={onPageChange}
-          />
+        {currentPage !== undefined && totalPages !== undefined && onPageChange && totalPages > 0 && (
+          <div className="mt-6 pt-4 border-t">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={onPageChange}
+            />
+          </div>
         )}
       </CardContent>
     </Card>
