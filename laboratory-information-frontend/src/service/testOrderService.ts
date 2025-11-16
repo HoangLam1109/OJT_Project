@@ -308,11 +308,19 @@ export const testOrderService = {
     status: 'Pending' | 'Processing' | 'Completed',
     updated_by: string
   ) {
-    const response = await testOrderApiClient.patch(`api/testOrder/${id}/status`, {
-      status,
-      updated_by,
-    });
-    return response.data.data;
+    try {
+      const response = await testOrderApiClient.put<{ success: boolean; data: BackendTestOrder }>(
+        `${TEST_ORDER_API_BASE_URL}/${id}/status`,
+        {
+          status,
+          updated_by,
+        }
+      );
+      return transformBackendOrder(response.data.data);
+    } catch (error) {
+      console.error('Error updating test order status:', error);
+      throw new Error(apiUtils.getErrorMessage(error));
+    }
   },
 
   // Search test orders with pagination
