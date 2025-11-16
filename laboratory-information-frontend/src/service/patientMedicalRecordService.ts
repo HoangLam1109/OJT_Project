@@ -1,4 +1,4 @@
-import axios, { type AxiosInstance } from 'axios';
+import axios, { type AxiosInstance, isAxiosError } from 'axios';
 import { apiService } from './apiClient';
 
 const PATIENT_SERVICE_URL = import.meta.env.VITE_PATIENT_SERVICE_URL || 'http://localhost:5001';
@@ -42,8 +42,6 @@ export interface PatientMedicalRecord {
   medical_history?: string;
   clinical_notes?: string;
   recent_test_summary?: string;
-  recent_instruments_used?: string;
-  recent_reagents_info?: string;
   created_by?: string;
   updated_by?: string;
   is_deleted?: boolean;
@@ -114,6 +112,51 @@ async function tryGet<T>(path: string): Promise<T> {
       }
     }
   }
+}
+
+const DEFAULT_PMR_ERROR = 'Không thể tạo hồ sơ y tế. Vui lòng thử lại.';
+
+function extractErrorMessage(error: unknown, fallback = DEFAULT_PMR_ERROR): string {
+  const normalize = (value: unknown): string | undefined => {
+    if (typeof value === 'string' && value.trim()) return value.trim();
+    if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+    return undefined;
+  };
+
+  if (isAxiosError(error)) {
+    const data = error.response?.data as Record<string, unknown> | string | undefined;
+    const topLevelMessage = normalize(data);
+    if (topLevelMessage) return topLevelMessage;
+
+    if (data && typeof data === 'object') {
+      const nestedRaw = (data as { error?: unknown }).error ?? (data as { message?: unknown }).message;
+      const nestedMessage = normalize(nestedRaw);
+      if (nestedMessage) return nestedMessage;
+
+      const detailsRaw = (data as { details?: { message?: unknown } }).details?.message;
+      const detailsMessage = normalize(detailsRaw);
+      if (detailsMessage) return detailsMessage;
+
+      if ('errors' in data && Array.isArray((data as { errors?: unknown }).errors)) {
+        const firstError = (data as { errors?: unknown[] }).errors?.[0];
+        const firstMessage = normalize(firstError);
+        if (firstMessage) return firstMessage;
+      }
+    }
+
+    const status = error.response?.status;
+    if (status === 404) return 'Bệnh nhân đã có hồ sơ y tế.';
+    if (status === 401) return 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+    if (status === 403) return 'Bạn không có quyền thực hiện thao tác này (403).';
+    if (status) return `Yêu cầu thất bại (HTTP ${status}).`;
+
+    if (normalize(error.message)) return error.message as string;
+  }
+
+  if (error instanceof Error && normalize(error.message)) return error.message;
+  const fallbackMessage = normalize(error);
+  if (fallbackMessage) return fallbackMessage;
+  return fallback;
 }
 
 function isPMRListResponse(v: unknown): v is PMRListResponse {
@@ -228,13 +271,12 @@ export const patientMedicalRecordService = {
     medical_history?: string;
     clinical_notes?: string;
     recent_test_summary?: string;
-    recent_instruments_used?: string;
-    recent_reagents_info?: string;
   }): Promise<PatientMedicalRecord | null> {
     const candidates = [
       '/api/patient-medical-records/create',
       '/patient-medical-records/create',
     ];
+    let lastError: unknown = null;
     for (const path of candidates) {
       try {
         const res = await pmrApiClient.post(path, payload);
@@ -249,15 +291,20 @@ export const patientMedicalRecordService = {
               : (data as PatientMedicalRecord);
           if (candidate && typeof candidate._id === 'string') return candidate;
         }
-      } catch {
+      } catch (primaryError) {
+        lastError = primaryError;
         try {
           const data = await apiService.post<PatientMedicalRecord>(path, payload);
           // apiService returns parsed data directly
           if (data && (data as unknown as PatientMedicalRecord)._id) return data as unknown as PatientMedicalRecord;
-        } catch {
+        } catch (fallbackError) {
+          lastError = fallbackError;
           // try next
         }
       }
+    }
+    if (lastError) {
+      throw new Error(extractErrorMessage(lastError));
     }
     return null;
   },
@@ -270,8 +317,6 @@ export const patientMedicalRecordService = {
     medical_history?: string;
     clinical_notes?: string;
     recent_test_summary?: string;
-    recent_instruments_used?: string;
-    recent_reagents_info?: string;
   }): Promise<PatientMedicalRecord | null> {
     const candidates = [
       `/api/patient-medical-records/update/${id}`,
