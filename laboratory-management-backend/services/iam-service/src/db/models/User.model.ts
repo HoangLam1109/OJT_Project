@@ -17,11 +17,11 @@ export interface IUser extends Document {
   isActive?: boolean;
   isDeleted?: boolean;
   role?: string[];
+  avatar?: string;
 
   // OAuth fields
-  provider?: "google" | "facebook" | "local";
+  provider?: "google" | "local";
   providerId?: string;
-  avatar?: string;
 
   // Additional fields (commented out for now)
 

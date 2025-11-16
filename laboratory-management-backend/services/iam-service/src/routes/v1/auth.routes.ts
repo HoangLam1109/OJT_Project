@@ -9,7 +9,7 @@ const router = express.Router();
 
 router.post("/register", validateCreateUser, registerUser);
 router.post("/login", loginUser);
-router.post("/logout", authenticateUser.authenticateUser, logoutUser);
+router.post("/logout", logoutUser);
 router.post("/refresh-token", authenticateUser.refreshTokenValidation, refreshToken);
 
 // Google OAuth routes

@@ -27,6 +27,10 @@ const doc = {
       description: 'Send reset password through email'
     },
     {
+      name: 'User Profile',
+      description: 'User profile operations (requires authentication)'
+    },
+    {
       name: 'Authentication',
       description: 'Authentication and authorization operations'
     },

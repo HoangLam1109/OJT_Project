@@ -175,7 +175,7 @@ const linkOAuthAccount = async (req: Request, res: Response, next: NextFunction)
     await oauthService.linkOAuthAccount(user, {
       email: email || user.email,
       fullName: user.fullName,
-      provider: provider as 'google' | 'facebook',
+      provider: provider as 'google',
       providerId,
     });
 

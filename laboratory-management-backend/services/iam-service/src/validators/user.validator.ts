@@ -69,6 +69,9 @@ export const updateUserSchema = Joi.object({
     'number.integer': 'Age must be an integer',
     'number.min': 'Age must be at least 0',
   }),
+  avatar: Joi.string().messages({
+    'string.base': 'Avatar must be a string',
+  }),
   dateOfBirth: Joi.date().messages({
     'date.base': 'Invalid date of birth',
   }),
