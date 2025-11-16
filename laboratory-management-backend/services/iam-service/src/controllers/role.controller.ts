@@ -2,22 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 import { RoleService } from "../services/role.service.js";
 import { AppError } from "../utils/error.util.js";
 import { PaginationUtils } from "../utils/pagination.util.js";
-
-// Define the type for authenticated user (matches what the middleware provides)
-interface AuthenticatedUser {
-  _id: string;
-  email: string;
-  fullName: string;
-  identityNumber: string;
-  gender: string;
-  age: number;
-  dateOfBirth: Date;
-  phoneNumber: string;
-  address: string;
-  role: string[];
-  isActive: boolean;
-  isDeleted: boolean;
-}
+import { AuthenticatedUser } from "../types/authenticatedUser.type.js";
 
 const roleService = new RoleService();
 

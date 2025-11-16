@@ -1,4 +1,5 @@
 import express from "express";
+import multer from "multer";
 import {
   getUser,
   createUser,
@@ -9,6 +10,8 @@ import {
   getCurrentUserRolesAndPrivileges,
   assignRoleToUser,
   lockUser,
+  updateProfile,
+  uploadAvatar,
 } from "../../controllers/user.controller.js";
 import { authorize } from "../../middlewares/authorize.middleware.js";
 import {
@@ -23,10 +26,25 @@ import {
 
 const router = express.Router();
 
+const avatarUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith("image/")) {
+      cb(null, true);
+    } else {
+      cb(null, false);
+    }
+  },
+});
+
 router.get("/all", authorize(["read:user"]), getUsersWithPagination);
 router.get("/me/roles", getCurrentUserRolesAndPrivileges);
 router.get("/:id/roles", authorize(["read:user"]), getUserRolesAndPrivileges);
 router.get("/:id", authorize(["read:user"]), getUser);
+
+router.post("/profile", validateUpdateUser, updateProfile);
+router.post("/profile/avatar", avatarUpload.single("avatar"), uploadAvatar);
 
 router.post(
   "/create",
