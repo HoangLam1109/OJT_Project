@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '../../../components/common/dialog';
 import { Label } from '../../../components/common/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/common/select';
 import { Input } from '../../../components/common/input';
 import { Textarea } from '../../../components/common/textarea';
 import Button from '../../../components/common/button';
@@ -16,8 +15,6 @@ interface EditPatientMedicalRecordProps {
   onUpdated?: () => void;
 }
 
-const BLOOD_TYPES = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
-
 export default function EditPatientMedicalRecord({ id, open, onOpenChange, onUpdated }: EditPatientMedicalRecordProps) {
   const [loading, setLoading] = useState(false);
 
@@ -30,8 +27,6 @@ export default function EditPatientMedicalRecord({ id, open, onOpenChange, onUpd
     medical_history: '',
     clinical_notes: '',
     recent_test_summary: '',
-    recent_instruments_used: '',
-    recent_reagents_info: '',
   });
 
   useEffect(() => {
@@ -65,8 +60,6 @@ export default function EditPatientMedicalRecord({ id, open, onOpenChange, onUpd
           medical_history: String(detail?.medical_history ?? ''),
           clinical_notes: String(detail?.clinical_notes ?? ''),
           recent_test_summary: String(detail?.recent_test_summary ?? ''),
-          recent_instruments_used: String(detail?.recent_instruments_used ?? ''),
-          recent_reagents_info: String(detail?.recent_reagents_info ?? ''),
         });
       } finally {
         if (mounted) setLoading(false);
@@ -90,16 +83,11 @@ export default function EditPatientMedicalRecord({ id, open, onOpenChange, onUpd
             </div>
             <div className="space-y-2">
               <Label>Nhóm máu</Label>
-              <Select value={form.blood_type} onValueChange={(v) => setForm(prev => ({ ...prev, blood_type: v }))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Chọn nhóm máu" />
-                </SelectTrigger>
-                <SelectContent className="bg-white shadow-lg z-[60] max-h-72 overflow-auto">
-                  {BLOOD_TYPES.map(bt => (
-                    <SelectItem key={bt} value={bt}>{bt}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Input
+                value={form.blood_type}
+                placeholder="Nhập nhóm máu (ví dụ: A+, HH)"
+                onChange={(e) => setForm(prev => ({ ...prev, blood_type: e.target.value }))}
+              />
             </div>
             <div className="space-y-2">
               <Label>Dị ứng</Label>
@@ -127,14 +115,6 @@ export default function EditPatientMedicalRecord({ id, open, onOpenChange, onUpd
             <div className="md:col-span-2 space-y-2">
               <Label>Tóm tắt xét nghiệm gần đây</Label>
               <Textarea value={form.recent_test_summary} onChange={(e) => setForm(prev => ({ ...prev, recent_test_summary: e.target.value }))} />
-            </div>
-            <div className="space-y-2">
-              <Label>Thiết bị sử dụng gần đây</Label>
-              <Input value={form.recent_instruments_used} onChange={(e) => setForm(prev => ({ ...prev, recent_instruments_used: e.target.value }))} />
-            </div>
-            <div className="space-y-2">
-              <Label>Thuốc thử (batch/lot)</Label>
-              <Input value={form.recent_reagents_info} onChange={(e) => setForm(prev => ({ ...prev, recent_reagents_info: e.target.value }))} />
             </div>
           </div>
         </div>

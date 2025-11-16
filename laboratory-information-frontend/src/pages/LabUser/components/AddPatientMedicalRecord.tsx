@@ -2,7 +2,6 @@ import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '../../../components/common/dialog';
 import { Label } from '../../../components/common/label';
 import { Input } from '../../../components/common/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/common/select';
 import { Textarea } from '../../../components/common/textarea';
 import Button from '../../../components/common/button';
 import { patientService, type PatientOption } from '../../../service/patientService';
@@ -16,8 +15,6 @@ interface AddPatientMedicalRecordProps {
     patientId?: string;
 }
 
-const BLOOD_TYPES = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
-
 export default function AddPatientMedicalRecord({ open, onOpenChange, onCreated, patientId }: AddPatientMedicalRecordProps) {
     const [creating, setCreating] = useState(false);
     const [form, setForm] = useState({
@@ -29,8 +26,6 @@ export default function AddPatientMedicalRecord({ open, onOpenChange, onCreated,
         medical_history: '',
         clinical_notes: '',
         recent_test_summary: '',
-        recent_instruments_used: '',
-        recent_reagents_info: '',
     });
     const [patientQuery, setPatientQuery] = useState('');
     const [patientSuggestions, setPatientSuggestions] = useState<PatientOption[]>([]);
@@ -237,16 +232,11 @@ export default function AddPatientMedicalRecord({ open, onOpenChange, onCreated,
                         </div>
                         <div className="space-y-2">
                             <Label>Nhóm máu</Label>
-                            <Select value={form.blood_type} onValueChange={(v) => setForm(prev => ({ ...prev, blood_type: v }))}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Chọn nhóm máu" />
-                                </SelectTrigger>
-                                <SelectContent className="bg-white shadow-lg z-[60] max-h-72 overflow-auto">
-                                    {BLOOD_TYPES.map(bt => (
-                                        <SelectItem key={bt} value={bt}>{bt}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            <Input
+                                value={form.blood_type}
+                                placeholder="Nhập nhóm máu (ví dụ: A+, HH)"
+                                onChange={(e) => setForm(prev => ({ ...prev, blood_type: e.target.value }))}
+                            />
                         </div>
                         <div className="space-y-2">
                             <Label>Dị ứng</Label>
@@ -276,14 +266,6 @@ export default function AddPatientMedicalRecord({ open, onOpenChange, onCreated,
                             <Label>Tóm tắt xét nghiệm gần đây</Label>
                             <Textarea value={form.recent_test_summary} onChange={(e) => setForm(prev => ({ ...prev, recent_test_summary: e.target.value }))} />
                         </div>
-                        <div className="space-y-2">
-                            <Label>Thiết bị sử dụng gần đây</Label>
-                            <Input value={form.recent_instruments_used} onChange={(e) => setForm(prev => ({ ...prev, recent_instruments_used: e.target.value }))} />
-                        </div>
-                        <div className="space-y-2">
-                            <Label>Thuốc thử (batch/lot)</Label>
-                            <Input value={form.recent_reagents_info} onChange={(e) => setForm(prev => ({ ...prev, recent_reagents_info: e.target.value }))} />
-                        </div>
                     </div>
                 </div>
         <DialogFooter className="mt-8">
@@ -302,7 +284,7 @@ export default function AddPatientMedicalRecord({ open, onOpenChange, onCreated,
                                 onCreated?.(created);
                                 setForm({
                                     patient_id: '', blood_type: '', allergies: '', chronic_conditions: '', current_medications: '',
-                                    medical_history: '', clinical_notes: '', recent_test_summary: '', recent_instruments_used: '', recent_reagents_info: ''
+                                    medical_history: '', clinical_notes: '', recent_test_summary: ''
                                 });
                                 setSelectedPatient(null);
                                 setPatientQuery('');
@@ -312,8 +294,16 @@ export default function AddPatientMedicalRecord({ open, onOpenChange, onCreated,
                             } else {
                                 toast.error('Tạo hồ sơ thất bại');
                             }
-                        } catch {
-                            toast.error('Tạo hồ sơ thất bại');
+                        } catch (error) {
+                            const rawMessage = error instanceof Error ? error.message : '';
+                            const duplicateMessage = 'Bệnh nhân này đã có hồ sơ y tế.';
+                            if (rawMessage && /already exists/i.test(rawMessage)) {
+                                toast.error(duplicateMessage);
+                            } else if (rawMessage) {
+                                toast.error(rawMessage);
+                            } else {
+                                toast.error('Tạo hồ sơ thất bại');
+                            }
                         } finally {
                             setCreating(false);
                         }

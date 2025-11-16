@@ -12,8 +12,6 @@ export interface IPatientMedicalRecord extends Document {
   medical_history?: string;
   clinical_notes?: string;
   recent_test_summary?: string;
-  recent_instruments_used?: string;
-  recent_reagents_info?: string;
   created_at: Date;
   updated_at: Date;
   created_by?: string;
@@ -34,8 +32,6 @@ export type PatientMedicalRecordDTO = {
   medical_history?: string;
   clinical_notes?: string;
   recent_test_summary?: string;
-  recent_instruments_used?: string;
-  recent_reagents_info?: string;
   created_at: Date;
   updated_at: Date;
   created_by?: string;
@@ -94,16 +90,6 @@ const patientMedicalRecordSchema = new mongoose.Schema<IPatientMedicalRecord>(
       trim: true,
       maxlength: [2000, "Recent test summary cannot exceed 2000 characters!"],
     },
-    recent_instruments_used: {
-      type: String,
-      trim: true,
-      maxlength: [500, "Recent instruments info cannot exceed 500 characters!"],
-    },
-    recent_reagents_info: {
-      type: String,
-      trim: true,
-      maxlength: [500, "Recent reagents info cannot exceed 500 characters!"],
-    },
     created_by: {
       type: String,
       trim: true,
@@ -131,7 +117,10 @@ const patientMedicalRecordSchema = new mongoose.Schema<IPatientMedicalRecord>(
   }
 );
 
-patientMedicalRecordSchema.index({ patient_id: 1 });
+patientMedicalRecordSchema.index(
+  { patient_id: 1 },
+  { unique: true, partialFilterExpression: { is_deleted: false } }
+);
 patientMedicalRecordSchema.index({ updated_at: -1 });
 patientMedicalRecordSchema.index({ is_deleted: 1, updated_at: -1 });
 
