@@ -64,7 +64,38 @@ export const TestResultService = {
                 }
             }
         ]);
-    }
+    },
+
+    getTestOrderById: async (testOrderId: string) => {
+
+    const objectId = new Types.ObjectId(testOrderId);
+
+    return TestOrderResult.aggregate([
+        {
+            $match: {
+                test_order_id: objectId
+            }
+        },
+        {
+            $group: {
+                _id: "$test_order_id",
+                patient_name: { $first: "$patient_name" },
+                totalResults: { $sum: 1 },
+                resultsSample: { $push: "$$ROOT" }
+            }
+        },
+        {
+            $project: {
+                _id: 0,
+                test_order_id: "$_id",
+                patient_name: 1,
+                totalResults: 1,
+                resultsSample: 1
+            }
+        }
+    ]);
+}
+
 };
 
 

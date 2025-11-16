@@ -1,12 +1,16 @@
 // routes/testResult.routes.ts
 import express from "express";
 import {
-  getTestOrdersWithResultsSummary
+  getTestOrdersWithResultsSummary,
+  getTestOrderById
 } from "../controllers/testResult.controller.js";
 
 const router = express.Router();
 
 // Lấy danh sách test orders (phân trang)
-router.get("/test-orders-summary", getTestOrdersWithResultsSummary);
+router.get("/all", getTestOrdersWithResultsSummary);
+
+router.get("/getById/:id", getTestOrderById);
+
 
 export default router;
