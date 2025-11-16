@@ -9,6 +9,8 @@ import { useAuthContext } from '../../hooks/useAuthContext';
 import { patientService, type PatientOption } from '../../service/patientService';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader } from '../../components/common/card';
+import { testItemService, type TestItem } from '../../service/testItemService';
+import { TestItemMultiSelect } from './components/common/TestItemMultiSelect';
 
 const testTypes = [
   "Sinh hóa máu",
@@ -49,13 +51,25 @@ const CreateTestOrderPage: React.FC = () => {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [patients, setPatients] = useState<PatientOption[]>([]);
   const [loadingPatients, setLoadingPatients] = useState(false);
+  const [testItems, setTestItems] = useState<TestItem[]>([]);
+  const [loadingTestItems, setLoadingTestItems] = useState(false);
+  const [selectedTestItemIds, setSelectedTestItemIds] = useState<string[]>([]);
 
   useEffect(() => {
     loadPatients();
   }, []);
+
+  // Load test items when test_type changes
+  useEffect(() => {
+    if (formData.test_type) {
+      loadTestItems(formData.test_type);
+    } else {
+      setTestItems([]);
+      setSelectedTestItemIds([]);
+    }
+  }, [formData.test_type]);
 
   const loadPatients = async () => {
     try {
@@ -66,6 +80,21 @@ const CreateTestOrderPage: React.FC = () => {
       toast.error('Không thể tải danh sách bệnh nhân');
     } finally {
       setLoadingPatients(false);
+    }
+  };
+
+  const loadTestItems = async (testType: string) => {
+    try {
+      setLoadingTestItems(true);
+      const items = await testItemService.getAllTestItems(testType);
+      setTestItems(items);
+      // Reset selected items when test type changes
+      setSelectedTestItemIds([]);
+    } catch (e) {
+      toast.error('Không thể tải danh sách test items');
+      setTestItems([]);
+    } finally {
+      setLoadingTestItems(false);
     }
   };
 
@@ -86,7 +115,6 @@ const CreateTestOrderPage: React.FC = () => {
 
   const handleNext = (e: React.FormEvent) => {
     e.preventDefault();
-    if (isSubmitting) return;
 
     const newErrors: Record<string, string> = {};
     if (!formData.patient_id) newErrors.patient_id = 'Chọn bệnh nhân';
@@ -106,6 +134,7 @@ const CreateTestOrderPage: React.FC = () => {
         formData: {
           ...formData,
           barcode: generateBarcode(),
+          test_item_ids: selectedTestItemIds,
         }
       }
     });
@@ -206,7 +235,7 @@ const CreateTestOrderPage: React.FC = () => {
                   id="patient"
                   value={formData.patient_id}
                   onChange={(e) => handlePatientChange(e.target.value)}
-                  disabled={loadingPatients || isSubmitting}
+                  disabled={loadingPatients}
                   className={`w-full rounded-lg border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
                     errors.patient_id 
                       ? 'border-red-500 bg-red-50' 
@@ -236,7 +265,7 @@ const CreateTestOrderPage: React.FC = () => {
                   id="testType"
                   value={formData.test_type}
                   onChange={(e) => setFormData(prev => ({ ...prev, test_type: e.target.value }))}
-                  disabled={isSubmitting}
+                  disabled={false}
                   className={`w-full rounded-lg border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
                     errors.test_type 
                       ? 'border-red-500 bg-red-50' 
@@ -254,6 +283,23 @@ const CreateTestOrderPage: React.FC = () => {
               </div>
             </div>
 
+            {/* Test Items - hiển thị khi đã chọn loại xét nghiệm */}
+            {formData.test_type && (
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">
+                  Test Items
+                </Label>
+                <TestItemMultiSelect
+                  options={testItems}
+                  value={selectedTestItemIds}
+                  onChange={setSelectedTestItemIds}
+                  placeholder={loadingTestItems ? 'Đang tải...' : 'Chọn test items'}
+                  searchPlaceholder="Tìm kiếm test items..."
+                  disabled={loadingTestItems}
+                />
+              </div>
+            )}
+
             {/* Hạn hoàn thành - full width */}
             <div className="space-y-2">
               <Label htmlFor="dueDate" className="text-sm font-medium">
@@ -265,7 +311,7 @@ const CreateTestOrderPage: React.FC = () => {
                   type="date"
                   value={formData.due_date}
                   onChange={(e) => setFormData(prev => ({ ...prev, due_date: e.target.value }))}
-                  disabled={isSubmitting}
+                  disabled={false}
                   className={`w-full rounded-lg border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
                     errors.due_date 
                       ? 'border-red-500 bg-red-50' 
@@ -289,7 +335,7 @@ const CreateTestOrderPage: React.FC = () => {
                 rows={4}
                 value={formData.notes}
                 onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                disabled={isSubmitting}
+                disabled={false}
                 className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors resize-y hover:border-gray-400 disabled:bg-gray-50 disabled:cursor-not-allowed"
                 placeholder="Ghi chú thêm (tùy chọn)"
               />
@@ -304,14 +350,14 @@ const CreateTestOrderPage: React.FC = () => {
                   const basePath = getBasePath();
                   navigate(`${basePath}/test-orders`);
                 }}
-                disabled={isSubmitting}
+                disabled={false}
                 className="px-6 py-2.5 border-gray-300 text-gray-700 hover:bg-gray-50"
               >
                 Hủy
               </Button>
               <Button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={false}
                 className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Tiếp theo

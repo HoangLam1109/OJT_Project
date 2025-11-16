@@ -98,6 +98,7 @@ export const getTestOrderById = async (req: Request<{ id: string }>, res: Respon
       patient_name: order.patient_name,
       barcode: order.barcode,
       test_type: order.test_type,
+      test_item_ids: order.test_item_ids?.map(id => id.toString()) || [],
       test_items: enrichedTestItems,
       status: order.status,
       created_at: order.created_at,

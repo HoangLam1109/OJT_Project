@@ -39,6 +39,14 @@ const createApiClient = (): AxiosInstance => {
     async (error: AxiosError) => {
       const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
+      // Suppress network errors trong development mode khi backend chưa chạy
+      if (import.meta.env.DEV && 
+          (error.code === 'ERR_NETWORK' || error.code === 'ERR_CONNECTION_REFUSED') &&
+          originalRequest?.url?.includes('/user/me/roles')) {
+        // Không log lỗi này, chỉ reject để AuthProvider xử lý
+        return Promise.reject(error);
+      }
+
       if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
         const url = originalRequest.url || '';
         const fullUrl = originalRequest.baseURL ? `${originalRequest.baseURL}${url}` : url;

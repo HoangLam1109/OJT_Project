@@ -56,6 +56,7 @@ interface BackendTestOrder {
   processing?: number;
   notes?: string;
   patient_name?: string;
+  test_item_ids?: string[];
   user?: {
     fullName: string;
     email: string;
@@ -107,6 +108,12 @@ const transformBackendOrder = (backendOrder: BackendTestOrder): TestOrder => {
 
 
 
+  // Transform test_item_ids from ObjectId to string array
+  const transformTestItemIds = (ids?: string[] | any[]): string[] | undefined => {
+    if (!ids || !Array.isArray(ids)) return undefined;
+    return ids.map(id => typeof id === 'string' ? id : id.toString());
+  };
+
   return {
     _id: backendOrder._id,
     barcode: backendOrder.barcode,
@@ -121,6 +128,7 @@ const transformBackendOrder = (backendOrder: BackendTestOrder): TestOrder => {
     deleted_at: backendOrder.deleted_at,
     deleted_by: backendOrder.deleted_by,
     notes: backendOrder.notes,
+    test_item_ids: transformTestItemIds(backendOrder.test_item_ids),
     instrument: backendOrder.instrument ? {
       instrument_code: backendOrder.instrument.instrument_code,
       instrument_name: backendOrder.instrument.instrument_name,
