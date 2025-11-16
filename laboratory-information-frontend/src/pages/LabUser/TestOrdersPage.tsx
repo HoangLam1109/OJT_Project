@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useAuthContext } from '../../hooks/useAuthContext';
-import { useTestOrderActions } from '../../context/TestOrderActionsContext';
 import type { TestOrder, TestResult } from './types/TestOrderTypes';
 import { testOrderService } from '../../service/testOrderService';
 import type { Instrument } from '../service/types/Instrument';
@@ -17,10 +16,8 @@ import TestOrderDetailModal from './components/modals/TestOrderDetailModal';
 import { calculateStats } from './utils/testOrderUtils';
 import { Card, CardContent, CardHeader } from '@/components/common/card';
 import { Skeleton } from '@/components/common/skeleton';
-
 const TestOrdersPage: React.FC = () => {
   const { user } = useAuthContext();
-  const { setOnCreateTestOrder } = useTestOrderActions();
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -93,6 +90,7 @@ const TestOrdersPage: React.FC = () => {
       setOrders(data);
       setFilteredOrders(data); // Set filtered orders to all orders when not searching
       setPagination(paginationInfo);
+      setCurrentPage(paginationInfo.page); // Sync currentPage with API response
     } catch (error) {
       toast.error('Không thể tải danh sách lệnh xét nghiệm');
       console.error('Error loading test orders:', error);
@@ -109,6 +107,7 @@ const TestOrdersPage: React.FC = () => {
       setOrders(data);
       setFilteredOrders(data); // Set filtered orders to search results
       setPagination(paginationInfo);
+      setCurrentPage(paginationInfo.page); // Sync currentPage with API response
     } catch (error) {
       toast.error('Không thể tìm kiếm lệnh xét nghiệm');
       console.error('Error searching test orders:', error);
@@ -126,8 +125,11 @@ const TestOrdersPage: React.FC = () => {
   };
 
 
-  // Detect current route base path (service or labuser)
+  // Detect current route base path (admin, service, or labuser)
   const getBasePath = () => {
+    if (location.pathname.startsWith('/admin')) {
+      return '/admin';
+    }
     if (location.pathname.startsWith('/service')) {
       return '/service';
     }
@@ -138,14 +140,6 @@ const TestOrdersPage: React.FC = () => {
     const basePath = getBasePath();
     navigate(`${basePath}/create-test-order`);
   }, [navigate, location.pathname]);
-
-  // Đăng ký callback với context
-  useEffect(() => {
-    setOnCreateTestOrder(handleCreate);
-    return () => {
-      setOnCreateTestOrder(() => {});
-    };
-  }, [handleCreate, setOnCreateTestOrder]);
 
 
   const handleFormSubmit = async (_orderData: Omit<TestOrder, '_id'> | Partial<TestOrder> | TestOrder) => {
@@ -326,7 +320,7 @@ const handleStatusChange = async (
         orders={filteredOrders}
         onOrderClick={handleOrderClick}
         onStatusChange={handleStatusChange}
-        currentPage={pagination.page}
+        currentPage={currentPage}
         totalPages={pagination.totalPages}
         onPageChange={handlePageChange}
         isLoading={loading && !isInitialLoad}
