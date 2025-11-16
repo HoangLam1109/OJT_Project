@@ -18,7 +18,7 @@ const chatApiClient: AxiosInstance = axios.create({
 export interface ChatResponse {
   status: string;
   data: {
-    threadId: string;
+    threadId?: string;
     response: string;
   };
 }

@@ -1,7 +1,9 @@
 import Button from "@/components/common/button";
 import { ArrowRight, Play } from "lucide-react";
 import heroImage from "@/assets/lab-hero.jpg";
-const HeroSection = () => {
+import { useTranslation } from "react-i18next";
+const HeroSection = () => { 
+  const { t } = useTranslation();
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background */}
@@ -22,45 +24,44 @@ const HeroSection = () => {
       <div className="relative z-10 container mx-auto px-4 text-center text-white">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-5xl md:text-7xl font-bold mb-6 animate-fade-up">
-            Hệ thống Quản lý
+            {t("hero.title")}
             <span className="block gradient-text text-white">
-              Phòng thí nghiệm Tiên tiến
+              {t("hero.subtitle")}
             </span>
           </h1>
           
           <p className="text-xl md:text-2xl text-white/90 mb-8 animate-fade-up" style={{ animationDelay: '0.2s' }}>
-            Tối ưu hóa hoạt động phòng thí nghiệm với máy phân tích huyết học hiện đại, 
-            quản lý bệnh nhân toàn diện và phân tích dữ liệu thời gian thực.
+            {t("hero.description")}
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-up" style={{ animationDelay: '0.4s' }}>
             <Button size="lg" className="group">
-              Dùng thử miễn phí
+              {t("hero.button")}
               <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
             
             <Button variant="outline" size="lg" className="group bg-white/10 text-white border-white/30 hover:bg-white/20">
               <Play className="mr-2" />
-              Xem Demo
+              {t("hero.demo")}
             </Button>
           </div>
           
           <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-8 text-center animate-fade-up" style={{ animationDelay: '0.6s' }}>
             <div>
               <div className="text-3xl font-bold text-white">500+</div>
-              <div className="text-white/80">Phòng thí nghiệm</div>
+              <div className="text-white/80">{t("hero.laboratory")}</div>
             </div>
             <div>
               <div className="text-3xl font-bold text-white">1M+</div>
-              <div className="text-white/80">Xét nghiệm thực hiện</div>
+              <div className="text-white/80">{t("hero.test")}</div>
             </div>
             <div>
               <div className="text-3xl font-bold text-white">99.9%</div>
-              <div className="text-white/80">Thời gian hoạt động</div>
+              <div className="text-white/80">{t("hero.time")}</div>
             </div>
             <div>
               <div className="text-3xl font-bold text-white">24/7</div>
-              <div className="text-white/80">Hỗ trợ</div>
+              <div className="text-white/80">{t("hero.support")}</div>
             </div>
           </div>
         </div>

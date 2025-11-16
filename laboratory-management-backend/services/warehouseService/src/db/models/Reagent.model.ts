@@ -6,12 +6,11 @@ export interface IReagent extends Document {
   reagent_code: string;
   reagent_name: string;
   reagent_type: string;
-  quantity_received?: number;
   quantity_current: number;
   unit_of_measure: string;
   expiration_date: Date;
   received_date: Date;
-  status: "Available" | "InUse" | "LowStock" | "Expired" | "Depleted";
+  status: "Available" | "LowStock" | "Expired" | "Depleted";
   low_stock_threshold?: number;
   storage_location?: string;
   created_at: Date;
@@ -48,10 +47,6 @@ const ReagentSchema = new Schema<IReagent>(
       trim: true,
       maxlength: 50,
     },
-    quantity_received: {
-      type: Number,
-      required: true,
-    },
     quantity_current: {
       type: Number,
       required: true,
@@ -73,7 +68,7 @@ const ReagentSchema = new Schema<IReagent>(
     status: {
       type: String,
       required: true,
-      enum: ["Available", "InUse", "LowStock", "Expired", "Depleted"],
+      enum: ["Available", "LowStock", "Expired", "Depleted"],
       default: "Available",
     },
     low_stock_threshold: {
@@ -95,9 +90,11 @@ const ReagentSchema = new Schema<IReagent>(
     },
     created_by: {
       type: String,
+      default: "system",
     },
     updated_by: {
       type: String,
+      default: "system",
     },
     is_deleted: {
       type: Boolean,
@@ -113,6 +110,7 @@ const ReagentSchema = new Schema<IReagent>(
   {
     collection: "Reagents",
     timestamps: { createdAt: "created_at", updatedAt: "updated_at" },
+    versionKey: false,
   }
 );
 

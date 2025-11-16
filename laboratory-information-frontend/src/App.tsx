@@ -3,7 +3,7 @@ import { AppRoutes } from "./routes/AppRoutes";
 import { Toaster } from "sonner";
 import AOS from "aos";
 import "aos/dist/aos.css";
-
+import './i18n';
 function App() {
   useEffect(() => {
     AOS.init({

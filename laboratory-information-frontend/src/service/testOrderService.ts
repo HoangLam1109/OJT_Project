@@ -86,6 +86,13 @@ interface PaginatedResponse<T> {
     totalPages?: number;
   };
 }
+
+export interface PaginationInfo {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
 // Transform backend response to frontend format
 const transformBackendOrder = (backendOrder: BackendTestOrder): TestOrder => {
   const formatDate = (dateStr?: string | null): string => {
@@ -135,16 +142,34 @@ const transformBackendOrder = (backendOrder: BackendTestOrder): TestOrder => {
 
 // TestOrder Service API
 export const testOrderService = {
-  // Get all test orders
-  async getAllTestOrders(): Promise<TestOrder[]> {
+  // Get all test orders with pagination
+  async getAllTestOrders(page: number = 1, limit: number = 10): Promise<{ orders: TestOrder[]; pagination: PaginationInfo }> {
     try {
-      const response = await testOrderApiClient.get<PaginatedResponse<BackendTestOrder>>(`${TEST_ORDER_API_BASE_URL}/all`);
-      console.log("response", response.data)
+      const response = await testOrderApiClient.get<PaginatedResponse<BackendTestOrder>>(
+        `${TEST_ORDER_API_BASE_URL}/all`,
+        {
+          params: { page, limit }
+        }
+      );
+      console.log("response", response.data);
+      
       // Handle both paginated response and direct array response
       const ordersArray = Array.isArray(response.data) 
         ? response.data 
         : (response.data.data || []);
-      return ordersArray.map(transformBackendOrder);
+      
+      const orders = ordersArray.map(transformBackendOrder);
+      
+      // Extract pagination info
+      const paginationData = response.data.pagination;
+      const pagination: PaginationInfo = {
+        page: paginationData?.page ?? page,
+        limit: paginationData?.limit ?? limit,
+        total: paginationData?.total ?? orders.length,
+        totalPages: paginationData?.totalPages ?? Math.ceil((paginationData?.total ?? orders.length) / limit)
+      };
+      
+      return { orders, pagination };
     } catch (error) {
       console.error('Error fetching test orders:', error);
       throw new Error(apiUtils.getErrorMessage(error));
@@ -280,6 +305,41 @@ export const testOrderService = {
       updated_by,
     });
     return response.data.data;
+  },
+
+  // Search test orders with pagination
+  async searchTestOrders(keyword: string, page: number = 1, limit: number = 10): Promise<{ orders: TestOrder[]; pagination: PaginationInfo }> {
+    try {
+      if (!keyword.trim()) {
+        throw new Error('Keyword is required');
+      }
+
+      const response = await testOrderApiClient.get<PaginatedResponse<BackendTestOrder>>(
+        `${TEST_ORDER_API_BASE_URL}/search`,
+        {
+          params: { keyword, page, limit }
+        }
+      );
+      
+      console.log("search response", response.data);
+      
+      const ordersArray = response.data.data || [];
+      const orders = ordersArray.map(transformBackendOrder);
+      
+      // Extract pagination info
+      const paginationData = response.data.pagination;
+      const pagination: PaginationInfo = {
+        page: paginationData?.page ?? page,
+        limit: paginationData?.limit ?? limit,
+        total: paginationData?.total ?? orders.length,
+        totalPages: paginationData?.totalPages ?? Math.ceil((paginationData?.total ?? orders.length) / limit)
+      };
+      
+      return { orders, pagination };
+    } catch (error) {
+      console.error('Error searching test orders:', error);
+      throw new Error(apiUtils.getErrorMessage(error));
+    }
   }
 
 };

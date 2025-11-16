@@ -2,10 +2,13 @@ import { TestOrderRepository } from "../../repositories/testOrderRepository.js";
 import reagentServiceClient from "../warehouse/reagentServiceClient.js";
 import { CreateOrderInput, ReagentUsage, UpdateOrderInput } from "../../db/models/TestOrder.model.js";
 import { ITestOrder } from "../../db/models/TestOrder.model.js";
+import TestOrder from "../../db/models/TestOrder.model.js";
+import mongoose from "mongoose";
+
 export const TestOrderService = {
-  
+
   // Lấy tất cả Test Orders
-  async getAllOrders(filter = {}, skip = 0, limit = 10, sort: any = { created_at: -1 } ) {
+  async getAllOrders(filter = {}, skip = 0, limit = 10, sort: any = { created_at: -1 }) {
     const data = await TestOrderRepository.findAll(filter, skip, limit, sort);
     return Array.isArray(data) ? data : [];
   },
@@ -20,6 +23,39 @@ export const TestOrderService = {
     return await TestOrderRepository.findById(id);
   },
 
+
+  async getOrdersGroupedByOnePatient(
+    patient_id: string,
+    created_at: Date,
+    page = 1,
+    limit = 3
+  ): Promise<any[]> {
+    const skip = (page - 1) * limit;
+
+    return TestOrder.aggregate([
+      { $match: { is_deleted: false, patient_id: patient_id } },
+      { $sort: { created_at: -1 } },
+      {
+        $group: {
+          _id: "$patient_id",
+          patient_name: { $first: "$patient_name" },
+          orders: { $push: "$$ROOT" }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          patient_id: "$_id",
+          patient_name: 1,
+          totalOrders: { $size: "$orders" },
+          orders: { $slice: ["$orders", skip, limit] }
+        }
+      }
+    ]);
+  },
+
+
+
   async createOrder(data: CreateOrderInput): Promise<ITestOrder> {
     // Dùng reagent_usages từ request, ép quantity_used về number, default 1 nếu null
     const reagentUsages: ReagentUsage[] = (data.reagent_usages ?? []).map(r => ({
@@ -33,6 +69,7 @@ export const TestOrderService = {
       patient_name: data.patient_name ?? '',
       barcode: data.barcode,
       test_type: data.test_type,
+      test_item_ids: data.test_item_ids?.map(id => new mongoose.Types.ObjectId(id)),
       status: data.status ?? 'Pending',
       created_by: data.created_by,
       ...(data.instrument_id ? { instrument_id: data.instrument_id } : {}),
@@ -89,6 +126,10 @@ export const TestOrderService = {
       ...(data.patient_name ? { patient_name: data.patient_name } : {}),
       ...(data.barcode ? { barcode: data.barcode } : {}),
       ...(data.test_type ? { test_type: data.test_type } : {}),
+      ...(data.test_item_ids && Array.isArray(data.test_item_ids)
+        ? { test_item_ids: data.test_item_ids.map(id => new mongoose.Types.ObjectId(id)) }
+        : {}),
+
       ...(data.status ? { status: data.status } : {}),
       ...(data.instrument_id ? { instrument_id: data.instrument_id } : {}),
       ...(data.due_date ? { due_date: new Date(data.due_date) } : {}),

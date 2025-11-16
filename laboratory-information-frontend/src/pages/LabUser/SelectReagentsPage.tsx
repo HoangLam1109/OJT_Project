@@ -66,9 +66,9 @@ const SelectReagentsPage: React.FC = () => {
       setIsLoading(true);
       try {
         const allReagents = await reagentService.getAllReagents();
-        // Filter only Available and In Use reagents (exclude Expired and Depleted)
+        // Filter only Available and Low Stock reagents (exclude Expired and Depleted)
         const availableReagents = allReagents.filter(
-          r => r.status === 'Available' || r.status === 'In Use'
+          r => r.status === 'Available' || r.status === 'Low Stock'
         );
         setBaseReagents(availableReagents);
         setReagents(availableReagents);
@@ -102,7 +102,7 @@ const SelectReagentsPage: React.FC = () => {
         if (isCancelled) return;
 
         const selectableReagents = result.items.filter(
-          reagent => reagent.status === 'Available' || reagent.status === 'In Use'
+          reagent => reagent.status === 'Available' || reagent.status === 'Low Stock'
         );
         setReagents(selectableReagents);
       } catch (error: any) {

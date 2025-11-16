@@ -1,16 +1,15 @@
 import { Request, Response } from "express";
 import { TestOrderService } from "../services/testorder/testOrderService.js";
-
-import patientServiceClient from "../services/patient/patientServiceClient.js";
-import iamServiceClient from "../services/iam/iamServiceClient.js";
 import instrumentServiceClient from "../services/warehouse/instrumentServiceClient.js";
 import reagentServiceClient, { Reagent } from "../services/warehouse/reagentServiceClient.js";
-
+import { TestItem } from "../db/models/TestItem.model.js";
+import { TestResultService } from "../services/testorder/testResultService.js";
+import { Types } from "mongoose";
 
 export const getAllTestOrders = async (req: Request, res: Response) => {
   try {
-    const page = parseInt(req.query.page as string) || 1;   // trang hiện tại
-    const limit = parseInt(req.query.limit as string) || 10; // số bản ghi mỗi trang
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
     const skip = (page - 1) * limit;
 
     // Lấy tất cả orders chưa bị xóa, sắp xếp theo due_date tăng dần
@@ -24,6 +23,8 @@ export const getAllTestOrders = async (req: Request, res: Response) => {
       _id: order._id,
       patient_id: order.patient_id,
       patient_name: order.patient_name,
+      test_type: order.test_type,
+      test_item_ids: order.test_item_ids,
       barcode: order.barcode,
       status: order.status,
       created_at: order.created_at,
@@ -31,7 +32,6 @@ export const getAllTestOrders = async (req: Request, res: Response) => {
       due_date: order.due_date,
       updated_at: order.updated_at,
       updated_by: order.updated_by,
-      test_type: order.test_type,
       notes: order.notes,
     }));
 
@@ -58,9 +58,6 @@ export const getTestOrderById = async (req: Request<{ id: string }>, res: Respon
     const order = await TestOrderService.getOrderById(req.params.id);
     if (!order) return res.status(404).json({ message: "Test order not found" });
 
-    // Lấy thông tin patient & user
-    const patient = await patientServiceClient.getPatientById(order.patient_id);
-
     // Lấy thông tin instrument
     const instrument = order.instrument_id
       ? await instrumentServiceClient.getInstrumentById(order.instrument_id)
@@ -86,11 +83,22 @@ export const getTestOrderById = async (req: Request<{ id: string }>, res: Respon
       };
     });
 
+
+    const testItems = order.test_item_ids?.length
+      ? await TestItem.find({ _id: { $in: order.test_item_ids } })
+      : [];
+
+    const enrichedTestItems = testItems.map(item => ({
+      name: item.name,
+    }));
+
     const enrichedOrder = {
       _id: order._id,
       patient_id: order.patient_id,
       patient_name: order.patient_name,
       barcode: order.barcode,
+      test_type: order.test_type,
+      test_items: enrichedTestItems,
       status: order.status,
       created_at: order.created_at,
       created_by: order.created_by,
@@ -100,7 +108,6 @@ export const getTestOrderById = async (req: Request<{ id: string }>, res: Respon
       is_deleted: order.is_deleted,
       deleted_at: order.deleted_at,
       deleted_by: order.deleted_by,
-      test_type: order.test_type,
       notes: order.notes,
       instrument: instrument
         ? {
@@ -123,6 +130,54 @@ export const getTestOrderById = async (req: Request<{ id: string }>, res: Respon
   }
 };
 
+export const getAllOrdersGroupedByPatientId = async (req: Request, res: Response) => {
+  try {
+    const patient_id = req.query.patient_id as string;
+    const created_atByString = req.query.created_at as string;
+    const created_at = new Date(created_atByString);
+
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+
+    const GroupOfOnePatientData = await TestOrderService.getOrdersGroupedByOnePatient(
+      patient_id,
+      created_at,
+      page,
+      limit
+    );
+
+    if (!GroupOfOnePatientData.length) {
+      return res.json({ success: true, data: null });
+    }
+
+    const { patient_name, orders, totalOrders } = GroupOfOnePatientData[0];
+    const totalPages = Math.ceil(totalOrders / limit); // tính số trang
+
+    return res.json({
+      success: true,
+      data: {
+        patient_id,
+        patient_name,
+        orders,
+        pagination: {
+          page,
+          limit,
+          totalPages
+        }
+      }
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error instanceof Error ? error.message : "Unknown error"
+    });
+  }
+};
+
+
+
+
 export const searchTestOrders = async (req: Request, res: Response) => {
   try {
     const keyword = (req.query.keyword as string) || "";
@@ -140,6 +195,8 @@ export const searchTestOrders = async (req: Request, res: Response) => {
       _id: order._id,
       patient_id: order.patient_id,
       patient_name: order.patient_name,
+      test_type: order.test_type,
+      test_item_ids: order.test_item_ids,
       barcode: order.barcode,
       status: order.status,
       created_at: order.created_at,
@@ -147,7 +204,6 @@ export const searchTestOrders = async (req: Request, res: Response) => {
       due_date: order.due_date,
       updated_at: order.updated_at,
       updated_by: order.updated_by,
-      test_type: order.test_type,
       notes: order.notes,
     }));
 
@@ -226,21 +282,26 @@ export const updateTestOrderStatus = async (req: Request, res: Response) => {
     if (!updated_by) {
       return res.status(400).json({
         success: false,
-        message: 'Thiếu thông tin người cập nhật',
+        message: "Thiếu thông tin người cập nhật",
       });
     }
 
-    const validStatuses = ['Pending', 'Processing', 'Completed'];
+    const validStatuses = ["Pending", "Processing", "Completed"];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({
         success: false,
-        message: 'Trạng thái không hợp lệ',
+        message: "Trạng thái không hợp lệ",
       });
     }
-
-    const processing = status === 'Processing' ? 10 : status === 'Completed' ? 100 : 0;
     const updated = await TestOrderService.updateStatus(id, status, updated_by);
 
+    // Nếu status là Completed thì tự động tạo Test Results
+    if (status === "Completed") {
+      const testItemIds: Types.ObjectId[] = updated.test_item_ids ?? [];
+      const testItemIdsStr: string[] = testItemIds.map(id => id.toString());
+
+      await TestResultService.createRandomResults(id, testItemIdsStr);
+    }
     return res.json({
       success: true,
       data: updated,
