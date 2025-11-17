@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../../components/common/dialog';
 import Button from '../../../../components/common/button';
 import Badge from '../../../../components/common/badge';
-import { Clock, User, TestTube, Microscope, FlaskConical } from 'lucide-react';
+import { Clock, User, TestTube, Microscope, FlaskConical, List } from 'lucide-react';
 import type { TestOrder } from '../../types/TestOrderTypes';
+import { testItemService, type TestItem } from '../../../../service/testItemService';
 
 interface TestOrderDetailModalProps {
   order: TestOrder | null;
@@ -20,6 +21,35 @@ const TestOrderDetailModal: React.FC<TestOrderDetailModalProps> = ({
   onEdit,
   onClose,
 }) => {
+  const [testItems, setTestItems] = useState<TestItem[]>([]);
+  const [loadingTestItems, setLoadingTestItems] = useState(false);
+
+  useEffect(() => {
+    const loadTestItems = async () => {
+      if (!order?.test_item_ids || order.test_item_ids.length === 0) {
+        setTestItems([]);
+        return;
+      }
+
+      try {
+        setLoadingTestItems(true);
+        const items = await Promise.all(
+          order.test_item_ids.map(id => testItemService.getTestItemById(id))
+        );
+        setTestItems(items.filter((item): item is TestItem => item !== null));
+      } catch (error) {
+        console.error('Error loading test items:', error);
+        setTestItems([]);
+      } finally {
+        setLoadingTestItems(false);
+      }
+    };
+
+    if (isOpen && order) {
+      loadTestItems();
+    }
+  }, [isOpen, order]);
+
   if (!order) return null;
 
   const getStatusBadge = (status: string) => {
@@ -106,6 +136,64 @@ const TestOrderDetailModal: React.FC<TestOrderDetailModalProps> = ({
                 </div>
               </div>
             </div>
+
+            {/* Test Items Information */}
+            {order.test_item_ids && order.test_item_ids.length > 0 && (
+              <div>
+                <h4 className="font-semibold text-sm text-gray-700 mb-3 flex items-center gap-2">
+                  <List className="w-4 h-4" />
+                  Test Items
+                </h4>
+                <div className="pl-6">
+                  {loadingTestItems ? (
+                    <p className="text-sm text-gray-500">Đang tải...</p>
+                  ) : testItems.length > 0 ? (
+                    <div className="space-y-2">
+                      {testItems.map((item) => (
+                        <div key={item._id} className="bg-gray-50 p-3 rounded-lg border">
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <span className="text-sm text-gray-600">Tên test item:</span>
+                              <p className="font-medium">{item.name}</p>
+                            </div>
+                            <div>
+                              <span className="text-sm text-gray-600">Mã:</span>
+                              <p className="font-mono text-sm">{item.code}</p>
+                            </div>
+                            {item.unit && (
+                              <div>
+                                <span className="text-sm text-gray-600">Đơn vị:</span>
+                                <p className="font-medium">{item.unit}</p>
+                              </div>
+                            )}
+                            {(item.ref_min !== undefined || item.ref_max !== undefined) && (
+                              <div>
+                                <span className="text-sm text-gray-600">Giá trị tham chiếu:</span>
+                                <p className="font-medium">
+                                  {item.ref_min !== undefined && item.ref_max !== undefined
+                                    ? `${item.ref_min} - ${item.ref_max}`
+                                    : item.ref_min !== undefined
+                                    ? `≥ ${item.ref_min}`
+                                    : `≤ ${item.ref_max}`}
+                                </p>
+                              </div>
+                            )}
+                            {item.method && (
+                              <div className="col-span-2">
+                                <span className="text-sm text-gray-600">Phương pháp:</span>
+                                <p className="font-medium">{item.method}</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500">Không có test items</p>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Instrument Information */}
             {order.instrument && (

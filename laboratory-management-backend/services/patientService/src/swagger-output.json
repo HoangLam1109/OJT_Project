@@ -395,14 +395,6 @@
                         "type": "string",
                         "example": "CBC normal, HbA1c elevated"
                       },
-                      "recent_instruments_used": {
-                        "type": "string",
-                        "example": "Sysmex XN-1000"
-                      },
-                      "recent_reagents_info": {
-                        "type": "string",
-                        "example": "Lot# RGT-2025-09-15"
-                      },
                       "created_at": {
                         "type": "string",
                         "example": "2025-10-24T11:00:00Z"
@@ -639,14 +631,6 @@
                 "recent_test_summary": {
                   "type": "string",
                   "example": "CBC normal, HbA1c elevated"
-                },
-                "recent_instruments_used": {
-                  "type": "string",
-                  "example": "Sysmex XN-1000"
-                },
-                "recent_reagents_info": {
-                  "type": "string",
-                  "example": "Lot# RGT-2025-09-15"
                 }
               }
             }
@@ -758,14 +742,6 @@
                 "recent_test_summary": {
                   "type": "string",
                   "example": "Normal results"
-                },
-                "recent_instruments_used": {
-                  "type": "string",
-                  "example": "XN-1000"
-                },
-                "recent_reagents_info": {
-                  "type": "string",
-                  "example": "Lot# XYZ"
                 }
               }
             }

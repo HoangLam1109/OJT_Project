@@ -51,8 +51,6 @@ interface MedicalRecordSnapshot {
   medical_history?: string;
   clinical_notes?: string;
   recent_test_summary?: string;
-  recent_instruments_used?: string;
-  recent_reagents_info?: string;
   created_by?: string;
   updated_by?: string;
   is_deleted?: boolean;
@@ -287,18 +285,6 @@ export const EventLogDetailModal: React.FC<Props> = ({ open, logId, onClose }) =
             <div>
               <p className="text-gray-500">Tóm tắt xét nghiệm gần đây</p>
               <p className="font-medium">{medicalRecord.recent_test_summary || '-'}</p>
-            </div>
-          )}
-          {medicalRecord.recent_instruments_used !== undefined && (
-            <div>
-              <p className="text-gray-500">Thiết bị sử dụng gần đây</p>
-              <p className="font-medium">{medicalRecord.recent_instruments_used || '-'}</p>
-            </div>
-          )}
-          {medicalRecord.recent_reagents_info !== undefined && (
-              <div>
-              <p className="text-gray-500">Thuốc thử</p>
-              <p className="font-medium">{medicalRecord.recent_reagents_info || '-'}</p>
             </div>
           )}
         </div>

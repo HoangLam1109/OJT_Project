@@ -240,8 +240,6 @@ const trackableMedicalRecordFields: string[] = [
   "medical_history",
   "clinical_notes",
   "recent_test_summary",
-  "recent_instruments_used",
-  "recent_reagents_info",
   "updated_by",
 ];
 
@@ -334,9 +332,7 @@ const createPatientRecord = async (req: Request, res: Response): Promise<void> =
         current_medications: 'Atorvastatin',
         medical_history: 'Appendectomy - 2010',
         clinical_notes: 'Patient showing good recovery',
-        recent_test_summary: 'CBC normal, HbA1c elevated',
-        recent_instruments_used: 'Sysmex XN-1000',
-        recent_reagents_info: 'Lot# RGT-2025-09-15'
+        recent_test_summary: 'CBC normal, HbA1c elevated'
       }
     }
     #swagger.responses[201] = {
@@ -473,8 +469,6 @@ const getAllPatientRecords = async (req: Request, res: Response): Promise<void> 
           medical_history: 'Appendectomy - 2010',
           clinical_notes: 'Patient showing good recovery',
           recent_test_summary: 'CBC normal, HbA1c elevated',
-          recent_instruments_used: 'Sysmex XN-1000',
-          recent_reagents_info: 'Lot# RGT-2025-09-15',
           created_at: '2025-10-24T11:00:00Z',
           updated_at: '2025-10-24T11:00:00Z',
           created_by: 'lab-user-uuid',
@@ -560,9 +554,7 @@ const updatePatientRecord = async (req: Request, res: Response): Promise<void> =
         current_medications: 'Metformin',
         medical_history: 'Surgery 2020',
         clinical_notes: 'Patient stable',
-        recent_test_summary: 'Normal results',
-        recent_instruments_used: 'XN-1000',
-        recent_reagents_info: 'Lot# XYZ'
+        recent_test_summary: 'Normal results'
       }
     }
   */

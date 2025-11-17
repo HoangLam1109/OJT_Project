@@ -23,10 +23,13 @@ const SelectInstrumentsPage: React.FC = () => {
   const location = useLocation();
   const state = location.state as LocationState | null;
 
-  // Detect current route base path (service or labuser)
+  // Detect current route base path (service, labuser, or admin)
   const getBasePath = () => {
     if (location.pathname.startsWith('/service')) {
       return '/service';
+    }
+    if (location.pathname.startsWith('/admin')) {
+      return '/admin';
     }
     return '/labuser';
   };
