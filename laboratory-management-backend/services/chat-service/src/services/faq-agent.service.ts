@@ -1,7 +1,10 @@
 import { InferenceClient } from "@huggingface/inference";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { AIMessage, BaseMessage, HumanMessage } from "@langchain/core/messages";
-import { ChatPromptTemplate, MessagesPlaceholder } from "@langchain/core/prompts";
+import {
+  ChatPromptTemplate,
+  MessagesPlaceholder,
+} from "@langchain/core/prompts";
 import { StateGraph, Annotation } from "@langchain/langgraph";
 import { tool } from "@langchain/core/tools";
 import { ToolNode } from "@langchain/langgraph/prebuilt";
@@ -22,7 +25,10 @@ interface FAQLookupResult {
   count: number;
 }
 
-async function retryWithBackoff<T>(fn: () => Promise<T>, maxRetries = 3): Promise<T> {
+async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  maxRetries = 3
+): Promise<T> {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       return await fn();
@@ -39,7 +45,11 @@ async function retryWithBackoff<T>(fn: () => Promise<T>, maxRetries = 3): Promis
   throw new Error("Max retries exceeded");
 }
 
-export async function callFAQAgent({ db, query, threadId }: CallFAQAgentParams) {
+export async function callFAQAgent({
+  db,
+  query,
+  threadId,
+}: CallFAQAgentParams) {
   try {
     const collection = db.collection("faq");
 
@@ -84,7 +94,11 @@ export async function callFAQAgent({ db, query, threadId }: CallFAQAgentParams) 
             count: formattedResults.length,
           };
 
-          return JSON.stringify(result);
+          return formattedResults
+            .map(
+              (faq, i) => `FAQ ${i + 1}:\nQ: ${faq.question}\nA: ${faq.answer}`
+            )
+            .join("\n\n");
         } catch (error: any) {
           console.error("Error in FAQ lookup:", error);
           return JSON.stringify({
@@ -100,13 +114,22 @@ export async function callFAQAgent({ db, query, threadId }: CallFAQAgentParams) 
           "Searches the FAQ database for answers to common questions about laboratory services, hours, booking, payments, and general information. Use this for any general inquiries.",
         schema: z.object({
           query: z.string().describe("The search query"),
-          n: z.number().optional().default(5).describe("Number of results to return"),
+          n: z
+            .number()
+            .optional()
+            .default(5)
+            .describe("Number of results to return"),
         }),
       }
     );
 
     const labResultLookupTool = tool(
-      async ({ query, patientName, testCode, limit = 5 }: {
+      async ({
+        query,
+        patientName,
+        testCode,
+        limit = 5,
+      }: {
         query: string;
         patientName?: string;
         testCode?: string;
@@ -149,13 +172,18 @@ export async function callFAQAgent({ db, query, threadId }: CallFAQAgentParams) 
             .limit(limit)
             .toArray();
 
-          console.log(`Lab result search returned ${docs.length} results`);
+          console.log(
+            `Lab result search returned ${docs.length} results`,
+            docs
+          );
 
           const codes = Array.from(
             new Set(
               docs
                 .map((doc: any) => doc.code)
-                .filter((code: any) => typeof code === "string" && code.length > 0)
+                .filter(
+                  (code: any) => typeof code === "string" && code.length > 0
+                )
             )
           );
 
@@ -193,9 +221,7 @@ export async function callFAQAgent({ db, query, threadId }: CallFAQAgentParams) 
             createdAt: doc.createdAt,
             updatedAt: doc.updatedAt,
             metadata:
-              doc.code && metaByCode[doc.code]
-                ? metaByCode[doc.code]
-                : null,
+              doc.code && metaByCode[doc.code] ? metaByCode[doc.code] : null,
           }));
 
           const result = {
@@ -305,7 +331,10 @@ Current time: {time}`,
           const result = await model.invoke(formattedPrompt);
           return { messages: [result] };
         } catch (error: any) {
-          console.error("Primary model failed, attempting Hugging Face fallback:", error?.message || error);
+          console.error(
+            "Primary model failed, attempting Hugging Face fallback:",
+            error?.message || error
+          );
 
           if (error?.status !== 503) {
             throw error;
@@ -333,9 +362,9 @@ Current time: {time}`,
             })
             .join("\n\n");
 
-          const completion: any = await hf.textGeneration({
-            model: "moonshotai/Kimi-K2-Instruct-0905",
-            inputs: fallbackInput,
+          const completion: any = await hf.chatCompletion({
+            model: "meta-llama/Llama-3.1-8B-Instruct",
+            messages: [{ role: "user", content: fallbackInput }],
             parameters: {
               max_new_tokens: 256,
               temperature: 0.5,
@@ -343,8 +372,8 @@ Current time: {time}`,
           });
 
           const generated =
-            typeof completion?.generated_text === "string"
-              ? completion.generated_text
+            typeof completion?.choices?.[0]?.message?.content === "string"
+              ? completion.choices[0].message.content
               : JSON.stringify(completion);
 
           const aiMessage = new AIMessage(generated);
@@ -393,9 +422,13 @@ Current time: {time}`,
     console.error("Error in callFAQAgent:", error.message);
 
     if (error.status === 429) {
-      throw new Error("Service temporarily unavailable. Please try again in a minute.");
+      throw new Error(
+        "Service temporarily unavailable. Please try again in a minute."
+      );
     } else if (error.status === 401) {
-      throw new Error("Authentication failed. Please check your API configuration.");
+      throw new Error(
+        "Authentication failed. Please check your API configuration."
+      );
     } else {
       throw new Error(`FAQ Agent failed: ${error.message}`);
     }
