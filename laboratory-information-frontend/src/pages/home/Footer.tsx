@@ -19,8 +19,9 @@ import {
   LifeBuoy,
   MessageSquare
 } from 'lucide-react';
-
+import { useTranslation } from 'react-i18next';
 export function Footer() {
+  const { t } = useTranslation();
   return (
     <footer className="bg-gray-900 text-white">
       <div className="px-6 py-16">
@@ -38,7 +39,7 @@ export function Footer() {
                 </div>
               </div>
               <p className="text-gray-400">
-                Giải pháp quản lý phòng thí nghiệm hiện đại, an toàn và hiệu quả cho mọi quy mô.
+                {t("footer.description")}
               </p>
               <div className="flex gap-4">
                 {[
@@ -57,7 +58,7 @@ export function Footer() {
 
             {/* Products */}
             <div className="space-y-6">
-              <h4 className="text-white">Sản phẩm</h4>
+              <h4 className="text-white">{t("footer.products")}</h4>
               <ul className="space-y-3 text-gray-400">
                 <li><a href="#" className="hover:text-white transition-colors">LIMS Pro Basic</a></li>
                 <li><a href="#" className="hover:text-white transition-colors">LIMS Pro Advanced</a></li>
@@ -69,38 +70,38 @@ export function Footer() {
 
             {/* Support */}
             <div className="space-y-6">
-              <h4 className="text-white">Hỗ trợ</h4>
+              <h4 className="text-white">{t("footer.support")}</h4>
               <ul className="space-y-3 text-gray-400">
                 <li className="flex items-center gap-2">
                   <BookOpen className="h-4 w-4" />
-                  <a href="#" className="hover:text-white transition-colors">Tài liệu hướng dẫn</a>
+                  <a href="#" className="hover:text-white transition-colors">{t("footer.documentation")}</a>
                 </li>
                 <li className="flex items-center gap-2">
                   <GraduationCap className="h-4 w-4" />
-                  <a href="#" className="hover:text-white transition-colors">Khóa đào tạo</a>
+                  <a href="#" className="hover:text-white transition-colors">{t("footer.training")}</a>
                 </li>
                 <li className="flex items-center gap-2">
                   <Headphones className="h-4 w-4" />
-                  <a href="#" className="hover:text-white transition-colors">Hỗ trợ 24/7</a>
+                  <a href="#" className="hover:text-white transition-colors">{t("footer.support247")}</a>
                 </li>
                 <li className="flex items-center gap-2">
                   <LifeBuoy className="h-4 w-4" />
-                  <a href="#" className="hover:text-white transition-colors">Trung tâm trợ giúp</a>
+                  <a href="#" className="hover:text-white transition-colors">{t("footer.helpCenter")}</a>
                 </li>
                 <li className="flex items-center gap-2">
                   <MessageSquare className="h-4 w-4" />
-                  <a href="#" className="hover:text-white transition-colors">Cộng đồng</a>
+                  <a href="#" className="hover:text-white transition-colors">{t("footer.community")}</a>
                 </li>
               </ul>
             </div>
 
             {/* Contact */}
             <div className="space-y-6">
-              <h4 className="text-white">Liên hệ</h4>
+              <h4 className="text-white">{t("footer.contact")}</h4>
               <div className="space-y-4 text-gray-400">
                 <div className="flex items-center gap-3">
                   <Phone className="h-4 w-4" />
-                  <span>1900 1234 (miễn phí)</span>
+                  <span>1900 1234 ({t("footer.free")})</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <Mail className="h-4 w-4" />
@@ -108,21 +109,21 @@ export function Footer() {
                 </div>
                 <div className="flex items-start gap-3">
                   <MapPin className="h-4 w-4 mt-1" />
-                  <span>123 Đường ABC, Quận 1, TP.HCM</span>
+                  <span>{t("footer.address")}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <Clock className="h-4 w-4" />
-                  <span>Thứ 2 - Chủ nhật: 8:00 - 22:00</span>
+                  <span>{t("footer.time")}</span>
                 </div>
               </div>
 
               {/* Newsletter */}
               <div className="space-y-3">
-                <h5 className="text-white text-sm">Đăng ký nhận tin tức</h5>
+                <h5 className="text-white text-sm">{t("footer.newsletter")}</h5>
                 <div className="flex gap-2">
                   <input 
                     type="email" 
-                    placeholder="Email của bạn" 
+                    placeholder={t("footer.emailPlaceholder")} 
                     className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none"
                   />
                   <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
