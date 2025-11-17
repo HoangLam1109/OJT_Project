@@ -6,6 +6,7 @@ export interface IRoomRepository {
   findById(id: string, fields?: string): Promise<IRoom | null>;
   findManyByParticipant(userId: string): Promise<IRoom[]>;
   findManyByDate(date: Date): Promise<IRoom[]>;
+  findByName(name: string): Promise<IRoom[]>;
   create(data: { name?: string; participants: string[] }): Promise<IRoom>;
   joinRoom(roomId: string, userId: string): Promise<IRoom | null>;
   leaveRoom(roomId: string, userId: string): Promise<IRoom | null>;
@@ -37,6 +38,10 @@ export class RoomRepository implements IRoomRepository {
     return this.roomModel.find({ createdAt: { $gte: start, $lte: end } });
   }
 
+  async findByName(name: string): Promise<IRoom[]> {
+    return this.roomModel.find({ name });
+  }
+
   async joinRoom(roomId: string, userId: string): Promise<IRoom | null> {
     return this.roomModel.findByIdAndUpdate(roomId, { $push: { participants: userId } }, { new: true });
   }
@@ -45,7 +50,7 @@ export class RoomRepository implements IRoomRepository {
     return this.roomModel.findByIdAndUpdate(roomId, { $pull: { participants: userId } }, { new: true });
   }
 
-  async create(data: { name?: string; participants: string[] }): Promise<IRoom> {
+  async create(data: { name?: string; participants: string[]; createdBy: string }): Promise<IRoom> {
     const room = new this.roomModel(data);
     return room.save();
   }
