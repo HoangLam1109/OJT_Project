@@ -1,5 +1,5 @@
 import express from "express";
-import { createRoom, getRooms, joinChat, leaveChat, deleteRoom, updateRoom, getRoomsByCreator } from "../controllers/room.controller.js";
+import { createRoom, getRooms, joinChat, leaveChat, deleteRoom, updateRoom, getRoomsByCreator, getRoomsByParticipant } from "../controllers/room.controller.js";
 import { authenticateUser } from "../middlewares/authenticate.middleware.js";
 import { createValidator } from "../../../shared/src/validate.middleware.js";
 import { createRoomSchema, updateRoomSchema } from "../validators/room.validator.js";
@@ -13,6 +13,7 @@ const router = express.Router();
 router.post("/create", authenticateUser, createValidator(createRoomSchema), createRoom);
 router.get("/all", authenticateUser, authorizeRoles("MANAGER", "ADMIN"), getRooms);
 router.get("/my", authenticateUser, getRoomsByCreator);
+router.get("/participant", authenticateUser, getRoomsByParticipant);
 router.post("/join/:roomId", authenticateUser, joinChat);
 router.post("/leave/:roomId", authenticateUser, leaveChat);
 router.put("/update/:roomId", authenticateUser, createValidator(updateRoomSchema), updateRoom);

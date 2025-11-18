@@ -28,10 +28,6 @@ export class RoomService {
     );
   }
 
-  async getRoomsByParticipant(userId: string): Promise<IRoom[]> {
-    return roomRepository.findManyByParticipant(userId);
-  }
-
   async createRoom(
     name: string,
     participants: string[],

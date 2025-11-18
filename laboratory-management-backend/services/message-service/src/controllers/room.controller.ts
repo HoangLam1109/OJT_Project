@@ -198,7 +198,7 @@ const getRoomsByCreator = async (
   /*
     #swagger.auto = false
     #swagger.tags = ['Room Service']
-    #swagger.description = 'Get rooms with pagination'
+    #swagger.description = 'Get rooms created by user with pagination'
     #swagger.security = [{"apiKeyAuth": []}]
     #swagger.parameters['limit'] = {
       in: 'query',
@@ -272,6 +272,94 @@ const getRoomsByCreator = async (
   try {
     const options = PaginationUtils.parseQuery(req.query);
     const rooms = await roomService.listRooms(options, { createdBy: (req as any).user.userId });
+    res.status(200).json(rooms);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getRoomsByParticipant = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  /*
+    #swagger.auto = false
+    #swagger.tags = ['Room Service']
+    #swagger.description = 'Get rooms where user is participant with pagination'
+    #swagger.security = [{"apiKeyAuth": []}]
+    #swagger.parameters['limit'] = {
+      in: 'query',
+      description: 'Number of rooms per page (1-100)',
+      required: false,
+      type: 'integer',
+      default: 10
+    }
+    #swagger.parameters['cursor'] = {
+      in: 'query',
+      description: 'Cursor for next page (room ID)',
+      required: false,
+      type: 'string'
+    }
+    #swagger.parameters['sortBy'] = {
+      in: 'query',
+      description: 'Field to sort by',
+      required: false,
+      type: 'string',
+      enum: ['updatedAt', '_id', 'name', 'participants'],
+      default: 'updatedAt'
+    }
+    #swagger.parameters['search'] = {
+      in: 'query',
+      description: 'Search term to filter rooms',
+      required: false,
+      type: 'string'
+    }
+    #swagger.parameters['searchField'] = {
+      in: 'query',
+      description: 'Fields to search by',
+      required: false,
+      type: 'string',
+      enum: ['name', 'participants'],
+      default: 'name'
+    }
+    #swagger.parameters['sortOrder'] = {
+      in: 'query',
+      description: 'Sort order',
+      required: false,
+      type: 'string',
+      enum: ['asc', 'desc'],
+      default: 'desc'
+    }
+    #swagger.responses[200] = {
+      description: 'Users retrieved successfully',
+      schema: {
+        data: {
+          type: 'array',
+          items: {
+            _id: 'string',
+            name: 'string',
+            participants: ['string'],
+            createdAt: '2025-01-01T00:00:00.000Z',
+            updatedAt: '2025-01-01T00:00:00.000Z'
+          }
+        },
+        pagination: {
+          hasNextPage: true,
+          hasPreviousPage: false,
+          nextCursor: 'string',
+          previousCursor: 'string',
+          totalCount: 100,
+          limit: 10
+        }
+      }
+    }
+    #swagger.responses[401] = { description: 'Authentication required' }
+    #swagger.responses[500] = { description: 'Internal server error' }
+  */
+  try {
+    const options = PaginationUtils.parseQuery(req.query);
+    const rooms = await roomService.listRooms(options, { participants: { $in: [(req as any).user.userId] } });
     res.status(200).json(rooms);
   } catch (error) {
     next(error);
@@ -439,4 +527,4 @@ const deleteRoom = async (
   }
 };
 
-export { joinChat, getRooms, getRoomsByCreator, createRoom, updateRoom, deleteRoom, leaveChat };
+export { joinChat, getRooms, getRoomsByCreator, getRoomsByParticipant, createRoom, updateRoom, deleteRoom, leaveChat };
