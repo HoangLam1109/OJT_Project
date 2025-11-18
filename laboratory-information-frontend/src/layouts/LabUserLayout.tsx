@@ -59,6 +59,11 @@ export const LabUserLayout: React.FC<LabUserLayoutProps> = ({
         icon: (props) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 20V10" /><path d="M12 20V4" /><path d="M6 20v-6" /></svg>
       },
       {
+        id: 'chat',
+        label: 'Tin nhắn',
+        icon: (props) => <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+      },
+      {
       // removed medical record access logs item
         id: 'profile',
         label: 'Hồ sơ cá nhân',

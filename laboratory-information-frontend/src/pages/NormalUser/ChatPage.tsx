@@ -1,361 +1,280 @@
-import React, { useState, useEffect } from 'react';
-import { useAuthContext } from '../../hooks/useAuthContext';
-import { MessageCircle, Send, Search, User } from 'lucide-react';
-import { Input } from '../../components/common/input';
-import Button from '../../components/common/button';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  ChevronDown,
+  ChevronUp,
+  Loader2,
+  MessageCircle,
+  PlusCircle,
+  RefreshCw,
+  Search,
+  ShieldCheck,
+  User,
+} from 'lucide-react';
 import { toast } from 'sonner';
 
-// Types
-interface Message {
-  id: string;
-  senderId: string;
-  senderName: string;
-  senderRole: 'doctor' | 'patient';
-  content: string;
-  timestamp: string;
-  isRead: boolean;
-}
+import { useAuthContext } from '../../hooks/useAuthContext';
+import { Input } from '../../components/common/input';
+import { Textarea } from '../../components/common/textarea';
+import Button from '../../components/common/button';
+import { apiUtils } from '../../service/apiClient';
+import { roomApi, type RoomSummary } from '../../service/messageRoomService';
 
-interface Conversation {
-  id: string;
-  participantId: string;
-  participantName: string;
-  participantRole: 'doctor' | 'patient';
-  lastMessage?: string;
-  lastMessageTime?: string;
-  unreadCount: number;
-  avatar?: string;
-}
+const parseDefaultLabUsers = (): string[] => {
+  const raw = import.meta.env.VITE_DEFAULT_LAB_USER_IDS || '';
+  return raw
+    .split(',')
+    .map((id: string) => id.trim())
+    .filter(Boolean);
+};
+
+const formatTime = (timestamp?: string): string => {
+  if (!timestamp) return '';
+  const date = new Date(timestamp);
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
+
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+
+  if (minutes < 1) return 'Vừa xong';
+  if (minutes < 60) return `${minutes} phút trước`;
+  if (hours < 24) return `${hours} giờ trước`;
+  if (days < 7) return `${days} ngày trước`;
+  return date.toLocaleDateString('vi-VN');
+};
 
 const ChatPage: React.FC = () => {
   const { user } = useAuthContext();
-  const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [newMessage, setNewMessage] = useState('');
+  const navigate = useNavigate();
+
+  const [roomName, setRoomName] = useState('');
+  const [note, setNote] = useState('');
+  const [creating, setCreating] = useState(false);
+
+  const [rooms, setRooms] = useState<RoomSummary[]>([]);
+  const [loadingRooms, setLoadingRooms] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [formCollapsed, setFormCollapsed] = useState(false);
 
-  // Mock data - sẽ thay thế bằng API call
-  useEffect(() => {
-    // Simulate loading conversations
-    const mockConversations: Conversation[] = [
-      {
-        id: 'conv1',
-        participantId: 'doc1',
-        participantName: 'BS. Nguyễn Văn An',
-        participantRole: 'doctor',
-        lastMessage: 'Kết quả xét nghiệm của bạn đã sẵn sàng',
-        lastMessageTime: new Date().toISOString(),
-        unreadCount: 2,
-      },
-      {
-        id: 'conv2',
-        participantId: 'doc2',
-        participantName: 'BS. Trần Thị Bình',
-        participantRole: 'doctor',
-        lastMessage: 'Bạn có câu hỏi gì về kết quả không?',
-        lastMessageTime: new Date(Date.now() - 3600000).toISOString(),
-        unreadCount: 0,
-      },
-    ];
+  const defaultLabUsers = useMemo(parseDefaultLabUsers, []);
 
-    setConversations(mockConversations);
-  }, []);
+  const filteredRooms = useMemo(() => {
+    return rooms.filter((room) =>
+      (room.name || 'Phòng chat').toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [rooms, searchTerm]);
 
-  // Load messages when conversation is selected
-  useEffect(() => {
-    if (selectedConversation) {
-      loadMessages(selectedConversation.id);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedConversation]);
-
-  const loadMessages = async (_conversationId: string) => {
-    setLoading(true);
+  const refreshRooms = useCallback(async () => {
+    if (!user) return;
+    setLoadingRooms(true);
     try {
-      // Mock messages - sẽ thay thế bằng API call
-      // TODO: Sử dụng conversationId để gọi API
-      const mockMessages: Message[] = [
-        {
-          id: 'msg1',
-          senderId: user?.id || 'user1',
-          senderName: user?.name || 'Bạn',
-          senderRole: 'patient',
-          content: 'Xin chào bác sĩ, tôi muốn hỏi về kết quả xét nghiệm',
-          timestamp: new Date(Date.now() - 86400000).toISOString(),
-          isRead: true,
-        },
-        {
-          id: 'msg2',
-          senderId: selectedConversation?.participantId || 'doc1',
-          senderName: selectedConversation?.participantName || 'Bác sĩ',
-          senderRole: 'doctor',
-          content: 'Chào bạn, tôi đã xem kết quả xét nghiệm của bạn. Bạn muốn hỏi gì cụ thể?',
-          timestamp: new Date(Date.now() - 86400000 + 300000).toISOString(),
-          isRead: true,
-        },
-        {
-          id: 'msg3',
-          senderId: selectedConversation?.participantId || 'doc1',
-          senderName: selectedConversation?.participantName || 'Bác sĩ',
-          senderRole: 'doctor',
-          content: 'Kết quả xét nghiệm của bạn đã sẵn sàng',
-          timestamp: new Date().toISOString(),
-          isRead: false,
-        },
-      ];
-
-      setMessages(mockMessages);
+      const { data } = await roomApi.getParticipantRooms({
+        limit: 50,
+        sortOrder: 'desc',
+        sortBy: 'updatedAt',
+      });
+      setRooms(data.data);
     } catch (error) {
-      toast.error('Không thể tải tin nhắn');
-      console.error('Error loading messages:', error);
+      toast.error(apiUtils.getErrorMessage(error) || 'Không thể tải danh sách phòng chat');
     } finally {
-      setLoading(false);
+      setLoadingRooms(false);
     }
-  };
+  }, [user]);
 
-  const handleSendMessage = async () => {
-    if (!newMessage.trim() || !selectedConversation) return;
+  useEffect(() => {
+    void refreshRooms();
+  }, [refreshRooms]);
 
-    const message: Message = {
-      id: `msg_${Date.now()}`,
-      senderId: user?.id || 'user1',
-      senderName: user?.name || 'Bạn',
-      senderRole: 'patient',
-      content: newMessage.trim(),
-      timestamp: new Date().toISOString(),
-      isRead: false,
-    };
+  const handleCreateRoom = async () => {
+    if (!user) {
+      toast.error('Bạn cần đăng nhập để tạo phòng chat');
+      return;
+    }
+    if (defaultLabUsers.length === 0) {
+      toast.error('Hệ thống chưa cấu hình nhóm nhân viên phòng thí nghiệm mặc định');
+      return;
+    }
 
-    // Optimistic update
-    setMessages([...messages, message]);
-    setNewMessage('');
-
-    // Update conversation last message
-    setConversations(conversations.map(conv =>
-      conv.id === selectedConversation.id
-        ? {
-            ...conv,
-            lastMessage: message.content,
-            lastMessageTime: message.timestamp,
-          }
-        : conv
-    ));
-
+    const participants = Array.from(new Set([user.id, ...defaultLabUsers]));
+    setCreating(true);
     try {
-      // TODO: Gọi API để gửi tin nhắn
-      // await chatService.sendMessage(selectedConversation.id, newMessage);
-      toast.success('Đã gửi tin nhắn');
+      const { data: newRoom } = await roomApi.createRoom({
+        name: roomName.trim() || undefined,
+        participants,
+      });
+
+      setRooms((prev) => [newRoom, ...prev]);
+      toast.success('Đã tạo phòng chat. Nhân viên phòng thí nghiệm sẽ phản hồi sớm nhất.');
+      setRoomName('');
+      setNote('');
+
+      navigate(`/user/chat/${newRoom._id}`, {
+        state: { room: newRoom, initialNote: note.trim() || undefined },
+      });
     } catch (error) {
-      toast.error('Không thể gửi tin nhắn');
-      console.error('Error sending message:', error);
+      toast.error(apiUtils.getErrorMessage(error) || 'Không thể tạo phòng chat');
+    } finally {
+      setCreating(false);
     }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  };
-
-  const filteredConversations = conversations.filter(conv =>
-    conv.participantName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const formatTime = (timestamp: string) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diff = now.getTime() - date.getTime();
-    const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(diff / 3600000);
-    const days = Math.floor(diff / 86400000);
-
-    if (minutes < 1) return 'Vừa xong';
-    if (minutes < 60) return `${minutes} phút trước`;
-    if (hours < 24) return `${hours} giờ trước`;
-    if (days < 7) return `${days} ngày trước`;
-    return date.toLocaleDateString('vi-VN');
   };
 
   return (
-    <div className="h-full flex flex-col bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-      <div className="flex h-full">
-        {/* Chat List Sidebar */}
-        <div className="w-80 border-r border-gray-200 flex flex-col bg-white">
-          {/* Header */}
-          <div className="p-5 border-b border-gray-200 bg-white">
-            <div className="flex items-center gap-2.5 mb-4">
+    <div className="h-full flex flex-col gap-4">
+      <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+        <div className="p-6 border-b border-gray-200 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <MessageCircle className="w-6 h-6 text-blue-600" />
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">Yêu cầu phòng chat với phòng thí nghiệm</h2>
+              <p className="text-sm text-gray-500">
+                Tạo phòng để đặt câu hỏi; nhân viên phòng thí nghiệm sẽ thấy và phản hồi trong hệ thống.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setFormCollapsed((prev) => !prev)}
+            className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 transition"
+          >
+            {formCollapsed ? (
+              <>
+                <ChevronDown className="w-4 h-4" /> Mở rộng
+              </>
+            ) : (
+              <>
+                <ChevronUp className="w-4 h-4" /> Thu gọn
+              </>
+            )}
+          </button>
+        </div>
+        {!formCollapsed && (
+          <div className="p-6 space-y-5">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Tên phòng (tuỳ chọn)</label>
+              <Input
+                placeholder="Ví dụ: Thắc mắc kết quả xét nghiệm lần 2"
+                value={roomName}
+                onChange={(e) => setRoomName(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Ghi chú cho nhân viên (tuỳ chọn)</label>
+              <Textarea
+                placeholder="Mô tả ngắn gọn vấn đề bạn muốn trao đổi..."
+                rows={4}
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Nội dung này giúp nhân viên chuẩn bị trước; bạn vẫn trao đổi trực tiếp trong phòng chat.
+              </p>
+            </div>
+            <div className="flex items-center gap-3 flex-wrap">
+              <Button
+                onClick={handleCreateRoom}
+                disabled={creating || defaultLabUsers.length === 0}
+                className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <PlusCircle className="w-4 h-4" />
+                {creating ? 'Đang tạo phòng...' : 'Tạo phòng chat'}
+              </Button>
+              {defaultLabUsers.length === 0 && (
+                <span className="text-sm text-red-600">
+                  Cần cấu hình `VITE_DEFAULT_LAB_USER_IDS` để gửi tới nhóm hỗ trợ.
+                </span>
+              )}
+            </div>
+            <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 text-sm text-blue-800 space-y-2">
+              <p className="font-semibold">Lưu ý:</p>
+              <ul className="list-disc list-inside space-y-1">
+                <li>Ngay khi tạo phòng, nhân viên phòng thí nghiệm sẽ thấy yêu cầu trong giao diện của họ.</li>
+                <li>Bạn sẽ được thông báo khi nhân viên phản hồi qua các kênh liên lạc đã đăng ký.</li>
+                <li>Nếu cần cập nhật thêm thông tin, bạn có thể tạo phòng mới hoặc tiếp tục trò chuyện trong phòng hiện tại.</li>
+              </ul>
+              {defaultLabUsers.length > 0 && (
+                <p className="flex items-center gap-2 text-xs text-blue-700 pt-2">
+                  <ShieldCheck className="w-4 h-4" />
+                  Phòng chat sẽ tự động gửi đến nhóm lab mặc định trên hệ thống.
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="flex-1 flex bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="w-[420px] border-r border-gray-200 flex flex-col">
+          <div className="p-4 border-b border-gray-200">
+            <div className="flex items-center gap-2.5 mb-4 justify-between">
               <MessageCircle className="w-5 h-5 text-blue-600" />
-              <h2 className="text-lg font-semibold text-gray-900">Tin nhắn</h2>
+              <h3 className="text-lg font-semibold text-gray-900 flex-1">Phòng chat của bạn</h3>
+              <button
+                type="button"
+                className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                onClick={refreshRooms}
+                title="Làm mới danh sách phòng chat"
+              >
+                {loadingRooms ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+              </button>
             </div>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 z-10" />
               <Input
                 type="text"
-                placeholder="Tìm kiếm cuộc trò chuyện..."
+                placeholder="Tìm kiếm phòng chat..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 bg-gray-50 border-gray-200 rounded-lg focus:bg-white focus:border-blue-500"
               />
             </div>
           </div>
-
-          {/* Conversations List */}
           <div className="flex-1 overflow-y-auto bg-gray-50">
-            {filteredConversations.length === 0 ? (
+            {filteredRooms.length === 0 ? (
               <div className="p-8 text-center text-gray-500">
                 <MessageCircle className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                <p className="text-sm">Không có cuộc trò chuyện nào</p>
+                <p className="text-sm">
+                  {rooms.length === 0
+                    ? 'Bạn chưa có phòng chat nào. Tạo phòng mới để bắt đầu trao đổi.'
+                    : 'Không tìm thấy phòng chat phù hợp'}
+                </p>
               </div>
             ) : (
-              filteredConversations.map((conversation) => (
-                <div
-                  key={conversation.id}
-                  onClick={() => setSelectedConversation(conversation)}
-                  className={`px-4 py-3 cursor-pointer transition-all duration-200 ${
-                    selectedConversation?.id === conversation.id
-                      ? 'bg-white border-l-4 border-l-blue-600 shadow-sm'
-                      : 'hover:bg-gray-100 border-l-4 border-l-transparent'
-                  }`}
+              filteredRooms.map((room) => (
+                <button
+                  key={room._id}
+                  onClick={() => navigate(`/user/chat/${room._id}`, { state: { room } })}
+                  className="w-full text-left px-4 py-3 border-b border-gray-200 hover:bg-white transition"
                 >
-                  <div className="flex items-start gap-3">
-                    <div className="w-11 h-11 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 ring-2 ring-white">
-                      <User className="w-5 h-5 text-blue-600" />
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center ring-2 ring-white text-blue-600">
+                      <User className="w-4 h-4" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1">
-                        <h3 className="font-medium text-sm text-gray-900 truncate">
-                          {conversation.participantName}
-                        </h3>
-                        {conversation.unreadCount > 0 && (
-                          <span className="bg-blue-600 text-white text-xs font-medium rounded-full px-2 py-0.5 min-w-[20px] text-center flex-shrink-0 ml-2">
-                            {conversation.unreadCount}
-                          </span>
-                        )}
+                        <h4 className="font-medium text-sm text-gray-900 truncate">
+                          {room.name || 'Phòng chat'}
+                        </h4>
+                        <span className="text-xs text-gray-400">{formatTime(room.updatedAt)}</span>
                       </div>
-                      {conversation.lastMessage && (
-                        <p className="text-sm text-gray-600 truncate mb-1 leading-tight">
-                          {conversation.lastMessage}
-                        </p>
-                      )}
-                      {conversation.lastMessageTime && (
-                        <p className="text-xs text-gray-400">
-                          {formatTime(conversation.lastMessageTime)}
-                        </p>
-                      )}
+                      <p className="text-xs text-gray-500">
+                        Thành viên: {room.participants.length}
+                      </p>
                     </div>
+                    <span className="text-xs text-blue-600 font-medium">Mở</span>
                   </div>
-                </div>
+                </button>
               ))
             )}
           </div>
         </div>
 
-        {/* Chat Window */}
-        <div className="flex-1 flex flex-col bg-white">
-          {selectedConversation ? (
-            <>
-              {/* Chat Header */}
-              <div className="px-6 py-4 border-b border-gray-200 bg-white shadow-sm">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center ring-2 ring-blue-50">
-                    <User className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900 text-sm">
-                      {selectedConversation.participantName}
-                    </h3>
-                    <p className="text-xs text-gray-500 mt-0.5">
-                      {selectedConversation.participantRole === 'doctor' ? 'Bác sĩ' : 'Bệnh nhân'}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Messages */}
-              <div className="flex-1 overflow-y-auto px-6 py-5 bg-gray-50 space-y-3">
-                {loading ? (
-                  <div className="text-center text-gray-500 py-8">Đang tải tin nhắn...</div>
-                ) : messages.length === 0 ? (
-                  <div className="text-center text-gray-500 py-12">
-                    <MessageCircle className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                    <p className="text-sm">Chưa có tin nhắn nào</p>
-                  </div>
-                ) : (
-                  messages.map((message) => {
-                    const isOwnMessage = message.senderId === user?.id;
-                    return (
-                      <div
-                        key={message.id}
-                        className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'} items-end`}
-                      >
-                        <div
-                          className={`max-w-[75%] rounded-2xl px-4 py-2.5 shadow-sm ${
-                            isOwnMessage
-                              ? 'bg-blue-600 text-white rounded-br-md'
-                              : 'bg-white text-gray-900 border border-gray-200 rounded-bl-md'
-                          }`}
-                        >
-                          {!isOwnMessage && (
-                            <p className="text-xs font-semibold mb-1.5 text-gray-700">
-                              {message.senderName}
-                            </p>
-                          )}
-                          <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
-                            {message.content}
-                          </p>
-                          <p
-                            className={`text-xs mt-1.5 ${
-                              isOwnMessage ? 'text-blue-100' : 'text-gray-400'
-                            }`}
-                          >
-                            {formatTime(message.timestamp)}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-
-              {/* Message Input */}
-              <div className="px-6 py-4 border-t border-gray-200 bg-white">
-                <div className="flex gap-3 items-center">
-                  <Input
-                    type="text"
-                    placeholder="Nhập tin nhắn..."
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    className="flex-1 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                  />
-                  <Button
-                    onClick={handleSendMessage}
-                    disabled={!newMessage.trim()}
-                    className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-                  >
-                    <Send className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            </>
-          ) : (
-            <div className="flex-1 flex items-center justify-center bg-gray-50">
-              <div className="text-center max-w-sm">
-                <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-blue-100 flex items-center justify-center">
-                  <MessageCircle className="w-10 h-10 text-blue-600" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Chọn cuộc trò chuyện
-                </h3>
-                <p className="text-sm text-gray-500">
-                  Chọn một cuộc trò chuyện từ danh sách để bắt đầu
-                </p>
-              </div>
-            </div>
-          )}
+        <div className="flex-1 flex flex-col items-center justify-center bg-gray-50 text-sm text-gray-500 px-8">
+          <MessageCircle className="w-14 h-14 text-gray-300 mb-4" />
+          <p className="max-w-sm text-center">
+            Chọn một phòng chat từ danh sách hoặc tạo phòng mới. Nội dung trò chuyện sẽ mở ra trong trang toàn màn
+            hình để bạn trao đổi dễ dàng với nhân viên phòng thí nghiệm.
+          </p>
         </div>
       </div>
     </div>
