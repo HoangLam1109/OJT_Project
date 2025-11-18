@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { Reagent } from './data/mockReagentsData';
 import { useAuthContext } from '../../hooks/useAuthContext';
 import { reagentService } from '../../service/reagentService';
@@ -23,6 +24,8 @@ const ReagentManagementPage: React.FC = () => {
   const [selectedReagent, setSelectedReagent] = useState<Reagent | null>(null);
   const [editingReagent, setEditingReagent] = useState<Partial<Reagent>>({});
   const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   // Fetch reagents from API
   useEffect(() => {
@@ -53,7 +56,20 @@ const ReagentManagementPage: React.FC = () => {
   useEffect(() => {
     const filtered = filterReagents(reagents, searchTerm, statusFilter);
     setFilteredReagents(filtered);
+    // Reset to page 1 when filters change
+    setCurrentPage(1);
   }, [reagents, searchTerm, statusFilter]);
+
+  // Calculate pagination
+  const totalPages = useMemo(() => {
+    return Math.ceil(filteredReagents.length / itemsPerPage);
+  }, [filteredReagents.length, itemsPerPage]);
+
+  const paginatedReagents = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredReagents.slice(startIndex, endIndex);
+  }, [filteredReagents, currentPage, itemsPerPage]);
 
   const handleAddReagent = () => {
     setEditingReagent({});
@@ -227,12 +243,78 @@ const ReagentManagementPage: React.FC = () => {
       />
 
       <ReagentTable
-        reagents={filteredReagents}
+        reagents={paginatedReagents}
         isLoading={isLoading}
         onView={handleViewDetails}
         onEdit={handleEditReagent}
         onDelete={handleDeleteReagent}
       />
+
+      {/* Pagination */}
+      {filteredReagents.length > 0 && (
+        <div className="flex justify-center items-center gap-2 mt-4">
+          <button
+            className="px-3 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            aria-label="Trang trước"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          {Array.from({ length: totalPages }, (_, i) => {
+            const pageNum = i + 1;
+            // Show first page, last page, current page, and pages around current
+            // If totalPages <= 7, show all pages
+            const showAllPages = totalPages <= 7;
+            const showPage =
+              showAllPages ||
+              pageNum === 1 ||
+              pageNum === totalPages ||
+              (pageNum >= currentPage - 1 && pageNum <= currentPage + 1);
+            
+            if (!showPage) {
+              // Show ellipsis
+              if (pageNum === currentPage - 2 || pageNum === currentPage + 2) {
+                return (
+                  <span key={pageNum} className="px-2 text-gray-500">
+                    ...
+                  </span>
+                );
+              }
+              return null;
+            }
+
+            return (
+              <button
+                key={pageNum}
+                className={`px-4 py-2 rounded-lg border transition ${
+                  currentPage === pageNum
+                    ? 'bg-blue-600 text-white border-blue-600'
+                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                }`}
+                onClick={() => setCurrentPage(pageNum)}
+              >
+                {pageNum}
+              </button>
+            );
+          })}
+          <button
+            className="px-3 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+            aria-label="Trang sau"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Pagination info */}
+      {filteredReagents.length > 0 && (
+        <div className="text-center text-sm text-gray-600 mt-2">
+          Hiển thị {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, filteredReagents.length)} trong tổng số {filteredReagents.length} thuốc thử
+        </div>
+      )}
 
       <ReagentFormModal
         isOpen={isAddModalOpen || isEditModalOpen}
