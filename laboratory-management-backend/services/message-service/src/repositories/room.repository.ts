@@ -4,7 +4,6 @@ import type { IRoom } from "../db/models/room.model.js";
 
 export interface IRoomRepository {
   findById(id: string, fields?: string): Promise<IRoom | null>;
-  findManyByParticipant(userId: string): Promise<IRoom[]>;
   findManyByDate(date: Date): Promise<IRoom[]>;
   findByName(name: string): Promise<IRoom[]>;
   create(data: { name?: string; participants: string[] }): Promise<IRoom>;
@@ -24,10 +23,6 @@ export class RoomRepository implements IRoomRepository {
 
   async findById(id: string, fields?: string): Promise<IRoom | null> {
     return this.roomModel.findById(id, fields || "_id name participants createdAt updatedAt");
-  }
-
-  async findManyByParticipant(userId: string): Promise<IRoom[]> {
-    return this.roomModel.find({ participants: userId });
   }
 
   async findManyByDate(date: Date): Promise<IRoom[]> {
