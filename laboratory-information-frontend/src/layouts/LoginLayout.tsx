@@ -76,27 +76,27 @@ export const LoginLayout = () => {
             
             {/* Title */}
             <div>
-              <h1 className="text-4xl font-bold mb-4">Hệ Thống Quản Lý</h1>
-              <h2 className="text-2xl font-semibold text-blue-100">Phòng Thí Nghiệm Y Khoa</h2>
+              <h1 className="text-4xl font-bold mb-4">{t("login.title1")}</h1>
+              <h2 className="text-2xl font-semibold text-blue-100">{t("login.subtitle")}</h2>
             </div>
             
             {/* Features */}
             <div className="space-y-4 text-left max-w-md">
               <div className="flex items-center space-x-3">
                 <div className="w-2 h-2 bg-white rounded-full"></div>
-                <span className="text-blue-100">Quản lý bệnh nhân và xét nghiệm</span>
+                <span className="text-blue-100">{t("login.patientManagement")}</span>
               </div>
               <div className="flex items-center space-x-3">
                 <div className="w-2 h-2 bg-white rounded-full"></div>
-                <span className="text-blue-100">Báo cáo kết quả chính xác</span>
+                <span className="text-blue-100">{t("login.reportAnalysis")}</span>
               </div>
               <div className="flex items-center space-x-3">
                 <div className="w-2 h-2 bg-white rounded-full"></div>
-                <span className="text-blue-100">Theo dõi lịch sử bệnh án</span>
+                <span className="text-blue-100">{t("login.patientHistory")}</span>
               </div>
               <div className="flex items-center space-x-3">
                 <div className="w-2 h-2 bg-white rounded-full"></div>
-                <span className="text-blue-100">Bảo mật thông tin cao</span>
+                <span className="text-blue-100">{t("login.highSecurity")}</span>
               </div>
             </div>
           </div>

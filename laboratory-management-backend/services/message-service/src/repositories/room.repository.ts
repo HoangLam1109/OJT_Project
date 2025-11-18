@@ -4,8 +4,8 @@ import type { IRoom } from "../db/models/room.model.js";
 
 export interface IRoomRepository {
   findById(id: string, fields?: string): Promise<IRoom | null>;
-  findManyByParticipant(userId: string): Promise<IRoom[]>;
   findManyByDate(date: Date): Promise<IRoom[]>;
+  findByName(name: string): Promise<IRoom[]>;
   create(data: { name?: string; participants: string[] }): Promise<IRoom>;
   joinRoom(roomId: string, userId: string): Promise<IRoom | null>;
   leaveRoom(roomId: string, userId: string): Promise<IRoom | null>;
@@ -25,16 +25,16 @@ export class RoomRepository implements IRoomRepository {
     return this.roomModel.findById(id, fields || "_id name participants createdAt updatedAt");
   }
 
-  async findManyByParticipant(userId: string): Promise<IRoom[]> {
-    return this.roomModel.find({ participants: userId });
-  }
-
   async findManyByDate(date: Date): Promise<IRoom[]> {
     const start = new Date(date);
     start.setHours(0, 0, 0, 0);
     const end = new Date(date);
     end.setHours(23, 59, 59, 999);
     return this.roomModel.find({ createdAt: { $gte: start, $lte: end } });
+  }
+
+  async findByName(name: string): Promise<IRoom[]> {
+    return this.roomModel.find({ name });
   }
 
   async joinRoom(roomId: string, userId: string): Promise<IRoom | null> {
@@ -45,7 +45,7 @@ export class RoomRepository implements IRoomRepository {
     return this.roomModel.findByIdAndUpdate(roomId, { $pull: { participants: userId } }, { new: true });
   }
 
-  async create(data: { name?: string; participants: string[] }): Promise<IRoom> {
+  async create(data: { name?: string; participants: string[]; createdBy: string }): Promise<IRoom> {
     const room = new this.roomModel(data);
     return room.save();
   }

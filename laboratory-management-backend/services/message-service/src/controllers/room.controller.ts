@@ -42,7 +42,7 @@ const joinChat = async (
       throw new AppError(400, "Room ID is required");
     }
 
-    const user = await iamServiceClient.getUserById((req as any).userId);
+    const user = await iamServiceClient.getUserById((req as any).user.userId);
     if (!user) {
       throw new AppError(404, "User not found");
     }
@@ -90,7 +90,7 @@ const leaveChat = async (
       throw new AppError(400, "Room ID is required");
     }
 
-    const user = await iamServiceClient.getUserById((req as any).userId);
+    const user = await iamServiceClient.getUserById((req as any).user.userId);
     if (!user) {
       throw new AppError(404, "User not found");
     }
@@ -101,7 +101,6 @@ const leaveChat = async (
     next(error);
   }
 };
-
 
 const getRooms = async (
   req: Request,
@@ -179,13 +178,188 @@ const getRooms = async (
         }
       }
     }
-    #swagger.responses[400] = { description: 'Invalid pagination parameters' }
     #swagger.responses[401] = { description: 'Authentication required' }
     #swagger.responses[500] = { description: 'Internal server error' }
   */
   try {
     const options = PaginationUtils.parseQuery(req.query);
-    const rooms = await roomService.getAllRooms(options);
+    const rooms = await roomService.listRooms(options);
+    res.status(200).json(rooms);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getRoomsByCreator = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  /*
+    #swagger.auto = false
+    #swagger.tags = ['Room Service']
+    #swagger.description = 'Get rooms created by user with pagination'
+    #swagger.security = [{"apiKeyAuth": []}]
+    #swagger.parameters['limit'] = {
+      in: 'query',
+      description: 'Number of rooms per page (1-100)',
+      required: false,
+      type: 'integer',
+      default: 10
+    }
+    #swagger.parameters['cursor'] = {
+      in: 'query',
+      description: 'Cursor for next page (room ID)',
+      required: false,
+      type: 'string'
+    }
+    #swagger.parameters['sortBy'] = {
+      in: 'query',
+      description: 'Field to sort by',
+      required: false,
+      type: 'string',
+      enum: ['updatedAt', '_id', 'name', 'participants'],
+      default: 'updatedAt'
+    }
+    #swagger.parameters['search'] = {
+      in: 'query',
+      description: 'Search term to filter rooms',
+      required: false,
+      type: 'string'
+    }
+    #swagger.parameters['searchField'] = {
+      in: 'query',
+      description: 'Fields to search by',
+      required: false,
+      type: 'string',
+      enum: ['name', 'participants'],
+      default: 'name'
+    }
+    #swagger.parameters['sortOrder'] = {
+      in: 'query',
+      description: 'Sort order',
+      required: false,
+      type: 'string',
+      enum: ['asc', 'desc'],
+      default: 'desc'
+    }
+    #swagger.responses[200] = {
+      description: 'Users retrieved successfully',
+      schema: {
+        data: {
+          type: 'array',
+          items: {
+            _id: 'string',
+            name: 'string',
+            participants: ['string'],
+            createdAt: '2025-01-01T00:00:00.000Z',
+            updatedAt: '2025-01-01T00:00:00.000Z'
+          }
+        },
+        pagination: {
+          hasNextPage: true,
+          hasPreviousPage: false,
+          nextCursor: 'string',
+          previousCursor: 'string',
+          totalCount: 100,
+          limit: 10
+        }
+      }
+    }
+    #swagger.responses[401] = { description: 'Authentication required' }
+    #swagger.responses[500] = { description: 'Internal server error' }
+  */
+  try {
+    const options = PaginationUtils.parseQuery(req.query);
+    const rooms = await roomService.listRooms(options, { createdBy: (req as any).user.userId });
+    res.status(200).json(rooms);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getRoomsByParticipant = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  /*
+    #swagger.auto = false
+    #swagger.tags = ['Room Service']
+    #swagger.description = 'Get rooms where user is participant with pagination'
+    #swagger.security = [{"apiKeyAuth": []}]
+    #swagger.parameters['limit'] = {
+      in: 'query',
+      description: 'Number of rooms per page (1-100)',
+      required: false,
+      type: 'integer',
+      default: 10
+    }
+    #swagger.parameters['cursor'] = {
+      in: 'query',
+      description: 'Cursor for next page (room ID)',
+      required: false,
+      type: 'string'
+    }
+    #swagger.parameters['sortBy'] = {
+      in: 'query',
+      description: 'Field to sort by',
+      required: false,
+      type: 'string',
+      enum: ['updatedAt', '_id', 'name', 'participants'],
+      default: 'updatedAt'
+    }
+    #swagger.parameters['search'] = {
+      in: 'query',
+      description: 'Search term to filter rooms',
+      required: false,
+      type: 'string'
+    }
+    #swagger.parameters['searchField'] = {
+      in: 'query',
+      description: 'Fields to search by',
+      required: false,
+      type: 'string',
+      enum: ['name', 'participants'],
+      default: 'name'
+    }
+    #swagger.parameters['sortOrder'] = {
+      in: 'query',
+      description: 'Sort order',
+      required: false,
+      type: 'string',
+      enum: ['asc', 'desc'],
+      default: 'desc'
+    }
+    #swagger.responses[200] = {
+      description: 'Users retrieved successfully',
+      schema: {
+        data: {
+          type: 'array',
+          items: {
+            _id: 'string',
+            name: 'string',
+            participants: ['string'],
+            createdAt: '2025-01-01T00:00:00.000Z',
+            updatedAt: '2025-01-01T00:00:00.000Z'
+          }
+        },
+        pagination: {
+          hasNextPage: true,
+          hasPreviousPage: false,
+          nextCursor: 'string',
+          previousCursor: 'string',
+          totalCount: 100,
+          limit: 10
+        }
+      }
+    }
+    #swagger.responses[401] = { description: 'Authentication required' }
+    #swagger.responses[500] = { description: 'Internal server error' }
+  */
+  try {
+    const options = PaginationUtils.parseQuery(req.query);
+    const rooms = await roomService.listRooms(options, { participants: { $in: [(req as any).user.userId] } });
     res.status(200).json(rooms);
   } catch (error) {
     next(error);
@@ -201,12 +375,6 @@ const createRoom = async (
     #swagger.auto = false
     #swagger.tags = ['Room Service']
     #swagger.description = 'Create a new room'
-    #swagger.parameters['roomId'] = {
-      in: 'path',
-      description: 'Room ID',
-      required: true,
-      type: 'string'
-    }
     #swagger.parameters['body'] = {
       in: 'body',
       required: true,
@@ -226,17 +394,13 @@ const createRoom = async (
         }
       }
     }
-    #swagger.responses[400] = { description: 'roomName and participants are required' }
+    #swagger.responses[400] = { description: 'Participants are required' }
     #swagger.responses[500] = { description: 'Internal server error' }
   */
   try {
     const { name, participants } = req.body;
-    if (
-      !name ||
-      !Array.isArray(participants) ||
-      participants.length === 0
-    ) {
-      throw new AppError(400, "Name and participants are required");
+    if (!Array.isArray(participants) || participants.length === 0) {
+      throw new AppError(400, "Participants are required");
     }
 
     for (const participant of participants) {
@@ -246,7 +410,12 @@ const createRoom = async (
       }
     }
 
-    const room = await roomService.createRoom(name, participants);
+    const user = await iamServiceClient.getUserById((req as any).user.userId);
+    if (!user) {
+      throw new AppError(404, "User not found");
+    }
+    const roomName: string = name || (user as any).fullName;
+    const room = await roomService.createRoom(roomName, participants, user._id);
     res.status(201).json(room);
   } catch (error) {
     next(error);
@@ -299,7 +468,14 @@ const updateRoom = async (
       throw new AppError(400, "Room ID and data are required");
     }
 
-    const room = await roomService.updateRoom(roomId, data);
+    const user = await iamServiceClient.getUserById((req as any).user.userId);
+    if (!user) {
+      throw new AppError(404, "User not found");
+    }
+
+    const isStaff = user.role?.includes("ADMIN") || user.role?.includes("MANAGER");
+
+    const room = await roomService.updateRoom(roomId, data, (req as any).user.userId, isStaff || false);
     res.status(201).json(room);
   } catch (error) {
     next(error);
@@ -337,11 +513,18 @@ const deleteRoom = async (
   */
   try {
     const { roomId } = req.params;
-    await roomService.deleteRoom(roomId);
+    const user = await iamServiceClient.getUserById((req as any).user.userId);
+    if (!user) {
+      throw new AppError(404, "User not found");
+    }
+
+    const isStaff = user.role?.includes("ADMIN") || user.role?.includes("MANAGER");
+
+    await roomService.deleteRoom(roomId, (req as any).user.userId, isStaff || false);
     res.status(201).json({ message: "Room deleted successfully" });
   } catch (error) {
     next(error);
   }
 };
 
-export { joinChat, getRooms, createRoom, updateRoom, deleteRoom, leaveChat };
+export { joinChat, getRooms, getRoomsByCreator, getRoomsByParticipant, createRoom, updateRoom, deleteRoom, leaveChat };

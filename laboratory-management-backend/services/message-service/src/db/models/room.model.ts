@@ -5,6 +5,7 @@ export interface IRoom extends Document {
   _id: UUID;
   name?: string;
   participants: string[];
+  createdBy: UUID;
 }
 
 const roomSchema = new mongoose.Schema<IRoom>(
@@ -17,6 +18,7 @@ const roomSchema = new mongoose.Schema<IRoom>(
       type: String,
       max: [50, "Room's name can't be longer than 50 characters"],
       trim: true,
+      unique: true,
     },
     participants: [{
       type: String,
@@ -24,6 +26,12 @@ const roomSchema = new mongoose.Schema<IRoom>(
       trim: true,
       required: [true, "There must be participants in a room"],
     }],
+    createdBy: {
+      type: String,
+      ref: 'User',
+      trim: true,
+      required: [true, "There must be a creator for a room"],
+    },
   },
   {
     _id: false,

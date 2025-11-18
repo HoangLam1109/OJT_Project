@@ -8,8 +8,9 @@ import { FooterActions } from './FooterActions';
 import type { RegisterFormProps } from './types/register';
 import { isValidEmail, isValidPhone, validatePassword } from './types/validators';
 import { registerUser } from '../../service/authService/registerAPI';
-
+import { useTranslation } from 'react-i18next';
 export function RegisterForm({ onBackToLogin, onBackToHome }: RegisterFormProps) {
+  const { t } = useTranslation();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -38,12 +39,12 @@ export function RegisterForm({ onBackToLogin, onBackToHome }: RegisterFormProps)
 
     // Validation
     if (!fullName || !email || !password || !confirmPassword || !idNumber || !gender || !dob) {
-      setError('Vui lòng điền đầy đủ các thông tin bắt buộc');
+      setError(t('register.requiredFields'));
       setIsLoading(false);
       return;
     }
     if (!isValidEmail(email)) {
-      setError('Địa chỉ email không hợp lệ');
+      setError(t('register.invalidEmail'));
       setIsLoading(false);
       return;
     }
@@ -53,12 +54,12 @@ export function RegisterForm({ onBackToLogin, onBackToHome }: RegisterFormProps)
       return;
     }
     if (password !== confirmPassword) {
-      setError('Mật khẩu xác nhận không khớp');
+      setError(t('register.passwordMismatch'));
       setIsLoading(false);
       return;
     }
     if (phone && !isValidPhone(phone)) {
-      setError('Số điện thoại phải có 10-11 chữ số');
+      setError(t('register.invalidPhone'));
       setIsLoading(false);
       return;
     }
@@ -108,7 +109,7 @@ export function RegisterForm({ onBackToLogin, onBackToHome }: RegisterFormProps)
       }
     } catch (error) {
       console.error('Registration error:', error);
-      setError('Có lỗi xảy ra khi đăng ký. Vui lòng thử lại.');
+      setError(t('register.registrationError'));
     } finally {
       setIsLoading(false);
     }
@@ -152,7 +153,7 @@ export function RegisterForm({ onBackToLogin, onBackToHome }: RegisterFormProps)
                 disabled={isLoading}
                 className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
-                {isLoading ? 'Đang đăng ký...' : 'Đăng ký tài khoản'}
+                {isLoading ? t('register.registering') : t('register.register')}
               </Button>
             </div>
             <FooterActions onBackToLogin={onBackToLogin} onBackToHome={onBackToHome} />

@@ -98,7 +98,7 @@ const transformFrontendUser = (frontendUser: UserFormData) => {
     dateOfBirth: new Date(frontendUser.date_of_birth),
     phoneNumber: frontendUser.phone_number,
     address: frontendUser.address,
-    // isActive: frontendUser.active, // Temporarily commented out - API doesn't accept this field for user creation
+    isActive: frontendUser.active,
     role: Array.isArray(frontendUser.role) && frontendUser.role.length > 0 
       ? frontendUser.role 
       : ['USER'],

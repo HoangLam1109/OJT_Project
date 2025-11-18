@@ -7,32 +7,33 @@ import {
   Eye,
   CheckCircle
 } from 'lucide-react';
-
+import { useTranslation } from 'react-i18next';
 export function ServicesSection() {
+  const { t } = useTranslation();
   const services = [
     {
       icon: <TestTube2 className="h-12 w-12 text-blue-600" />,
-      title: "Xét nghiệm máu",
-      description: "Xét nghiệm sinh hóa, huyết học, miễn dịch với độ chính xác cao",
-      features: ["CBC đầy đủ", "Sinh hóa 12 thông số", "Marker ung thư", "Hormone"]
+      title: t("services.bloodTest"),
+      description: t("services.bloodTestDescription"),
+      features: [t("services.cbcFull"), t("services.biochemistry12"), t("services.marker"), t("services.hormone")]
     },
     {
       icon: <Heart className="h-12 w-12 text-red-600" />,
-      title: "Xét nghiệm tim mạch",
-      description: "Đánh giá sức khỏe tim mạch với các marker chuyên biệt",
-      features: ["Troponin I/T", "CK-MB", "BNP/NT-proBNP", "Lipid profile"]
+      title: t("services.heartTest"),
+      description: t("services.heartTestDescription"),
+      features: [t("services.troponinIT"), t("services.ckMB"), t("services.bnpNTproBNP"), t("services.lipidProfile")]
     },
     {
       icon: <Database className="h-12 w-12 text-green-600" />,
-      title: "Xét nghiệm vi sinh",
-      description: "Chẩn đoán nhiễm khuẩn, virus với công nghệ PCR hiện đại",
-      features: ["Cấy khuẩn", "Kháng sinh đồ", "PCR virus", "Nấm học"]
+      title: t("services.virologyTest"),
+      description: t("services.virologyTestDescription"),
+      features: [t("services.culture"), t("services.antibioticSusceptibility"), t("services.pcrVirus"), t("services.fungalInfection")]
     },
     {
       icon: <Eye className="h-12 w-12 text-purple-600" />,
-      title: "Xét nghiệm mô bệnh học",
-      description: "Chẩn đoán bệnh lý qua mẫu mô với độ chính xác tuyệt đối",
-      features: ["Sinh thiết", "Tế bào học", "Miễn dịch mô", "Phân tử học"]
+      title: t("services.histologyTest"),
+      description: t("services.histologyTestDescription"),
+      features: [t("services.biopsy"), t("services.cellology"), t("services.immunology"), t("services.molecularbiology")]
     }
   ];
 
@@ -41,10 +42,10 @@ export function ServicesSection() {
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-4xl text-gray-900 mb-4">
-            Dịch vụ <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">xét nghiệm</span>
+            {t("services.title")}
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Hỗ trợ đầy đủ các loại xét nghiệm với quy trình chuẩn hóa và báo cáo chi tiết
+            {t("services.description")}
           </p>
         </div>
 

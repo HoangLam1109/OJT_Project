@@ -2,7 +2,7 @@
 import Joi from "joi";
 
 export const createRoomSchema = Joi.object({
-  name: Joi.string().required().messages({
+  name: Joi.string().messages({
     'string.empty': 'Room name is required',
     'any.required': 'Room name is required'
   }),

@@ -1,15 +1,16 @@
 import { RegisterInputField } from './RegisterInputField';
 import type { PersonalInfoFieldsProps } from './types/register';
-
+import { useTranslation } from 'react-i18next';
 
 export function PersonalInfoFields({ fullName, setFullName, email, setEmail, password, confirmPassword, setConfirmPassword, passwordError, handlePasswordChange }: PersonalInfoFieldsProps) {
+    const { t } = useTranslation();
     return (
         <div className="space-y-3">
             <RegisterInputField
                 id="fullName"
-                label="Họ và tên"
+                label={t('register.fullName')}
                 type="text"
-                placeholder="Nhập họ và tên..."
+                placeholder={t('register.fullNamePlaceholder')}
                 value={fullName}
                 onChange={e => setFullName(e.target.value)}
                 icon="user"
@@ -17,9 +18,9 @@ export function PersonalInfoFields({ fullName, setFullName, email, setEmail, pas
             />
             <RegisterInputField
                 id="email"
-                label="Địa chỉ Email"
+                label={t('register.email')}
                 type="email"
-                placeholder="Nhập email..."
+                placeholder={t('register.emailPlaceholder')}
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 icon="mail"
@@ -28,9 +29,9 @@ export function PersonalInfoFields({ fullName, setFullName, email, setEmail, pas
             <div className="space-y-1">
                 <RegisterInputField
                     id="password"
-                    label="Mật khẩu"
+                    label={t('register.password')}
                     type="password"
-                    placeholder="Nhập mật khẩu..."
+                    placeholder={t('register.passwordPlaceholder')}
                     value={password}
                     onChange={handlePasswordChange}
                     icon="lock"
@@ -42,9 +43,9 @@ export function PersonalInfoFields({ fullName, setFullName, email, setEmail, pas
             </div>
             <RegisterInputField
                 id="confirmPassword"
-                label="Xác nhận mật khẩu"
+                label={t('register.confirmPassword')}
                 type="password"
-                placeholder="Nhập lại mật khẩu..."
+                placeholder={t('register.confirmPasswordPlaceholder')}
                 value={confirmPassword}
                 onChange={e => setConfirmPassword(e.target.value)}
                 icon="lock"
