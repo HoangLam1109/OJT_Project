@@ -16,6 +16,7 @@ const testResultClient = axios.create({
 const transformTestResultGroup = (group: TestResultGroup): TestResult => {
   const results: TestResultDetail[] = group.resultsSample.map(item => ({
     testItemId: item.test_item_id,
+    test_type: item.test_type,
     name: item.name,
     code: item.code,
     unit: item.unit,
@@ -32,6 +33,7 @@ const transformTestResultGroup = (group: TestResultGroup): TestResult => {
   return {
     testOrderId: group.resultsSample[0]?.test_order_id || '',
     patientName: group.patient_name,
+    test_type: group.test_type,
     totalTests: group.totalResults,
     results,
     reviewedCount,

@@ -12,6 +12,11 @@ import { PaginationUtils } from "../utils/pagination.util.js";
 import { logEvent } from "../utils/logging.util.js";
 import { computeChanges } from "../utils/diff.util.js";
 import { AppError } from "../utils/error.util.js";
+import {
+  MonitoringEventCodes,
+  MonitoringEventActions,
+  MonitoringServiceName,
+} from "../constants/monitoring.constant.js";
 
 export interface CreateUserData {
   email: string;
@@ -61,11 +66,11 @@ export class UserService {
     console.log(createdUser);
 
     await logEvent({
-      eventCode: "E_00023",
-      action: "CREATE",
+      eventCode: MonitoringEventCodes.USER_CREATED,
+      action: MonitoringEventActions.CREATE,
       eventMessage: "User created successfully!",
       performedBy: performedBy || createdUser._id,
-      serviceName: "IAM_SERVICE",
+      serviceName: MonitoringServiceName,
       entityId: createdUser._id,
       newValues: {
         email: createdUser.email,
@@ -110,11 +115,11 @@ export class UserService {
     );
 
     await logEvent({
-      eventCode: "E_00025",
-      action: "UPDATE",
+      eventCode: MonitoringEventCodes.USER_UPDATED,
+      action: MonitoringEventActions.UPDATE,
       eventMessage: "User updated successfully!",
       performedBy: performedBy || userId,
-      serviceName: "IAM_SERVICE",
+      serviceName: MonitoringServiceName,
       entityId: userId,
       ...diffs,
     });
@@ -138,11 +143,11 @@ export class UserService {
     ];
     const deleteDiffs = computeChanges<IUser>(before ?? undefined, undefined, deleteFields);
     await logEvent({
-      eventCode: "E_00026",
-      action: "DELETE",
+      eventCode: MonitoringEventCodes.USER_DELETED,
+      action: MonitoringEventActions.DELETE,
       eventMessage: "User deleted successfully!",
       performedBy: performedBy || userId,
-      serviceName: "IAM_SERVICE",
+      serviceName: MonitoringServiceName,
       entityId: userId,
       ...deleteDiffs,
     });
@@ -178,11 +183,11 @@ export class UserService {
     const roleFields: (keyof IUser)[] = ["role"];
     const roleDiffs = computeChanges<IUser>(before ?? undefined, updatedUser ?? undefined, roleFields);
     await logEvent({
-      eventCode: "E_00025",
-      action: "UPDATE",
+      eventCode: MonitoringEventCodes.USER_UPDATED,
+      action: MonitoringEventActions.UPDATE,
       eventMessage: "User updated successfully!",
       performedBy: performedBy || userId,
-      serviceName: "IAM_SERVICE",
+      serviceName: MonitoringServiceName,
       entityId: userId,
       ...roleDiffs,
     });
@@ -199,11 +204,13 @@ export class UserService {
     const lockFields: (keyof IUser)[] = ["isActive"];
     const lockDiffs = computeChanges<IUser>(before ?? undefined, updatedUser ?? undefined, lockFields);
     await logEvent({
-      eventCode: "E_00027",
-      action: `${isActive ? "UNLOCK" : "LOCK"}`,
+      eventCode: MonitoringEventCodes.USER_LOCK_STATUS_CHANGED,
+      action: isActive
+        ? MonitoringEventActions.UNLOCK
+        : MonitoringEventActions.LOCK,
       eventMessage: "User locked/unlocked successfully!",
       performedBy: performedBy || userId,
-      serviceName: "IAM_SERVICE",
+      serviceName: MonitoringServiceName,
       entityId: userId,
       ...lockDiffs,
     });

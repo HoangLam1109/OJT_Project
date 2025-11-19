@@ -76,19 +76,10 @@ const createEventCode = async (req: Request, res: Response): Promise<void> => {
       in: 'body',
       required: true,
       schema: {
-        type: 'object',
-        required: ['event_code', 'event_name', 'description', 'service_name'],
-        properties: {
-          event_code: { type: 'string', example: 'E_00011', description: 'Unique code in format E_#####' },
-          event_name: { type: 'string', example: 'TEST_ORDER_APPROVED' },
-          description: { type: 'string', example: 'Test order approved by supervisor' },
-          service_name: {
-            type: 'string',
-            enum: ['IAM_SERVICE', 'PATIENT_SERVICE', 'TEST_ORDER_SERVICE', 'WAREHOUSE_SERVICE', 'MONITORING_SERVICE', 'CHAT_SERVICE'],
-            example: 'TEST_ORDER_SERVICE'
-          },
-          is_active: { type: 'boolean', default: true }
-        }
+        event_code: 'E_00003',
+        event_name: 'TEST_ORDER_DELETED',
+        description: 'Event message used when a test order is deleted.',
+        service_name: 'TEST_ORDER_SERVICE'
       }
     }
   */
@@ -125,16 +116,9 @@ const updateEventCode = async (req: Request, res: Response): Promise<void> => {
       in: 'body',
       required: false,
       schema: {
-        type: 'object',
-        properties: {
-          event_name: { type: 'string', example: 'TEST_ORDER_APPROVED' },
-          description: { type: 'string', example: 'Approval event description' },
-          service_name: {
-            type: 'string',
-            enum: ['IAM_SERVICE', 'PATIENT_SERVICE', 'TEST_ORDER_SERVICE', 'WAREHOUSE_SERVICE', 'MONITORING_SERVICE', 'CHAT_SERVICE']
-          },
-          is_active: { type: 'boolean' }
-        }
+        event_name: 'TEST_ORDER_DELETED',
+        description: 'Event message used when a test order is deleted.',
+        service_name: 'TEST_ORDER_SERVICE'
       }
     }
   */

@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { LayoutDashboard, Users, FileText, Settings , UserCheck } from 'lucide-react';
 import { TopHeader } from '../components/common/TopHeader';
 import type { NavigationItem } from '../types/Layout.types';
-
+import { useTranslation } from 'react-i18next';
 const navigationItems: NavigationItem[] = [
   { id: 'dashboard', label: 'Tổng quan', icon: LayoutDashboard },
   { id: 'user-management', label: 'Quản lý người dùng', icon: Users },
@@ -21,12 +21,12 @@ const navigationItems: NavigationItem[] = [
 
 export function AdminLayout({ children, currentUser, onLogout, currentPage, onNavigate }: AdminLayoutProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-
+  const { t } = useTranslation();
   return (
     <div className="min-h-screen bg-gray-50 flex">
       <Sidebar
         currentUserName={currentUser.name}
-        currentUserRole="Quản trị viên"
+        currentUserRole={t('admin.role')}
         currentPage={currentPage}
         sidebarCollapsed={sidebarCollapsed}
         setSidebarCollapsed={setSidebarCollapsed}

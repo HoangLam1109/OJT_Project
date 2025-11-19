@@ -5,7 +5,7 @@ import { Input } from '../../../components/common/input';
 import { Label } from '../../../components/common/label';
 import type { UserFormData, ValidationErrors, ManagerUser } from '../types/ManagerTypes';
 import { validateUserForm } from '../types/validators';
-
+import { useTranslation } from 'react-i18next';
 interface UserFormProps {
   mode: 'create' | 'edit' | 'view';
   user?: ManagerUser | null;
@@ -14,6 +14,7 @@ interface UserFormProps {
 }
 
 export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<UserFormData>({
     fullName: '',
     email: '',
@@ -92,9 +93,9 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
 
   const getTitle = () => {
     switch (mode) {
-      case 'create': return 'Tạo người dùng mới';
-      case 'edit': return 'Chỉnh sửa người dùng';
-      case 'view': return 'Chi tiết người dùng';
+        case 'create': return t('manager.createUser');
+      case 'edit': return t('manager.editUser');
+      case 'view': return t('manager.viewUser');
       default: return '';
     }
   };
@@ -115,7 +116,7 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Full Name */}
             <div className="md:col-span-2">
-              <Label htmlFor="fullName">Họ và tên</Label>
+              <Label htmlFor="fullName">{t('manager.fullName')}</Label>
               <Input
                 id="fullName"
                 value={formData.fullName}
@@ -145,7 +146,7 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
             {/* Password */}
             {mode !== 'view' && (
               <div>
-                <Label htmlFor="password">Mật khẩu</Label>
+                <Label htmlFor="password">{t('manager.password')}</Label>
                 <Input
                   id="password"
                   type="password"
@@ -153,14 +154,14 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
                   onChange={(e) => handleChange('password', e.target.value)}
                   placeholder={mode === 'edit' ? 'Để trống nếu không đổi' : '••••••••'}
                   aria-invalid={!!errors.password}
-                />
+                />  
                 {errors.password && <p className="mt-2 text-sm text-red-500">{errors.password}</p>}
               </div>
             )}
 
             {/* Role */}
             <div>
-              <Label htmlFor="role">Vai trò</Label>
+              <Label htmlFor="role">{t('manager.role')}</Label>
               <select
                 id="role"
                 value={Array.isArray(formData.role) ? formData.role[0] : 'USER'}
@@ -178,17 +179,17 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
                 disabled={isReadOnly}
                 className="flex h-9 w-full rounded-md border border-input bg-input-background px-3 py-1"
               >
-                <option value="USER">Người dùng</option>
-                <option value="LAB_USER">Nhân viên Lab</option>
-                <option value="SERVICE">Dịch vụ</option>
-                <option value="MANAGER">Quản lý</option>
-                <option value="ADMIN">Quản trị viên</option>
+                <option value="USER">{t('manager.user')}</option>
+                <option value="LAB_USER">{t('manager.labUser')}</option>
+                <option value="SERVICE">{t('manager.service')}</option>
+                <option value="MANAGER">{t('manager.manager')}</option>
+                <option value="ADMIN">{t('manager.admin')}</option>
               </select>
             </div>
 
             {/* Phone */}
             <div>
-              <Label htmlFor="phone_number">Số điện thoại</Label>
+              <Label htmlFor="phone_number">{t('manager.phoneNumber')}</Label>
               <Input
                 id="phone_number"
                 value={formData.phone_number}
@@ -202,7 +203,7 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
 
             {/* Identify */}
             <div>
-              <Label htmlFor="identify_number">CMND/CCCD</Label>
+              <Label htmlFor="identify_number">{t('manager.identifyNumber')}</Label>
               <Input
                 id="identify_number"
                 value={formData.identify_number}
@@ -216,7 +217,7 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
 
             {/* Gender */}
             <div>
-              <Label htmlFor="gender">Giới tính</Label>
+              <Label htmlFor="gender">{t('manager.gender')}</Label>
               <select
                 id="gender"
                 value={formData.gender}
@@ -224,15 +225,15 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
                 disabled={isReadOnly}
                 className="flex h-9 w-full rounded-md border border-input bg-input-background px-3 py-1"
               >
-                <option value="Male">Nam</option>
-                <option value="Female">Nữ</option>
-                <option value="Other">Khác</option>
+                <option value="Male">{t('manager.male')}</option>
+                <option value="Female">{t('manager.female')}</option>
+                <option value="Other">{t('manager.other')}</option>
               </select>
             </div>
 
             {/* Date */}
             <div>
-              <Label htmlFor="date_of_birth">Ngày sinh</Label>
+              <Label htmlFor="date_of_birth">{t('manager.dateOfBirth')}</Label>
               <Input
                 id="date_of_birth"
                 type="date"
@@ -246,12 +247,12 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
 
             {/* Address */}
             <div className="md:col-span-2">
-              <Label htmlFor="address">Địa chỉ</Label>
+              <Label htmlFor="address">{t('manager.address')}</Label>
               <Input
                 id="address"
                 value={formData.address}
                 onChange={(e) => handleChange('address', e.target.value)}
-                placeholder="123 Đường ABC, Quận XYZ, TP. Hà Nội"
+                placeholder=""
                 disabled={isReadOnly}
                 aria-invalid={!!errors.address}
               />
@@ -277,11 +278,11 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
         {/* Footer */}
         <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200">
           <Button variant="outline" onClick={onCancel}>
-            {mode === 'view' ? 'Đóng' : 'Hủy'}
+            {mode === 'view' ? t('manager.close') : t('manager.cancel')}
           </Button>
           {mode !== 'view' && (
             <Button type="submit" onClick={handleSubmit}>
-              {mode === 'create' ? 'Tạo người dùng' : 'Cập nhật'}
+              {mode === 'create' ? t('manager.createUser') : t('manager.updateUser')}
             </Button>
           )}
         </div>
