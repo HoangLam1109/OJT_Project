@@ -125,24 +125,57 @@ export const reagentService = {
   // Get all reagents
   async getAllReagents(): Promise<Reagent[]> {
     try {
-      const response = await reagentApiClient.get<BackendReagentResponse>(
-        `${REAGENT_API_BASE_URL}/`
-      );
-      
-      if (!response.data.success) {
-        throw new Error(response.data.message || 'Failed to fetch reagents');
-      }
+      // Fetch all reagents by making multiple requests if needed
+      // Start with a large limit to get all in one request
+      let allReagents: BackendReagent[] = [];
+      let page = 1;
+      const limit = 1000; // Large limit to get all at once
+      let hasMore = true;
 
-      const reagents = Array.isArray(response.data.data) 
-        ? response.data.data 
-        : [response.data.data];
+      while (hasMore) {
+        const response = await reagentApiClient.get<BackendReagentSearchResponse>(
+          `${REAGENT_API_BASE_URL}/`,
+          {
+            params: {
+              page,
+              limit,
+            },
+          }
+        );
+        
+        if (!response.data.success) {
+          throw new Error(response.data.message || 'Failed to fetch reagents');
+        }
+
+        const reagents = Array.isArray(response.data.data) 
+          ? response.data.data 
+          : [response.data.data];
+        
+        // Filter out deleted reagents
+        const activeReagents = reagents.filter(
+          (r: BackendReagent) => !r.is_deleted
+        );
+        
+        allReagents = [...allReagents, ...activeReagents];
+
+        // Check if there are more pages
+        const pagination = response.data.pagination;
+        if (pagination && pagination.totalPages) {
+          hasMore = page < pagination.totalPages;
+          page++;
+        } else {
+          // If no pagination info, assume we got all if we got less than limit
+          hasMore = activeReagents.length >= limit;
+          page++;
+        }
+        
+        // Safety check: if we got no results, stop
+        if (activeReagents.length === 0) {
+          hasMore = false;
+        }
+      }
       
-      // Filter out deleted reagents
-      const activeReagents = reagents.filter(
-        (r: BackendReagent) => !r.is_deleted
-      );
-      
-      return activeReagents.map(transformBackendReagent);
+      return allReagents.map(transformBackendReagent);
     } catch (error: any) {
       console.error('Error fetching reagents:', error);
       

@@ -176,6 +176,9 @@
     "contact": "Contact",
     "newsletter": "Newsletter",
     "emailPlaceholder": "Your email"
+  },
+  "admin": {
+    "role": "Role"
   }
 }
 

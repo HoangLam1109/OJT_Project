@@ -8,7 +8,6 @@
   "login": {
     "welcome": "Chào mừng trở lại",
     "description": "Đăng nhập vào tài khoản của bạn để tiếp tục sử dụng hệ thống",
-
     "title": "Đăng nhập",
     "email": "Email",
     "password": "Mật khẩu",
@@ -29,7 +28,45 @@
     "patientHistory": "Lịch sử bệnh án",
     "highSecurity": "Bảo mật cao"
   },
-  
+  "register": {
+    "subtitle": "Hệ thống Quản lý Phòng thí nghiệm",
+    "title1": "Hệ thống Quản lý",
+    "patientManagement": "Quản lý bệnh nhân",
+    "reportAnalysis": "Báo cáo & Phân tích",
+    "patientHistory": "Hồ sơ bệnh án",
+    "highSecurity": "Bảo mật cao",
+    "requiredFields": "Vui lòng điền đầy đủ các trường bắt buộc",
+    "invalidEmail": "Email không hợp lệlệ",
+    "passwordMismatch": "Mật khẩu không khớp",
+    "invalidPhone": "Số điện thoại không hợp lệ",
+    "registrationError": "Lỗi đăng kýký",
+    "registering": "Đang đăng ký",
+    "register": "Đăng ký",
+    "registerAccount": "Đăng ký tài khoản",
+    "createAccount": "Tạo tài khoản",
+    "fullName": "Họ và têntên",
+    "email": "Email",
+    "password": "Mật khẩu",
+    "confirmPassword": "Xác nhận mật khẩu",
+    "fullNamePlaceholder": "Nhập họ và tên",
+    "emailPlaceholder": "Enter your email",
+    "passwordPlaceholder": "Nhập mật khẩu",
+    "confirmPasswordPlaceholder": "Nhập mật khẩu xác nhận",
+    "phone": "Số điện thoại",
+    "gender": "Giới tính",
+    "selectGender": "Chọn giới tính",
+    "male": "Nam",
+    "female": "Nữ",
+    "other": "Khác",
+    "dob": "Ngày sinh",
+    "idNumber": "CMND/CCCD",
+    "idNumberPlaceholder": "Nhập số CMND/CCCD",
+    "address": "Address",
+    "addressPlaceholder": "Nhập địa chỉ",
+    "haveAccount": "Đã có tài khoản?",
+    "loginNow": "Đăng nhập ngay",
+    "backToHome": "Quay lại trang chủ"
+  },
   "hero": {
     "title": "Hệ thống Quản lý",
     "subtitle": "Phòng thí nghiệm Tiên tiến",
@@ -138,5 +175,8 @@
     "contact": "Liên hệ",
     "newsletter": "Đăng ký nhận tin tức",
     "emailPlaceholder": "Email của bạn"
+  },
+  "admin": {
+    "role": "Vai trò"
   }
 }
