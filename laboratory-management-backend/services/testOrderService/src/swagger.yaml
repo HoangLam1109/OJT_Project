@@ -703,10 +703,6 @@ paths:
                   type: number
                   example: 5.5
                   description: New test result value
-                reviewed:
-                  type: boolean
-                  example: true
-                  description: Whether the result has been reviewed
                 reviewer_comment:
                   type: string
                   example: "Patient is stable"

@@ -60,7 +60,7 @@ export const getTestOrderById = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteTestResult = async (req: Request, res:Response ) => {
+export const deleteTestResult = async (req: Request, res: Response) => {
   try {
     const test_order_id = req.params.id;
 
@@ -86,8 +86,6 @@ export const deleteTestResult = async (req: Request, res:Response ) => {
 export const updateTestResult = async (req: Request, res: Response) => {
   try {
     const id = req.params.id as string;
-
-    // Lấy các field muốn update từ body
     const { result_value, reviewed, reviewer_comment } = req.body;
 
     const updateData: {
@@ -97,10 +95,19 @@ export const updateTestResult = async (req: Request, res: Response) => {
     } = {};
 
     if (result_value !== undefined) updateData.result_value = result_value;
-    if (reviewed !== undefined) updateData.reviewed = reviewed;
-    if (reviewer_comment !== undefined) updateData.reviewer_comment = reviewer_comment;
 
-    // Gọi service
+    if (reviewer_comment !== undefined) {
+      // Chuyển null hoặc undefined thành chuỗi rỗng
+      const safeComment = reviewer_comment ?? '';
+      updateData.reviewer_comment = safeComment;
+
+      // Nếu có comment → reviewed = true, nếu comment rỗng → reviewed = false
+      updateData.reviewed = safeComment.trim() !== '' ? true : false;
+    } else if (reviewed !== undefined) {
+      // Nếu không update comment mà chỉ update reviewed
+      updateData.reviewed = reviewed;
+    }
+
     const result = await TestResultService.updateTestResult(id, updateData);
 
     return res.json({
@@ -121,6 +128,7 @@ export const updateTestResult = async (req: Request, res: Response) => {
     });
   }
 };
+
 
 export const searchTestResultsPaginated = async (req: Request, res: Response) => {
   try {
