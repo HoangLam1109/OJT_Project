@@ -50,7 +50,7 @@ export const findInstruments = async ({
       .skip(skip)
       .limit(limit)
       .select('-__v')
-      .lean<IInstrument>(),
+      .lean<IInstrument[]>(), 
     Instrument.countDocuments(filter),
   ]);
 
@@ -91,4 +91,35 @@ export const softDeleteInstrumentById = async (
   )
     .select('-__v')
     .lean<IInstrument>();
+};
+
+
+export const searchInstrumentsRepo = async (
+  keyword: string,
+  page: number,
+  limit: number
+): Promise<{ data: IInstrument[]; total: number }> => {
+  const skip = (page - 1) * limit;
+
+  const query: Record<string, any> = { is_deleted: false };
+  if (keyword && keyword.trim() !== "") {
+    const kw = keyword.trim();
+    query["$or"] = [
+      { instrument_name: { $regex: kw, $options: "i" } },
+      { instrument_code: { $regex: kw, $options: "i" } },
+      { manufacturer: { $regex: kw, $options: "i" } },
+    ];
+  }
+
+  const [data, total] = await Promise.all([
+    Instrument.find(query)
+      .skip(skip)
+      .limit(limit)
+      .sort({ created_at: -1 })
+      .select("-__v")
+      .lean<IInstrument[]>(),
+    Instrument.countDocuments(query),
+  ]);
+
+  return { data, total };
 };

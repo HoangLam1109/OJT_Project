@@ -4,6 +4,7 @@ import {
   deleteInstrumentController,
   getInstrumentDetailController,
   listInstrumentsController,
+  searchInstrumentsController,
   updateInstrumentController,
 } from "../../../controllers/instrument/instrument.controller.js";
 import authenticateUser from "../../../middlewares/authenticate.middleware.js";
@@ -39,6 +40,20 @@ router.post(
   */
   authorizeWriteAccess,
   addInstrumentController
+);
+
+
+router.get(
+  "/search",
+  /*
+  #swagger.tags = ['Instruments']
+  #swagger.summary = 'Search instruments'
+  #swagger.description = 'Search instruments by keyword with pagination.'
+  #swagger.parameters['keyword'] = { in: 'query', type: 'string', required: true, description: 'Keyword to search in name, code, or manufacturer' }
+  #swagger.parameters['page'] = { in: 'query', type: 'number', default: 1, description: 'Page number' }
+  #swagger.parameters['limit'] = { in: 'query', type: 'number', default: 10, description: 'Number of items per page' }
+  */
+  searchInstrumentsController
 );
 
 router.get(

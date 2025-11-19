@@ -294,8 +294,8 @@ export class ReagentController {
         ])
       );
       const changedFields = candidateFields.filter((field) => {
-        const before = (existingReagent as Record<string, unknown>)[field];
-        const after = (updatedReagent as Record<string, unknown>)[field];
+        const before = ((existingReagent as unknown) as Record<string, unknown>)[field];
+        const after = ((updatedReagent as unknown) as Record<string, unknown>)[field];
         const beforeJson = before === undefined ? undefined : JSON.stringify(before);
         const afterJson = after === undefined ? undefined : JSON.stringify(after);
         return beforeJson !== afterJson;
