@@ -1,5 +1,5 @@
 import React from 'react';
-import { Eye, Edit2, Trash2, FlaskConical, Package, AlertTriangle } from 'lucide-react';
+import { Eye, Edit2, Trash2, Package, AlertTriangle } from 'lucide-react';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '../../../components/common/table';
 import type { Reagent } from '../data/mockReagentsData';
 import { getStatusBadge, formatDate, isExpired, isExpiringSoon, getRowClassName } from '../utils/reagentUtils';
@@ -18,9 +18,6 @@ const ReagentTable: React.FC<ReagentTableProps> = ({ reagents, isLoading = false
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Mã lô
-            </TableHead>
             <TableHead className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Tên Thuốc Thử
             </TableHead>
@@ -60,12 +57,6 @@ const ReagentTable: React.FC<ReagentTableProps> = ({ reagents, isLoading = false
           ) : (
             reagents.map((reagent) => (
             <TableRow key={reagent.id} className={getRowClassName(reagent)}>
-              <TableCell className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                <div className="flex items-center gap-2">
-                  <FlaskConical className="w-4 h-4 text-blue-500" />
-                  {reagent.lotNumber}
-                </div>
-              </TableCell>
               <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 {reagent.name}
               </TableCell>
