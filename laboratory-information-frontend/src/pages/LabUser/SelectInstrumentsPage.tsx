@@ -132,17 +132,33 @@ const SelectInstrumentsPage: React.FC = () => {
 
   // Filter instruments based on search query
   const filteredInstruments = useMemo(() => {
-    if (!searchQuery.trim()) {
-      return instruments;
-    }
+    const readinessPriority: Record<Instrument['status'], number> = {
+      Ready: 0,
+      Processing: 1,
+      Maintenance: 2,
+      Error: 3,
+      Inactive: 4,
+    };
+
     const query = searchQuery.toLowerCase().trim();
-    return instruments.filter(
-      (instrument) =>
-        instrument.instrument_name.toLowerCase().includes(query) ||
-        instrument.instrument_code.toLowerCase().includes(query) ||
-        instrument._id.toLowerCase().includes(query) ||
-        instrument.instrument_type.toLowerCase().includes(query)
-    );
+    const baseList = !query
+      ? instruments
+      : instruments.filter((instrument) => {
+          return (
+            instrument.instrument_name.toLowerCase().includes(query) ||
+            instrument.instrument_code.toLowerCase().includes(query) ||
+            instrument._id.toLowerCase().includes(query) ||
+            instrument.instrument_type.toLowerCase().includes(query)
+          );
+        });
+
+    return [...baseList].sort((a, b) => {
+      const diff =
+        (readinessPriority[a.status] ?? 99) -
+        (readinessPriority[b.status] ?? 99);
+      if (diff !== 0) return diff;
+      return a.instrument_name.localeCompare(b.instrument_name);
+    });
   }, [instruments, searchQuery]);
 
   const totalPages = Math.max(1, Math.ceil(totalInstruments / itemsPerPage));
