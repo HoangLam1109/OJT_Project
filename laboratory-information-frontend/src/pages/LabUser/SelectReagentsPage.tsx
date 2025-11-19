@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { Card, CardContent, CardHeader } from '../../components/common/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/common/table';
 import { Input } from '../../components/common/input';
+import Pagination from '../../components/common/pagination';
 
 interface SelectedReagent {
   reagentId: string;
@@ -45,6 +46,9 @@ const SelectReagentsPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchLoading, setSearchLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const itemsPerPage = 10;
 
   // Available quantity for each reagent (using reagent.quantity)
   const availableQuantities = useMemo(() => {
@@ -75,11 +79,15 @@ const SelectReagentsPage: React.FC = () => {
         );
         setBaseReagents(availableReagents);
         setReagents(availableReagents);
+        setTotalItems(availableReagents.length);
+        setCurrentPage(1);
       } catch (error: any) {
         console.error('Error fetching reagents:', error);
         toast.error(error.message || 'Không thể tải danh sách thuốc thử');
         setBaseReagents([]);
         setReagents([]);
+        setTotalItems(0);
+        setCurrentPage(1);
       } finally {
         setIsLoading(false);
       }
@@ -93,6 +101,8 @@ const SelectReagentsPage: React.FC = () => {
 
     if (!trimmedQuery) {
       setReagents(baseReagents);
+      setTotalItems(baseReagents.length);
+      setCurrentPage(1);
       setSearchLoading(false);
       return;
     }
@@ -108,6 +118,8 @@ const SelectReagentsPage: React.FC = () => {
           reagent => reagent.status === 'Available' || reagent.status === 'Low Stock'
         );
         setReagents(selectableReagents);
+        setTotalItems(selectableReagents.length);
+        setCurrentPage(1);
       } catch (error: any) {
         if (isCancelled) return;
         console.error('Error searching reagents:', error);
@@ -203,6 +215,16 @@ const SelectReagentsPage: React.FC = () => {
       })
       .filter((item): item is Reagent & { quantity: number } => item !== null);
   }, [selectedReagents, reagents, baseReagents]);
+
+  const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedReagents = reagents.slice(startIndex, startIndex + itemsPerPage);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
   return (
     <div className="space-y-6 p-6">
@@ -300,7 +322,7 @@ const SelectReagentsPage: React.FC = () => {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
                   type="text"
-                  placeholder="Tìm kiếm theo tên, số lô thuốc thử..."
+                  placeholder="Tìm kiếm theo tên, mã thuốc thử..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10 pr-4 py-2 w-full"
@@ -308,7 +330,7 @@ const SelectReagentsPage: React.FC = () => {
               </div>
               {searchQuery && (
                 <span className="text-sm text-gray-500 whitespace-nowrap">
-                  {searchLoading ? 'Đang tìm...' : `Tìm thấy ${reagents.length} thuốc thử`}
+                  {searchLoading ? 'Đang tìm...' : `Tìm thấy ${totalItems} thuốc thử`}
                 </span>
               )}
             </div>
@@ -321,7 +343,8 @@ const SelectReagentsPage: React.FC = () => {
                 <TableRow>
                   <TableHead className="w-12">Chọn</TableHead>
                   <TableHead>Tên thuốc thử</TableHead>
-                  <TableHead>Số lô</TableHead>
+                  <TableHead>Hạn sử dụng</TableHead>
+                  <TableHead>Vị trí lưu trữ</TableHead>
                   <TableHead className="w-32">Số lượng</TableHead>
                   <TableHead className="w-32">Còn lại</TableHead>
                 </TableRow>
@@ -338,14 +361,14 @@ const SelectReagentsPage: React.FC = () => {
                       </div>
                     </TableCell>
                   </TableRow>
-                ) : reagents.length === 0 ? (
+                ) : paginatedReagents.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center py-8 text-gray-500">
                       Không tìm thấy thuốc thử nào
                     </TableCell>
                   </TableRow>
                 ) : (
-                  reagents.map((reagent) => {
+                  paginatedReagents.map((reagent) => {
                   const isSelected = !!selectedReagents[reagent.id];
                   const selected = selectedReagents[reagent.id];
                   const remaining = getRemainingQuantity(reagent.id);
@@ -369,8 +392,11 @@ const SelectReagentsPage: React.FC = () => {
                       <TableCell className="font-medium">
                         {reagent.name}
                       </TableCell>
-                      <TableCell className="font-mono text-sm text-gray-600">
-                        {reagent.lotNumber}
+                      <TableCell className="text-sm text-gray-600">
+                        {reagent.expiryDate}
+                      </TableCell>
+                      <TableCell className="text-sm text-gray-600">
+                        {reagent.storageLocation || 'Chưa cập nhật'}
                       </TableCell>
                       <TableCell>
                         {isSelected ? (
@@ -399,6 +425,12 @@ const SelectReagentsPage: React.FC = () => {
               </TableBody>
             </Table>
           </div>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            className="justify-end"
+          />
         </CardContent>
       </Card>
 
@@ -436,7 +468,7 @@ const SelectReagentsPage: React.FC = () => {
                       {reagent.name}
                     </p>
                     <p className="text-xs text-gray-500 font-mono mt-1">
-                      {reagent.id} - {reagent.lotNumber}
+                      HSD: {reagent.expiryDate} • {reagent.storageLocation || 'Chưa cập nhật'}
                     </p>
                     <p className="text-xs text-gray-600 mt-1">
                       Số lượng: <span className="font-semibold text-blue-600">{reagent.quantity}</span>
