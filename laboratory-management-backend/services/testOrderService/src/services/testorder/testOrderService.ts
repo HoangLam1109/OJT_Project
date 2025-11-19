@@ -57,6 +57,14 @@ export const TestOrderService = {
 
 
   async createOrder(data: CreateOrderInput): Promise<ITestOrder> {
+    // Validate: cần có patient_id hoặc patient_name
+    if (!data.patient_id && !data.patient_name?.trim()) {
+      throw new Error('Cần có patient_id hoặc patient_name để tạo đơn xét nghiệm');
+    }
+
+    // Tạo patient_id tạm thời nếu chỉ có patient_name
+    const patientId = data.patient_id?.trim() || `temp_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
+    
     // Dùng reagent_usages từ request, ép quantity_used về number, default 1 nếu null
     const reagentUsages: ReagentUsage[] = (data.reagent_usages ?? []).map(r => ({
       reagent_id: r.reagent_id,
@@ -64,9 +72,9 @@ export const TestOrderService = {
     }));
     // Chỉ thêm các field optional nếu có giá trị
     const orderInput: Partial<ITestOrder> = {
-      patient_id: data.patient_id,
+      patient_id: patientId,
       reagent_usages: reagentUsages,
-      patient_name: data.patient_name ?? '',
+      patient_name: data.patient_name?.trim() || '',
       barcode: data.barcode,
       test_type: data.test_type,
       test_item_ids: data.test_item_ids?.map(id => new mongoose.Types.ObjectId(id)),
