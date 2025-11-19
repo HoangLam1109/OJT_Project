@@ -309,13 +309,6 @@ const ReagentManagementPage: React.FC = () => {
         </div>
       )}
 
-      {/* Pagination info */}
-      {filteredReagents.length > 0 && (
-        <div className="text-center text-sm text-gray-600 mt-2">
-          Hiển thị {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, filteredReagents.length)} trong tổng số {filteredReagents.length} thuốc thử
-        </div>
-      )}
-
       <ReagentFormModal
         isOpen={isAddModalOpen || isEditModalOpen}
         isEdit={isEditModalOpen}

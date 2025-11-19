@@ -19,6 +19,58 @@ const authorizeWriteAccess = (
   authenticateUser.authenticateUser(req, res, next);
 };
 
+
+router.get(
+  "/search",
+  /*
+  #swagger.tags = ['Reagents']
+  #swagger.summary = 'Search reagents'
+  #swagger.description = 'Search reagents by keyword with pagination.'
+
+  #swagger.parameters['keyword'] = {
+    in: 'query',
+    description: 'Keyword to search (name, code, etc.)',
+    required: true,
+    type: 'string',
+    example: 'Diluent'
+  }
+
+  #swagger.parameters['page'] = {
+    in: 'query',
+    description: 'Page number',
+    required: false,
+    type: 'integer',
+    example: 1
+  }
+
+  #swagger.parameters['limit'] = {
+    in: 'query',
+    description: 'Items per page',
+    required: false,
+    type: 'integer',
+    example: 10
+  }
+
+  #swagger.responses[200] = {
+    description: 'Search results returned successfully',
+    schema: {
+      success: true,
+    }
+  }
+
+  #swagger.responses[400] = {
+    description: 'Missing keyword',
+    schema: {
+      success: false,
+      message: "Keyword is required"
+    }
+  }
+
+  #swagger.responses[500] = { description: 'Server error' }
+  */
+  reagent.searchReagents.bind(reagent)
+);
+
 router.get(
   "/",
   /*
@@ -196,6 +248,9 @@ router.delete(
   authorizeWriteAccess,
   reagent.deleteReagent
 );
+
+
+
 
 
 
