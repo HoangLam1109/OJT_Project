@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription } from "../../components/common/alert";
 import Button from "../../components/common/button";
 import { TestTube } from 'lucide-react';
@@ -9,6 +10,7 @@ import { GoogleLoginButton } from "../../components/common/GoogleLoginButton";
 import { useTranslation } from "react-i18next";
 export function LoginForm({ onLogin, onShowRegister, onBackToHome }: LoginFormProps) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -96,6 +98,7 @@ export function LoginForm({ onLogin, onShowRegister, onBackToHome }: LoginFormPr
       <div className="text-center space-y-3 mt-6">
         <button
           type="button"
+          onClick={() => navigate("/forgot-password")}
           className="text-sm text-blue-600 hover:text-blue-800 hover:underline font-medium"
         >
           {t("login.forgotPassword")}

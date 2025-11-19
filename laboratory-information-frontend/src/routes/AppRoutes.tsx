@@ -32,6 +32,9 @@ import { ServiceLayout } from "../layouts/ServiceLayout";
 import ServiceDashboardPage from "../pages/service/ServiceDashboardPage";
 import ServiceInstrumentPage from "../pages/service/ServiceInstrumentPage";
 import { GoogleCallbackPage } from "../pages/login/GoogleCallbackPage";
+import { ForgotPasswordPage } from "../pages/login/ForgotPasswordPage";
+import { ForgotPasswordSuccessPage } from "../pages/login/ForgotPasswordSuccessPage";
+import { ResetPasswordPage } from "../pages/login/ResetPasswordPage";
 import SelectInstrumentsPage from "@/pages/LabUser/SelectInstrumentsPage"
 import PatientDetailPage from "@/pages/LabUser/PatientDetailPage";
 import EventLogDetailPage from "@/pages/admin/EventLogDetailPage";
@@ -391,6 +394,9 @@ export function AppRoutes() {
       />
       <Route path="/login" element={<LoginLayout />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/forgot-password/success" element={<ForgotPasswordSuccessPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/auth/google/callback" element={<GoogleCallbackPage />} />
 
       {/* Dynamic Role Routes - Tự động sinh từ cấu hình */}
