@@ -6,6 +6,7 @@ import {
   softDeleteInstrumentById,
   updateInstrumentById,
   type PaginationOptions,
+  searchInstrumentsRepo,
 } from "../../repositories/instrument/instrument.repository.js";
 
 export const createInstrumentService = async (
@@ -37,4 +38,13 @@ export const deleteInstrumentService = async (
   deletedBy?: string
 ): Promise<IInstrument | null> => {
   return softDeleteInstrumentById(id, deletedBy);
+};
+
+
+export const searchInstrumentsService = async (
+  keyword: string,
+  page: number,
+  limit: number
+): Promise<{ data: any[]; total: number }> => {
+  return searchInstrumentsRepo(keyword, page, limit);
 };

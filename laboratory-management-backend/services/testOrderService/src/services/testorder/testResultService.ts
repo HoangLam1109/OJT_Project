@@ -4,6 +4,9 @@ import { Types } from "mongoose";
 import { TestOrderRepository } from "../../repositories/testOrderRepository.js";
 import { TestOrderResult } from "../../db/models/TestResult.model.js";
 export const TestResultService = {
+// Thiếu Search , sort , phân trang 
+
+
     // Tạo kết quả random khi order Completed
     createRandomResults: async (test_order_id: string, test_item_ids: string[]) => {
         // Lấy thông tin Test Order để có tên bệnh nhân

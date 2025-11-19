@@ -9,7 +9,7 @@ import {
   updateTestOrderStatus,
   searchTestOrders,
   getAllOrdersGroupedByPatientId
-} from "../controllers/testOrder.controller.js";
+} from "../controllers/testorder.controller.js";
 import { validateCreateTestOrder } from "../middlewares/validate.middleware.js";
 import AuthenticateUser from "../middlewares/authenticate.middleware.js";
 // import { TestOrderResultController } from "../controllers/testResult.controller.js";

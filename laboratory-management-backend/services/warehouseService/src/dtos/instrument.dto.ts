@@ -14,3 +14,5 @@ export interface InstrumentResponse {
   data?: IInstrument;
   details?: unknown;
 }
+
+

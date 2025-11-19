@@ -4,6 +4,7 @@ import {
   deleteInstrumentService,
   getInstrumentByIdService,
   getInstrumentsService,
+  searchInstrumentsService,
   updateInstrumentService,
 } from "../../services/instrument/instrument.service.js";
 import {
@@ -250,7 +251,7 @@ export const listInstrumentsController = async (
     }
 
     const result = await getInstrumentsService(value);
-  res.status(200).json({ message: "Instrument list", ...result });
+    res.status(200).json({ message: "Instrument list", ...result });
   } catch (err) {
     next(err);
   }
@@ -330,8 +331,8 @@ export const updateInstrumentController = async (
     const candidateFields = Object.keys(value);
     if (candidateFields.length > 0) {
       const changedFields = candidateFields.filter((field) => {
-        const before = (existingInstrument as Record<string, unknown>)[field];
-        const after = (instrument as Record<string, unknown>)[field];
+        const before = ((existingInstrument as unknown) as Record<string, unknown>)[field];
+        const after = ((instrument as unknown) as Record<string, unknown>)[field];
         const beforeJson = before === undefined ? undefined : JSON.stringify(before);
         const afterJson = after === undefined ? undefined : JSON.stringify(after);
         return beforeJson !== afterJson;
@@ -340,14 +341,14 @@ export const updateInstrumentController = async (
       if (changedFields.length > 0) {
         const oldValues = pickInstrumentFields(existingInstrument, changedFields);
         const newValues = pickInstrumentFields(instrument, changedFields);
-      const oldSnapshot = buildInstrumentSnapshot(existingInstrument);
-      const newSnapshot = buildInstrumentSnapshot(instrument);
-      if (oldSnapshot) {
-        oldValues.snapshot = oldSnapshot;
-      }
-      if (newSnapshot) {
-        newValues.snapshot = newSnapshot;
-      }
+        const oldSnapshot = buildInstrumentSnapshot(existingInstrument);
+        const newSnapshot = buildInstrumentSnapshot(instrument);
+        if (oldSnapshot) {
+          oldValues.snapshot = oldSnapshot;
+        }
+        if (newSnapshot) {
+          newValues.snapshot = newSnapshot;
+        }
         const messageSuffix = changedFields.join(", ");
         const eventMessage = messageSuffix.length > 0
           ? `Instrument updated (${messageSuffix})`
@@ -431,5 +432,43 @@ export const deleteInstrumentController = async (
     res.status(200).json({ message: "Instrument deleted", data: instrument });
   } catch (err) {
     next(err);
+  }
+};
+
+export const searchInstrumentsController = async (
+  req: Request,
+  res: Response<InstrumentListResponse>
+): Promise<void> => {
+  try {
+    const keyword = (req.query.keyword as string)?.trim() || "";
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = Math.max(1, parseInt(req.query.limit as string) || 10);
+
+    if (!keyword) {
+      res.status(400).json({
+        message: "Keyword is required",
+        data: [],
+        total: 0,
+        page,
+        limit,
+      });
+      return;
+    }
+
+    const { data, total } = await searchInstrumentsService(keyword, page, limit);
+
+    res.json({
+      message: "Search success",
+      data,
+      total,
+      page,
+      limit,
+    });
+  } catch (error) {
+    console.error("[InstrumentController] searchInstruments error:", error);
+    res.status(500).json({
+      message: "Internal server error",
+      details: error,
+    });
   }
 };
