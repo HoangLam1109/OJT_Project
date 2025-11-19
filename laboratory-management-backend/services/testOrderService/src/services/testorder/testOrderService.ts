@@ -1,5 +1,6 @@
 import { TestOrderRepository } from "../../repositories/testOrderRepository.js";
 import reagentServiceClient from "../warehouse/reagentServiceClient.js";
+import instrumentServiceClient from "../warehouse/instrumentServiceClient.js";
 import { CreateOrderInput, ReagentUsage, UpdateOrderInput } from "../../db/models/TestOrder.model.js";
 import { ITestOrder } from "../../db/models/TestOrder.model.js";
 import TestOrder from "../../db/models/TestOrder.model.js";
@@ -62,6 +63,32 @@ export const TestOrderService = {
       reagent_id: r.reagent_id,
       quantity_used: r.quantity_used ?? null,
     }));
+
+    let instrumentId = data.instrument_id;
+    let instrumentName: string | undefined;
+
+    if (!instrumentId) {
+      const readyInstrument = await instrumentServiceClient.getNextReadyInstrument();
+      if (!readyInstrument) {
+        throw new Error("Không còn thiết bị ở trạng thái Ready để tạo lệnh xét nghiệm");
+      }
+      instrumentId = readyInstrument._id;
+      instrumentName = readyInstrument.instrument_name;
+    } else {
+      const instrument = await instrumentServiceClient.getInstrumentById(instrumentId);
+      if (!instrument) {
+        throw new Error("Thiết bị đã chọn không tồn tại");
+      }
+      if (instrument.status !== "Ready") {
+        throw new Error("Thiết bị đang bận xử lý, vui lòng chọn thiết bị khác");
+      }
+      instrumentName = instrument.instrument_name;
+    }
+
+    if (!instrumentId) {
+      throw new Error("Không thể xác định thiết bị để tạo test order");
+    }
+
     // Chỉ thêm các field optional nếu có giá trị
     const orderInput: Partial<ITestOrder> = {
       patient_id: data.patient_id,
@@ -72,7 +99,8 @@ export const TestOrderService = {
       test_item_ids: data.test_item_ids?.map(id => new mongoose.Types.ObjectId(id)),
       status: data.status ?? 'Pending',
       created_by: data.created_by,
-      ...(data.instrument_id ? { instrument_id: data.instrument_id } : {}),
+      instrument_id: instrumentId,
+      ...(instrumentName ? { instrument_name: instrumentName } : {}),
       ...(data.due_date ? { due_date: new Date(data.due_date) } : {}),
       ...(data.updated_by ? { updated_by: data.updated_by } : {}),
       is_deleted: data.is_deleted ?? false,
@@ -82,6 +110,12 @@ export const TestOrderService = {
     };
     //  Tạo order
     const createdOrder = await TestOrderRepository.create(orderInput as ITestOrder);
+    try {
+      await instrumentServiceClient.updateInstrumentStatus(instrumentId, "Processing", data.created_by);
+    } catch (err) {
+      await TestOrder.findByIdAndDelete(createdOrder._id);
+      throw new Error("Không thể cập nhật trạng thái thiết bị. Vui lòng thử lại.");
+    }
     //  Cập nhật tồn kho tương ứng cho từng reagent
     for (const usage of reagentUsages) {
       const reagent = await reagentServiceClient.getReagentById(usage.reagent_id);
@@ -166,13 +200,29 @@ export const TestOrderService = {
   ): Promise<ITestOrder> {
     const order = await TestOrderRepository.findById(id);
     if (!order) throw new Error('Không tìm thấy lệnh xét nghiệm');
-
-    return TestOrderRepository.update(id, {
+    const previousStatus = order.status;
+    const updatedOrder = await TestOrderRepository.update(id, {
       ...order.toObject(),
       status,
       updated_by: updated_by,
       updated_at: new Date(),
     });
+
+    if (order.instrument_id && (status === "Processing" || status === "Completed")) {
+      const nextInstrumentStatus = status === "Completed" ? "Ready" : "Processing";
+      try {
+        await instrumentServiceClient.updateInstrumentStatus(order.instrument_id, nextInstrumentStatus, updated_by);
+      } catch (err) {
+        await TestOrderRepository.update(id, {
+          status: previousStatus,
+          updated_by,
+          updated_at: new Date(),
+        });
+        throw new Error("Không thể cập nhật trạng thái thiết bị. Vui lòng thử lại.");
+      }
+    }
+
+    return updatedOrder;
   },
 
 
@@ -193,6 +243,14 @@ export const TestOrderService = {
     } else {
       // Nếu status là Completed thì không hồi lại reagent
       console.log(`Order ${_id} đã hoàn thành, không hồi lại reagent`);
+    }
+
+    if (order.instrument_id) {
+      try {
+        await instrumentServiceClient.updateInstrumentStatus(order.instrument_id, "Ready", deleted_by);
+      } catch (err) {
+        console.error(`[TestOrderService] Không thể cập nhật trạng thái thiết bị ${order.instrument_id}:`, err);
+      }
     }
 
     const softDeleteTestOrder = await TestOrderRepository.softDelete(_id, deleted_by);

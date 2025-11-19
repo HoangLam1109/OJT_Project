@@ -6,7 +6,7 @@ export interface Instrument {
   instrument_name: string;
   instrument_type: string;
   manufacturer?: string;
-  status: "Ready" | "Processing" | "Maintenance" | "Error" | "Inactive";
+  status: "Ready" | "Processing" | "Inactive";
   is_active: boolean;
   location?: string;
   created_at: Date;
@@ -16,6 +16,14 @@ export interface Instrument {
   is_deleted: boolean;
   deleted_at?: Date;
   deleted_by?: string;
+}
+
+interface InstrumentListResponse {
+  message: string;
+  data: Instrument[];
+  total: number;
+  page: number;
+  limit: number;
 }
 
 class InstrumentServiceClient {
@@ -32,14 +40,56 @@ class InstrumentServiceClient {
     try {
       const url = `${this.baseUrl}/api/warehouse/instruments/${instrumentId}`;
       const headers = { "X-Internal-API-Key": this.internalApiKey };
-  const res = await HttpClient.get<{ message: string; data: Instrument }>(url, { headers });
+      const res = await HttpClient.get<{ message: string; data: Instrument }>(url, { headers });
       console.log("test api của instrument ");
-      console.log("res",res.data);
-    return res.data;
+      console.log("res", res.data);
+      return res.data;
      
     } catch (err: any) {
       console.error(`[Warehouse Service] Error fetching instrument ${instrumentId}:`, err.message);
       return null;
+    }
+  }
+
+  async getNextReadyInstrument(): Promise<Instrument | null> {
+    try {
+      const params = new URLSearchParams({
+        status: "Ready",
+        is_active: "true",
+        limit: "1",
+        page: "1",
+        sort: "created_at",
+      });
+      const url = `${this.baseUrl}/api/warehouse/instruments?${params.toString()}`;
+      const headers = { "X-Internal-API-Key": this.internalApiKey };
+      const res = await HttpClient.get<InstrumentListResponse>(url, { headers });
+      return Array.isArray(res.data) && res.data.length > 0 ? res.data[0] : null;
+    } catch (err: any) {
+      console.error("[Warehouse Service] Error fetching ready instrument:", err.message);
+      return null;
+    }
+  }
+
+  async updateInstrumentStatus(
+    instrumentId: string,
+    status: Instrument["status"],
+    updatedBy?: string
+  ): Promise<Instrument | null> {
+    try {
+      const url = `${this.baseUrl}/api/warehouse/instruments/${instrumentId}`;
+      const headers = {
+        "Content-Type": "application/json",
+        "X-Internal-API-Key": this.internalApiKey,
+      };
+      const payload: Partial<Instrument> = {
+        status,
+        ...(updatedBy ? { updated_by: updatedBy } : {}),
+      };
+      const res = await HttpClient.put<{ message: string; data: Instrument }>(url, payload, { headers });
+      return res.data;
+    } catch (err: any) {
+      console.error(`[Warehouse Service] Error updating instrument ${instrumentId} status:`, err.message);
+      throw err;
     }
   }
 
