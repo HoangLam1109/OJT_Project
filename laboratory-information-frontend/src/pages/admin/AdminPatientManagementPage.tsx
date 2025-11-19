@@ -15,6 +15,7 @@ import { Skeleton } from '@/components/common/skeleton';
 import { useAuthContext } from '../../hooks/useAuthContext';
 import AddPatientMedicalRecord from '../LabUser/components/AddPatientMedicalRecord';
 import { useAllPatients } from './hooks/useAllPatients';
+import { useTranslation } from 'react-i18next';
 
 
 export function AdminPatientManagementPage() {
@@ -26,13 +27,13 @@ export function AdminPatientManagementPage() {
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name?: string } | null>(null);
   const [mrCreateOpen, setMrCreateOpen] = useState(false);
-
+  
   // Fetch all patients for comprehensive filtering
   const { allPatients, loading } = useAllPatients();
 
   const { modalState, openEditModal, closeModal } = usePatientModal();
   const navigate = useNavigate();
-
+  const {t} = useTranslation();
   // render pagination controls
   const renderPagination = () => (
     <div className="flex justify-center items-center gap-2 mt-4">
@@ -92,16 +93,14 @@ export function AdminPatientManagementPage() {
     switch (status) {
       case 'active': return 'bg-green-100 text-green-800';
       case 'inactive': return 'bg-yellow-100 text-yellow-800';
-      case 'deceased': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'active': return 'Hoạt động';
-      case 'inactive': return 'Không hoạt động';
-      case 'deceased': return 'Đã mất';
+      case 'active': return t('patient.active');
+      case 'inactive': return t('patient.inactive');
       default: return status;
     }
   };
@@ -148,7 +147,7 @@ export function AdminPatientManagementPage() {
         const createdAt = String(bb.created_at ?? bb.createdAt ?? '');
         const updatedAt = String(bb.updated_at ?? bb.updatedAt ?? '');
         const lastVisit = String(bb.last_visit_date ?? bb.lastVisit ?? '');
-
+        
         return {
           id,
           name,
@@ -212,13 +211,13 @@ export function AdminPatientManagementPage() {
     ) : (
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Quản lý bệnh nhân</h1>
-          <p className="text-gray-600 mt-1">Quản lý thông tin bệnh nhân và hồ sơ y tế</p>
+          <h1 className="text-3xl font-bold text-gray-900">{t('patient.title')}</h1>
+          <p className="text-gray-600 mt-1">{t('patient.subtitle')}</p>
         </div>
         <div className="flex space-x-3">
           <Button onClick={() => setMrCreateOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white">
             <Plus className="h-4 w-4 mr-2" />
-            Tạo hồ sơ y tế
+            {t('patient.createMedicalRecord')}
           </Button>
         </div>
       </div>
@@ -278,7 +277,7 @@ export function AdminPatientManagementPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Tổng bệnh nhân</p>
+                <p className="text-sm font-medium text-gray-600">{t('patient.totalPatients')}</p>
                 <p className="text-2xl font-bold text-gray-900">{patients.length}</p>
               </div>
               <div className="p-3 bg-blue-100 rounded-lg">
@@ -292,7 +291,7 @@ export function AdminPatientManagementPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Đang hoạt động</p>
+                <p className="text-sm font-medium text-gray-600">{t('patient.activePatients')}</p>
                 <p className="text-2xl font-bold text-green-600">
                   {patients.filter(p => p.status === 'active').length}
                 </p>
@@ -303,38 +302,6 @@ export function AdminPatientManagementPage() {
             </div>
           </CardContent>
         </Card>
-
-        {/* <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Có tiền sử bệnh</p>
-                <p className="text-2xl font-bold text-orange-600">
-                  {patients.filter(p => p.medicalHistory.length > 0).length}
-                </p>
-              </div>
-              <div className="p-3 bg-orange-100 rounded-lg">
-                <AlertTriangle className="h-6 w-6 text-orange-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card> */}
-
-        {/* <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Có dị ứng</p>
-                <p className="text-2xl font-bold text-red-600">
-                  {patients.filter(p => p.allergies.length > 0 && p.allergies[0] !== 'Không có').length}
-                </p>
-              </div>
-              <div className="p-3 bg-red-100 rounded-lg">
-                <AlertTriangle className="h-6 w-6 text-red-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card> */}
       </div>
 
       {/* Filters */}
@@ -345,7 +312,7 @@ export function AdminPatientManagementPage() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
-                  placeholder="Tìm kiếm theo tên, số điện thoại, CMND..."
+                  placeholder={t('patient.searchPlaceholder')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -358,10 +325,10 @@ export function AdminPatientManagementPage() {
                 onChange={(e) => setSelectedStatus(e.target.value)}
                 className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                <option value="all">Tất cả trạng thái</option>
-                <option value="active">Hoạt động</option>
-                <option value="inactive">Không hoạt động</option>
-                <option value="deceased">Đã mất</option>
+                <option value="all">{t('patient.allStatus')}</option>
+                <option value="active">{t('patient.activeStatus')}</option>
+                <option value="inactive">{t('patient.inactiveStatus')}</option>
+                <option value="deceased">{t('patient.deceasedStatus')}</option>
               </select>
             </div>
           </div>
@@ -371,19 +338,19 @@ export function AdminPatientManagementPage() {
       {/* Patients Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Danh sách bệnh nhân ({filteredPatients.length})</CardTitle>
-          <CardDescription>Quản lý thông tin bệnh nhân trong hệ thống</CardDescription>
+          <CardTitle>{t('patient.patientList')} ({filteredPatients.length})</CardTitle>
+          <CardDescription>{t('patient.patientListDescription')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
                 <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">Bệnh nhân</th>
-                  <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">Thông tin liên hệ</th>
-                  <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">Nhóm máu</th>
-                  <th className="text-left py-3 px-6 font-semibold text-sm text-gray-700">Trạng thái</th>
-                  <th className="text-right py-3 px-10 font-semibold text-sm text-gray-700">Hành động</th>
+                  <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">{t('patient.patientName')}</th>
+                  <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">{t('patient.contactInformation')}</th>
+                  <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">{t('patient.bloodType')}</th>
+                  <th className="text-left py-3 px-6 font-semibold text-sm text-gray-700">{t('patient.status')}</th>
+                  <th className="text-right py-3 px-10 font-semibold text-sm text-gray-700">{t('patient.action')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -397,7 +364,7 @@ export function AdminPatientManagementPage() {
                         <div>
                           <div className="font-medium text-gray-900">{patient.name}</div>
                           <div className="text-sm text-gray-500">
-                            {patient.gender === 'male' ? 'Nam' : patient.gender === 'female' ? 'Nữ' : 'Khác'} • {patient.age} tuổi
+                            {patient.gender === 'male' ? t('patient.male') : patient.gender === 'female' ? t('patient.female') : t('patient.other')} • {patient.age} {t('patient.age')}
                           </div>
                         </div>
                       </div>

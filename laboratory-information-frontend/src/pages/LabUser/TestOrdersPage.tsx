@@ -16,12 +16,12 @@ import TestOrderDetailModal from './components/modals/TestOrderDetailModal';
 import { calculateStats } from './utils/testOrderUtils';
 import { Card, CardContent, CardHeader } from '@/components/common/card';
 import { Skeleton } from '@/components/common/skeleton';
+import { useTranslation } from 'react-i18next';
 const TestOrdersPage: React.FC = () => {
   const { user } = useAuthContext();
   const navigate = useNavigate();
   const location = useLocation();
-  
-
+  const {t} = useTranslation();
   const [orders, setOrders] = useState<TestOrder[]>([]);
   const [filteredOrders, setFilteredOrders] = useState<TestOrder[]>([]);
   const [loading, setLoading] = useState(true);
@@ -94,7 +94,7 @@ const TestOrdersPage: React.FC = () => {
       setPagination(paginationInfo);
       setCurrentPage(paginationInfo.page); // Sync currentPage with API response
     } catch (error) {
-      toast.error('Không thể tải danh sách lệnh xét nghiệm');
+      toast.error(t('testOrder.notLoading'));
       console.error('Error loading test orders:', error);
     } finally {
       setLoading(false);
@@ -111,7 +111,7 @@ const TestOrdersPage: React.FC = () => {
       setPagination(paginationInfo);
       setCurrentPage(paginationInfo.page); // Sync currentPage with API response
     } catch (error) {
-      toast.error('Không thể tìm kiếm lệnh xét nghiệm');
+      toast.error(t('testOrder.notSearching'));
       console.error('Error searching test orders:', error);
       // On error, clear results
       setOrders([]);
@@ -204,7 +204,7 @@ const handleStatusChange = async (
       setReviewModalOpen(false);
       loadTestOrders(currentPage);
     } catch (error) {
-      toast.error('Không thể cập nhật kết quả xét nghiệm');
+      toast.error(t('testOrder.notUploading'));
       console.error('Error updating test result:', error);
     }
   };
