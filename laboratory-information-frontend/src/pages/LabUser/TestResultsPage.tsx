@@ -60,8 +60,12 @@ const ViewDetailModal: React.FC<{
                   <p className="text-sm text-gray-600">Bệnh nhân</p>
                   <p className="font-medium">{patientName}</p>
                 </div>
+                 <div>
+                  <p className="text-sm text-gray-600">Chủ đề xét nghiệm</p>
+                  <p className="font-medium">{result.test_type}</p>
+                </div>
                 <div>
-                  <p className="text-sm text-gray-600">Xét nghiệm</p>
+                  <p className="text-sm text-gray-600">Loại xét nghiệm</p>
                   <p className="font-medium">{result.name} ({result.code})</p>
                 </div>
                 <div>
@@ -70,13 +74,12 @@ const ViewDetailModal: React.FC<{
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Trạng thái</p>
-                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                    result.resultStatus === 'normal' ? 'bg-green-100 text-green-800' :
-                    result.resultStatus === 'abnormal' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-red-100 text-red-800'
-                  }`}>
+                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${result.resultStatus === 'normal' ? 'bg-green-100 text-green-800' :
+                      result.resultStatus === 'abnormal' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-red-100 text-red-800'
+                    }`}>
                     {result.resultStatus === 'normal' ? 'Bình thường' :
-                     result.resultStatus === 'abnormal' ? 'Bất thường' : 'Nghiêm trọng'}
+                      result.resultStatus === 'abnormal' ? 'Bất thường' : 'Nghiêm trọng'}
                   </span>
                 </div>
                 <div className="col-span-2">
@@ -130,7 +133,7 @@ const TestResultsPage: React.FC = () => {
       filtered = filtered.filter(result =>
         result.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         result.testOrderId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        result.results.some(r => 
+        result.results.some(r =>
           r.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           r.code.toLowerCase().includes(searchTerm.toLowerCase())
         )
@@ -171,46 +174,46 @@ const TestResultsPage: React.FC = () => {
   };
 
   if (loading) {
-  return (
-    <div className="p-6 space-y-6">
-      {/* Header Skeleton */}
-      <div className="space-y-3">
-        <Skeleton className="h-6 w-1/4" />
-        <Skeleton className="h-4 w-1/3" />
+    return (
+      <div className="p-6 space-y-6">
+        {/* Header Skeleton */}
+        <div className="space-y-3">
+          <Skeleton className="h-6 w-1/4" />
+          <Skeleton className="h-4 w-1/3" />
+        </div>
+
+        {/* Filter section skeleton */}
+        <Card>
+          <CardContent className="p-6 space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="space-y-2">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Table skeleton */}
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              <Skeleton className="h-5 w-1/5" />
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="space-y-2 p-6">
+              {[...Array(8)].map((_, i) => (
+                <Skeleton key={i} className="h-10 w-full rounded-md" />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
-
-      {/* Filter section skeleton */}
-      <Card>
-        <CardContent className="p-6 space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="space-y-2">
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-10 w-full" />
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Table skeleton */}
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            <Skeleton className="h-5 w-1/5" />
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="space-y-2 p-6">
-            {[...Array(8)].map((_, i) => (
-              <Skeleton key={i} className="h-10 w-full rounded-md" />
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
+    );
+  }
 
   return (
     <div className="p-6 space-y-6">
@@ -284,25 +287,30 @@ const TestResultsPage: React.FC = () => {
               {filteredResults.map((result) => {
                 const isExpanded = expandedRows.has(result.testOrderId);
                 return (
-                  <div 
+                  <div
                     key={result.testOrderId}
-                    className={`border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 ${
-                      isExpanded ? 'bg-blue-50 border-blue-200' : 'bg-white'
-                    }`}
+                    className={`border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 ${isExpanded ? 'bg-blue-50 border-blue-200' : 'bg-white'
+                      }`}
                   >
-                    <div 
+                    <div
                       className="cursor-pointer"
                       onClick={() => toggleRow(result.testOrderId)}
                     >
                       <div className="px-6 py-4">
                         <div className="flex items-center justify-between">
-                          <h3 className="text-base font-semibold text-gray-900">{result.patientName}</h3>
-                          <ChevronDown 
-                            className={`w-5 h-5 transition-all duration-300 ${
-                              isExpanded 
-                                ? 'transform rotate-180 text-blue-500' 
+                          <h3 className="text-base font-semibold text-gray-900">
+                            Patient name: {result.patientName}
+                          </h3>
+
+                          <h3 className="text-base font-semibold text-gray-900">
+                            Test type: {result.test_type}
+                          </h3>
+
+                          <ChevronDown
+                            className={`w-5 h-5 transition-all duration-300 ${isExpanded
+                                ? 'transform rotate-180 text-blue-500'
                                 : 'text-gray-400'
-                            }`}
+                              }`}
                           />
                         </div>
                         <div className="mt-2 flex items-center gap-6 text-sm text-gray-600">
@@ -318,18 +326,17 @@ const TestResultsPage: React.FC = () => {
                         </div>
                       </div>
                     </div>
-                    <div 
-                      className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                        isExpanded ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
-                      }`}
+                    <div
+                      className={`overflow-hidden transition-all duration-300 ease-in-out ${isExpanded ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
+                        }`}
                     >
                       <div className="px-6 py-4 bg-gradient-to-br from-gray-50 to-gray-100 border-t border-gray-200">
                         <div className="space-y-3">
                           <h4 className="font-semibold text-sm text-gray-700 mb-3">Chi tiết xét nghiệm:</h4>
                           <div className="grid grid-cols-1 gap-3">
                             {result.results.map((detail, idx) => (
-                              <div 
-                                key={idx} 
+                              <div
+                                key={idx}
                                 className="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 shadow-sm cursor-pointer hover:shadow-md hover:border-blue-300 transition-all"
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -346,13 +353,12 @@ const TestResultsPage: React.FC = () => {
                                   )}
                                 </div>
                                 <div className="flex items-center gap-2 ml-4">
-                                  <span className={`px-3 py-1.5 text-xs font-semibold rounded-full whitespace-nowrap ${
-                                    detail.resultStatus === 'normal' ? 'bg-green-100 text-green-700 border border-green-200' :
-                                    detail.resultStatus === 'abnormal' ? 'bg-yellow-100 text-yellow-700 border border-yellow-200' :
-                                    'bg-red-100 text-red-700 border border-red-200'
-                                  }`}>
+                                  <span className={`px-3 py-1.5 text-xs font-semibold rounded-full whitespace-nowrap ${detail.resultStatus === 'normal' ? 'bg-green-100 text-green-700 border border-green-200' :
+                                      detail.resultStatus === 'abnormal' ? 'bg-yellow-100 text-yellow-700 border border-yellow-200' :
+                                        'bg-red-100 text-red-700 border border-red-200'
+                                    }`}>
                                     {detail.resultStatus === 'normal' ? 'Bình thường' :
-                                     detail.resultStatus === 'abnormal' ? 'Bất thường' : 'Nghiêm trọng'}
+                                      detail.resultStatus === 'abnormal' ? 'Bất thường' : 'Nghiêm trọng'}
                                   </span>
                                 </div>
                               </div>

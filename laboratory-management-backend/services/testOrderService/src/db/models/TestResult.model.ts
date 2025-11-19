@@ -3,7 +3,8 @@ import { Schema, model, Types } from "mongoose";
 const TestOrderResultSchema = new Schema({
   test_order_id: { type: Schema.Types.ObjectId, ref: "TestOrder", required: true },
   test_item_id: { type: String, required: true },
-
+  
+  test_type: { type: String },
   name: { type: String },
   code: { type: String },
   unit: { type: String },
