@@ -1062,6 +1062,203 @@
         ]
       }
     },
+    "/user/staff": {
+      "get": {
+        "tags": [
+          "User CRUD"
+        ],
+        "description": "Get staffs with pagination (currently only for lab users)",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of users per page (1-100)",
+            "required": false,
+            "type": "integer",
+            "default": 10
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Cursor for next page (user ID)",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "description": "Field to sort by",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "updatedAt",
+              "_id",
+              "fullName",
+              "email"
+            ],
+            "default": "updatedAt"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Search term to filter users",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "searchField",
+            "in": "query",
+            "description": "Fields to search by",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "email",
+              "fullName"
+            ],
+            "default": "fullName"
+          },
+          {
+            "name": "sortOrder",
+            "in": "query",
+            "description": "Sort order",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "default": "desc"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Users retrieved successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "array"
+                    },
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "_id": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "email": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "fullName": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "identityNumber": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "gender": {
+                          "type": "string",
+                          "example": "Male"
+                        },
+                        "age": {
+                          "type": "number",
+                          "example": 22
+                        },
+                        "dateOfBirth": {
+                          "type": "string",
+                          "example": "2002-01-01"
+                        },
+                        "phoneNumber": {
+                          "type": "string",
+                          "example": "0123456789"
+                        },
+                        "address": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "avatar": {
+                          "type": "string",
+                          "example": "https://example.com/avatar.png"
+                        },
+                        "role": {
+                          "type": "array",
+                          "example": [
+                            "USER"
+                          ],
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "example": "2025-01-01T00:00:00.000Z"
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "example": "2025-01-01T00:00:00.000Z"
+                        }
+                      }
+                    }
+                  }
+                },
+                "pagination": {
+                  "type": "object",
+                  "properties": {
+                    "hasNextPage": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "hasPreviousPage": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "nextCursor": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "previousCursor": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "totalCount": {
+                      "type": "number",
+                      "example": 100
+                    },
+                    "limit": {
+                      "type": "number",
+                      "example": 10
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid pagination parameters"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
     "/user/{id}/roles": {
       "get": {
         "tags": [

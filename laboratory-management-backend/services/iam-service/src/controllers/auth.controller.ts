@@ -168,7 +168,7 @@ const loginUser = async (
       throw new AppError(400, "Invalid password!");
     }
 
-    generateJWT(res, user._id as string);
+    generateJWT(res, user._id as string, user.email as string, user.role as string[]);
 
     res.status(200).json({
       message: "Login successful!",
