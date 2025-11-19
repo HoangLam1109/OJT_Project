@@ -64,6 +64,30 @@ const eventCodesData = [
     service_name: SERVICE_NAMES.IAM_SERVICE,
   },
   {
+    event_code: EVENT_CODES.USER_CREATED,
+    event_name: "USER_CREATED",
+    description: "Event message used when an IAM user account is created.",
+    service_name: SERVICE_NAMES.IAM_SERVICE,
+  },
+  {
+    event_code: EVENT_CODES.USER_PASSWORD_CHANGED,
+    event_name: "USER_PASSWORD_CHANGED",
+    description: "Event message used when an IAM user resets or changes their password.",
+    service_name: SERVICE_NAMES.IAM_SERVICE,
+  },
+  {
+    event_code: EVENT_CODES.USER_UPDATED,
+    event_name: "USER_UPDATED",
+    description: "Event message used when an IAM user profile is updated.",
+    service_name: SERVICE_NAMES.IAM_SERVICE,
+  },
+  {
+    event_code: EVENT_CODES.USER_DELETED,
+    event_name: "USER_DELETED",
+    description: "Event message used when an IAM user account is deleted.",
+    service_name: SERVICE_NAMES.IAM_SERVICE,
+  },
+  {
     event_code: EVENT_CODES.PATIENT_CREATED,
     event_name: "PATIENT_CREATED",
     description: "Event message used when a new patient is created.",
@@ -134,6 +158,24 @@ const eventCodesData = [
     event_name: "REAGENT_DELETED",
     description: "Event message used when a reagent is removed from the system.",
     service_name: SERVICE_NAMES.WAREHOUSE_SERVICE,
+  },
+  {
+    event_code: EVENT_CODES.ROLE_CREATED,
+    event_name: "ROLE_CREATED",
+    description: "Event message used when a new IAM role is created.",
+    service_name: SERVICE_NAMES.IAM_SERVICE,
+  },
+  {
+    event_code: EVENT_CODES.ROLE_UPDATED,
+    event_name: "ROLE_UPDATED",
+    description: "Event message used when an IAM role definition changes.",
+    service_name: SERVICE_NAMES.IAM_SERVICE,
+  },
+  {
+    event_code: EVENT_CODES.ROLE_DELETED,
+    event_name: "ROLE_DELETED",
+    description: "Event message used when an IAM role is removed.",
+    service_name: SERVICE_NAMES.IAM_SERVICE,
   },
 ];
 

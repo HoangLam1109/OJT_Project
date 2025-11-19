@@ -4,6 +4,11 @@ import { transporter } from "../utils/email.util.js";
 import { UserService } from "./user.service.js";
 import jwt, { SignOptions } from "jsonwebtoken";
 import { logEvent } from "../utils/logging.util.js";
+import {
+  MonitoringEventCodes,
+  MonitoringEventActions,
+  MonitoringServiceName,
+} from "../constants/monitoring.constant.js";
 
 const userSerivce = new UserService();
 
@@ -73,11 +78,11 @@ export class EmailService {
       );
 
       await logEvent({
-        eventCode: "E_00024",
-        action: "UPDATE",
+        eventCode: MonitoringEventCodes.USER_PASSWORD_CHANGED,
+        action: MonitoringEventActions.UPDATE,
         eventMessage: `User ${userFound?.fullName} changed password through email successfully`,
         performedBy: userFound._id,
-        serviceName: "IAM_SERVICE",
+        serviceName: MonitoringServiceName,
         entityId: userFound._id,
         newValues: { passwordChanged: true } as Record<string, unknown>,
       });
