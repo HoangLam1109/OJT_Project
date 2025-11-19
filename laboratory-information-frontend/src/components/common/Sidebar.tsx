@@ -5,7 +5,7 @@ import { ChevronLeft, Menu, Shield, User, ChevronDown, Plus } from 'lucide-react
 import type { SidebarProps } from '../../types/Layout.types';
 import { LogoutButton } from './LogoutButton'; 
 import { useNavigate } from 'react-router-dom';
-
+import { useTranslation } from 'react-i18next';
 export function Sidebar({
   currentUserName,
   currentUserRole,
@@ -17,6 +17,7 @@ export function Sidebar({
 }: SidebarProps) {
   const navigate = useNavigate();
   const [openDropdowns, setOpenDropdowns] = useState<Set<string>>(new Set());
+  const { t } = useTranslation();
 
   return (
     <div className={`bg-white shadow-lg transition-all duration-300 ${
@@ -33,7 +34,7 @@ export function Sidebar({
             <div className="p-2 bg-blue-100 rounded-lg">
               <Shield className="h-6 w-6 text-blue-600" />
             </div>
-            <span className="font-bold text-gray-900">Quản lý Phòng thí nghiệm</span>
+            <span className="font-bold text-gray-900">{t('sidebar.title')}</span>
           </div>
         )}
         <Button

@@ -14,7 +14,7 @@ import { useUserStatistics } from './hooks/useUserStatistics';
 import { useUserModal } from './hooks/useUserModal';
 import type { ManagerUser, UserFormData } from './types/ManagerTypes';
 import { Skeleton } from '@/components/common/skeleton';
-
+import { useTranslation } from 'react-i18next';
 
 export function ManagerUserManagementPage() {
   // Fetch all users for filtering
@@ -205,20 +205,21 @@ interface PageHeaderProps {
 }
 
 function PageHeader({ onCreate }: PageHeaderProps) {
+  const { t } = useTranslation();
   return (
     <div className="flex items-center justify-between">
       <div>
         <h1 className="text-3xl font-bold text-gray-900">
-          Quản lý người dùng
+          {t('manager.userManagement')}
         </h1>
         <p className="text-gray-600 mt-1">
-          Quản lý tài khoản người dùng trong hệ thống
+          {t('manager.userManagementDescription')}
         </p>
       </div>
       <div className="flex items-center gap-3">
         <Button onClick={onCreate}>
           <Plus className="w-4 h-4 mr-2" />
-          Tạo người dùng
+          {t('manager.createUser')}
         </Button>
       </div>
     </div>
@@ -258,12 +259,13 @@ function UsersTableCard({
   hasNext,
   hasPrev,
 }: UsersTableCardProps) {
+  const { t } = useTranslation();
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Danh sách người dùng</CardTitle>
+        <CardTitle>{t('manager.userList')}</CardTitle>
         <CardDescription>
-          Hiển thị {users.length} / {totalUsers} người dùng (Trang {currentPage}/{totalPages})
+          {t('manager.display')} {users.length} / {totalUsers} {t('manager.users')} ({t('manager.page')} {currentPage}/{totalPages})
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -279,7 +281,7 @@ function UsersTableCard({
           onLastPage={onLastPage}
           hasPrev={hasPrev}
           hasNext={hasNext}
-          pageLabel={`Trang ${currentPage} / ${totalPages}`}
+          pageLabel={`${t('manager.page')} ${currentPage} / ${totalPages}`}
         />
       </CardContent>
     </Card>
