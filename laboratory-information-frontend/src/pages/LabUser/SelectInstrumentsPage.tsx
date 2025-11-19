@@ -8,10 +8,13 @@ import { Card, CardContent, CardHeader } from '../../components/common/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/common/table';
 import { Input } from '../../components/common/input';
 import { instrumentsService } from '../../service/instrumentsService';
+import Badge from '../../components/common/badge';
+import Pagination from '../../components/common/pagination';
 
 interface SelectedInstrument {
   instrumentId: string;
   quantity: number;
+  instrument: Instrument;
 }
 
 interface LocationState {
@@ -38,6 +41,9 @@ const SelectInstrumentsPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedInstruments, setSelectedInstruments] = useState<Record<string, SelectedInstrument>>({});
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalInstruments, setTotalInstruments] = useState(0);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     if (!state?.formData) {
@@ -52,9 +58,24 @@ const SelectInstrumentsPage: React.FC = () => {
     const loadInstruments = async () => {
       setIsLoading(true);
       try {
-      const response = await instrumentsService.getAllInstruments();
-      setInstruments(response.data || []); // ✅ instruments luôn là array
-
+        const response = await instrumentsService.getAllInstruments(currentPage, itemsPerPage);
+        setInstruments(response.data || []);
+        setTotalInstruments(response.total || 0);
+        setSelectedInstruments(prev => {
+          const updated = { ...prev };
+          (response.data || []).forEach(inst => {
+            if (updated[inst._id]) {
+              updated[inst._id] = {
+                ...updated[inst._id],
+                instrument: inst,
+              };
+            }
+          });
+          return updated;
+        });
+        if (response.page && response.page !== currentPage) {
+          setCurrentPage(response.page);
+        }
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Không thể tải danh sách thiết bị';
         toast.error(message);
@@ -64,17 +85,18 @@ const SelectInstrumentsPage: React.FC = () => {
     };
 
     loadInstruments();
-  }, []);
+  }, [currentPage]);
 
-  const handleToggleSelect = (instrumentId: string) => {
+  const handleToggleSelect = (instrument: Instrument) => {
     setSelectedInstruments(prev => {
       const newState = { ...prev };
-      if (newState[instrumentId]) {
-        delete newState[instrumentId];
+      if (newState[instrument._id]) {
+        delete newState[instrument._id];
       } else {
-        newState[instrumentId] = {
-          instrumentId,
+        newState[instrument._id] = {
+          instrumentId: instrument._id,
           quantity: 1,
+          instrument,
         };
       }
       return newState;
@@ -100,7 +122,10 @@ const SelectInstrumentsPage: React.FC = () => {
     navigate(`${basePath}/select-reagents`, {
       state: {
         formData: state.formData,
-        instruments: Object.values(selectedInstruments),
+        instruments: Object.values(selectedInstruments).map(({ instrumentId, quantity }) => ({
+          instrumentId,
+          quantity,
+        })),
       },
     });
   };
@@ -120,15 +145,30 @@ const SelectInstrumentsPage: React.FC = () => {
     );
   }, [instruments, searchQuery]);
 
+  const totalPages = Math.max(1, Math.ceil(totalInstruments / itemsPerPage));
+
+  const statusConfig = (status: Instrument['status']) => {
+    switch (status) {
+      case 'Ready':
+        return { label: 'Sẵn sàng', variant: 'default' as const };
+      case 'Processing':
+        return { label: 'Đang chạy', variant: 'secondary' as const };
+      case 'Maintenance':
+        return { label: 'Bảo trì', variant: 'outline' as const };
+      case 'Error':
+        return { label: 'Lỗi', variant: 'destructive' as const };
+      default:
+        return { label: 'Ngưng hoạt động', variant: 'outline' as const };
+    }
+  };
+
   // Get selected instruments with full details
   const selectedInstrumentsList = useMemo(() => {
-    return Object.values(selectedInstruments)
-      .map((selected) => {
-        const instrument = instruments.find((inst) => inst._id === selected.instrumentId);
-        return instrument ? { ...instrument, quantity: selected.quantity } : null;
-      })
-      .filter((item): item is Instrument & { quantity: number } => item !== null);
-  }, [selectedInstruments, instruments]);
+    return Object.values(selectedInstruments).map((selected) => ({
+      ...selected.instrument,
+      quantity: selected.quantity,
+    }));
+  }, [selectedInstruments]);
 
   return (
     <div className="space-y-6 p-6">
@@ -221,7 +261,10 @@ const SelectInstrumentsPage: React.FC = () => {
                   type="text"
                   placeholder="Tìm kiếm theo tên, mã số thiết bị..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setCurrentPage(1);
+                  }}
                   className="pl-10 pr-4 py-2 w-full"
                 />
               </div>
@@ -239,57 +282,66 @@ const SelectInstrumentsPage: React.FC = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-12">Chọn</TableHead>
-                  <TableHead>Mã số</TableHead>
                   <TableHead>Tên thiết bị</TableHead>
+                  <TableHead>Trạng thái</TableHead>
+                  <TableHead>Vị trí</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+                    <TableCell colSpan={4} className="text-center py-8 text-gray-500">
                       Đang tải danh sách thiết bị...
                     </TableCell>
                   </TableRow>
                 ) : filteredInstruments.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+                    <TableCell colSpan={4} className="text-center py-8 text-gray-500">
                       Không tìm thấy thiết bị nào
                     </TableCell>
                   </TableRow>
                 ) : (
                   filteredInstruments.map((instrument) => {
-                  const isSelected = !!selectedInstruments[instrument._id];
+                    const isSelected = !!selectedInstruments[instrument._id];
+                    const { label, variant } = statusConfig(instrument.status);
 
-                  return (
-                    <TableRow key={instrument._id}>
-                      <TableCell>
-                        <button
-                          type="button"
-                          onClick={() => handleToggleSelect(instrument._id)}
-                          className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
-                            isSelected
-                              ? 'bg-blue-600 border-blue-600'
-                              : 'border-gray-300 hover:border-blue-400'
-                          }`}
-                        >
-                          {isSelected && <Check className="w-3 h-3 text-white" />}
-                        </button>
-                      </TableCell>
-                      <TableCell className="font-mono text-sm">
-                        {instrument.instrument_code}
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        {instrument.instrument_name}
-                      </TableCell>
-
-
-                    </TableRow>
-                  );
+                    return (
+                      <TableRow key={instrument._id}>
+                        <TableCell>
+                          <button
+                            type="button"
+                            onClick={() => handleToggleSelect(instrument)}
+                            className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                              isSelected
+                                ? 'bg-blue-600 border-blue-600'
+                                : 'border-gray-300 hover:border-blue-400'
+                            }`}
+                          >
+                            {isSelected && <Check className="w-3 h-3 text-white" />}
+                          </button>
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          {instrument.instrument_name}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={variant}>{label}</Badge>
+                        </TableCell>
+                        <TableCell className="text-sm text-gray-600">
+                          {instrument.location || 'Chưa cập nhật'}
+                        </TableCell>
+                      </TableRow>
+                    );
                   })
                 )}
               </TableBody>
             </Table>
           </div>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={Math.max(1, Math.ceil(totalInstruments / itemsPerPage))}
+            onPageChange={setCurrentPage}
+            className="justify-end"
+          />
         </CardContent>
       </Card>
 
@@ -330,7 +382,7 @@ const SelectInstrumentsPage: React.FC = () => {
                   </div>
                   <button
                     type="button"
-                    onClick={() => handleToggleSelect(instrument._id)}
+                    onClick={() => handleToggleSelect(instrument)}
                     className="ml-2 p-1 hover:bg-red-100 rounded-full transition-colors flex-shrink-0"
                     title="Bỏ chọn"
                   >
