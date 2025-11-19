@@ -38,6 +38,7 @@ export const TestResultService = {
         return TestResultRepository.createMany(results);
     },
 
+
     getTestOrdersWithResultsSummary: async (page = 1, limit = 10) => {
         const skip = (page - 1) * limit;
 

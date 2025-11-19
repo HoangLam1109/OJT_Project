@@ -320,7 +320,6 @@ const SelectReagentsPage: React.FC = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-12">Chọn</TableHead>
-                  <TableHead>Mã số</TableHead>
                   <TableHead>Tên thuốc thử</TableHead>
                   <TableHead>Số lô</TableHead>
                   <TableHead className="w-32">Số lượng</TableHead>
@@ -366,9 +365,6 @@ const SelectReagentsPage: React.FC = () => {
                         >
                           {isSelected && <Check className="w-3 h-3 text-white" />}
                         </button>
-                      </TableCell>
-                      <TableCell className="font-mono text-sm">
-                        {reagent.id}
                       </TableCell>
                       <TableCell className="font-medium">
                         {reagent.name}
