@@ -13,6 +13,7 @@ import {
 import Button from "../../components/common/button";
 import { Input } from "../../components/common/input";
 import Badge from "../../components/common/badge";
+import Pagination from "../../components/common/pagination";
 import {
     Card,
     CardContent,
@@ -37,6 +38,8 @@ import { instrumentsService } from "../../service/instrumentsService";
 
 export default function ServiceInstrumentPage() {
     const [instruments, setInstruments] = useState<Instrument[]>([]);
+    const [totalInstruments, setTotalInstruments] = useState(0);
+    const [currentPage, setCurrentPage] = useState(1);
     const [instrumentSearchTerm, setInstrumentSearchTerm] = useState("");
     const [selectedInstrumentId, setSelectedInstrumentId] = useState<string | null>(null);
     const [selectedInstrument, setSelectedInstrument] = useState<Instrument | null>(null);
@@ -45,31 +48,45 @@ export default function ServiceInstrumentPage() {
     const [showChangeModeDialog, setShowChangeModeDialog] = useState(false);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [instrumentToDelete, setInstrumentToDelete] = useState<Instrument | null>(null);
+    const itemsPerPage = 10;
 
     useEffect(() => {
         (async () => {
             try {
-                const data = await instrumentsService.getAllInstruments();
-                setInstruments(data);
+                const response = await instrumentsService.getAllInstruments(currentPage, itemsPerPage);
+                setInstruments(response.data);
+                setTotalInstruments(response.total);
             } catch (error) {
                 const message = error instanceof Error ? error.message : "Không thể tải danh sách thiết bị";
                 toast.error(message);
             }
         })();
-    }, []);
+    }, [currentPage]);
 
 
-    const handleChangeInstrumentStatus = (updatedInstrument: Instrument) => {
-        setInstruments((prev) =>
-            prev.map((i) =>
-                i._id === updatedInstrument._id ? updatedInstrument : i
-            )
-        );
+    const handleChangeInstrumentStatus = async () => {
+        // Refresh the current page to get updated data
+        try {
+            const response = await instrumentsService.getAllInstruments(currentPage, itemsPerPage);
+            setInstruments(response.data);
+            setTotalInstruments(response.total);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : "Không thể tải danh sách thiết bị";
+            toast.error(message);
+        }
     };
 
-    const handleAddInstrument = (instrument: Instrument) => {
-        setInstruments((prev) => [...prev, instrument]);
+    const handleAddInstrument = async () => {
         toast.success("Thiết bị đã được thêm thành công!");
+        // Refresh the current page to get updated data
+        try {
+            const response = await instrumentsService.getAllInstruments(currentPage, itemsPerPage);
+            setInstruments(response.data);
+            setTotalInstruments(response.total);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : "Không thể tải danh sách thiết bị";
+            toast.error(message);
+        }
     };
     const handleOpenDetail = (instrument: Instrument) => {
         setSelectedInstrumentId(instrument._id);
@@ -86,7 +103,6 @@ export default function ServiceInstrumentPage() {
         
         try {
             await instrumentsService.deleteInstrument(instrumentToDelete._id);
-            setInstruments((prev) => prev.filter((i) => i._id !== instrumentToDelete._id));
             // If the deleted instrument was opened in detail, close it
             if (selectedInstrumentId === instrumentToDelete._id) {
                 setSelectedInstrumentId(null);
@@ -95,6 +111,11 @@ export default function ServiceInstrumentPage() {
             toast.success('Thiết bị đã được xóa thành công');
             setShowDeleteDialog(false);
             setInstrumentToDelete(null);
+            
+            // Refresh the current page to get updated data
+            const response = await instrumentsService.getAllInstruments(currentPage, itemsPerPage);
+            setInstruments(response.data);
+            setTotalInstruments(response.total);
         } catch (error) {
             const message = error instanceof Error ? error.message : "Không thể xóa thiết bị";
             toast.error(message);
@@ -103,7 +124,7 @@ export default function ServiceInstrumentPage() {
 
     // 👉 Thống kê nhanh
     const stats = {
-        totalInstruments: instruments.length,
+        totalInstruments: totalInstruments,
         activeInstruments: instruments.filter((i) => i.is_active).length,
         readyInstruments: instruments.filter((i) => i.status === "Ready").length,
         maintenanceInstruments: instruments.filter((i) => i.status === "Maintenance").length,
@@ -218,7 +239,7 @@ export default function ServiceInstrumentPage() {
                         <div>
                             <CardTitle>Danh sách Thiết bị</CardTitle>
                             <CardDescription>
-                                Hiển thị {filteredInstruments.length} / {instruments.length} thiết bị
+                                Hiển thị {filteredInstruments.length} / {totalInstruments} thiết bị
                             </CardDescription>
                         </div>
                         {instrumentSearchTerm && (
@@ -312,6 +333,15 @@ export default function ServiceInstrumentPage() {
                             <Button variant="outline" onClick={() => setInstrumentSearchTerm("")}>
                                 Xóa bộ lọc
                             </Button>
+                        </div>
+                    )}
+                    {!instrumentSearchTerm && filteredInstruments.length > 0 && (
+                        <div className="mt-4 flex justify-center">
+                            <Pagination
+                                currentPage={currentPage}
+                                totalPages={Math.ceil(totalInstruments / itemsPerPage)}
+                                onPageChange={setCurrentPage}
+                            />
                         </div>
                     )}
                 </CardContent>

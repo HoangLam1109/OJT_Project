@@ -130,9 +130,8 @@ export function AdminPatientManagementPage() {
         const getFrom = (key: string) => user[key] ?? bb[key] ?? bb[key.replace(/([A-Z])/g, '_$1').toLowerCase()];
         const rawGender = String(getFrom('gender') || 'male').toLowerCase();
         const gender = rawGender === 'female' ? 'female' : rawGender === 'other' ? 'other' : 'male';
-        const bloodTypeRaw = String(getFrom('bloodType') || 'O+');
-        const allowed = ['O+','A+','A-','B+','B-','AB+','AB-','O-'];
-        const bloodType = (allowed.includes(bloodTypeRaw) ? bloodTypeRaw : 'O+') as Patient['bloodType'];
+        const bloodTypeRaw = String(getFrom('bloodType') || '');
+        const bloodType = bloodTypeRaw || '';
 
         const id = String(bb._id ?? bb.id ?? bb.patientId ?? '');
         const name = String(user.fullName ?? user.name ?? bb.fullName ?? bb.name ?? '');
@@ -189,11 +188,10 @@ export function AdminPatientManagementPage() {
           } catch {/* ignore per patient */}
         }));
         if (mounted && Object.keys(bloodTypeUpdates).length) {
-          const allowedBT = ['O+','A+','A-','B+','B-','AB+','AB-','O-'];
           setPatients(prev => prev.map(pt => {
             const newBT = bloodTypeUpdates[pt.id];
             if (!newBT) return pt;
-            return { ...pt, bloodType: (allowedBT.includes(newBT) ? newBT : pt.bloodType) as Patient['bloodType'] };
+            return { ...pt, bloodType: newBT };
           }));
         }
       } catch {/* ignore global enrich */}
@@ -423,9 +421,13 @@ export function AdminPatientManagementPage() {
                       </div>
                     </td>
                     <td className="py-3 px-8">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getBloodTypeColor()}`}>
-                        {patient.bloodType}
-                      </span>
+                      {patient.bloodType ? (
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getBloodTypeColor()}`}>
+                          {patient.bloodType}
+                        </span>
+                      ) : (
+                        <span className="text-sm text-gray-500 italic">Chưa có</span>
+                      )}
                     </td>
                     <td className="py-3 px-4">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(patient.status)}`}>
@@ -560,9 +562,8 @@ export function AdminPatientManagementPage() {
         onOpenChange={setMrCreateOpen}
         onCreated={(created) => {
           if (!created) return;
-          const allowedBT = ['O+','A+','A-','B+','B-','AB+','AB-','O-'];
           setPatients(prev => prev.map(p => p.id === created.patient_id
-            ? { ...p, bloodType: (allowedBT.includes(created.blood_type || '') ? created.blood_type as Patient['bloodType'] : p.bloodType) }
+            ? { ...p, bloodType: created.blood_type || p.bloodType }
             : p));
         }}
       />
