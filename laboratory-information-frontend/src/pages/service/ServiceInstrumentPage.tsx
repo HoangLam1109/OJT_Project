@@ -48,28 +48,69 @@ export default function ServiceInstrumentPage() {
     const [showChangeModeDialog, setShowChangeModeDialog] = useState(false);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [instrumentToDelete, setInstrumentToDelete] = useState<Instrument | null>(null);
+    const [stats, setStats] = useState({ total: 0, active: 0, ready: 0, maintenance: 0 });
     const itemsPerPage = 10;
 
+    // Load stats on mount
     useEffect(() => {
         (async () => {
             try {
-                const response = await instrumentsService.getAllInstruments(currentPage, itemsPerPage);
-                setInstruments(response.data);
-                setTotalInstruments(response.total);
+                const statsData = await instrumentsService.getInstrumentStats();
+                setStats(statsData);
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        })();
+    }, []);
+
+    // Load instruments with search or pagination
+    useEffect(() => {
+        const timeoutId = setTimeout(async () => {
+            try {
+                if (instrumentSearchTerm.trim()) {
+                    // Use search API when there's a search term
+                    const response = await instrumentsService.searchInstruments(
+                        instrumentSearchTerm.trim(),
+                        currentPage,
+                        itemsPerPage
+                    );
+                    setInstruments(response.data);
+                    setTotalInstruments(response.total);
+                } else {
+                    // Use regular getAllInstruments when no search term
+                    const response = await instrumentsService.getAllInstruments(currentPage, itemsPerPage);
+                    setInstruments(response.data);
+                    setTotalInstruments(response.total);
+                }
             } catch (error) {
                 const message = error instanceof Error ? error.message : "Không thể tải danh sách thiết bị";
                 toast.error(message);
             }
-        })();
-    }, [currentPage]);
+        }, 500); // Debounce 500ms
+
+        return () => clearTimeout(timeoutId);
+    }, [currentPage, instrumentSearchTerm]);
 
 
     const handleChangeInstrumentStatus = async () => {
         // Refresh the current page to get updated data
         try {
-            const response = await instrumentsService.getAllInstruments(currentPage, itemsPerPage);
-            setInstruments(response.data);
-            setTotalInstruments(response.total);
+            if (instrumentSearchTerm.trim()) {
+                const response = await instrumentsService.searchInstruments(
+                    instrumentSearchTerm.trim(),
+                    currentPage,
+                    itemsPerPage
+                );
+                setInstruments(response.data);
+                setTotalInstruments(response.total);
+            } else {
+                const response = await instrumentsService.getAllInstruments(currentPage, itemsPerPage);
+                setInstruments(response.data);
+                setTotalInstruments(response.total);
+            }
+            // Reload stats
+            const statsData = await instrumentsService.getInstrumentStats();
+            setStats(statsData);
         } catch (error) {
             const message = error instanceof Error ? error.message : "Không thể tải danh sách thiết bị";
             toast.error(message);
@@ -80,9 +121,22 @@ export default function ServiceInstrumentPage() {
         toast.success("Thiết bị đã được thêm thành công!");
         // Refresh the current page to get updated data
         try {
-            const response = await instrumentsService.getAllInstruments(currentPage, itemsPerPage);
-            setInstruments(response.data);
-            setTotalInstruments(response.total);
+            if (instrumentSearchTerm.trim()) {
+                const response = await instrumentsService.searchInstruments(
+                    instrumentSearchTerm.trim(),
+                    currentPage,
+                    itemsPerPage
+                );
+                setInstruments(response.data);
+                setTotalInstruments(response.total);
+            } else {
+                const response = await instrumentsService.getAllInstruments(currentPage, itemsPerPage);
+                setInstruments(response.data);
+                setTotalInstruments(response.total);
+            }
+            // Reload stats
+            const statsData = await instrumentsService.getInstrumentStats();
+            setStats(statsData);
         } catch (error) {
             const message = error instanceof Error ? error.message : "Không thể tải danh sách thiết bị";
             toast.error(message);
@@ -113,34 +167,35 @@ export default function ServiceInstrumentPage() {
             setInstrumentToDelete(null);
             
             // Refresh the current page to get updated data
-            const response = await instrumentsService.getAllInstruments(currentPage, itemsPerPage);
-            setInstruments(response.data);
-            setTotalInstruments(response.total);
+            if (instrumentSearchTerm.trim()) {
+                const response = await instrumentsService.searchInstruments(
+                    instrumentSearchTerm.trim(),
+                    currentPage,
+                    itemsPerPage
+                );
+                setInstruments(response.data);
+                setTotalInstruments(response.total);
+            } else {
+                const response = await instrumentsService.getAllInstruments(currentPage, itemsPerPage);
+                setInstruments(response.data);
+                setTotalInstruments(response.total);
+            }
+            // Reload stats
+            const statsData = await instrumentsService.getInstrumentStats();
+            setStats(statsData);
         } catch (error) {
             const message = error instanceof Error ? error.message : "Không thể xóa thiết bị";
             toast.error(message);
         }
     };
 
-    // 👉 Thống kê nhanh
-    const stats = {
-        totalInstruments: totalInstruments,
-        activeInstruments: instruments.filter((i) => i.is_active).length,
-        readyInstruments: instruments.filter((i) => i.status === "Ready").length,
-        maintenanceInstruments: instruments.filter((i) => i.status === "Maintenance").length,
-    };
-
-    // 👉 Lọc theo từ khóa
-    const filteredInstruments = instruments.filter((instrument) => {
-        const searchLower = instrumentSearchTerm.toLowerCase();
-        return (
-            instrument.instrument_name.toLowerCase().includes(searchLower) ||
-            instrument.instrument_type.toLowerCase().includes(searchLower) ||
-            instrument.manufacturer?.toLowerCase().includes(searchLower) ||
-            instrument.location?.toLowerCase().includes(searchLower) ||
-            instrument._id.toLowerCase().includes(searchLower)
-        );
-    });
+    // Reset to page 1 when search term changes
+    useEffect(() => {
+        if (currentPage !== 1) {
+            setCurrentPage(1);
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [instrumentSearchTerm]);
 
     return (
         <div className="space-y-6 p-4">
@@ -188,7 +243,7 @@ export default function ServiceInstrumentPage() {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm text-gray-600 mb-1">Tổng thiết bị</p>
-                                <p className="text-2xl text-blue-600">{stats.totalInstruments}</p>
+                                <p className="text-2xl text-blue-600">{stats.total}</p>
                             </div>
                             <Monitor className="w-8 h-8 text-blue-600" />
                         </div>
@@ -200,7 +255,7 @@ export default function ServiceInstrumentPage() {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm text-gray-600 mb-1">Đang hoạt động</p>
-                                <p className="text-2xl text-green-600">{stats.activeInstruments}</p>
+                                <p className="text-2xl text-green-600">{stats.active}</p>
                             </div>
                             <CheckCircle className="w-8 h-8 text-green-600" />
                         </div>
@@ -212,7 +267,7 @@ export default function ServiceInstrumentPage() {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm text-gray-600 mb-1">Sẵn sàng</p>
-                                <p className="text-2xl text-blue-600">{stats.readyInstruments}</p>
+                                <p className="text-2xl text-blue-600">{stats.ready}</p>
                             </div>
                             <PlayCircle className="w-8 h-8 text-blue-600" />
                         </div>
@@ -224,7 +279,7 @@ export default function ServiceInstrumentPage() {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm text-gray-600 mb-1">Đang bảo trì</p>
-                                <p className="text-2xl text-orange-600">{stats.maintenanceInstruments}</p>
+                                <p className="text-2xl text-orange-600">{stats.maintenance}</p>
                             </div>
                             <Wrench className="w-8 h-8 text-orange-600" />
                         </div>
@@ -239,7 +294,7 @@ export default function ServiceInstrumentPage() {
                         <div>
                             <CardTitle>Danh sách Thiết bị</CardTitle>
                             <CardDescription>
-                                Hiển thị {filteredInstruments.length} / {totalInstruments} thiết bị
+                                Hiển thị {instruments.length} / {totalInstruments} thiết bị{instrumentSearchTerm ? ` (tìm kiếm: "${instrumentSearchTerm}")` : ''}
                             </CardDescription>
                         </div>
                         {instrumentSearchTerm && (
@@ -250,7 +305,7 @@ export default function ServiceInstrumentPage() {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    {filteredInstruments.length > 0 ? (
+                    {instruments.length > 0 ? (
                         <Table>
                             <TableHeader>
                                 <TableRow>
@@ -262,7 +317,7 @@ export default function ServiceInstrumentPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {filteredInstruments.map((instrument) => (
+                                {instruments.map((instrument) => (
                                     <TableRow key={instrument._id}>
                                         <TableCell>{instrument.instrument_name}</TableCell>
                                         <TableCell>{instrument.instrument_type}</TableCell>
@@ -335,7 +390,7 @@ export default function ServiceInstrumentPage() {
                             </Button>
                         </div>
                     )}
-                    {!instrumentSearchTerm && filteredInstruments.length > 0 && (
+                    {instruments.length > 0 && Math.ceil(totalInstruments / itemsPerPage) > 1 && (
                         <div className="mt-4 flex justify-center">
                             <Pagination
                                 currentPage={currentPage}
