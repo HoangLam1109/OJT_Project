@@ -3,8 +3,9 @@ import { roomRepository } from "../repositories/index.js";
 import type { IMessage } from "../db/models/message.model.js";
 import { PaginationOptions } from "../../../shared/src/types/pagination.type.js";
 import { PaginationResponse } from "../../../shared/src/types/pagination.type.js";
-import { PaginationUtils } from "../../../shared/src/pagination.util.js";
+import { PaginationUtils } from "../../../shared/src/utils/pagination.util.js";
 import { decryptText, encryptText } from "../utils/encrypt.utils.js";
+import notifServiceClient from "../../../shared/src/notif-service/adapter/notif.adapter.js";
 
 export class MessageService {
   async getMessageById(messageId: string): Promise<IMessage | null> {
@@ -27,11 +28,23 @@ export class MessageService {
     if (!room) {
       throw new Error("Room not found");
     }
-    return messageRepository.create({
+    const message = await messageRepository.create({
       roomId,
       userId,
       text: encryptText(text),
     });
+
+    const recipients = room.participants.filter((id) => id !== userId);
+    console.log("[MessageService] createMessage", recipients);
+
+    if (recipients.length > 0) {
+      await notifServiceClient.notifyNewMessageMany(
+        recipients,
+        `You have a new message in room ${room.name}`,
+        { roomId, messageId: message._id }
+      );
+    }
+    return message;
   }
 
   async updateMessage(

@@ -1,6 +1,6 @@
 import { randomUUID, type UUID } from "crypto"
 import mongoose, { Date, Document } from "mongoose"
-import { ROLE_CODES, RoleCode } from "../../constants/roles.constant.js"
+import { RoleCode } from "../../constants/roles.constant.js"
 import { PrivilegeCode } from "../../constants/privileges.constant.js"
 
 export interface IRole extends Document {

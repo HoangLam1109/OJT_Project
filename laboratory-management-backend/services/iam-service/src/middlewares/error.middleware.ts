@@ -19,6 +19,10 @@ export const errorHandler = (
     method: req.method,
   });
 
+  if (req.originalUrl === "/favicon.ico") {
+    return res.status(statusCode).end();
+  }
+
   res.status(statusCode).json({
     error: {
       status: statusCode,

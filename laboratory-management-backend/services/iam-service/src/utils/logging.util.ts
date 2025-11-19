@@ -1,6 +1,6 @@
 import { getLogger } from "../config/logger.config.js";
 import { auditLogRepository } from "../repositories/index.js";
-import { MonitoringEvent, ServiceName } from "../types/monitoring.type.js";
+import { MonitoringEvent } from "../types/monitoring.type.js";
 import { userRepository } from "../repositories/index.js";
 
 export async function logEvent({
@@ -17,7 +17,7 @@ export async function logEvent({
   action: string;
   eventMessage: string;
   performedBy: string;
-  serviceName: ServiceName;
+  serviceName: string;
   entityId?: string;
   oldValues?: Record<string, unknown>;
   newValues?: Record<string, unknown>;
@@ -39,7 +39,7 @@ export async function logEvent({
     event_code: eventCode,
     action,
     event_message: eventMessage,
-    service_name: serviceName,
+    service_name: "IAM_SERVICE",
     operator_id: performedBy,
     operator_gmail: performer?.email as string,
     operator_name: performer?.fullName as string,
