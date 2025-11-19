@@ -94,6 +94,12 @@ const extractDataArray = (payload: unknown): BackendInstrument[] => {
   return [];
 };
 
+interface PaginatedResponse {
+  data: Instrument[];
+  total: number;
+  page: number;
+}
+
 const extractDataItem = (payload: unknown): BackendInstrument => {
   if (isRecord(payload) && "data" in payload) {
     const data = (payload as Record<string, unknown>)["data"] as BackendInstrument;
@@ -103,12 +109,31 @@ const extractDataItem = (payload: unknown): BackendInstrument => {
 };
 
 export const instrumentsService = {
-    async getAllInstruments(): Promise<Instrument[]> {
+    async getAllInstruments(page: number = 1, limit: number = 10): Promise<PaginatedResponse> {
         try {
-            const response = await instrumentsApiClient.get(`${INSTRUMENTS_API_BASE_URL}/`);
+            const response = await instrumentsApiClient.get(`${INSTRUMENTS_API_BASE_URL}/`, {
+                params: { page, limit }
+            });
             const payload = response.data as unknown;
+            
+            if (isRecord(payload)) {
+                const list = extractDataArray(payload);
+                const total = typeof payload.total === 'number' ? payload.total : list.length;
+                const currentPage = typeof payload.page === 'number' ? payload.page : page;
+                
+                return {
+                    data: list.map(transformBackendInstrument),
+                    total,
+                    page: currentPage
+                };
+            }
+            
             const list = extractDataArray(payload);
-            return list.map(transformBackendInstrument);    
+            return {
+                data: list.map(transformBackendInstrument),
+                total: list.length,
+                page: 1
+            };
         } catch (error) {
             console.error('Error fetching instruments:', error);
             throw new Error(apiUtils.getErrorMessage(error));
