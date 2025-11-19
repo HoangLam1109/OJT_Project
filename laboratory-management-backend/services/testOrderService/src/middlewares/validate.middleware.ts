@@ -1,5 +1,6 @@
 import type {Request, Response, NextFunction} from "express";
-import { createTestOrderSchema, updateTestOrderSchema } from "../validators/testOrder.validator.js";
+import  updateTestOrderSchema  from "../db/models/TestOrder.model.js";
+import  createTestOrderSchema  from "../db/models/TestOrder.model.js";
 
 
 export const validateCreateTestOrder = (req: Request, res: Response, next: NextFunction) => {

@@ -15,8 +15,9 @@ const TestOrderResultSchema = new Schema({
   result_status: { type: String, enum: ["normal", "high", "low"], default: null },
   reviewed: { type: Boolean, default: false },
   reviewer_comment: { type: String },
-  create_at: { type: Date, default: Date.now },
+  is_deleted: { type: Boolean, default: false },
+  deleted_at: { type: Date, default: null },
 }, { timestamps: true }); // sẽ tự tạo createdAt, updatedAt
 
-// Named export để import chuẩn ES Module
+
 export const TestOrderResult = model("TestOrderResult", TestOrderResultSchema, "testResults");

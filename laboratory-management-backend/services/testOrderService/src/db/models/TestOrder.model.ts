@@ -91,7 +91,7 @@ const TestOrderSchema: Schema = new Schema(
     notes: {type: String, default: 'Have no comment'},
   },
   {
-    timestamps: false, // We're handling created_at/updated_at manually
+    timestamps: false, 
   }
 );
 

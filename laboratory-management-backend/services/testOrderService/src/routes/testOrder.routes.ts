@@ -12,19 +12,17 @@ import {
 } from "../controllers/testorder.controller.js";
 import { validateCreateTestOrder } from "../middlewares/validate.middleware.js";
 import AuthenticateUser from "../middlewares/authenticate.middleware.js";
-// import { TestOrderResultController } from "../controllers/testResult.controller.js";
 
 const router = express.Router();
-// const controller = new TestOrderResultController();
 
-// ✅ Static routes first
+//  Static routes first
 router.get("/testOrder/all", getAllTestOrders);
 router.get("/testOrder/search", searchTestOrders);
 // router.get("/testOrder/result", controller.getListResults);
 router.get("/testOrder/group-by-patient", getAllOrdersGroupedByPatientId);
 
 
-// ✅ Dynamic routes after static routes
+//  Dynamic routes after static routes
 router.get("/testOrder/:id", getTestOrderById);
 
 // CRUD
