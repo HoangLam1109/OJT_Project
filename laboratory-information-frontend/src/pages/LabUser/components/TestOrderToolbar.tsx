@@ -2,7 +2,7 @@ import React from 'react';
 import { Search, Plus } from 'lucide-react';
 import { Input } from '../../../components/common/input';
 import Button from '../../../components/common/button';
-
+import {useTranslation} from 'react-i18next'
 interface TestOrderToolbarProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
@@ -14,17 +14,18 @@ const TestOrderToolbar: React.FC<TestOrderToolbarProps> = ({
   onSearchChange,
   onCreateTestOrder,
 }) => {
+  const {t} = useTranslation();
   return (
     <div className="flex justify-between items-center">
       <div>
-        <h2 className="text-xl font-semibold">Danh sách Mẫu</h2>
-        <p className="text-gray-600">Quản lý và theo dõi tiến độ xét nghiệm</p>
+        <h2 className="text-xl font-semibold">{t('testOrder.testOrderList')}</h2>
+        <p className="text-gray-600">{t('testOrder.subTestOrderList')}</p>
       </div>
       <div className="flex items-center space-x-4">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
-            placeholder="Tìm kiếm mẫu..."
+            placeholder={t('testOrder.searchPlaceholder')}
             className="pl-10 w-80"
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
@@ -36,7 +37,7 @@ const TestOrderToolbar: React.FC<TestOrderToolbarProps> = ({
             className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
           >
             <Plus className="h-4 w-4" />
-            Tạo đơn xét nghiệm
+            {t('testOrder.createTestOrder')}
           </Button>
         )}
       </div>

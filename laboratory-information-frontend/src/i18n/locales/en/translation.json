@@ -3,7 +3,10 @@
     "appName": "LIMS Pro",
     "appDescription": "Laboratory Information Management System",
     "register": "Register",
-    "login": "Login"
+    "login": "Login",
+    "hello": "Hello",
+    "logout": "Logout",
+    "loggingOut": "Logging out..."
   },
   "login": {
     "welcome": "Welcome back",  
@@ -292,7 +295,16 @@
     "updateUser": "Update User"
   },
   "sidebar": {
-    "title": "Laboratory Management System"
+    "title": "Laboratory Management System",
+    "dashboard": "Dashboard",
+    "patients": "Patients",
+    "test-orders": "Test Orders",
+    "test-results": "Test Results",
+    "instruments": "Instruments",
+    "reagents": "Reagents",
+    "chat": "Chat",
+    "profile": "Profile",
+    "role": "Laboratory Staff"
   },
   "topHeader": {
     "appName": "Laboratory Management System"
@@ -302,7 +314,65 @@
     "error": "Logout failed",
     "loading": "Logging out...",
     "logout": "Logout"
-  }
+  },
+  "patient":{
+    "title":"Patient Management",
+    "subtitle":"Manage patient information and medical records",
+    "createMedicalRecord":"Create Medical Record",
+    "totalPatients":"Total Patients",
+    "activePatients":"Active Patients",
+    "inactivePatients":"Inactive Patients",
+    "deceasedPatients":"Deceased Patients",
+    "totalPatientsDescription":"Total patients in the system",
+    "activePatientsDescription":"Active patients in the system",
+    "inactivePatientsDescription":"Inactive patients in the system",
+    "deceasedPatientsDescription":"Deceased patients in the system",
+    "allStatus":"All Status",
+    "activeStatus":"Active Status",
+    "inactiveStatus":"Inactive Status",
+    "deceasedStatus":"Deceased Status",
+    "searchPlaceholder":"Search by name, phone, identify number",
+    "patientList":"Patient List",
+    "patientListDescription":"Manage patient information and medical records in the system",
+    "patientName":"Patient Name",
+    "contactInformation":"Contact Information",
+    "bloodType":"Blood Type",
+    "status":"Status",
+    "action":"Action",
+    "age":"Years old",
+    "male":"Male",
+    "female":"Female",
+    "other":"Other",
+    "active":"Active",
+    "inactive":"Inactive"
+  },
+  "testOrder":{
+      "notLoading": "Failed to load test orders",
+      "notSearching": "Failed to search test orders",
+      "notUploading":"Failed to update test orders",
+      "testOrderList":"Test Order List",
+      "subTestOrderList":"Manage and track test order process",
+      "patient": "Patient",
+      "testType": "Test Type",
+      "deadline": "Deadline",
+      "start":"Start",
+      "stop":"Stop",
+      "complete": "Complete",
+      "process": "Process",
+      "nothing": "None available",
+      "pending": "Pending",
+      "processing": "Processing",
+      "completed":"Completed",
+      "status": "Status",
+      "biochemistry": "Biochemistry",
+      "generalHematology": "General Hematology",
+      "microbiology": "Microbiology",
+      "immunology": "Immunology",
+      "endocrinology": "Endocrinology",
+      "oncology": "Oncology",
+      "searchPlaceholder": "Search sample",
+      "createTestOrder": "Create Test Order"
+    }
 }
 
 

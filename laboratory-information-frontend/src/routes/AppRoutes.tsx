@@ -11,7 +11,6 @@ import {
   AdminDashboardPage,
   AdminPatientManagementPage,
   AdminAuditReportsPage,
-  AdminProfilePage
 } from "../pages/admin";
 import { ManagerUserManagementPage } from "../pages/manager";
 import { ManagerLayout } from "../layouts/ManagerLayout";
@@ -126,7 +125,7 @@ const roleRoutes: Record<string, RoleRouteConfig> = {
         component: TestOrdersPage,
       },
       { path: "audit-reports", component: AdminAuditReportsPage },
-      { path: "profile", component: AdminProfilePage },
+      { path: "profile", component: Profile, componentProps: { currentUser: null } },
     ],
   },
   MANAGER: {
@@ -153,16 +152,6 @@ const roleRoutes: Record<string, RoleRouteConfig> = {
       { path: "instruments", component: ServiceInstrumentPage },
       { path: "reagents", component: ReagentManagementPage },
       { path: "chat", component: LabUserChatPage },
-  // removed: medical record access logs feature
-      {
-        path: "reports",
-        component: () => (
-          <div className="text-center py-12">
-            <h2 className="text-2xl font-bold text-gray-900">Báo cáo</h2>
-            <p className="text-gray-500 mt-2">Trang báo cáo đang được phát triển</p>
-          </div>
-        ),
-      },
       { path: "profile", component: Profile, componentProps: { currentUser: null } },
     ],
   },
