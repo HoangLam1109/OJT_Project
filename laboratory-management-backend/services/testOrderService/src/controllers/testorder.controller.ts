@@ -295,7 +295,6 @@ export const updateTestOrderStatus = async (req: Request, res: Response) => {
       });
     }
     const updated = await TestOrderService.updateStatus(id, status, updated_by);
-
     // Nếu status là Completed thì tự động tạo Test Results
     if (status === "Completed") {
       const testItemIds: Types.ObjectId[] = updated.test_item_ids ?? [];
