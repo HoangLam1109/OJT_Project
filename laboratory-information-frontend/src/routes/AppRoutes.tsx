@@ -128,29 +128,11 @@ const roleRoutes: Record<string, RoleRouteConfig> = {
   },
   MANAGER: {
     basePath: "/manager",
-    allowedRoles: ["MANAGER", "ADMIN"],
+    allowedRoles: ["MANAGER"],
     Layout: ManagerLayout as ComponentType<LayoutProps>,
     defaultPage: "user-management",
     pages: [
-      {
-        path: "dashboard",
-        component: () => (
-          <div className="text-center py-12">
-            <h2 className="text-2xl font-bold text-gray-900">Dashboard Manager</h2>
-            <p className="text-gray-500 mt-2">Trang tổng quan đang được phát triển</p>
-          </div>
-        ),
-      },
       { path: "user-management", component: ManagerUserManagementPage },
-      {
-        path: "settings",
-        component: () => (
-          <div className="text-center py-12">
-            <h2 className="text-2xl font-bold text-gray-900">Cài đặt</h2>
-            <p className="text-gray-500 mt-2">Trang cài đặt đang được phát triển</p>
-          </div>
-        ),
-      },
       { path: "instruments", component: ServiceInstrumentPage },
       { path: "profile", component: Profile, componentProps: { currentUser: null } },
     ],

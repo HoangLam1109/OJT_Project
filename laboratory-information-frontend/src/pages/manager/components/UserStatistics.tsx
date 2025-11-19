@@ -1,29 +1,30 @@
 import { Users, UserCheck, UserX } from 'lucide-react';
 import { Card, CardContent } from '../../../components/common/card';
 import type { UserStatistics as UserStatisticsType } from '../types/ManagerTypes';
-
+import { useTranslation } from 'react-i18next';
 interface UserStatisticsProps {
   statistics: UserStatisticsType;
 }
 
 export function UserStatistics({ statistics }: UserStatisticsProps) {
+  const { t } = useTranslation();
   const stats = [
     {
-      title: 'Tổng người dùng',
+      title: t('manager.totalUsers'),
       value: statistics.total,
       icon: Users,
       color: 'text-blue-600',
       bgColor: 'bg-blue-100',
     },
     {
-      title: 'Đang hoạt động',
+      title: t('manager.activeUsers'),
       value: statistics.active,
       icon: UserCheck,
       color: 'text-green-600',
       bgColor: 'bg-green-100',
     },
     {
-      title: 'Đã khóa',
+      title: t('manager.lockedUsers'),
       value: statistics.inactive,
       icon: UserX,
       color: 'text-red-600',

@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/common/card';
 import { Users, Search, Eye, Edit, Trash2, Phone, Mail, MapPin, Heart, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../components/common/button';
 import { Input } from '../../components/common/input';
 import type { Patient } from './data/mockPatients';
-import { fetchPatients as fetchPatientsFromApi, deletePatient as deletePatientApi, updatePatient as updatePatientApi } from '../../service/patientService';
+import { deletePatient as deletePatientApi, updatePatient as updatePatientApi } from '../../service/patientService';
 import { patientMedicalRecordService, type PatientMedicalRecord } from '../../service/patientMedicalRecordService';
 import { usePatientModal } from './hooks/usePatientModal';
 import { PatientModal } from './components/PatientModal';
@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 import { Skeleton } from '@/components/common/skeleton';
 import { useAuthContext } from '../../hooks/useAuthContext';
 import AddPatientMedicalRecord from '../LabUser/components/AddPatientMedicalRecord';
+import { useAllPatients } from './hooks/useAllPatients';
 
 
 export function AdminPatientManagementPage() {
@@ -21,13 +22,13 @@ export function AdminPatientManagementPage() {
   const isLabUser = Array.isArray(user?.role) ? user!.role.includes('LAB_USER') : user?.role === 'LAB_USER';
   const [patients, setPatients] = useState<Patient[]>([]);
   const [page, setPage] = useState<number>(1);
-  const [totalPages, setTotalPages] = useState<number>(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
-  const [loading, setLoading] = useState<boolean>(false);
-  // const [error, setError] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name?: string } | null>(null);
   const [mrCreateOpen, setMrCreateOpen] = useState(false);
+
+  // Fetch all patients for comprehensive filtering
+  const { allPatients, loading } = useAllPatients();
 
   const { modalState, openEditModal, closeModal } = usePatientModal();
   const navigate = useNavigate();
@@ -63,13 +64,29 @@ export function AdminPatientManagementPage() {
     </div>
   );
 
-  const filteredPatients = patients.filter(patient => {
-    const matchesSearch = patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         patient.phone.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         patient.identifyNumber.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = selectedStatus === 'all' || patient.status === selectedStatus;
-    return matchesSearch && matchesStatus;
-  });
+  // Filter and paginate from all patients
+  const { filteredPatients, totalPages } = useMemo(() => {
+    // First, filter all patients based on search and status
+    const filtered = patients.filter(patient => {
+      const matchesSearch = patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           patient.phone.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           patient.identifyNumber.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesStatus = selectedStatus === 'all' || patient.status === selectedStatus;
+      return matchesSearch && matchesStatus;
+    });
+
+    // Then paginate the filtered results
+    const pageSize = 10;
+    const totalPages = Math.ceil(filtered.length / pageSize);
+    const startIndex = (page - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const paginatedResults = filtered.slice(startIndex, endIndex);
+
+    return {
+      filteredPatients: paginatedResults,
+      totalPages: Math.max(1, totalPages)
+    };
+  }, [patients, searchTerm, selectedStatus, page]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -97,96 +114,94 @@ export function AdminPatientManagementPage() {
 
   useEffect(() => {
     let mounted = true;
-    const load = async () => {
-      setLoading(true);
-      try {
-        const backend = await fetchPatientsFromApi(page, 10);
-        const backendArr = backend.patients ?? [];
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const mapped: Patient[] = backendArr.map((b: any) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const bb: any = b;
-          const user = bb.user ?? {};
-          const getFrom = (key: string) => user[key] ?? bb[key] ?? bb[key.replace(/([A-Z])/g, '_$1').toLowerCase()];
-          const rawGender = String(getFrom('gender') || getFrom('gender') || 'male').toLowerCase();
-          const gender = rawGender === 'female' ? 'female' : rawGender === 'other' ? 'other' : 'male';
-          const bloodTypeRaw = String(getFrom('bloodType') || 'O+');
-          const allowed = ['O+','A+','A-','B+','B-','AB+','AB-','O-'];
-          const bloodType = (allowed.includes(bloodTypeRaw) ? bloodTypeRaw : 'O+') as Patient['bloodType'];
-
-          const id = String(bb._id ?? bb.id ?? bb.patientId ?? '');
-          const name = String(user.fullName ?? user.name ?? bb.fullName ?? bb.name ?? '');
-          const email = String(user.email ?? bb.email ?? '');
-          const phone = String(user.phoneNumber ?? user.phone ?? bb.phone ?? '');
-          const identifyNumber = String(user.identityNumber ?? user.identifyNumber ?? bb.identityNumber ?? '');
-          const dateOfBirth = String(user.dateOfBirth ?? bb.dateOfBirth ?? bb.date_of_birth ?? '');
-          const age = Number(user.age ?? bb.age ?? 0);
-          const address = String(user.address ?? bb.address ?? '');
-          const emergencyObj = (bb.emergency_contact ?? bb.emergencyContact ?? {}) as Record<string, unknown>;
-          const medicalHistory = Array.isArray(bb.medicalHistory) ? bb.medicalHistory as string[] : (bb.medicalHistory ? [String(bb.medicalHistory)] : []);
-          const allergies = Array.isArray(bb.allergies) ? bb.allergies as string[] : [];
-          const status = String(bb.is_active === false ? 'inactive' : (bb.is_deleted ? 'deceased' : (bb.status ?? 'active')));
-          const createdAt = String(bb.created_at ?? bb.createdAt ?? '');
-          const updatedAt = String(bb.updated_at ?? bb.updatedAt ?? '');
-          const lastVisit = String(bb.last_visit_date ?? bb.lastVisit ?? '');
-
-          return {
-            id,
-            name,
-            email,
-            phone,
-            identifyNumber,
-            gender,
-            dateOfBirth,
-            age,
-            address,
-            emergencyContact: { name: String(emergencyObj['name'] ?? ''), phone: String(emergencyObj['phone'] ?? ''), relationship: String(emergencyObj['relationship'] ?? '') },
-            medicalHistory,
-            allergies,
-            bloodType,
-            status: status as Patient['status'],
-            createdAt,
-            updatedAt,
-            lastVisit,
-          } as Patient;
-        });
-        if (mounted) setPatients(mapped);
-        // Enrich bloodType from latest medical record per patient
-        try {
-          const bloodTypeUpdates: Record<string, string> = {};
-          await Promise.all(mapped.map(async (p) => {
-            if (!p.id) return;
-            try {
-              const res = await patientMedicalRecordService.getAll({ page: 1, limit: 20, patientId: p.id });
-              const records: PatientMedicalRecord[] = (res.records || []).filter(r => r.patient_id === p.id);
-              if (records.length) {
-                // Sort by updated_at then created_at desc
-                records.sort((a,b) => new Date(b.updated_at || b.created_at || 0).getTime() - new Date(a.updated_at || a.created_at || 0).getTime());
-                const latest = records[0];
-                if (latest.blood_type) bloodTypeUpdates[p.id] = latest.blood_type;
-              }
-            } catch {/* ignore per patient */}
-          }));
-          if (mounted && Object.keys(bloodTypeUpdates).length) {
-            const allowedBT = ['O+','A+','A-','B+','B-','AB+','AB-','O-'];
-            setPatients(prev => prev.map(pt => {
-              const newBT = bloodTypeUpdates[pt.id];
-              if (!newBT) return pt;
-              return { ...pt, bloodType: (allowedBT.includes(newBT) ? newBT : pt.bloodType) as Patient['bloodType'] };
-            }));
-          }
-        } catch {/* ignore global enrich */}
-        if (backend.totalPages) setTotalPages(Number(backend.totalPages));
-      } catch (err) {
-        console.error('Error loading patients:', err);
-        // if (mounted) setError('Không thể tải danh sách bệnh nhân');
-      } finally {
-        if (mounted) setLoading(false);
+    
+    // Transform all patients from backend format to frontend Patient type
+    const transformPatients = async () => {
+      if (!allPatients.length) {
+        if (mounted) setPatients([]);
+        return;
       }
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const mapped: Patient[] = allPatients.map((b: any) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const bb: any = b;
+        const user = bb.user ?? {};
+        const getFrom = (key: string) => user[key] ?? bb[key] ?? bb[key.replace(/([A-Z])/g, '_$1').toLowerCase()];
+        const rawGender = String(getFrom('gender') || 'male').toLowerCase();
+        const gender = rawGender === 'female' ? 'female' : rawGender === 'other' ? 'other' : 'male';
+        const bloodTypeRaw = String(getFrom('bloodType') || 'O+');
+        const allowed = ['O+','A+','A-','B+','B-','AB+','AB-','O-'];
+        const bloodType = (allowed.includes(bloodTypeRaw) ? bloodTypeRaw : 'O+') as Patient['bloodType'];
+
+        const id = String(bb._id ?? bb.id ?? bb.patientId ?? '');
+        const name = String(user.fullName ?? user.name ?? bb.fullName ?? bb.name ?? '');
+        const email = String(user.email ?? bb.email ?? '');
+        const phone = String(user.phoneNumber ?? user.phone ?? bb.phone ?? '');
+        const identifyNumber = String(user.identityNumber ?? user.identifyNumber ?? bb.identityNumber ?? '');
+        const dateOfBirth = String(user.dateOfBirth ?? bb.dateOfBirth ?? bb.date_of_birth ?? '');
+        const age = Number(user.age ?? bb.age ?? 0);
+        const address = String(user.address ?? bb.address ?? '');
+        const emergencyObj = (bb.emergency_contact ?? bb.emergencyContact ?? {}) as Record<string, unknown>;
+        const medicalHistory = Array.isArray(bb.medicalHistory) ? bb.medicalHistory as string[] : (bb.medicalHistory ? [String(bb.medicalHistory)] : []);
+        const allergies = Array.isArray(bb.allergies) ? bb.allergies as string[] : [];
+        const status = String(bb.is_active === false ? 'inactive' : (bb.is_deleted ? 'deceased' : (bb.status ?? 'active')));
+        const createdAt = String(bb.created_at ?? bb.createdAt ?? '');
+        const updatedAt = String(bb.updated_at ?? bb.updatedAt ?? '');
+        const lastVisit = String(bb.last_visit_date ?? bb.lastVisit ?? '');
+
+        return {
+          id,
+          name,
+          email,
+          phone,
+          identifyNumber,
+          gender,
+          dateOfBirth,
+          age,
+          address,
+          emergencyContact: { name: String(emergencyObj['name'] ?? ''), phone: String(emergencyObj['phone'] ?? ''), relationship: String(emergencyObj['relationship'] ?? '') },
+          medicalHistory,
+          allergies,
+          bloodType,
+          status: status as Patient['status'],
+          createdAt,
+          updatedAt,
+          lastVisit,
+        } as Patient;
+      });
+
+      if (mounted) setPatients(mapped);
+
+      // Enrich bloodType from latest medical record per patient
+      try {
+        const bloodTypeUpdates: Record<string, string> = {};
+        await Promise.all(mapped.map(async (p) => {
+          if (!p.id) return;
+          try {
+            const res = await patientMedicalRecordService.getAll({ page: 1, limit: 20, patientId: p.id });
+            const records: PatientMedicalRecord[] = (res.records || []).filter(r => r.patient_id === p.id);
+            if (records.length) {
+              records.sort((a,b) => new Date(b.updated_at || b.created_at || 0).getTime() - new Date(a.updated_at || a.created_at || 0).getTime());
+              const latest = records[0];
+              if (latest.blood_type) bloodTypeUpdates[p.id] = latest.blood_type;
+            }
+          } catch {/* ignore per patient */}
+        }));
+        if (mounted && Object.keys(bloodTypeUpdates).length) {
+          const allowedBT = ['O+','A+','A-','B+','B-','AB+','AB-','O-'];
+          setPatients(prev => prev.map(pt => {
+            const newBT = bloodTypeUpdates[pt.id];
+            if (!newBT) return pt;
+            return { ...pt, bloodType: (allowedBT.includes(newBT) ? newBT : pt.bloodType) as Patient['bloodType'] };
+          }));
+        }
+      } catch {/* ignore global enrich */}
     };
-    load();
+
+    transformPatients();
     return () => { mounted = false; };
-  }, [page]);
+  }, [allPatients]);
   return (
   <div className="space-y-6">
 

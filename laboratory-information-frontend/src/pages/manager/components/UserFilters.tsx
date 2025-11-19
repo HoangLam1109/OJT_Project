@@ -1,13 +1,14 @@
 import { Search, Filter } from 'lucide-react';
 import { Input } from '../../../components/common/input';
 import type { UserFilters as UserFiltersType } from '../types/ManagerTypes';
-
+import { useTranslation } from 'react-i18next';
 interface UserFiltersProps {
   filters: UserFiltersType;
   onFiltersChange: (filters: UserFiltersType) => void;
 }
 
 export function UserFilters({ filters, onFiltersChange }: UserFiltersProps) {
+  const { t } = useTranslation();
   const handleSearchChange = (value: string) => {
     onFiltersChange({ ...filters, searchTerm: value });
   };
@@ -31,7 +32,7 @@ export function UserFilters({ filters, onFiltersChange }: UserFiltersProps) {
       <div className="flex items-center gap-2 mb-4">
         <Filter className="w-5 h-5" style={{ color: '#374151' }} />
         <h3 className="font-semibold text-lg" style={{ color: '#111827' }}>
-          Bộ lọc
+          {t('manager.filters')}
         </h3>
       </div>
 
@@ -43,7 +44,7 @@ export function UserFilters({ filters, onFiltersChange }: UserFiltersProps) {
             className="block text-sm font-semibold mb-2"
             style={{ color: '#111827' }}
           >
-            Tìm kiếm
+            {t('manager.search')}
           </label>
           <div className="relative">
             <Search 
@@ -56,7 +57,7 @@ export function UserFilters({ filters, onFiltersChange }: UserFiltersProps) {
             <Input
               id="search"
               type="text"
-              placeholder="Tìm theo tên, email..."
+              placeholder={t('manager.searchPlaceholder')}
               value={filters.searchTerm}
               onChange={(e) => handleSearchChange(e.target.value)}
               className="pl-10"
@@ -76,7 +77,7 @@ export function UserFilters({ filters, onFiltersChange }: UserFiltersProps) {
             className="block text-sm font-semibold mb-2"
             style={{ color: '#111827' }}
           >
-            Vai trò
+            {t('manager.role')}
           </label>
           <select
             id="role"
@@ -99,22 +100,22 @@ export function UserFilters({ filters, onFiltersChange }: UserFiltersProps) {
             }}
           >
             <option value="all" style={{ color: '#111827', backgroundColor: '#ffffff' }}>
-              Tất cả vai trò
+              {t('manager.allRoles')}
             </option>
             <option value="ADMIN" style={{ color: '#111827', backgroundColor: '#ffffff' }}>
-              Quản trị viên
+              {t('manager.admin')}
             </option>
             <option value="MANAGER" style={{ color: '#111827', backgroundColor: '#ffffff' }}>
-              Quản lý
+              {t('manager.manager')}
             </option>
             <option value="LAB_USER" style={{ color: '#111827', backgroundColor: '#ffffff' }}>
-              Nhân viên Lab
+              {t('manager.labUser')}
             </option>
             <option value="SERVICE" style={{ color: '#111827', backgroundColor: '#ffffff' }}>
-              Dịch vụ
+              {t('manager.service')}
             </option>
             <option value="USER" style={{ color: '#111827', backgroundColor: '#ffffff' }}>
-              Người dùng
+              {t('manager.user')}
             </option>
           </select>
         </div>
@@ -126,7 +127,7 @@ export function UserFilters({ filters, onFiltersChange }: UserFiltersProps) {
             className="block text-sm font-semibold mb-2"
             style={{ color: '#111827' }}
           >
-            Trạng thái
+            {t('manager.status')}
           </label>
           <select
             id="status"
@@ -149,13 +150,13 @@ export function UserFilters({ filters, onFiltersChange }: UserFiltersProps) {
             }}
           >
             <option value="all" style={{ color: '#111827', backgroundColor: '#ffffff' }}>
-              Tất cả trạng thái
+              {t('manager.allStatus')}
             </option>
             <option value="active" style={{ color: '#111827', backgroundColor: '#ffffff' }}>
-              Hoạt động
+              {t('manager.active')}
             </option>
             <option value="inactive" style={{ color: '#111827', backgroundColor: '#ffffff' }}>
-              Đã khóa
+              {t('manager.inactive')}
             </option>
           </select>
         </div>

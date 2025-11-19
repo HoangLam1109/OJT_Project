@@ -81,7 +81,7 @@ router.put(
       instrument_type: 'Analyzer',
       manufacturer: 'Roche',
       location: 'Lab B - Bench 5',
-      status: 'Maintenance',
+      status: 'Processing',
       is_active: true
     }
   }

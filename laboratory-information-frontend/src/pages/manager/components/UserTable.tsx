@@ -1,7 +1,7 @@
 import { User, Lock, Unlock, Edit, Trash2, Eye, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from 'lucide-react';
 import Button from '../../../components/common/button';
 import type { ManagerUser } from '../types/ManagerTypes';
-
+import {useTranslation} from 'react-i18next';
 interface UserTableProps {
   users: ManagerUser[];
   onView: (user: ManagerUser) => void;
@@ -19,6 +19,7 @@ interface UserTableProps {
 }
 
 export function UserTable({ users, onView, onEdit, onDelete, onToggleLock, onFirstPage, onPrevPage, onNextPage, onLastPage, hasPrev, hasNext, pageLabel }: UserTableProps) {
+  const { t } = useTranslation();
   const getRoleBadgeColor = (role: string) => {
     const colors = {
       ADMIN: 'bg-purple-100 text-purple-800',
@@ -32,11 +33,11 @@ export function UserTable({ users, onView, onEdit, onDelete, onToggleLock, onFir
 
   const getRoleLabel = (role: string) => {
     const labels = {
-      ADMIN: 'Quản trị viên',
-      MANAGER: 'Quản lý',
-      LAB_USER: 'Nhân viên Lab',
-      SERVICE: 'Dịch vụ',
-      USER: 'Người dùng',
+      ADMIN: t('manager.admin'),
+      MANAGER: t('manager.manager'),
+      LAB_USER: t('manager.labUser'),
+      SERVICE: t('manager.service'),
+      USER: t('manager.user'),
     };
     return labels[role as keyof typeof labels] || role;
   };
@@ -57,10 +58,10 @@ export function UserTable({ users, onView, onEdit, onDelete, onToggleLock, onFir
       <div className="text-center py-12">
         <User className="w-16 h-16 mx-auto text-gray-400 mb-4" />
         <h3 className="text-lg font-medium text-gray-900 mb-2">
-          Không tìm thấy người dùng
+          {t('manager.noUsersFound')}
         </h3>
         <p className="text-gray-500">
-          Không có người dùng nào phù hợp với tiêu chí tìm kiếm
+          {t('manager.noUsersFoundDescription')}
         </p>
       </div>
     );
@@ -72,22 +73,22 @@ export function UserTable({ users, onView, onEdit, onDelete, onToggleLock, onFir
         <thead>
           <tr className="border-b border-gray-200">
             <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">
-              Người dùng
+              {t('manager.user')}
             </th>
             <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">
-              Vai trò
+              {t('manager.role')}
             </th>
             <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">
-              Liên hệ
+              {t('manager.contact')}
             </th>
             <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">
-              Trạng thái
+              {t('manager.status')}
             </th>
             <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">
-              Đăng nhập cuối
+              {t('manager.lastLogin')}
             </th>
             <th className="text-right py-3 px-4 font-semibold text-sm text-gray-700">
-              Hành động
+              {t('manager.actions')}
             </th>
           </tr>
         </thead>
@@ -127,7 +128,7 @@ export function UserTable({ users, onView, onEdit, onDelete, onToggleLock, onFir
                     {user.phone_number || 'N/A'}
                   </div>
                   <div className="text-gray-500 text-xs">
-                    CMND: {user.identify_number || 'N/A'}
+                    {t('manager.identifyNumber')}: {user.identify_number || 'N/A'}
                   </div>
                 </div>
               </td>
@@ -144,7 +145,7 @@ export function UserTable({ users, onView, onEdit, onDelete, onToggleLock, onFir
                       user.active ? 'bg-green-600' : 'bg-red-600'
                     }`}
                   />
-                  {user.active ? 'Hoạt động' : 'Đã khóa'}
+                  {user.active ? t('manager.active') : t('manager.inactive')}
                 </span>
               </td>
               <td className="py-3 px-4 text-sm text-gray-600">
@@ -156,7 +157,7 @@ export function UserTable({ users, onView, onEdit, onDelete, onToggleLock, onFir
                     variant="ghost"
                     size="icon"
                     onClick={() => onView(user)}
-                    title="Xem chi tiết"
+                    title={t('manager.viewDetails')}
                   >
                     <Eye className="w-4 h-4" />
                   </Button>
@@ -164,7 +165,7 @@ export function UserTable({ users, onView, onEdit, onDelete, onToggleLock, onFir
                     variant="ghost"
                     size="icon"
                     onClick={() => onEdit(user)}
-                    title="Chỉnh sửa"
+                    title={t('manager.edit')}
                   >
                     <Edit className="w-4 h-4" />
                   </Button>
@@ -172,7 +173,7 @@ export function UserTable({ users, onView, onEdit, onDelete, onToggleLock, onFir
                     variant="ghost"
                     size="icon"
                     onClick={() => onToggleLock(user)}
-                    title={user.active ? 'Khóa tài khoản' : 'Mở khóa tài khoản'}
+                    title={user.active ? t('manager.lockAccount') : t('manager.unlockAccount')}
                   >
                     {user.active ? (
                       <Lock className="w-4 h-4" />
@@ -184,7 +185,7 @@ export function UserTable({ users, onView, onEdit, onDelete, onToggleLock, onFir
                     variant="ghost"
                     size="icon"
                     onClick={() => onDelete(user)}
-                    title="Xóa người dùng"
+                    title={t('manager.deleteUser')}
                     className="text-red-600 hover:text-red-700"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -206,7 +207,7 @@ export function UserTable({ users, onView, onEdit, onDelete, onToggleLock, onFir
                 variant="ghost"
                 size="icon"
                 onClick={onFirstPage}
-                title="Trang đầu"
+                  title={t('manager.firstPage')}
                 disabled={hasPrev === false}
                 className="hover:bg-blue-100 hover:text-blue-700 transition-colors"
               >
@@ -218,7 +219,7 @@ export function UserTable({ users, onView, onEdit, onDelete, onToggleLock, onFir
                 variant="ghost"
                 size="icon"
                 onClick={onPrevPage}
-                title="Trang trước"
+                title={t('manager.previousPage')}
                 disabled={hasPrev === false}
                 className="hover:bg-blue-100 hover:text-blue-700 transition-colors"
               >
@@ -230,7 +231,7 @@ export function UserTable({ users, onView, onEdit, onDelete, onToggleLock, onFir
                 variant="ghost"
                 size="icon"
                 onClick={onNextPage}
-                title="Trang tiếp theo"
+                title={t('manager.nextPage')}
                 disabled={hasNext === false}
                 className="hover:bg-blue-100 hover:text-blue-700 transition-colors"
               >
@@ -242,7 +243,7 @@ export function UserTable({ users, onView, onEdit, onDelete, onToggleLock, onFir
                 variant="ghost"
                 size="icon"
                 onClick={onLastPage}
-                title="Trang cuối"
+                title={t('manager.lastPage')}
                 disabled={hasNext === false}
                 className="hover:bg-blue-100 hover:text-blue-700 transition-colors"
               >
