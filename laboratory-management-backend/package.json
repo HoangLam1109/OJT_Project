@@ -11,19 +11,19 @@
     "dev:chat": "npm run swagger:chat && tsx watch services/chat-service/src/index.ts",
     "dev:monitoring": "npm run swagger:monitoring && nodemon --exec \"node --loader ts-node/esm services/monitoringService/src/index.ts\"",
     "dev:message": "npm run swagger:message && tsx watch services/message-service/src/index.ts",
-    
+    "dev:notification": "npm run swagger:notification && tsx watch services/notification-service/src/index.ts",
     "seed:users": "node --loader ts-node/esm services/iam-service/src/db/seeds/002_users.seed.ts",
     "seed:roles": "node --loader ts-node/esm services/iam-service/src/db/seeds/001_roles.seed.ts",
-
     "swagger": "tsx services/iam-service/src/swagger.ts",
     "swagger:chat": "tsx services/chat-service/src/swagger.ts",
     "swagger:patient": "tsx services/patientService/src/swagger.ts",
     "swagger:warehouse": "tsx services/warehouseService/src/swagger.ts",
     "swagger:monitoring": "tsx services/monitoringService/src/swagger.ts",
     "swagger:message": "tsx services/message-service/src/swagger.ts",
+    "swagger:notification": "tsx services/notification-service/src/swagger.ts",
     "start:warehouse": "nodemon --watch services/warehouseService/src --ext ts,json --exec \"node --loader ts-node/esm services/warehouseService/src/index.ts\"",
     "seed:event-codes": "node --loader ts-node/esm services/monitoringService/src/db/seeds/001_event_codes.seed.ts",
-    "dev:all": "npm-run-all --parallel dev:patient dev:testOrder dev:warehouse dev:monitoring dev dev:message"
+    "dev:all": "npm-run-all --parallel dev:patient dev:testOrder dev:warehouse dev:monitoring dev dev:message dev:notification"
   },
   "keywords": [],
   "author": "",

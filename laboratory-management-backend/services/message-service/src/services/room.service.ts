@@ -4,7 +4,8 @@ import {
   PaginationOptions,
   PaginationResponse,
 } from "../../../shared/src/types/pagination.type.js";
-import { PaginationUtils } from "../../../shared/src/pagination.util.js";
+import { PaginationUtils } from "../../../shared/src/utils/pagination.util.js";
+import notifServiceClient from "../../../shared/src/notif-service/adapter/notif.adapter.js";
 
 export class RoomService {
   async getRoomById(roomId: string): Promise<IRoom | null> {
@@ -80,7 +81,11 @@ export class RoomService {
     return roomRepository.updateById(roomId, data);
   }
 
-  async deleteRoom(roomId: string, userId: string, isStaff: boolean): Promise<IRoom | null> {
+  async deleteRoom(
+    roomId: string,
+    userId: string,
+    isStaff: boolean
+  ): Promise<IRoom | null> {
     const room = await this.getRoomById(roomId);
     if (!room) {
       throw new Error("Room not found");
@@ -91,12 +96,33 @@ export class RoomService {
     return roomRepository.deleteById(roomId);
   }
 
-  async joinRoom(roomId: string, userId: string): Promise<IRoom | null> {
+  async joinRoom(
+    roomId: string,
+    userId: string,
+    fullName: string
+  ): Promise<IRoom | null> {
     const room = await this.getRoomById(roomId);
-    if (room?.participants.includes(userId)) {
+    console.log(room);
+
+    if (!room) {
+      throw new Error("Room not found");
+    }
+
+    if (room.participants.includes(userId)) {
       throw new Error("User already in room");
     }
-    return roomRepository.joinRoom(roomId, userId);
+
+    const joinedRoom = await roomRepository.joinRoom(roomId, userId);
+
+    if (joinedRoom) {
+      await notifServiceClient.notifyRoomJoin(
+        room.createdBy,
+        `User ${fullName} has joined your room`,
+        { roomId, userId: userId }
+      );
+    }
+
+    return joinedRoom;
   }
 
   async leaveRoom(roomId: string, userId: string): Promise<IRoom | null> {

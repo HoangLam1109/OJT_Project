@@ -12,11 +12,7 @@ import { PaginationUtils } from "../utils/pagination.util.js";
 import { logEvent } from "../utils/logging.util.js";
 import { computeChanges } from "../utils/diff.util.js";
 import { AppError } from "../utils/error.util.js";
-import {
-  MonitoringEventCodes,
-  MonitoringEventActions,
-  MonitoringServiceName,
-} from "../constants/monitoring.constant.js";
+import notifServiceClient from "../../../shared/src/notif-service/adapter/notif.adapter.js";
 
 export interface CreateUserData {
   email: string;
@@ -42,6 +38,7 @@ export interface UpdateUserData {
   phoneNumber?: string;
   address?: string;
   role?: string[];
+  lastPasswordChange?: Date;
   isActive?: boolean;
   avatar?: string;
 }
@@ -58,7 +55,11 @@ export class UserService {
     userData: CreateUserData,
     performedBy?: string
   ): Promise<IUser> {
-    const { data: newUser } = await this._passwordCheck("", userData, performedBy);
+    const { data: newUser } = await this._passwordCheck(
+      "",
+      userData,
+      performedBy
+    );
     if (!userData.role) {
       newUser.role = ["USER"];
     }
@@ -66,11 +67,11 @@ export class UserService {
     console.log(createdUser);
 
     await logEvent({
-      eventCode: MonitoringEventCodes.USER_CREATED,
-      action: MonitoringEventActions.CREATE,
+      eventCode: "E_00023",
+      action: "CREATE",
       eventMessage: "User created successfully!",
       performedBy: performedBy || createdUser._id,
-      serviceName: MonitoringServiceName,
+      serviceName: "IAM_SERVICE",
       entityId: createdUser._id,
       newValues: {
         email: createdUser.email,
@@ -89,9 +90,12 @@ export class UserService {
     userData: UpdateUserData,
     performedBy?: string
   ): Promise<IUser | null> {
-
     const before = await userRepository.findById(userId);
-    const { data: newUser, passwordChanged } = await this._passwordCheck(userId, userData, performedBy);
+    const { data: newUser, passwordChanged } = await this._passwordCheck(
+      userId,
+      userData,
+      performedBy
+    );
     const updatedUser = await userRepository.updateById(userId, newUser);
 
     const fields: (keyof IUser)[] = [
@@ -115,11 +119,11 @@ export class UserService {
     );
 
     await logEvent({
-      eventCode: MonitoringEventCodes.USER_UPDATED,
-      action: MonitoringEventActions.UPDATE,
+      eventCode: "E_00025",
+      action: "UPDATE",
       eventMessage: "User updated successfully!",
       performedBy: performedBy || userId,
-      serviceName: MonitoringServiceName,
+      serviceName: "IAM_SERVICE",
       entityId: userId,
       ...diffs,
     });
@@ -141,13 +145,17 @@ export class UserService {
       "role",
       "isActive",
     ];
-    const deleteDiffs = computeChanges<IUser>(before ?? undefined, undefined, deleteFields);
+    const deleteDiffs = computeChanges<IUser>(
+      before ?? undefined,
+      undefined,
+      deleteFields
+    );
     await logEvent({
-      eventCode: MonitoringEventCodes.USER_DELETED,
-      action: MonitoringEventActions.DELETE,
+      eventCode: "E_00026",
+      action: "DELETE",
       eventMessage: "User deleted successfully!",
       performedBy: performedBy || userId,
-      serviceName: MonitoringServiceName,
+      serviceName: "IAM_SERVICE",
       entityId: userId,
       ...deleteDiffs,
     });
@@ -162,7 +170,10 @@ export class UserService {
     return await userRepository.findByPhoneNumber(phoneNumber);
   }
 
-  async searchUsersByFullName(keyword: string, limit: number = 20): Promise<IUser[]> {
+  async searchUsersByFullName(
+    keyword: string,
+    limit: number = 20
+  ): Promise<IUser[]> {
     if (!keyword || keyword.trim().length === 0) {
       return [];
     }
@@ -181,16 +192,27 @@ export class UserService {
     const before = await userRepository.findById(userId);
     const updatedUser = await userRepository.updateById(userId, { role });
     const roleFields: (keyof IUser)[] = ["role"];
-    const roleDiffs = computeChanges<IUser>(before ?? undefined, updatedUser ?? undefined, roleFields);
+    const roleDiffs = computeChanges<IUser>(
+      before ?? undefined,
+      updatedUser ?? undefined,
+      roleFields
+    );
     await logEvent({
-      eventCode: MonitoringEventCodes.USER_UPDATED,
-      action: MonitoringEventActions.UPDATE,
+      eventCode: "E_00025",
+      action: "UPDATE",
       eventMessage: "User updated successfully!",
       performedBy: performedBy || userId,
-      serviceName: MonitoringServiceName,
+      serviceName: "IAM_SERVICE",
       entityId: userId,
       ...roleDiffs,
     });
+
+    if (updatedUser) {
+      await notifServiceClient.notifyRoleChanged(
+        updatedUser._id.toString(),
+        (updatedUser.role || []).join(", ")
+      );
+    }
     return updatedUser;
   }
 
@@ -202,15 +224,17 @@ export class UserService {
     const before = await userRepository.findById(userId);
     const updatedUser = await userRepository.updateById(userId, { isActive });
     const lockFields: (keyof IUser)[] = ["isActive"];
-    const lockDiffs = computeChanges<IUser>(before ?? undefined, updatedUser ?? undefined, lockFields);
+    const lockDiffs = computeChanges<IUser>(
+      before ?? undefined,
+      updatedUser ?? undefined,
+      lockFields
+    );
     await logEvent({
-      eventCode: MonitoringEventCodes.USER_LOCK_STATUS_CHANGED,
-      action: isActive
-        ? MonitoringEventActions.UNLOCK
-        : MonitoringEventActions.LOCK,
+      eventCode: "E_00027",
+      action: `${isActive ? "UNLOCK" : "LOCK"}`,
       eventMessage: "User locked/unlocked successfully!",
       performedBy: performedBy || userId,
-      serviceName: MonitoringServiceName,
+      serviceName: "IAM_SERVICE",
       entityId: userId,
       ...lockDiffs,
     });
@@ -270,8 +294,13 @@ export class UserService {
     userId: string,
     userData: UpdateUserData | CreateUserData,
     performedBy?: string
-  ): Promise<{data: UpdateUserData | CreateUserData; passwordChanged: boolean}> {
-    const existing = userId ? await userRepository.findById(userId, "passwordHash") : null;
+  ): Promise<{
+    data: UpdateUserData | CreateUserData;
+    passwordChanged: boolean;
+  }> {
+    const existing = userId
+      ? await userRepository.findById(userId, "passwordHash")
+      : null;
     // Skip password hashing for OAuth users
     if (userData.password) {
       if (existing?.passwordHash) {
@@ -293,6 +322,7 @@ export class UserService {
       const newUser = {
         ...userData,
         passwordHash: hashedPassword,
+        lastPasswordChange: new Date(),
       };
 
       try {
@@ -310,7 +340,7 @@ export class UserService {
       }
 
       delete (newUser as any).password;
-      return { data: newUser, passwordChanged: true};
-    } else return {data: userData, passwordChanged: false};
+      return { data: newUser, passwordChanged: true };
+    } else return { data: userData, passwordChanged: false };
   }
 }

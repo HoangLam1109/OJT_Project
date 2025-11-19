@@ -4,11 +4,6 @@ import { transporter } from "../utils/email.util.js";
 import { UserService } from "./user.service.js";
 import jwt, { SignOptions } from "jsonwebtoken";
 import { logEvent } from "../utils/logging.util.js";
-import {
-  MonitoringEventCodes,
-  MonitoringEventActions,
-  MonitoringServiceName,
-} from "../constants/monitoring.constant.js";
 
 const userSerivce = new UserService();
 
@@ -19,10 +14,9 @@ export class EmailService {
 
       const user = await userRepository.findOne({ email });
       if (!user) throw new AppError(400, "User with given email doesn't exist");
-      
 
       const dedicatedToken = jwt.sign(
-        { userId: user._id },
+        { userId: user._id, changedDate: user.lastPasswordChange?.getTime() ?? 0 },
         process.env.JWT_SECRET_KEY as string,
         { expiresIn: process.env.JWT_EXPIRY } as SignOptions
       );
@@ -63,26 +57,34 @@ export class EmailService {
     try {
       if (!token) throw new AppError(400, "Dedicated token is required");
 
-      const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY as string) as {
+      const decoded = jwt.verify(
+        token,
+        process.env.JWT_SECRET_KEY as string
+      ) as {
         userId: string;
+        changedDate: number;
       };
 
       const userFound = await userRepository.findById(decoded.userId);
       if (!userFound) throw new AppError(400, "User ID doesn't exist");
 
-      await userSerivce.updateUser(
-        userFound._id,
-        {
-          password: password,
-        },
-      );
+      if (
+        (userFound.lastPasswordChange?.getTime() ?? 0) !== decoded.changedDate
+      ) {
+        throw new AppError(400, "Password already changed with current link");
+      }
+
+      await userSerivce.updateUser(userFound._id, {
+        password: password,
+        lastPasswordChange: new Date(),
+      });
 
       await logEvent({
-        eventCode: MonitoringEventCodes.USER_PASSWORD_CHANGED,
-        action: MonitoringEventActions.UPDATE,
+        eventCode: "E_00024",
+        action: "UPDATE",
         eventMessage: `User ${userFound?.fullName} changed password through email successfully`,
         performedBy: userFound._id,
-        serviceName: MonitoringServiceName,
+        serviceName: "IAM_SERVICE",
         entityId: userFound._id,
         newValues: { passwordChanged: true } as Record<string, unknown>,
       });
@@ -91,5 +93,4 @@ export class EmailService {
       throw error;
     }
   }
-
 }

@@ -1,8 +1,8 @@
 import type { Request, Response, NextFunction } from "express";
-import iamServiceClient from "../adapters/iam.adapter.js";
+import iamServiceClient from "../../../shared/src/iam-service/adapter/iam.adapter.js";
 import { RoomService } from "../services/room.service.js";
-import { AppError } from "../../../shared/src/error.util.js";
-import { PaginationUtils } from "../../../shared/src/pagination.util.js";
+import { AppError } from "../../../shared/src/utils/error.util.js";
+import { PaginationUtils } from "../../../shared/src/utils/pagination.util.js";
 
 const roomService = new RoomService();
 
@@ -42,12 +42,12 @@ const joinChat = async (
       throw new AppError(400, "Room ID is required");
     }
 
-    const user = await iamServiceClient.getUserById((req as any).user.userId);
+    const user = await iamServiceClient.getUserById((req as any).auth.userId);
     if (!user) {
       throw new AppError(404, "User not found");
     }
 
-    await roomService.joinRoom(roomId, user._id);
+    await roomService.joinRoom(roomId, user._id, user.fullName);
     res.status(201).json({ message: "User joined", user });
   } catch (error) {
     next(error);
@@ -90,7 +90,7 @@ const leaveChat = async (
       throw new AppError(400, "Room ID is required");
     }
 
-    const user = await iamServiceClient.getUserById((req as any).user.userId);
+    const user = await iamServiceClient.getUserById((req as any).auth.userId);
     if (!user) {
       throw new AppError(404, "User not found");
     }
@@ -271,7 +271,10 @@ const getRoomsByCreator = async (
   */
   try {
     const options = PaginationUtils.parseQuery(req.query);
-    const rooms = await roomService.listRooms(options, { createdBy: (req as any).user.userId });
+    const auth = (req as any).auth as { userId: string };
+    const rooms = await roomService.listRooms(options, {
+      createdBy: auth.userId,
+    });
     res.status(200).json(rooms);
   } catch (error) {
     next(error);
@@ -359,7 +362,10 @@ const getRoomsByParticipant = async (
   */
   try {
     const options = PaginationUtils.parseQuery(req.query);
-    const rooms = await roomService.listRooms(options, { participants: { $in: [(req as any).user.userId] } });
+    const auth = (req as any).auth as { userId: string };
+    const rooms = await roomService.listRooms(options, {
+      participants: { $in: [auth.userId] },
+    });
     res.status(200).json(rooms);
   } catch (error) {
     next(error);
@@ -410,7 +416,7 @@ const createRoom = async (
       }
     }
 
-    const user = await iamServiceClient.getUserById((req as any).user.userId);
+    const user = await iamServiceClient.getUserById((req as any).auth.userId);
     if (!user) {
       throw new AppError(404, "User not found");
     }
@@ -468,14 +474,17 @@ const updateRoom = async (
       throw new AppError(400, "Room ID and data are required");
     }
 
-    const user = await iamServiceClient.getUserById((req as any).user.userId);
-    if (!user) {
-      throw new AppError(404, "User not found");
-    }
+    const auth = (req as any).auth as { userId: string; role?: string[] };
+    const isStaff =
+      auth.role?.some((r) => ["ADMIN", "MANAGER", "LAB_USER"].includes(r)) ??
+      false;
 
-    const isStaff = user.role?.includes("ADMIN") || user.role?.includes("MANAGER") || user.role?.includes("LAB_USER");
-
-    const room = await roomService.updateRoom(roomId, data, (req as any).user.userId, isStaff || false);
+    const room = await roomService.updateRoom(
+      roomId,
+      data,
+      auth.userId,
+      isStaff
+    );
     res.status(201).json(room);
   } catch (error) {
     next(error);
@@ -513,18 +522,25 @@ const deleteRoom = async (
   */
   try {
     const { roomId } = req.params;
-    const user = await iamServiceClient.getUserById((req as any).user.userId);
-    if (!user) {
-      throw new AppError(404, "User not found");
-    }
+    const auth = (req as any).auth as { userId: string; role?: string[] };
+    const isStaff =
+      auth.role?.some((r) => ["ADMIN", "MANAGER", "LAB_USER"].includes(r)) ??
+      false;
 
-    const isStaff = user.role?.includes("ADMIN") || user.role?.includes("MANAGER") || user.role?.includes("LAB_USER");
-
-    await roomService.deleteRoom(roomId, (req as any).user.userId, isStaff || false);
+    await roomService.deleteRoom(roomId, auth.userId, isStaff || false);
     res.status(201).json({ message: "Room deleted successfully" });
   } catch (error) {
     next(error);
   }
 };
 
-export { joinChat, getRooms, getRoomsByCreator, getRoomsByParticipant, createRoom, updateRoom, deleteRoom, leaveChat };
+export {
+  joinChat,
+  getRooms,
+  getRoomsByCreator,
+  getRoomsByParticipant,
+  createRoom,
+  updateRoom,
+  deleteRoom,
+  leaveChat,
+};
