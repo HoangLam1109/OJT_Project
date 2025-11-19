@@ -561,13 +561,16 @@ components:
     CreateTestOrderRequest:
       type: object
       required:
-        - patient_id
         - test_type
       properties:
         patient_id:
           type: string
-          description: ID bệnh nhân
+          description: ID bệnh nhân (optional, nếu không có sẽ tự tạo từ patient_name)
           example: "pat_123"
+        patient_name:
+          type: string
+          description: Tên bệnh nhân (required nếu không có patient_id)
+          example: "Nguyễn Văn A"
         barcode:
           type: string
           description: Mã vạch (tự sinh nếu không gửi)

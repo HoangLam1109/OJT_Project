@@ -29,7 +29,7 @@ export interface ITestOrder extends Document {
 }
 
 export interface CreateOrderInput {
-  patient_id: string;
+  patient_id?: string;
   instrument_id?: string;
   reagent_usages: ReagentUsage[]; 
   test_item_ids: string[]; 
@@ -69,7 +69,7 @@ const ReagentUsageSchema = new Schema({
 });
 const TestOrderSchema: Schema = new Schema(
   {
-    patient_id: { type: String, required: true },
+    patient_id: { type: String, required: false },
     instrument_id: { type: String, default: '' },
     reagent_usages: { type: [ReagentUsageSchema], default: [] },
     test_item_ids: [{ type: Schema.Types.ObjectId, ref: "TestItem" }],

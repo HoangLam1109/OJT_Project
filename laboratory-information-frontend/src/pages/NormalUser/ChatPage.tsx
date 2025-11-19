@@ -15,7 +15,6 @@ import { toast } from 'sonner';
 
 import { useAuthContext } from '../../hooks/useAuthContext';
 import { Input } from '../../components/common/input';
-import { Textarea } from '../../components/common/textarea';
 import Button from '../../components/common/button';
 import { apiUtils } from '../../service/apiClient';
 import { roomApi, type RoomSummary } from '../../service/messageRoomService';
@@ -50,7 +49,6 @@ const ChatPage: React.FC = () => {
   const navigate = useNavigate();
 
   const [roomName, setRoomName] = useState('');
-  const [note, setNote] = useState('');
   const [creating, setCreating] = useState(false);
 
   const [rooms, setRooms] = useState<RoomSummary[]>([]);
@@ -108,10 +106,9 @@ const ChatPage: React.FC = () => {
       setRooms((prev) => [newRoom, ...prev]);
       toast.success('Đã tạo phòng chat. Nhân viên phòng thí nghiệm sẽ phản hồi sớm nhất.');
       setRoomName('');
-      setNote('');
 
       navigate(`/user/chat/${newRoom._id}`, {
-        state: { room: newRoom, initialNote: note.trim() || undefined },
+        state: { room: newRoom },
       });
     } catch (error) {
       toast.error(apiUtils.getErrorMessage(error) || 'Không thể tạo phòng chat');
@@ -157,18 +154,6 @@ const ChatPage: React.FC = () => {
                 value={roomName}
                 onChange={(e) => setRoomName(e.target.value)}
               />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Ghi chú cho nhân viên (tuỳ chọn)</label>
-              <Textarea
-                placeholder="Mô tả ngắn gọn vấn đề bạn muốn trao đổi..."
-                rows={4}
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Nội dung này giúp nhân viên chuẩn bị trước; bạn vẫn trao đổi trực tiếp trong phòng chat.
-              </p>
             </div>
             <div className="flex items-center gap-3 flex-wrap">
               <Button
