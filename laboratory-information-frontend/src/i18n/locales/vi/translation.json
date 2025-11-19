@@ -5,15 +5,6 @@
     "register": "Đăng ký",
     "login": "Đăng nhập"
   },
-  "register": {
-    "title": "Đăng ký",
-    "description": "Đăng ký tài khoản mới",
-    "name": "Họ và tên",
-    "email": "Email",
-    "password": "Mật khẩu",
-    "confirmPassword": "Xác nhận mật khẩu",
-    "register": "Đăng ký"
-  },
   "login": {
     "welcome": "Chào mừng trở lại",
     "description": "Đăng nhập vào tài khoản của bạn để tiếp tục sử dụng hệ thống",
@@ -30,8 +21,15 @@
     "googleLogin": "Đăng nhập với Google",
     "email/phone": "Email/Số điện thoại",
     "email/phonePlaceholder": "Email hoặc Số điện thoại",
-    "passwordPlaceholder": "Nhập mật khẩu"
+    "passwordPlaceholder": "Nhập mật khẩu",
+    "subtitle": "Hệ thống Quản lý Phòng thí nghiệm",
+    "title1": "Hệ thống Quản lý",
+    "patientManagement": "Quản lý bệnh nhân",
+    "reportAnalysis": "Báo cáo & Phân tích",
+    "patientHistory": "Lịch sử bệnh án",
+    "highSecurity": "Bảo mật cao"
   },
+  
   "hero": {
     "title": "Hệ thống Quản lý",
     "subtitle": "Phòng thí nghiệm Tiên tiến",
@@ -55,7 +53,90 @@
     "securityManagement": "Bảo mật cao",
     "securityManagementDescription": "Kiểm soát truy cập dựa trên vai trò, mã hóa dữ liệu",
     "automationManagement": "Tự động hóa",
-    "automationManagementDescription": "Nhắc nhở, cảnh báo và ghi log kiểm toán tự động"
+    "automationManagementDescription": "Nhắc nhở, cảnh báo và ghi log kiểm toán tự động",
+    "highlightedFeatures": "Tính năng nổi bật",
+    "highlightedFeaturesDescription": "Hệ thống của chúng tôi được thiết kế để giúp bạn quản lý hoạt động phòng thí nghiệm một cách hiệu quả và chính xác."
+  },
+  "about": {
+    "speed": "Xử lý nhanh",
+    "speedDescription": "Kết quả trong 24-48 giờ, báo cáo tự động",
+    "absoluteSecurity": "Bảo mật tuyệt đối",
+    "absoluteSecurityDescription": "Mã hóa dữ liệu từ đầu đến cuối, tuân thủ HIPAA",
+    "highAccuracy": "Độ chính xác cao",
+    "highAccuracyDescription": "99.9% độ chính xác với hỗ trợ AI cho phân tích",
+    "smartInterface": "Giao diện thông minh",
+    "smartInterfaceDescription": "Giao diện thông minh, dễ sử dụng cho mọi người",
+    "title": "Về chúng tôi",
+    "description": "Về công ty",
+    "demo": "Xem Demo",
+    "button": "Tìm hiểu thêm",
+    "trustedPartner": "Đối tác tin cậy cho Phòng thí nghiệm của bạn",
+    "trustedPartnerDescription": "Với hơn 10 năm kinh nghiệm trong lĩnh vực công nghệ y tế, chúng tôi hiểu thử thách mà phòng thí nghiệm đang gặp phải.",
+    "trustedPartnerMetricsDescription": "Phòng thí nghiệm sử dụng hệ thống của chúng tôi"
+  },
+  "services": {
+    "title": "Dịch vụ xét nghiệm",
+    "description": "Hỗ trợ đầy đủ các loại xét nghiệm với quy trình chuẩn hóa và báo cáo chi tiết",
+    "bloodTest": "Xét nghiệm máu",
+    "bloodTestDescription": "Xét nghiệm máu với độ chính xác cao",
+    "heartTest": "Xét nghiệm tim mạch",
+    "heartTestDescription": "Xét nghiệm tim mạch với độ chính xác cao",
+    "virologyTest": "Xét nghiện vi sinh",
+    "virologyTestDescription": "Xét nghiện vi sinh với độ chính xác cao",
+    "histologyTest": "Xét nghiệm mô bệnh học",
+    "histologyTestDescription": "Xét nghiệm mô bệnh học với độ chính xác cao",
+    "cbcFull": "CBC đầy đủ",
+    "biochemistry12": "Sinh hóa 12 thông số",
+    "marker": "Marker ung thư",
+    "hormone": "Hooc môn",
+    "troponinIT": "Troponin I/T",
+    "ckMB": "CK-MB",
+    "bnpNTproBNP": "BNP/NT-proBNP",
+    "lipidProfile": "Lipid máu",  
+    "culture": "Cấy khuẩn",
+    "antibioticSusceptibility": "Kháng sinh đồ",
+    "pcrVirus": "PCR virus",
+    "fungalInfection": "Nấm học",
+    "biopsy": "Sinh thiết",
+    "cellology": "Tế bào học",
+    "immunology": "Miễn dịch mô",
+    "molecularbiology": "Phân tử học"
+  },
+  "faq": {
+    "title": "Câu hỏi thường gặp",
+    "description": "Giải đáp những thắc mắc phổ biến về hệ thống LIMS Pro",
+    "question1": "LIMS Pro có phù hợp với phòng lab nhỏ không?",
+    "answer1": "Có, LIMS Pro được thiết kế đặc biệt cho phòng lab đơn lẻ với quy mô từ nhỏ đến vừa. Hệ thống có thể mở rộng theo nhu cầu phát triển.",
+    "question2": "Có cần đào tạo nhân viên sử dụng hệ thống không?",
+    "answer2": "LIMS Pro có giao diện trực quan và dễ sử dụng. Chúng tôi cung cấp khóa đào tạo cơ bản và hỗ trợ 24/7 trong giai đoạn triển khai.",
+    "question3": "Dữ liệu có được bảo mật an toàn không?",
+    "answer3": "Tuyệt đối! Chúng tôi sử dụng mã hóa end-to-end, backup tự động và tuân thủ đầy đủ các tiêu chuẩn bảo mật y tế quốc tế.",
+    "question4": "Chi phí triển khai hệ thống như thế nào?",
+    "answer4": "Chúng tôi có các gói dịch vụ linh hoạt phù hợp với mọi quy mô. Liên hệ để được tư vấn chi tiết và báo giá cụ thể."
+    
+  },
+  "contact": {
+    "title": "Liên hệ",
+    "description": "Đội ngũ chuyên gia sẵn sàng hỗ trợ bạn 24/7. Hãy liên hệ để được tư vấn miễn phí!",
+    "free": "Miễn phí",
+    "address": "Địa chỉ",
+    "address1": "123 Đường ABC, Quận 1, TP.HCM",
+    "followUs": "Theo dõi chúng tôi"
+  },
+  "footer": {
+    "description": "Giải pháp quản lý phòng thí nghiệm hiện đại, an toàn và hiệu quả cho mọi quy mô.",
+    "products": "Sản phẩm",
+    "support": "Hỗ trợ",
+    "documentation": "Tài liệu hướng dẫn",
+    "training": "Khóa đào tạo",
+    "support247": "Hỗ trợ 24/7",
+    "helpCenter": "Trung tâm trợ giúp",
+    "community": "Cộng đồng",
+    "free": "Miễn phí",
+    "address": "123 Đường ABC, Quận 1, TP.HCM",
+    "time": "Thứ 2 - Chủ nhật: 8:00 - 22:00",
+    "contact": "Liên hệ",
+    "newsletter": "Đăng ký nhận tin tức",
+    "emailPlaceholder": "Email của bạn"
   }
 }
-

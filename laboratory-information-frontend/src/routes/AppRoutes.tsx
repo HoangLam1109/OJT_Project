@@ -19,6 +19,7 @@ import NormalUserLayout from "../layouts/NormalUserLayout";
 import Dashboard from "../pages/NormalUser/Dashboard";
 import TestResults from "../pages/NormalUser/TestResults";
 import ChatPage from "../pages/NormalUser/ChatPage";
+import ChatRoomPage from "../pages/NormalUser/ChatRoomPage";
 import Profile from "../layouts/Profile";
 import LabUserDashboard from "../pages/LabUser/Dashboard";
 import TestOrdersPage from "../pages/LabUser/TestOrdersPage";
@@ -35,6 +36,7 @@ import SelectInstrumentsPage from "@/pages/LabUser/SelectInstrumentsPage"
 import PatientDetailPage from "@/pages/LabUser/PatientDetailPage";
 import EventLogDetailPage from "@/pages/admin/EventLogDetailPage";
 import type { User } from "../types/User";
+import LabUserChatPage from "../pages/LabUser/ChatPage";
 
 // ============================================================================
 // Type Definitions
@@ -103,6 +105,7 @@ const roleRoutes: Record<string, RoleRouteConfig> = {
       { path: "dashboard", component: Dashboard },
       { path: "test-results", component: TestResults },
       { path: "chat", component: ChatPage },
+      { path: "chat/:roomId", component: ChatRoomPage },
       { path: "profile", component: Profile, componentProps: { currentUser: null } },
     ],
   },
@@ -164,6 +167,7 @@ const roleRoutes: Record<string, RoleRouteConfig> = {
       { path: "test-results", component: TestResultsPage },
       { path: "instruments", component: ServiceInstrumentPage },
       { path: "reagents", component: ReagentManagementPage },
+      { path: "chat", component: LabUserChatPage },
   // removed: medical record access logs feature
       {
         path: "reports",

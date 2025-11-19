@@ -5,15 +5,6 @@
     "register": "Register",
     "login": "Login"
   },
-  "register": {
-    "title": "Register",
-    "description": "Register a new account",
-    "name": "Name",
-    "email": "Email",
-    "password": "Password",
-    "confirmPassword": "Confirm Password",
-    "register": "Register"
-  },
   "login": {
     "welcome": "Welcome back",  
     "description": "Login to your account to continue using the system",
@@ -29,7 +20,53 @@
     "googleLogin": "Login with Google",
     "email/phone": "Email/Phone",
     "email/phonePlaceholder": "Email or Phone",
-    "passwordPlaceholder": "Enter your password"
+    "passwordPlaceholder": "Enter your password",
+    "subtitle": "Laboratory Information Management System",
+    "title1": "Management System",
+    "patientManagement": "Patient Management",
+    "reportAnalysis": "Report Analysis",
+    "patientHistory": "Patient History",
+    "highSecurity": "High Security"
+
+  },
+  "register": {
+    "subtitle": "Laboratory Information Management System",
+    "title1": "Management System",
+    "patientManagement": "Patient Management",
+    "reportAnalysis": "Report Analysis",
+    "patientHistory": "Patient History",
+    "highSecurity": "High Security",
+    "requiredFields": "Please fill in all required fields",
+    "invalidEmail": "Invalid email",
+    "passwordMismatch": "Password mismatch",
+    "invalidPhone": "Invalid phone",
+    "registrationError": "Registration error",
+    "registering": "Registering",
+    "register": "Register",
+    "registerAccount": "Register Account",
+    "createAccount": "Create Account",
+    "fullName": "Full Name",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "fullNamePlaceholder": "Enter your full name",
+    "emailPlaceholder": "Enter your email",
+    "passwordPlaceholder": "Enter your password",
+    "confirmPasswordPlaceholder": "Enter your confirm password",
+    "phone": "Phone",
+    "gender": "Gender",
+    "selectGender": "Select Gender",
+    "male": "Male",
+    "female": "Female",
+    "other": "Other",
+    "dob": "Date of Birth",
+    "idNumber": "ID Number",
+    "idNumberPlaceholder": "Enter your ID number",
+    "address": "Address",
+    "addressPlaceholder": "Enter your address",
+    "haveAccount": "Already have an account?",
+    "loginNow": "Login now",
+    "backToHome": "Back to Home"
   },
   "hero": {
     "title": "Management System",
@@ -54,7 +91,9 @@
     "securityManagement": "Security Management",
     "securityManagementDescription": "Control access based on roles, encrypt data",
     "automationManagement": "Automation Management",
-    "automationManagementDescription": "Reminders, alerts and automatic audit logs"
+    "automationManagementDescription": "Reminders, alerts and automatic audit logs",
+    "highlightedFeatures": "Highlighted Features",
+    "highlightedFeaturesDescription": "Our system is designed to help you manage your laboratory operations efficiently and accurately."
   },
   "about": {
     "speed": "Fast Processing",
@@ -71,8 +110,72 @@
     "button": "Learn More",
     "trustedPartner": "Trusted Partner for Your Laboratory",
     "trustedPartnerDescription": "With over 10 years of experience in the field of medical technology, we understand the challenges that laboratories are facing.",
-    
     "trustedPartnerMetricsDescription": "Laboratories using our system"
+  },
+  "services": {
+    "title": "Services",
+    "description": "Full support for all test types with standardized procedures and detailed reports",
+    "bloodTest": "Blood Test",
+    "bloodTestDescription": "Blood test with high accuracy",
+    "heartTest": "Heart Test",
+    "heartTestDescription": "Heart test with high accuracy",
+    "virologyTest": "Virology Test",
+    "virologyTestDescription": "Virology test with high accuracy",
+    "histologyTest": "Histology Test",
+    "histologyTestDescription": "Histology test with high accuracy",
+    "cbcFull": "CBC Full",
+    "biochemistry12": "Biochemistry 12",
+    "marker": "Marker",
+    "hormone": "Hormone",
+    "troponinIT": "Troponin I/T",
+    "ckMB": "CK-MB",
+    "bnpNTproBNP": "BNP/NT-proBNP",
+    "lipidProfile": "Lipid Profile",  
+    "culture": "Culture",
+    "antibioticSusceptibility": "Antibiotic Susceptibility",
+    "pcrVirus": "PCR Virus",
+    "fungalInfection": "Fungal Infection",
+    "biopsy": "Biopsy",
+    "cellology": "Cellology",
+    "immunology": "Immunology",
+    "molecularbiology": "Molecular Biology"
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "description": "Addressing Common Questions About the LIMS Pro System",
+    "question1": "Is LIMS Pro suitable for small laboratories?",
+    "answer1": "Yes, LIMS Pro is designed specifically for small laboratories with a size from small to medium. The system can be scaled to meet the needs of development.",
+    "question2": "Do we need to train employees to use the system?",
+    "answer2": "LIMS Pro has an intuitive and easy-to-use interface. We provide basic training and 24/7 support during the implementation process.",
+    "question3": "Is data secure and protected?",
+    "answer3": "Absolutely! We use end-to-end encryption, automatic backups, and compliance with international healthcare security standards.",
+    "question4": "How much does the system deployment cost?",
+    "answer4": "We have flexible service packages suitable for any size. Contact us for detailed consultation and specific pricing."
+    
+  },
+  "contact": {
+    "title": "Contact Us",
+    "description": "Our expert team is ready to support you 24/7. Contact us for free consultation!",
+    "free": "Free",
+    "address": "Address",
+    "address1": "123 ABC Street, Ward 1, Ho Chi Minh City",
+    "followUs": "Follow Us"
+  },
+  "footer": {
+    "description": "Modern laboratory management solution, secure and efficient for any size.",
+    "products": "Products",
+    "support": "Support",
+    "documentation": "Documentation",
+    "training": "Training",
+    "support247": "Support 24/7",
+    "helpCenter": "Help Center",
+    "community": "Community",
+    "free": "Free",
+    "address": "123 ABC Street, Ward 1, Ho Chi Minh City",
+    "time": "Monday - Sunday: 8:00 - 22:00",
+    "contact": "Contact",
+    "newsletter": "Newsletter",
+    "emailPlaceholder": "Your email"
   }
 }
 

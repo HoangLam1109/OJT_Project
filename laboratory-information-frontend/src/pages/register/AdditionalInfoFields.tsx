@@ -1,13 +1,14 @@
 import { RegisterInputField } from './RegisterInputField';
 import type { AdditionalInfoFieldsProps } from './types/register';
-
+import { useTranslation } from 'react-i18next';
 export function AdditionalInfoFields({ phone, setPhone, gender, setGender, dob, setDob, idNumber, setIdNumber, address, setAddress }: AdditionalInfoFieldsProps) {
+    const { t } = useTranslation();
 	return (
 		<div className="space-y-3">
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 				<RegisterInputField 
 					id="phone" 
-					label="Số điện thoại" 
+					label={t('register.phone')} 
 					type="tel"
 					placeholder="0xxxxxxxxx" 
 					value={phone} 
@@ -18,17 +19,17 @@ export function AdditionalInfoFields({ phone, setPhone, gender, setGender, dob, 
 
 				<div className="space-y-2">
 					<label className="text-sm font-medium text-gray-700">
-						Giới tính
+						{t('register.gender')}
 					</label>
 					<select
 						className={`h-11 w-full border border-gray-200 rounded-lg px-3 pl-10 focus:outline-none focus:border-blue-400 bg-white transition-colors ${gender ? 'text-gray-900' : 'text-gray-400'}`}
 						value={gender}
 						onChange={e => setGender(e.target.value)}
 					>
-						<option value="" disabled>Chọn giới tính</option>
-						<option value="male">Nam</option>
-						<option value="female">Nữ</option>
-						<option value="other">Khác</option>
+						<option value="" disabled>{t('register.selectGender')}</option>
+						<option value="male">{t('register.male')}</option>
+						<option value="female">{t('register.female')}</option>
+						<option value="other">{t('register.other')}</option>
 					</select>
 				</div>
 			</div>
@@ -36,7 +37,7 @@ export function AdditionalInfoFields({ phone, setPhone, gender, setGender, dob, 
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 				<RegisterInputField 
 					id="dob" 
-					label="Ngày sinh" 
+					label={t('register.dob')} 
 					type="date" 
 					placeholder="mm/dd/yyyy" 
 					value={dob} 
@@ -46,9 +47,9 @@ export function AdditionalInfoFields({ phone, setPhone, gender, setGender, dob, 
 				/>
 				<RegisterInputField 
 					id="idNumber"
-					label="CMND/CCCD" 
+					label={t('register.idNumber')} 
 					type="text"
-					placeholder="Số CMND/CCCD" 
+					placeholder={t('register.idNumberPlaceholder')} 
 					value={idNumber} 
 					onChange={e => setIdNumber(e.target.value)} 
 					icon="id" 
@@ -58,9 +59,9 @@ export function AdditionalInfoFields({ phone, setPhone, gender, setGender, dob, 
 
 			<RegisterInputField 
 				id="address"
-				label="Địa chỉ" 
+				label={t('register.address')} 
 				type="text"
-				placeholder="Nhập địa chỉ..." 
+				placeholder={t('register.addressPlaceholder')} 
 				value={address} 
 				onChange={e => setAddress(e.target.value)} 
 				icon="address" 

@@ -1,23 +1,24 @@
 import { Card, CardContent } from '../../components/common/card'
 import { HelpCircle } from 'lucide-react';
-
+import { useTranslation } from 'react-i18next';
 export function FAQSection() {
+  const { t } = useTranslation();
   const faqs = [
     {
-      question: "LIMS Pro có phù hợp với phòng lab nhỏ không?",
-      answer: "Có, LIMS Pro được thiết kế đặc biệt cho phòng lab đơn lẻ với quy mô từ nhỏ đến vừa. Hệ thống có thể mở rộng theo nhu cầu phát triển."
+      question: t("faq.question1"),
+      answer: t("faq.answer1")
     },
     {
-      question: "Có cần đào tạo nhân viên sử dụng hệ thống không?",
-      answer: "LIMS Pro có giao diện trực quan và dễ sử dụng. Chúng tôi cung cấp khóa đào tạo cơ bản và hỗ trợ 24/7 trong giai đoạn triển khai."
+      question: t("faq.question2"),
+      answer: t("faq.answer2")
     },
     {
-      question: "Dữ liệu có được bảo mật an toàn không?",
-      answer: "Tuyệt đối! Chúng tôi sử dụng mã hóa end-to-end, backup tự động và tuân thủ đầy đủ các tiêu chuẩn bảo mật y tế quốc tế."
+      question: t("faq.question3"),
+      answer: t("faq.answer3")
     },
     {
-      question: "Chi phí triển khai hệ thống như thế nào?",
-      answer: "Chúng tôi có các gói dịch vụ linh hoạt phù hợp với mọi quy mô. Liên hệ để được tư vấn chi tiết và báo giá cụ thể."
+      question: t("faq.question4"),
+      answer: t("faq.answer4")
     }
   ];
 
@@ -26,10 +27,10 @@ export function FAQSection() {
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-4xl text-gray-900 mb-4">
-            Câu hỏi <span className="bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">thường gặp</span>
+           {t("faq.title")}
           </h2>
           <p className="text-xl text-gray-600">
-            Giải đáp những thắc mắc phổ biến về hệ thống LIMS Pro
+            {t("faq.description")}
           </p>
         </div>
 

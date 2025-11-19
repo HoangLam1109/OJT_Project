@@ -48,10 +48,10 @@ export function FeaturesSection() {
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-4xl text-gray-900 mb-4">
-            Tính năng <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">nổi bật</span>
+            {t("features.highlightedFeatures")}
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Hệ thống LIMS toàn diện với đầy đủ tính năng cần thiết cho việc quản lý phòng thí nghiệm hiện đại
+            {t("features.highlightedFeaturesDescription")}
           </p>
         </div>
 

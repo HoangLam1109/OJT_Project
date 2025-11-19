@@ -6,8 +6,9 @@ import {
   
 } from 'lucide-react';
 import { SiFacebook, SiX, SiInstagram, SiLinkedin, SiYoutube } from 'react-icons/si';
-
+import { useTranslation } from 'react-i18next';
 export function ContactSection() {
+  const { t } = useTranslation();
   return (
     <section className="relative px-6 py-20 bg-gray-50/50">
       <div className="max-w-7xl mx-auto">
@@ -15,10 +16,10 @@ export function ContactSection() {
           <div className="space-y-8">
             <div>
               <h2 className="text-4xl text-gray-900 mb-4">
-                Liên hệ <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">tư vấn</span>
+                {t("contact.title")}
               </h2>
               <p className="text-xl text-gray-600">
-                Đội ngũ chuyên gia sẵn sàng hỗ trợ bạn 24/7. Hãy liên hệ để được tư vấn miễn phí!
+                {t("contact.description")}
               </p>
             </div>
             <div className="space-y-6">
@@ -28,7 +29,7 @@ export function ContactSection() {
                 </div>
                 <div>
                   <div className="text-gray-900">Hotline</div>
-                  <div className="text-gray-600">1900 1234 (miễn phí)</div>
+                  <div className="text-gray-600">1900 1234 ({t("contact.free")})</div>
                 </div>
               </div>
               <div className="flex items-center gap-4">
@@ -45,13 +46,13 @@ export function ContactSection() {
                   <MapPin className="h-6 w-6 text-purple-600" />
                 </div>
                 <div>
-                  <div className="text-gray-900">Địa chỉ</div>
-                  <div className="text-gray-600">123 Đường ABC, Quận 1, TP.HCM</div>
+                  <div className="text-gray-900">{t("contact.address")}</div>
+                  <div className="text-gray-600">{t("contact.address1")}</div>
                 </div>
               </div>
             </div>
             <div className="space-y-4">
-              <h4 className="text-gray-900">Theo dõi chúng tôi</h4>
+              <h4 className="text-gray-900">{t("contact.followUs")}</h4>
               <div className="flex gap-4">
                 {[
                   { 

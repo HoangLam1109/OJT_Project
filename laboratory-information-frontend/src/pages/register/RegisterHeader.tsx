@@ -1,7 +1,8 @@
 import { CardTitle, CardDescription } from '../../components/common/card';
 import { TestTube } from 'lucide-react';
-
+import { useTranslation } from 'react-i18next';
 export function RegisterHeader() {
+	const { t } = useTranslation();
 	return (
 		<>
 			<div className="flex justify-center mb-4">
@@ -11,13 +12,13 @@ export function RegisterHeader() {
 			</div>
 
 			<CardTitle className="text-2xl text-gray-900 mb-1 leading-tight">
-				Đăng Ký Tài Khoản <br />
+				{t('register.registerAccount')} <br />
 				<span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-					Phòng Thí Nghiệm
+					{t('register.subtitle')}
 				</span>
 			</CardTitle>
 			<CardDescription className="text-sm text-gray-600 max-w-sm mx-auto">
-				Tạo tài khoản mới để sử dụng hệ thống
+				{t('register.createAccount')}
 			</CardDescription>
 		</>
 	);
