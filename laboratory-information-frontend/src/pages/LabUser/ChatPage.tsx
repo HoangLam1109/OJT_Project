@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Loader2, MessageCircle, RefreshCw, Search, Send } from 'lucide-react';
-import UserIcon from 'lucide-react/dist/esm/icons/user';
+import { Loader2, MessageCircle, RefreshCw, Search, Send, User as UserIcon } from 'lucide-react';
 import { useAuthContext } from '../../hooks/useAuthContext';
 import { Input } from '../../components/common/input';
 import Button from '../../components/common/button';
@@ -169,10 +168,11 @@ const LabUserChatPage: React.FC = () => {
   };
 
   return (
-    <div className="h-full flex flex-col bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-      <div className="grid grid-cols-12 h-full">
-        <div className="col-span-4 border-r border-gray-200 flex flex-col bg-white">
-          <div className="p-5 border-b border-gray-200 bg-white space-y-4">
+    <div className="flex flex-col bg-white rounded-lg shadow-sm border border-gray-200 min-h-[calc(100vh-140px)]">
+      <div className="grid grid-cols-12 flex-1">
+        <div className="col-span-4 border-r border-gray-200 bg-white">
+          <div className="sticky top-4 flex flex-col bg-white shadow-sm rounded-lg h-[calc(100vh-180px)] max-h-[calc(100vh-180px)]">
+            <div className="p-5 border-b border-gray-200 bg-white space-y-4 rounded-t-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <MessageCircle className="w-5 h-5 text-blue-600" />
@@ -187,67 +187,68 @@ const LabUserChatPage: React.FC = () => {
                 Làm mới
               </button>
             </div>
-            <p className="text-xs text-gray-500">
-              Danh sách dưới đây chỉ hiển thị các phòng chat do người dùng gửi yêu cầu
-              (creator = user). Bạn chỉ cần chọn phòng để phản hồi.
-            </p>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input
-                placeholder="Tìm theo tên phòng..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-          </div>
-
-          <div className="flex-1 overflow-y-auto bg-gray-50">
-            {filteredRooms.length === 0 ? (
-              <div className="p-8 text-center text-gray-500">
-                <MessageCircle className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                <p className="text-sm">
-                  {rooms.length === 0
-                    ? 'Chưa có yêu cầu nào từ người dùng.'
-                    : 'Không tìm thấy phòng chat phù hợp'}
-                </p>
+              <p className="text-xs text-gray-500">
+                Danh sách dưới đây chỉ hiển thị các phòng chat do người dùng gửi yêu cầu
+                (creator = user). Bạn chỉ cần chọn phòng để phản hồi.
+              </p>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Input
+                  placeholder="Tìm theo tên phòng..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-9"
+                />
               </div>
-            ) : (
-              filteredRooms.map((room) => (
-                <button
-                  type="button"
-                  key={room._id}
-                  onClick={() => setSelectedRoomId(room._id)}
-                  className={`w-full text-left px-4 py-3 border-l-4 transition ${
-                    selectedRoomId === room._id
-                      ? 'bg-white border-blue-600 shadow'
-                      : 'border-transparent hover:bg-gray-100'
-                  }`}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="w-11 h-11 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 ring-2 ring-white">
-                      <UserIcon className="w-5 h-5 text-blue-600" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-1">
-                        <h3 className="font-medium text-sm text-gray-900 truncate">
-                          {room.name || 'Phòng chat'}
-                        </h3>
-                        <span className="text-xs text-gray-400">
-                          {formatTime(room.updatedAt)}
-                        </span>
+            </div>
+
+            <div className="flex-1 overflow-y-auto bg-gray-50 rounded-b-lg">
+              {filteredRooms.length === 0 ? (
+                <div className="p-8 text-center text-gray-500">
+                  <MessageCircle className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                  <p className="text-sm">
+                    {rooms.length === 0
+                      ? 'Chưa có yêu cầu nào từ người dùng.'
+                      : 'Không tìm thấy phòng chat phù hợp'}
+                  </p>
+                </div>
+              ) : (
+                filteredRooms.map((room) => (
+                  <button
+                    type="button"
+                    key={room._id}
+                    onClick={() => setSelectedRoomId(room._id)}
+                    className={`w-full text-left px-4 py-3 border-l-4 transition ${
+                      selectedRoomId === room._id
+                        ? 'bg-white border-blue-600 shadow'
+                        : 'border-transparent hover:bg-gray-100'
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="w-11 h-11 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 ring-2 ring-white">
+                        <UserIcon className="w-5 h-5 text-blue-600" />
                       </div>
-                      <p className="text-xs text-gray-500 truncate">
-                        Người tạo: {getDisplayName(room.createdBy)}
-                      </p>
-                      <p className="text-xs text-gray-400">
-                        Thành viên: {room.participants.length}
-                      </p>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between mb-1">
+                          <h3 className="font-medium text-sm text-gray-900 truncate">
+                            {room.name || 'Phòng chat'}
+                          </h3>
+                          <span className="text-xs text-gray-400">
+                            {formatTime(room.updatedAt)}
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-500 truncate">
+                          Người tạo: {getDisplayName(room.createdBy)}
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          Thành viên: {room.participants.length}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                </button>
-              ))
-            )}
+                  </button>
+                ))
+              )}
+            </div>
           </div>
         </div>
 

@@ -3,7 +3,10 @@
     "appName": "LIMS Pro",
     "appDescription": "Laboratory Information Management System",
     "register": "Register",
-    "login": "Login"
+    "login": "Login",
+    "hello": "Hello",
+    "logout": "Logout",
+    "loggingOut": "Logging out..."
   },
   "login": {
     "welcome": "Welcome back",  
@@ -26,8 +29,62 @@
     "patientManagement": "Patient Management",
     "reportAnalysis": "Report Analysis",
     "patientHistory": "Patient History",
-    "highSecurity": "High Security"
-
+    "highSecurity": "High Security",
+    "success": "Login successful"
+  },
+  "forgotPassword": {
+    "title": "Password Recovery",
+    "subtitle": "Laboratory Information Management System",
+    "heading": "Forgot Password?",
+    "description": "Enter your email address",
+    "emailLabel": "Email Address",
+    "emailPlaceholder": "Enter your email",
+    "emailRequired": "Please enter your email address",
+    "invalidEmail": "Invalid email format",
+    "emailNotRegistered": "User with given email doesn't exist",
+    "error": "Failed to send reset password email. Please try again.",
+    "sending": "Sending...",
+    "sendResetLink": "Submit",
+    "backToLogin": "Back to Login",
+    "step1": "Enter your registered email",
+    "step2": "Check your inbox for reset link",
+    "step3": "Create a new password"
+  },
+  "forgotPasswordSuccess": {
+    "title": "Password Recovery",
+    "subtitle": "Laboratory Information Management System",
+    "heading": "Check Your Email!",
+    "description": "We've sent a password reset link to your email address",
+    "nextSteps": "Next Steps:",
+    "step1": "Check your email inbox (and spam folder)",
+    "step2": "Click the reset link in the email",
+    "step3": "Create your new password",
+    "note": "The reset link will expire in 1 hour for security reasons.",
+    "backToLogin": "Back to Login",
+    "backToHome": "Back to Home"
+  },
+  "resetPassword": {
+    "title": "Reset Password",
+    "subtitle": "Laboratory Information Management System",
+    "heading": "Create New Password",
+    "description": "Enter your new password below",
+    "newPassword": "New Password",
+    "newPasswordPlaceholder": "Enter new password",
+    "confirmPassword": "Confirm Password",
+    "confirmPasswordPlaceholder": "Re-enter new password",
+    "passwordRequired": "Please enter your password",
+    "passwordTooShort": "Password must be at least 6 characters",
+    "passwordMismatch": "Passwords do not match",
+    "noToken": "Invalid or expired reset link",
+    "passwordSameAsOld": "New password must be different from the current password",
+    "error": "Failed to reset password. Please try again.",
+    "resetting": "Resetting...",
+    "resetPassword": "Reset Password",
+    "success": "Password reset successful!",
+    "backToLogin": "Back to Login",
+    "requirement1": "At least 6 characters",
+    "requirement2": "Both passwords must match",
+    "requirement3": "Use a strong password"
   },
   "register": {
     "subtitle": "Laboratory Information Management System",
@@ -238,7 +295,16 @@
     "updateUser": "Update User"
   },
   "sidebar": {
-    "title": "Laboratory Management System"
+    "title": "Laboratory Management System",
+    "dashboard": "Dashboard",
+    "patients": "Patients",
+    "test-orders": "Test Orders",
+    "test-results": "Test Results",
+    "instruments": "Instruments",
+    "reagents": "Reagents",
+    "chat": "Chat",
+    "profile": "Profile",
+    "role": "Laboratory Staff"
   },
   "topHeader": {
     "appName": "Laboratory Management System"
@@ -248,7 +314,65 @@
     "error": "Logout failed",
     "loading": "Logging out...",
     "logout": "Logout"
-  }
+  },
+  "patient":{
+    "title":"Patient Management",
+    "subtitle":"Manage patient information and medical records",
+    "createMedicalRecord":"Create Medical Record",
+    "totalPatients":"Total Patients",
+    "activePatients":"Active Patients",
+    "inactivePatients":"Inactive Patients",
+    "deceasedPatients":"Deceased Patients",
+    "totalPatientsDescription":"Total patients in the system",
+    "activePatientsDescription":"Active patients in the system",
+    "inactivePatientsDescription":"Inactive patients in the system",
+    "deceasedPatientsDescription":"Deceased patients in the system",
+    "allStatus":"All Status",
+    "activeStatus":"Active Status",
+    "inactiveStatus":"Inactive Status",
+    "deceasedStatus":"Deceased Status",
+    "searchPlaceholder":"Search by name, phone, identify number",
+    "patientList":"Patient List",
+    "patientListDescription":"Manage patient information and medical records in the system",
+    "patientName":"Patient Name",
+    "contactInformation":"Contact Information",
+    "bloodType":"Blood Type",
+    "status":"Status",
+    "action":"Action",
+    "age":"Years old",
+    "male":"Male",
+    "female":"Female",
+    "other":"Other",
+    "active":"Active",
+    "inactive":"Inactive"
+  },
+  "testOrder":{
+      "notLoading": "Failed to load test orders",
+      "notSearching": "Failed to search test orders",
+      "notUploading":"Failed to update test orders",
+      "testOrderList":"Test Order List",
+      "subTestOrderList":"Manage and track test order process",
+      "patient": "Patient",
+      "testType": "Test Type",
+      "deadline": "Deadline",
+      "start":"Start",
+      "stop":"Stop",
+      "complete": "Complete",
+      "process": "Process",
+      "nothing": "None available",
+      "pending": "Pending",
+      "processing": "Processing",
+      "completed":"Completed",
+      "status": "Status",
+      "biochemistry": "Biochemistry",
+      "generalHematology": "General Hematology",
+      "microbiology": "Microbiology",
+      "immunology": "Immunology",
+      "endocrinology": "Endocrinology",
+      "oncology": "Oncology",
+      "searchPlaceholder": "Search sample",
+      "createTestOrder": "Create Test Order"
+    }
 }
 
 

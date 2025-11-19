@@ -42,7 +42,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // Các route public không cần kiểm tra authentication
-    const publicRoutes = ['/', '/login', '/register', '/auth/google/callback'];
+    const publicRoutes = ['/', '/login', '/register', '/auth/google/callback', '/forgot-password', '/forgot-password/success', '/reset-password'];
     const isPublicRoute = publicRoutes.includes(location.pathname);
 
     if (isPublicRoute) {

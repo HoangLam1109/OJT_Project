@@ -11,7 +11,6 @@ import {
   AdminDashboardPage,
   AdminPatientManagementPage,
   AdminAuditReportsPage,
-  AdminProfilePage
 } from "../pages/admin";
 import { ManagerUserManagementPage } from "../pages/manager";
 import { ManagerLayout } from "../layouts/ManagerLayout";
@@ -32,6 +31,9 @@ import { ServiceLayout } from "../layouts/ServiceLayout";
 import ServiceDashboardPage from "../pages/service/ServiceDashboardPage";
 import ServiceInstrumentPage from "../pages/service/ServiceInstrumentPage";
 import { GoogleCallbackPage } from "../pages/login/GoogleCallbackPage";
+import { ForgotPasswordPage } from "../pages/login/ForgotPasswordPage";
+import { ForgotPasswordSuccessPage } from "../pages/login/ForgotPasswordSuccessPage";
+import { ResetPasswordPage } from "../pages/login/ResetPasswordPage";
 import SelectInstrumentsPage from "@/pages/LabUser/SelectInstrumentsPage"
 import PatientDetailPage from "@/pages/LabUser/PatientDetailPage";
 import EventLogDetailPage from "@/pages/admin/EventLogDetailPage";
@@ -123,7 +125,7 @@ const roleRoutes: Record<string, RoleRouteConfig> = {
         component: TestOrdersPage,
       },
       { path: "audit-reports", component: AdminAuditReportsPage },
-      { path: "profile", component: AdminProfilePage },
+      { path: "profile", component: Profile, componentProps: { currentUser: null } },
     ],
   },
   MANAGER: {
@@ -150,16 +152,6 @@ const roleRoutes: Record<string, RoleRouteConfig> = {
       { path: "instruments", component: ServiceInstrumentPage },
       { path: "reagents", component: ReagentManagementPage },
       { path: "chat", component: LabUserChatPage },
-  // removed: medical record access logs feature
-      {
-        path: "reports",
-        component: () => (
-          <div className="text-center py-12">
-            <h2 className="text-2xl font-bold text-gray-900">Báo cáo</h2>
-            <p className="text-gray-500 mt-2">Trang báo cáo đang được phát triển</p>
-          </div>
-        ),
-      },
       { path: "profile", component: Profile, componentProps: { currentUser: null } },
     ],
   },
@@ -391,6 +383,9 @@ export function AppRoutes() {
       />
       <Route path="/login" element={<LoginLayout />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/forgot-password/success" element={<ForgotPasswordSuccessPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/auth/google/callback" element={<GoogleCallbackPage />} />
 
       {/* Dynamic Role Routes - Tự động sinh từ cấu hình */}

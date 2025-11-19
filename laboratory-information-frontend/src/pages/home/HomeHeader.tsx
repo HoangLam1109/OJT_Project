@@ -1,7 +1,10 @@
-import { Microscope, ArrowRight } from "lucide-react";
+import { Microscope, ArrowRight, LogOut } from "lucide-react";
 import Button from "../../components/common/button";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useAuthContext } from "../../hooks/useAuthContext";
+import { useNavigate } from "react-router-dom";
+import { logoutUser } from "../../service/authService/logoutApi";
 
 interface HomeHeaderProps {
   onShowLogin: () => void;
@@ -10,14 +13,32 @@ interface HomeHeaderProps {
 
 export function HomeHeader({ onShowLogin, onShowRegister }: HomeHeaderProps) {
   const { t, i18n } = useTranslation();
+  const { user, onLogout } = useAuthContext();
+  const navigate = useNavigate();
   const [, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
+  const [logoutLoading, setLogoutLoading] = useState(false);
   const lastYRef = useRef(0);
   const currentLanguage = i18n.language || "vi";
 
   const toggleLanguage = () => {
     const newLang = currentLanguage === "vi" ? "en" : "vi";
     i18n.changeLanguage(newLang);
+  };
+
+  const handleLogout = async () => {
+    try {
+      setLogoutLoading(true);
+      onLogout();
+      await logoutUser();
+      navigate("/", { replace: true });
+    } catch (error) {
+      console.error("Logout error:", error);
+      onLogout();
+      navigate("/", { replace: true });
+    } finally {
+      setLogoutLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -69,7 +90,7 @@ export function HomeHeader({ onShowLogin, onShowRegister }: HomeHeaderProps) {
           </div>
         </div>
 
-        {/* Language Switcher + Login + Register Buttons */}
+        {/* Language Switcher + Login/Register or User Info + Logout */}
         <div className="flex items-center gap-3">
           {/* Language Toggle Switch */}
           <div
@@ -114,20 +135,47 @@ export function HomeHeader({ onShowLogin, onShowRegister }: HomeHeaderProps) {
             </div>
           </div>
 
-          <Button
-            onClick={onShowRegister}
-            className="bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
-          >
-            {t("header.register")}
-          </Button>
+          {user ? (
+            /* User is logged in - Show greeting, username, and logout button */
+            <>
+              <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg shadow-sm">
+                <span className="font-medium text-gray-700">{t("header.hello")},</span>
+                <span className="font-semibold text-gray-900">{user.name}</span>
+              </div>
+              <Button
+                onClick={handleLogout}
+                disabled={logoutLoading}
+                className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {logoutLoading ? (
+                  t("header.loggingOut")
+                ) : (
+                  <>
+                    {t("header.logout")}
+                    <LogOut className="ml-2 h-4 w-4" />
+                  </>
+                )}
+              </Button>
+            </>
+          ) : (
+            /* User is not logged in - Show register and login buttons */
+            <>
+              <Button
+                onClick={onShowRegister}
+                className="bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
+              >
+                {t("header.register")}
+              </Button>
 
-          <Button
-            onClick={onShowLogin}
-            className="bg-gradient-to-r from-gray-900 to-gray-700 hover:from-black hover:to-gray-800 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
-          >
-            {t("header.login")}
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
+              <Button
+                onClick={onShowLogin}
+                className="bg-gradient-to-r from-gray-900 to-gray-700 hover:from-black hover:to-gray-800 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
+              >
+                {t("header.login")}
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </>
+          )}
         </div>
       </nav>
     </header>
