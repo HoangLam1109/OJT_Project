@@ -9,7 +9,7 @@ export const createInstrumentSchema = Joi.object({
 
 export const getInstrumentsSchema = Joi.object({
   status: Joi.string()
-    .valid("Ready", "Processing", "Maintenance", "Error", "Inactive")
+    .valid("Ready", "Processing", "Inactive")
     .optional(),
   is_active: Joi.boolean().optional(),
   manufacturer: Joi.string().trim().max(100).optional(),
@@ -26,7 +26,7 @@ export const updateInstrumentSchema = Joi.object({
   manufacturer: Joi.string().trim().max(100).optional(),
   location: Joi.string().trim().max(255).optional(),
   status: Joi.string()
-    .valid("Ready", "Processing", "Maintenance", "Error", "Inactive")
+    .valid("Ready", "Processing", "Inactive")
     .optional(),
   is_active: Joi.boolean().optional(),
 }).min(1);

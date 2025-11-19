@@ -7,7 +7,7 @@ export interface IInstrument extends Document {
   instrument_name: string;
   instrument_type: string;
   manufacturer?: string;
-  status: "Ready" | "Processing" | "Maintenance" | "Error" | "Inactive";
+  status: "Ready" | "Processing" | "Inactive";
   is_active: boolean;
   location?: string;
   created_at: Date;
@@ -51,7 +51,7 @@ const InstrumentSchema = new Schema<IInstrument>(
     },
     status: {
       type: String,
-      enum: ["Ready", "Processing", "Maintenance", "Error", "Inactive"],
+      enum: ["Ready", "Processing", "Inactive"],
       default: "Ready",
       required: true,
     },
