@@ -409,12 +409,14 @@ export class ReagentController {
   async searchReagents(req: Request, res: Response) {
     try {
       const keyword = (req.query.keyword as string || "").trim();
+      console.log("keyword", keyword);
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
       if (!keyword) {
         return res.status(400).json({ success: false, message: "Keyword is required" });
       }
       const { data, totalItems } = await service.search(keyword, page, limit);
+      console.log("data", data);
       res.json({
         success: true,
         data,

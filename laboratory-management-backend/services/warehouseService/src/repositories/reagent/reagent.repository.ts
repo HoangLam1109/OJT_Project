@@ -1,21 +1,23 @@
 // src/repositories/reagent.repository.ts
+import { FilterQuery } from "mongoose";
 import Reagent, { type IReagent } from "../../db/models/Reagent.model.js";
 import { generateReagentCode } from "../../utils/reagentCode.util.js";
 
 export class ReagentRepository {
   // Lấy tất cả reagents có phân trang
   async findAll(
-    query: any = { is_deleted: false },
+    query: FilterQuery<IReagent> = { is_deleted: false }, // <- dùng FilterQuery
     skip = 0,
     limit = 10,
-    sort: any = { expiration_date: 1, created_at: -1 }
+    sort: Record<string, 1 | -1> = { expiration_date: 1, created_at: -1 }
   ): Promise<IReagent[]> {
     return await Reagent.find(query)
       .skip(skip)
       .limit(limit)
       .sort(sort)
       .select("-__v")
-      .lean<IReagent>();
+      .lean<IReagent[]>()
+      .exec();
   }
 
   async findById(id: string): Promise<IReagent | null> {
@@ -69,4 +71,24 @@ export class ReagentRepository {
   async count(query: any = { is_deleted: false }): Promise<number> {
     return await Reagent.countDocuments(query);
   }
+
+
+  async search(keyword: string, skip: number, limit: number, sort: any) {
+    const query = {
+      $or: [
+        { reagent_name: { $regex: keyword, $options: "i" } },
+        { code: { $regex: keyword, $options: "i" } },
+        { unit_of_measure: { $regex: keyword, $options: "i" } },
+        { storage_location: { $regex: keyword, $options: "i" } }
+      ]
+    };
+
+    const [data, totalItems] = await Promise.all([
+      Reagent.find(query).skip(skip).limit(limit).sort(sort),
+      Reagent.countDocuments(query)
+    ]);
+
+    return { data, totalItems };
+  }
+
 }

@@ -34,7 +34,7 @@ export class ReagentService {
     sort: any = { expiration_date: 1, created_at: -1 } // sort 2 cấp
   ) {
     const skip = (page - 1) * limit;
-    const query = { is_deleted: false }; // chỉ lấy reagent chưa xóa
+    const query = { is_deleted: false }; 
     const data = await this.repo.findAll(query, skip, limit, sort);
     const totalItems = await this.repo.count(query);
     return { data, totalItems };
