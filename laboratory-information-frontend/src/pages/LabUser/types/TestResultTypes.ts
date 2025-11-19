@@ -2,6 +2,7 @@
 export interface TestResultItem {
   test_order_id: string;
   test_item_id: string;
+  test_type: string;
   name: string;
   code: string;
   unit: string;
@@ -15,6 +16,7 @@ export interface TestResultItem {
 
 export interface TestResultGroup {
   patient_name: string;
+  test_type: string;
   totalResults: number;
   resultsSample: TestResultItem[];
 }
@@ -27,6 +29,7 @@ export interface TestResultApiResponse {
 export interface TestResult {
   testOrderId: string;
   patientName: string;
+  test_type: string;
   totalTests: number;
   results: TestResultDetail[];
   reviewedCount: number;
@@ -36,6 +39,7 @@ export interface TestResult {
 
 export interface TestResultDetail {
   testItemId: string;
+  test_type: string;
   name: string;
   code: string;
   unit: string;

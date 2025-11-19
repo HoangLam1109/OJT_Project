@@ -25,6 +25,7 @@ export const TestResultService = {
                 test_order_id: new Types.ObjectId(test_order_id),
                 test_item_id: item._id.toString(),
                 patient_name: patientName ?? "",
+                test_type: item.test_type,
                 name: item.name,
                 code: item.code,
                 unit: item.unit,
@@ -48,6 +49,7 @@ export const TestResultService = {
                 $group: {
                     _id: "$test_order_id",
                     patient_name: { $first: "$patient_name" },
+                    test_type: { $first: "$test_type" },
                     totalResults: { $sum: 1 },
                     resultsSample: { $push: "$$ROOT" } // nếu muốn giữ sample kết quả
                 }
@@ -60,6 +62,7 @@ export const TestResultService = {
                     _id: 0,
                     test_order_id: "$_id",
                     patient_name: 1,
+                    test_type: "$test_type",
                     totalResults: 1,
                     resultsSample: 1
                 }
@@ -69,33 +72,35 @@ export const TestResultService = {
 
     getTestOrderById: async (testOrderId: string) => {
 
-    const objectId = new Types.ObjectId(testOrderId);
+        const objectId = new Types.ObjectId(testOrderId);
 
-    return TestOrderResult.aggregate([
-        {
-            $match: {
-                test_order_id: objectId
+        return TestOrderResult.aggregate([
+            {
+                $match: {
+                    test_order_id: objectId
+                }
+            },
+            {
+                $group: {
+                    _id: "$test_order_id",
+                    patient_name: { $first: "$patient_name" },
+                    test_type: { $first: "$test_type" },
+                    totalResults: { $sum: 1 },
+                    resultsSample: { $push: "$$ROOT" }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    test_order_id: "$_id",
+                    patient_name: 1,
+                    test_type: { $first: "$test_type" },
+                    totalResults: 1,
+                    resultsSample: 1
+                }
             }
-        },
-        {
-            $group: {
-                _id: "$test_order_id",
-                patient_name: { $first: "$patient_name" },
-                totalResults: { $sum: 1 },
-                resultsSample: { $push: "$$ROOT" }
-            }
-        },
-        {
-            $project: {
-                _id: 0,
-                test_order_id: "$_id",
-                patient_name: 1,
-                totalResults: 1,
-                resultsSample: 1
-            }
-        }
-    ]);
-}
+        ]);
+    }
 
 };
 
