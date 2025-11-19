@@ -198,13 +198,31 @@ export const apiUtils = {
   // Extract error message from axios error
   getErrorMessage: (error: unknown): string => {
     if (axios.isAxiosError(error)) {
-      // Prefer explicit message from backend; fall back to any 'error' field or axios message
-      return (
-        error.response?.data?.message ||
-        error.response?.data?.error ||
-        error.message ||
-        'Có lỗi xảy ra'
-      );
+      // Try to get message from various possible response structures
+      const responseData = error.response?.data;
+      
+      // Handle different response formats
+      if (responseData) {
+        // Direct message
+        if (typeof responseData.message === 'string') {
+          return responseData.message;
+        }
+        // Nested error.message
+        if (responseData.error && typeof responseData.error === 'object' && 'message' in responseData.error) {
+          return String(responseData.error.message);
+        }
+        // Direct error string
+        if (typeof responseData.error === 'string') {
+          return responseData.error;
+        }
+        // Array of messages
+        if (Array.isArray(responseData.message)) {
+          return responseData.message.join(', ');
+        }
+      }
+      
+      // Fall back to axios error message
+      return error.message || 'Có lỗi xảy ra';
     }
     if (error instanceof Error) {
       return error.message;
