@@ -15,7 +15,7 @@ export interface Patient {
   };
   medicalHistory: string[];
   allergies: string[];
-  bloodType: 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-';
+  bloodType: string;
   status: 'active' | 'inactive' | 'deceased';
   createdAt: string;
   updatedAt: string;
