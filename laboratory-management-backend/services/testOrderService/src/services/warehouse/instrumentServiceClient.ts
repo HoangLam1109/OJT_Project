@@ -63,7 +63,7 @@ class InstrumentServiceClient {
       const url = `${this.baseUrl}/api/warehouse/instruments?${params.toString()}`;
       const headers = { "X-Internal-API-Key": this.internalApiKey };
       const res = await HttpClient.get<InstrumentListResponse>(url, { headers });
-      return Array.isArray(res.data) && res.data.length > 0 ? res.data[0] : null;
+      return Array.isArray(res.data) && res.data.length > 0 ? (res.data[0] ?? null) : null;
     } catch (err: any) {
       console.error("[Warehouse Service] Error fetching ready instrument:", err.message);
       return null;

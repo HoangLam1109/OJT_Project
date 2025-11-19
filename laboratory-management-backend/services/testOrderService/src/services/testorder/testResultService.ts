@@ -3,8 +3,10 @@ import { TestItem } from "../../db/models/TestItem.model.js";
 import { Types } from "mongoose";
 import { TestOrderRepository } from "../../repositories/testOrderRepository.js";
 import { TestOrderResult } from "../../db/models/TestResult.model.js";
+import instrumentServiceClient from "../warehouse/instrumentServiceClient.js";
+import reagentServiceClient from "../warehouse/reagentServiceClient.js";
 export const TestResultService = {
-// Thiếu Search , sort , phân trang 
+    // Thiếu Search , sort , phân trang 
 
 
     // Tạo kết quả random khi order Completed
@@ -13,21 +15,51 @@ export const TestResultService = {
         const order = await TestOrderRepository.findById(test_order_id);
         if (!order) throw new Error("Test Order not found");
 
-        const patientName = order.patient_name; // giả sử field này có trong TestOrder
+        const patientName = order.patient_name;
 
+        const instrument = await instrumentServiceClient.getInstrumentById(order.instrument_id || "");
+        if (!instrument) throw new Error("Instrument not found");
+
+        const reagent_usages = order.reagent_usages || [];
+        const reagentArray = await reagentServiceClient.getReagentsByIds(
+            reagent_usages.map(ru => ru.reagent_id)
+        );
+        const reagent_names = reagentArray ? Array.from(reagentArray.values()).map(r => r.reagent_name) : [];
 
         const items = await TestItem.find({ _id: { $in: test_item_ids } });
 
         const results = items.map(item => {
-            const randomValue = Math.random() * (item.ref_max! - item.ref_min!) + item.ref_min!;
+            // Random tỷ lệ: low 30%, normal 40%, high 30%
+            const roll = Math.random(); // [0, 1)
+
+            let randomValue: number;
             let status: "normal" | "high" | "low" = "normal";
-            if (randomValue < item.ref_min!) status = "low";
-            else if (randomValue > item.ref_max!) status = "high";
+
+            if (roll < 0.3) {
+                // LOW — 30%
+                status = "low";
+                // random từ 5% đến 20% dưới ref_min
+                randomValue = item.ref_min! - Math.random() * (item.ref_min! * 0.2);
+            }
+            else if (roll < 0.7) {
+                // NORMAL — 40%
+                status = "normal";
+                randomValue = Math.random() * (item.ref_max! - item.ref_min!) + item.ref_min!;
+            }
+            else {
+                // HIGH — 30%
+                status = "high";
+                // random từ 5% đến 20% trên ref_max
+                randomValue = item.ref_max! + Math.random() * (item.ref_max! * 0.2);
+            }
+
 
             return {
                 test_order_id: new Types.ObjectId(test_order_id),
                 test_item_id: item._id.toString(),
                 patient_name: patientName ?? "",
+                instrument_name: instrument.instrument_name,
+                reagent_names: reagent_names,
                 test_type: item.test_type,
                 name: item.name,
                 code: item.code,
@@ -35,12 +67,14 @@ export const TestResultService = {
                 result_value: parseFloat(randomValue.toFixed(2)),
                 result_status: status,
                 reviewed: false,
-                reviewer_comment: ""
+                reviewer_comment: "",
+                created_at: new Date()
             };
         });
 
         return TestResultRepository.createMany(results);
     },
+
 
 
     getTestOrdersWithResultsSummary: async (page = 1, limit = 10) => {

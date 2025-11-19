@@ -4,23 +4,23 @@ import { Types } from "mongoose";
 
 
 
-export const createRandomResults = async (req: Request, res: Response) => {
-  try {
-    const { test_order_id, test_item_ids } = req.body;
-    if (!test_order_id || !test_item_ids || !Array.isArray(test_item_ids)) {
-      return res.status(400).json({ success: false, message: "Invalid input" });
-    }
+// export const createRandomResults = async (req: Request, res: Response) => {
+//   try {
+//     const { test_order_id, test_item_ids } = req.body;
+//     if (!test_order_id || !test_item_ids || !Array.isArray(test_item_ids)) {
+//       return res.status(400).json({ success: false, message: "Invalid input" });
+//     }
+    
+//     const results = await TestResultService.createRandomResults(test_order_id, test_item_ids);
 
-    const results = await TestResultService.createRandomResults(test_order_id, test_item_ids);
-
-    return res.status(201).json({ success: true, data: results });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error instanceof Error ? error.message : "Unknown error"
-    });
-  }
-};
+//     return res.status(201).json({ success: true, data: results });
+//   } catch (error) {
+//     return res.status(500).json({
+//       success: false,
+//       message: error instanceof Error ? error.message : "Unknown error"
+//     });
+//   }
+// };
 
 export const getTestOrdersWithResultsSummary = async (req: Request, res: Response) => {
   try {
