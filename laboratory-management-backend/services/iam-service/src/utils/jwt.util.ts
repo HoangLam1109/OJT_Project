@@ -4,9 +4,9 @@ import dotenv from "dotenv";
 dotenv.config();
 
 
-const generateJWT = (res: Response, userId: string) => {
+const generateJWT = (res: Response, userId: string, email: string, role: string[]) => {
 
-  const accessToken = jwt.sign({ userId: userId }, process.env.JWT_SECRET_KEY as string, { expiresIn: process.env.JWT_EXPIRY } as SignOptions);
+  const accessToken = jwt.sign({ userId: userId, email: email, role: role }, process.env.JWT_SECRET_KEY as string, { expiresIn: process.env.JWT_EXPIRY } as SignOptions);
   const refreshToken = jwt.sign({ userId: userId }, process.env.JWT_REFRESH_SECRET as string, {
     expiresIn: process.env.JWT_REFRESH_EXPIRY,
   } as SignOptions);

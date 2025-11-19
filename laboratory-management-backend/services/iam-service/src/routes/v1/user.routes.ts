@@ -12,6 +12,7 @@ import {
   lockUser,
   updateProfile,
   uploadAvatar,
+  getStaff,
 } from "../../controllers/user.controller.js";
 import { authorize } from "../../middlewares/authorize.middleware.js";
 import {
@@ -40,6 +41,7 @@ const avatarUpload = multer({
 
 router.get("/all", authorize(["read:user"]), getUsersWithPagination);
 router.get("/me/roles", getCurrentUserRolesAndPrivileges);
+router.get("/staff", getStaff);
 router.get("/:id/roles", authorize(["read:user"]), getUserRolesAndPrivileges);
 router.get("/:id", authorize(["read:user"]), getUser);
 

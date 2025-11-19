@@ -73,7 +73,7 @@ const googleCallback = async (req: Request, res: Response, next: NextFunction): 
         return next(new AppError(401, 'Google authentication failed'));
       }
 
-      generateJWT(res, user._id as string);
+      generateJWT(res, user._id as string, user.email as string, user.role as string[]);
 
       let returnTo = '/';
       try {
