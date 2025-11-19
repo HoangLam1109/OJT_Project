@@ -1,22 +1,22 @@
 import { Schema, model } from "mongoose";
 
 const TestItemSchema = new Schema({
-  test_type: {            // Ví dụ: "Huyết học tổng quát"
+  test_type: {           
     type: String,
     required: true,
   },
-  code: {                 // Ví dụ: "RBC", "WBC"
+  code: {                 
     type: String,
     required: true,
   },
-  name: {                 // Ví dụ: "Hồng cầu"
+  name: {               
     type: String,
     required: true,
   },
-  unit: String,           // mg/dL, T/µL, K/µL…
+  unit: String,           
   ref_min: Number,
   ref_max: Number,
-  method: String,         // optional
+  method: String,        
 }, { timestamps: true });
 
 export const TestItem = model("TestItem", TestItemSchema,"testItems");

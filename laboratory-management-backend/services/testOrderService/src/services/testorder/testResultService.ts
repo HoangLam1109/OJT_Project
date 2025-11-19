@@ -6,26 +6,26 @@ import { TestOrderResult } from "../../db/models/TestResult.model.js";
 import instrumentServiceClient from "../warehouse/instrumentServiceClient.js";
 import reagentServiceClient from "../warehouse/reagentServiceClient.js";
 export const TestResultService = {
-    // Thiếu Search , sort , phân trang 
-
-
-    // Tạo kết quả random khi order Completed
+ 
     createRandomResults: async (test_order_id: string, test_item_ids: string[]) => {
         // Lấy thông tin Test Order để có tên bệnh nhân
         const order = await TestOrderRepository.findById(test_order_id);
         if (!order) throw new Error("Test Order not found");
 
         const patientName = order.patient_name;
-
+        
+        // Lấy instrument
         const instrument = await instrumentServiceClient.getInstrumentById(order.instrument_id || "");
         if (!instrument) throw new Error("Instrument not found");
-
+        
+        // Lấy tên reagent
         const reagent_usages = order.reagent_usages || [];
         const reagentArray = await reagentServiceClient.getReagentsByIds(
             reagent_usages.map(ru => ru.reagent_id)
         );
         const reagent_names = reagentArray ? Array.from(reagentArray.values()).map(r => r.reagent_name) : [];
-
+        
+        // Lấy thông tin các Test Item
         const items = await TestItem.find({ _id: { $in: test_item_ids } });
 
         const results = items.map(item => {
@@ -36,20 +36,15 @@ export const TestResultService = {
             let status: "normal" | "high" | "low" = "normal";
 
             if (roll < 0.3) {
-                // LOW — 30%
                 status = "low";
-                // random từ 5% đến 20% dưới ref_min
                 randomValue = item.ref_min! - Math.random() * (item.ref_min! * 0.2);
             }
             else if (roll < 0.7) {
-                // NORMAL — 40%
                 status = "normal";
                 randomValue = Math.random() * (item.ref_max! - item.ref_min!) + item.ref_min!;
             }
             else {
-                // HIGH — 30%
                 status = "high";
-                // random từ 5% đến 20% trên ref_max
                 randomValue = item.ref_max! + Math.random() * (item.ref_max! * 0.2);
             }
 
@@ -68,7 +63,8 @@ export const TestResultService = {
                 result_status: status,
                 reviewed: false,
                 reviewer_comment: "",
-                created_at: new Date()
+                is_deleted: false,
+                deleted_at: null,
             };
         });
 
@@ -81,17 +77,17 @@ export const TestResultService = {
         const skip = (page - 1) * limit;
 
         return TestOrderResult.aggregate([
-            { $match: {} }, // có thể lọc thêm nếu cần
+            { $match: {} }, 
+            { $sort: { createdAt: -1 } }, 
             {
                 $group: {
                     _id: "$test_order_id",
                     patient_name: { $first: "$patient_name" },
                     test_type: { $first: "$test_type" },
                     totalResults: { $sum: 1 },
-                    resultsSample: { $push: "$$ROOT" } // nếu muốn giữ sample kết quả
+                    resultsSample: { $push: "$$ROOT" }
                 }
             },
-            { $sort: { "_id": -1 } }, // sắp xếp theo test_order_id hoặc createdAt
             { $skip: skip },
             { $limit: limit },
             {
@@ -99,13 +95,14 @@ export const TestResultService = {
                     _id: 0,
                     test_order_id: "$_id",
                     patient_name: 1,
-                    test_type: "$test_type",
+                    test_type: 1,
                     totalResults: 1,
                     resultsSample: 1
                 }
             }
         ]);
     },
+
 
     getTestOrderById: async (testOrderId: string) => {
 
@@ -137,8 +134,76 @@ export const TestResultService = {
                 }
             }
         ]);
-    }
+    },
 
+    async softDeleteByOrderId(test_order_id: any) {
+        await TestResultRepository.softDeleteByOrderId(test_order_id);
+        return { success: true, message: "Soft-deleted results for order" };
+    },
+
+
+    async updateTestResult(
+        id: string,
+        updateData: {
+            result_value?: number;
+            reviewed?: boolean;
+            reviewer_comment?: string;
+            result_status?: "normal" | "high" | "low"; 
+        }
+    ) {
+        // Lấy record hiện tại
+        const existing = await TestResultRepository.findById(id);
+        if (!existing || existing.is_deleted) {
+            throw new Error("Test Result not found or already deleted");
+        }
+
+        // Nếu result_value thay đổi, cần lấy ref_min/ref_max từ TestItem
+        if (updateData.result_value !== undefined) {
+            const testItem = await TestItem.findById(existing.test_item_id);
+            if (!testItem) {
+                throw new Error("Test Item not found");
+            }
+
+            let status: "normal" | "high" | "low" = "normal";
+            if (updateData.result_value < testItem.ref_min!) status = "low";
+            else if (updateData.result_value > testItem.ref_max!) status = "high";
+
+            updateData.result_status = status;
+        }
+
+        const updated = await TestResultRepository.updateById(
+            new Types.ObjectId(id),
+            updateData
+        );
+
+        return {
+            success: true,
+            message: "Test Result updated successfully",
+            data: updated,
+        };
+    },
+
+
+    async searchResults(keyword: string, page: number, limit: number) {
+        const filter: any = { is_deleted: false };
+
+        if (Types.ObjectId.isValid(keyword)) {
+            // Nếu keyword là ObjectId, tìm theo test_order_id
+            filter.test_order_id = new Types.ObjectId(keyword);
+        } else if (keyword.trim() !== "") {
+            // Nếu keyword là string, tìm theo patient_name (partial, case-insensitive)
+            filter.patient_name = { $regex: keyword, $options: "i" };
+        }
+
+        const total = await TestOrderResult.countDocuments(filter);
+
+        const results = await TestOrderResult.find(filter)
+            .skip((page - 1) * limit)
+            .limit(limit)
+            .sort({ createdAt: -1 }); // mới nhất lên trước
+
+        return { results, total };
+    },
 };
 
 

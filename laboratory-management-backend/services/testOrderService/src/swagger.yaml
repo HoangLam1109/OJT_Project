@@ -554,7 +554,278 @@ paths:
                     example: false
                   message:
                     type: string
-                    example: Unknown error                  
+                    example: Unknown error   
+
+  # ==================== GET: Search Test Results (paginated) ====================    
+  /testResult/search:
+    get:
+      summary: Search Test Results (paginated)
+      description: Tìm kiếm Test Results theo keyword (Test Order ID hoặc Patient Name), trả về trang kết quả.
+      tags:
+        - Test Result
+      parameters:
+        - name: keyword
+          in: query
+          description: Test Order ID (ObjectId) hoặc Patient Name (partial match)
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: Số trang
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          description: Số lượng kết quả trên một trang
+          required: false
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Trả về danh sách kết quả với phân trang
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        _id:
+                          type: string
+                        test_order_id:
+                          type: string
+                        test_item_id:
+                          type: string
+                        patient_name:
+                          type: string
+                        reagent_names:
+                          type: array
+                          items:
+                            type: string
+                        result_value:
+                          type: number
+                        result_status:
+                          type: string
+                          enum:
+                            - normal
+                            - high
+                            - low
+                        reviewed:
+                          type: boolean
+                        reviewer_comment:
+                          type: string
+                          nullable: true
+                        created_at:
+                          type: string
+                          format: date-time
+                        updated_at:
+                          type: string
+                          format: date-time
+                        is_deleted:
+                          type: boolean
+                          format: boolean
+                        deleted_at:
+                          type: string
+                          format: date-time
+                          nullable: true
+                  pagination:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                      page:
+                        type: integer
+                      limit:
+                        type: integer
+                      totalPages:
+                        type: integer
+        '400':
+          description: Keyword không hợp lệ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Keyword is required
+        '404':
+          description: Không tìm thấy kết quả
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: No Test Results found
+        '500':
+          description: Lỗi server
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal server error 
+
+  # ==================== PUT: Update Test Result By ID ====================
+  /testResult/update/{id}:
+    put:
+      summary: Update a Test Result
+      description: Update result value, review status, reviewer comment. Automatically updates result_status based on value.
+      tags:
+        - Test Result
+      parameters:
+        - name: id
+          in: path
+          description: Test Result ID to update
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Fields to update
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                result_value:
+                  type: number
+                  example: 5.5
+                  description: New test result value
+                reviewed:
+                  type: boolean
+                  example: true
+                  description: Whether the result has been reviewed
+                reviewer_comment:
+                  type: string
+                  example: "Patient is stable"
+                  description: Reviewer comment
+      responses:
+        '200':
+          description: Test Result updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Test Result updated successfully
+                  data:
+                    type: object
+                    properties:
+                      _id:
+                        type: string
+                        example: 641234abcd1234ef56789abc
+                      test_order_id:
+                        type: string
+                        example: 641234abcd1234ef56789def
+                      test_item_id:
+                        type: string
+                        example: "CBC001"
+                      result_value:
+                        type: number
+                        example: 5.5
+                      result_status:
+                        type: string
+                        enum:
+                          - normal
+                          - high
+                          - low
+                        example: normal
+                      reviewed:
+                        type: boolean
+                        example: true
+                      reviewer_comment:
+                        type: string
+                        example: "Patient is stable"
+                      is_deleted:
+                        type: boolean
+                        example: false
+        '404':
+          description: Test Result not found or already deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Test Result not found or already deleted
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Internal server error  
+  # ==================== Delete: Delete Test Result By testorderId====================
+  /testResult/delete/{id}:
+    delete:
+      tags:
+        - Test Result
+      summary: Soft delete a test result
+      description: Mark a test result as deleted without removing it from the database.
+      parameters:
+        - name: id
+          in: path
+          description: Test Result ID to delete
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Test result soft-deleted successfully
+        '404':
+          description: Test Result not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Test Result not found
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Internal server error         
+  
 components:
   schemas:
     # ==================== REQUEST: Dữ liệu gửi lên ====================
