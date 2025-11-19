@@ -1,5 +1,10 @@
 import { roleRepository } from "../repositories/index.js";
 import { logEvent } from "../utils/logging.util.js";
+import {
+  MonitoringEventCodes,
+  MonitoringEventActions,
+  MonitoringServiceName,
+} from "../constants/monitoring.constant.js";
 
 import type { IRole } from "../db/models/Role.model.js";
 import {
@@ -73,11 +78,11 @@ export class RoleService {
     const createDiffs = computeChanges<IRole>(undefined, newRole ?? undefined, createFields);
 
     await logEvent({
-      eventCode: "E_00028",
-      action: "CREATE",
+      eventCode: MonitoringEventCodes.ROLE_CREATED,
+      action: MonitoringEventActions.CREATE,
       eventMessage: `Role ${newRole.roleCode} created successfully!`,
       performedBy: performedBy || "Unknown",
-      serviceName: "IAM_SERVICE",
+      serviceName: MonitoringServiceName,
       entityId: newRole._id,
       ...createDiffs,
     });
@@ -160,11 +165,11 @@ export class RoleService {
     );
 
     await logEvent({
-      eventCode: "E_00029",
-      action: "UPDATE",
+      eventCode: MonitoringEventCodes.ROLE_UPDATED,
+      action: MonitoringEventActions.UPDATE,
       eventMessage: `Role ${updatedRole?.roleCode} updated successfully!`,
       performedBy: performedBy || "Unknown",
-      serviceName: "IAM_SERVICE",
+      serviceName: MonitoringServiceName,
       entityId: roleId,
       ...diffs,
     });
@@ -198,11 +203,11 @@ export class RoleService {
     ];
     const deleteDiffs = computeChanges<IRole>(role ?? undefined, undefined, deleteFields);
     await logEvent({
-      eventCode: "E_00030",
-      action: "DELETE",
+      eventCode: MonitoringEventCodes.ROLE_DELETED,
+      action: MonitoringEventActions.DELETE,
       eventMessage: `Role ${deletedRole?.roleCode} deleted successfully!`,
       performedBy: performedBy || "Unknown",
-      serviceName: "IAM_SERVICE",
+      serviceName: MonitoringServiceName,
       entityId: roleId,
       ...deleteDiffs,
     });
