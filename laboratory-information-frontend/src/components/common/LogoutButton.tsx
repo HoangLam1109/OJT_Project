@@ -5,7 +5,7 @@ import { LogOut } from "lucide-react";
 import { logoutUser } from "../../service/authService/logoutApi";
 import { useAuthContext } from "../../hooks/useAuthContext";
 import { LogoutConfirmDialog } from "./LogoutConfirmDialog";
-
+import { useTranslation } from 'react-i18next';
 interface LogoutButtonProps {
   collapsed?: boolean;
 }
@@ -15,7 +15,7 @@ export const LogoutButton: React.FC<LogoutButtonProps> = ({ collapsed = false })
   const { onLogout } = useAuthContext();
   const [loading, setLoading] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
-
+  const { t } = useTranslation();
   const handleLogout = async () => {
     try {
       setLoading(true);
@@ -27,9 +27,9 @@ export const LogoutButton: React.FC<LogoutButtonProps> = ({ collapsed = false })
       const success = await logoutUser();
 
       if (success) {
-        toast.success("Đăng xuất thành công!");
+        toast.success(t('logout.success'));
       } else {
-        toast.error("Đăng xuất thất bại!");
+        toast.error(t('logout.error'));
       }
       
       // Force navigate to login page
@@ -61,7 +61,7 @@ export const LogoutButton: React.FC<LogoutButtonProps> = ({ collapsed = false })
         {collapsed ? (
           <LogOut className="h-4 w-4" />
         ) : (
-          loading ? "Đang đăng xuất..." : "Đăng xuất"
+          loading ? t('logout.loading') : t('logout.logout')
         )}
       </button>
 

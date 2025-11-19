@@ -1,17 +1,11 @@
 import { useState } from 'react';
-import { Users, LayoutDashboard, Settings, User as UserIcon, Wrench } from 'lucide-react';
+import { Users, User as UserIcon, Wrench } from 'lucide-react';
 import { Sidebar } from '../components/common/Sidebar';
 import { TopHeader } from '../components/common/TopHeader';
 import type { NavigationItem } from '../types/Layout.types';
 import type { User } from '../types/User';
+import { useTranslation } from 'react-i18next';
 
-const navigationItems: NavigationItem[] = [
-  { id: 'user-management', label: 'Quản lý người dùng', icon: Users },
-  { id: 'dashboard', label: 'Tổng quan', icon: LayoutDashboard },
-  { id: 'settings', label: 'Cài đặt', icon: Settings },
-  { id: 'profile', label: 'Hồ sơ cá nhân', icon: UserIcon },
-  { id: 'instruments', label: 'Quản lý thiết bị', icon: Wrench }  
-];
 interface ManagerLayoutProps {
   children: React.ReactNode;
   currentUser: User;
@@ -28,12 +22,17 @@ export function ManagerLayout({
   onNavigate 
 }: ManagerLayoutProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-
+  const { t } = useTranslation();
+  const navigationItems: NavigationItem[] = [
+  { id: 'user-management', label: t('manager.userManagement'), icon: Users },
+  { id: 'profile', label: t('manager.profile'), icon: UserIcon },
+  { id: 'instruments', label: t('manager.instruments'), icon: Wrench }  
+  ];
   return (
     <div className="min-h-screen bg-gray-50 flex">
       <Sidebar
         currentUserName={currentUser.name}
-        currentUserRole="Quản lý"
+        currentUserRole={t('manager.role')}
         currentPage={currentPage}
         sidebarCollapsed={sidebarCollapsed}
         setSidebarCollapsed={setSidebarCollapsed}
