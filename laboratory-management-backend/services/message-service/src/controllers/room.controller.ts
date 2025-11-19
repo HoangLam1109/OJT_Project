@@ -473,7 +473,7 @@ const updateRoom = async (
       throw new AppError(404, "User not found");
     }
 
-    const isStaff = user.role?.includes("ADMIN") || user.role?.includes("MANAGER");
+    const isStaff = user.role?.includes("ADMIN") || user.role?.includes("MANAGER") || user.role?.includes("LAB_USER");
 
     const room = await roomService.updateRoom(roomId, data, (req as any).user.userId, isStaff || false);
     res.status(201).json(room);
@@ -518,7 +518,7 @@ const deleteRoom = async (
       throw new AppError(404, "User not found");
     }
 
-    const isStaff = user.role?.includes("ADMIN") || user.role?.includes("MANAGER");
+    const isStaff = user.role?.includes("ADMIN") || user.role?.includes("MANAGER") || user.role?.includes("LAB_USER");
 
     await roomService.deleteRoom(roomId, (req as any).user.userId, isStaff || false);
     res.status(201).json({ message: "Room deleted successfully" });
