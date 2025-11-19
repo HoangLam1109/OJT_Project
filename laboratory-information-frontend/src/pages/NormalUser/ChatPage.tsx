@@ -27,6 +27,35 @@ const parseDefaultLabUsers = (): string[] => {
     .filter(Boolean);
 };
 
+interface LabUserOption {
+  id: string;
+  label: string;
+}
+
+const parseLabUserOptions = (defaultIds: string[]): LabUserOption[] => {
+  const raw = import.meta.env.VITE_LAB_USER_OPTIONS || '';
+  const envOptions = raw
+    .split(',')
+    .map((entry) => {
+      const [id, label] = entry.split('|').map((part) => part?.trim());
+      if (!id) return null;
+      return {
+        id,
+        label: label || id,
+      } as LabUserOption;
+    })
+    .filter((opt): opt is LabUserOption => Boolean(opt));
+
+  if (envOptions.length > 0) {
+    return envOptions;
+  }
+
+  return defaultIds.map((id, index) => ({
+    id,
+    label: `Nhân viên phòng thí nghiệm #${index + 1}`,
+  }));
+};
+
 const formatTime = (timestamp?: string): string => {
   if (!timestamp) return '';
   const date = new Date(timestamp);
@@ -55,6 +84,7 @@ const ChatPage: React.FC = () => {
   const [loadingRooms, setLoadingRooms] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [formCollapsed, setFormCollapsed] = useState(false);
+  const [selectedLabUserId, setSelectedLabUserId] = useState('');
 
   const defaultLabUsers = useMemo(parseDefaultLabUsers, []);
 
@@ -90,12 +120,17 @@ const ChatPage: React.FC = () => {
       toast.error('Bạn cần đăng nhập để tạo phòng chat');
       return;
     }
-    if (defaultLabUsers.length === 0) {
+    const labTargets =
+      selectedLabUserId !== ''
+        ? [selectedLabUserId]
+        : defaultLabUsers;
+
+    if (labTargets.length === 0) {
       toast.error('Hệ thống chưa cấu hình nhóm nhân viên phòng thí nghiệm mặc định');
       return;
     }
 
-    const participants = Array.from(new Set([user.id, ...defaultLabUsers]));
+    const participants = Array.from(new Set([user.id, ...labTargets]));
     setCreating(true);
     try {
       const { data: newRoom } = await roomApi.createRoom({
@@ -116,6 +151,9 @@ const ChatPage: React.FC = () => {
       setCreating(false);
     }
   };
+
+  const hasLabTarget = selectedLabUserId !== '' || defaultLabUsers.length > 0;
+  const labUserOptions = useMemo(() => parseLabUserOptions(defaultLabUsers), [defaultLabUsers]);
 
   return (
     <div className="h-full flex flex-col gap-4">
@@ -155,16 +193,41 @@ const ChatPage: React.FC = () => {
                 onChange={(e) => setRoomName(e.target.value)}
               />
             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Chọn nhân viên phòng thí nghiệm
+              </label>
+              <select
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={selectedLabUserId}
+                onChange={(e) => setSelectedLabUserId(e.target.value)}
+                disabled={labUserOptions.length === 0}
+              >
+                <option value="">
+                  {labUserOptions.length === 0
+                    ? 'Chưa cấu hình danh sách nhân viên'
+                    : 'Tự động gửi đến nhóm mặc định'}
+                </option>
+                {labUserOptions.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-gray-500 mt-1">
+                Nếu không chọn, phòng chat sẽ gửi tới nhóm lab mặc định ({defaultLabUsers.length} người).
+              </p>
+            </div>
             <div className="flex items-center gap-3 flex-wrap">
               <Button
                 onClick={handleCreateRoom}
-                disabled={creating || defaultLabUsers.length === 0}
+                disabled={creating || !hasLabTarget}
                 className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
               >
                 <PlusCircle className="w-4 h-4" />
                 {creating ? 'Đang tạo phòng...' : 'Tạo phòng chat'}
               </Button>
-              {defaultLabUsers.length === 0 && (
+              {!hasLabTarget && (
                 <span className="text-sm text-red-600">
                   Cần cấu hình `VITE_DEFAULT_LAB_USER_IDS` để gửi tới nhóm hỗ trợ.
                 </span>
