@@ -52,8 +52,9 @@ const SelectInstrumentsPage: React.FC = () => {
     const loadInstruments = async () => {
       setIsLoading(true);
       try {
-        const data = await instrumentsService.getAllInstruments();
-        setInstruments(data);
+      const response = await instrumentsService.getAllInstruments();
+      setInstruments(response.data || []); // ✅ instruments luôn là array
+
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Không thể tải danh sách thiết bị';
         toast.error(message);

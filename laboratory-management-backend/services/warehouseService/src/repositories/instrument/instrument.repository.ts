@@ -50,7 +50,7 @@ export const findInstruments = async ({
       .skip(skip)
       .limit(limit)
       .select('-__v')
-      .lean<IInstrument[]>(), 
+     .lean<IInstrument>(),
     Instrument.countDocuments(filter),
   ]);
 
