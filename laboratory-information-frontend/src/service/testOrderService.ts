@@ -257,6 +257,11 @@ export const testOrderService = {
         delete backendData.reagents;
       }
 
+      // Không gửi patient_id nếu nó rỗng hoặc không có giá trị
+      if (!backendData.patient_id || (typeof backendData.patient_id === 'string' && backendData.patient_id.trim() === '')) {
+        delete backendData.patient_id;
+      }
+
       console.log('Sending to backend:', backendData); // DEBUG
  
       const response = await testOrderApiClient.post<BackendTestOrder>(

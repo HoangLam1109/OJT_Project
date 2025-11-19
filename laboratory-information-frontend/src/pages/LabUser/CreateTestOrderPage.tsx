@@ -6,11 +6,11 @@ import Button from '../../components/common/button';
 import { Edit3, ArrowLeft, ArrowRight } from 'lucide-react';
 import type { TestOrder } from './types/TestOrderTypes';
 import { useAuthContext } from '../../hooks/useAuthContext';
-import { patientService, type PatientOption } from '../../service/patientService';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader } from '../../components/common/card';
 import { testItemService, type TestItem } from '../../service/testItemService';
 import { TestItemMultiSelect } from './components/common/TestItemMultiSelect';
+import { PatientSearchInput } from './components/PatientSearchInput';
 
 const testTypes = [
   "Sinh hóa máu",
@@ -54,15 +54,9 @@ const CreateTestOrderPage: React.FC = () => {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [patients, setPatients] = useState<PatientOption[]>([]);
-  const [loadingPatients, setLoadingPatients] = useState(false);
   const [testItems, setTestItems] = useState<TestItem[]>([]);
   const [loadingTestItems, setLoadingTestItems] = useState(false);
   const [selectedTestItemIds, setSelectedTestItemIds] = useState<string[]>([]);
-
-  useEffect(() => {
-    loadPatients();
-  }, []);
 
   // Load test items when test_type changes
   useEffect(() => {
@@ -73,18 +67,6 @@ const CreateTestOrderPage: React.FC = () => {
       setSelectedTestItemIds([]);
     }
   }, [formData.test_type]);
-
-  const loadPatients = async () => {
-    try {
-      setLoadingPatients(true);
-      const data = await patientService.getAllPatientsForDropdown();
-      setPatients(data);
-    } catch (e) {
-      toast.error('Không thể tải danh sách bệnh nhân');
-    } finally {
-      setLoadingPatients(false);
-    }
-  };
 
   const loadTestItems = async (testType: string) => {
     try {
@@ -101,15 +83,6 @@ const CreateTestOrderPage: React.FC = () => {
     }
   };
 
-  const handlePatientChange = (patient_id: string) => {
-    const patient = patients.find(p => p.id === patient_id);
-    setFormData(prev => ({
-      ...prev,
-      patient_id,
-      patient_name: patient?.fullName ?? '',
-    }));
-  };
-
   const generateBarcode = (): string => {
     const ts = Date.now().toString(36);
     const rnd = Math.random().toString(36).substr(2, 5);
@@ -120,7 +93,7 @@ const CreateTestOrderPage: React.FC = () => {
     e.preventDefault();
 
     const newErrors: Record<string, string> = {};
-    if (!formData.patient_id) newErrors.patient_id = 'Chọn bệnh nhân';
+    if (!formData.patient_name?.trim()) newErrors.patient_name = 'Nhập tên bệnh nhân';
     if (!formData.test_type) newErrors.test_type = 'Chọn loại xét nghiệm';
     if (!formData.due_date) newErrors.due_date = 'Chọn hạn hoàn thành';
 
@@ -234,29 +207,18 @@ const CreateTestOrderPage: React.FC = () => {
                 <Label htmlFor="patient" className="text-sm font-medium">
                   Bệnh nhân <span className="text-red-500">*</span>
                 </Label>
-                <select
-                  id="patient"
-                  value={formData.patient_id}
-                  onChange={(e) => handlePatientChange(e.target.value)}
-                  disabled={loadingPatients}
-                  className={`w-full rounded-lg border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                    errors.patient_id 
-                      ? 'border-red-500 bg-red-50' 
-                      : 'border-gray-300 bg-white hover:border-gray-400'
-                  } disabled:bg-gray-50 disabled:cursor-not-allowed`}
-                >
-                  <option value="">
-                    {loadingPatients ? 'Đang tải...' : 'Chọn bệnh nhân'}
-                  </option>
-                  {patients.map(p => (
-                    <option key={p.id} value={p.id}>
-                      {p.fullName} {p.patientCode && `(${p.patientCode})`}
-                    </option>
-                  ))}
-                </select>
-                {errors.patient_id && (
-                  <p className="text-sm text-red-600">{errors.patient_id}</p>
-                )}
+                <PatientSearchInput
+                  value={formData.patient_name}
+                  onChange={(patientName, patientId) => {
+                    setFormData(prev => ({
+                      ...prev,
+                      patient_name: patientName,
+                      patient_id: patientId || '',
+                    }));
+                  }}
+                  placeholder="Tìm kiếm bệnh nhân theo tên..."
+                  error={errors.patient_name}
+                />
               </div>
 
               {/* Loại xét nghiệm */}
