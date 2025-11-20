@@ -80,28 +80,40 @@ export function Sidebar({
               }}
             >
               <div className="flex items-stretch gap-1">
-                <Button
-                  variant={isActive ? "default" : "ghost"}
-                  className={`flex-1 justify-start px-3 py-2 ${
-                    sidebarCollapsed ? 'px-2' : ''
-                  } ${
-                    isActive
-                      ? 'bg-blue-600 text-white hover:bg-blue-700' 
-                      : 'text-gray-700 hover:bg-gray-100'
-                  } ${
-                    hasDropdown && !sidebarCollapsed 
-                      ? 'rounded-md' 
-                      : 'rounded-md'
-                  }`}
-                  onClick={() => {
-                    onNavigate(item.id);
-                  }}
-                >
-                  <item.icon className={`h-5 w-5 ${sidebarCollapsed ? '' : 'mr-3'} ${
-                    isActive ? 'text-white' : 'text-gray-500'
-                  }`} />
-                  {!sidebarCollapsed && <span className="flex-1 text-left">{item.label}</span>}
-                </Button>
+                <div className="relative flex-1">
+                  <Button
+                    variant={isActive ? "default" : "ghost"}
+                    className={`flex w-full items-center justify-start px-3 py-2 ${
+                      sidebarCollapsed ? 'px-2' : ''
+                    } ${
+                      isActive
+                        ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                        : 'text-gray-700 hover:bg-gray-100'
+                    } rounded-md`}
+                    onClick={() => {
+                      onNavigate(item.id);
+                    }}
+                  >
+                    <item.icon className={`h-5 w-5 ${sidebarCollapsed ? '' : 'mr-3'} ${
+                      isActive ? 'text-white' : 'text-gray-500'
+                    }`} />
+                    {!sidebarCollapsed && (
+                      <>
+                        <span className="flex-1 text-left">{item.label}</span>
+                        {item.badgeCount && item.badgeCount > 0 && (
+                          <span className="ml-auto inline-flex min-w-[20px] items-center justify-center rounded-full bg-red-500 px-2 py-0.5 text-[11px] font-semibold text-white">
+                            {item.badgeCount > 9 ? '9+' : item.badgeCount}
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </Button>
+                  {sidebarCollapsed && item.badgeCount && item.badgeCount > 0 && (
+                    <span className="pointer-events-none absolute -top-1 -right-1 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold text-white">
+                      {item.badgeCount > 9 ? '9+' : item.badgeCount}
+                    </span>
+                  )}
+                </div>
                 {hasDropdown && !sidebarCollapsed && (
                   <Button
                     variant={isActive ? "default" : "ghost"}
