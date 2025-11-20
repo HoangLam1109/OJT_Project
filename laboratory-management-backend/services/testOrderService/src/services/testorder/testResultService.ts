@@ -76,7 +76,7 @@ export const TestResultService = {
         const skip = (page - 1) * limit;
 
         return TestOrderResult.aggregate([
-            { $match: {} }, 
+            { $match: {is_deleted: false} }, 
             { $sort: { createdAt: -1 } }, 
             {
                 $group: {
@@ -112,7 +112,8 @@ export const TestResultService = {
         return TestOrderResult.aggregate([
             {
                 $match: {
-                    test_order_id: objectId
+                    test_order_id: objectId,
+                    is_deleted: false
                 }
             },
             {
