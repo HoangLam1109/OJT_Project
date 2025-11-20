@@ -1,4 +1,4 @@
-import dotenv from "dotenv";
+import "./config/env.config.js";
 import express from "express";
 import cors from "cors";
 
@@ -6,14 +6,11 @@ import connectDB from "./config/database.config.js";
 import routes from "./routes/index.js";
 import swaggerUi from "swagger-ui-express";
 import swaggerDocument from "./swagger-output.json" with { type: "json" };
-import { errorHandler, notFoundHandler } from "../../shared/src/error.util.js";
+import { errorHandler, notFoundHandler } from "../../shared/src/utils/error.util.js";
 
-import { fileURLToPath } from 'node:url';
-import path from 'node:path';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
+import http from "http";
+import { Server } from "socket.io";
+import { handleSocketConnection } from "./controllers/socket.controller.js";
 
 import cookieParser from "cookie-parser";
 
@@ -30,6 +27,18 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    // origin: process.env.WEB_URL || "http://localhost:5173",
+    // credentials: true,
+    origin: "*",
+    methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
+  },
+});
+
+handleSocketConnection(io);
+
 connectDB();
 
 app.use("/api", routes);
@@ -43,7 +52,7 @@ app.use(notFoundHandler);
 app.use(errorHandler);
 
 const port = process.env.PORT || 4001;
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`Message Service listening on http://localhost:${port}`);
 });
 

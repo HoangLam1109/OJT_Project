@@ -1,8 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { MessageService } from "../services/message.service.js";
-import { AppError } from "../../../shared/src/error.util.js";
-import iamServiceClient from "../adapters/iam.adapter.js";
-import { PaginationUtils } from "../../../shared/src/pagination.util.js";
+import { AppError } from "../../../shared/src/utils/error.util.js";
+import { PaginationUtils } from "../../../shared/src/utils/pagination.util.js";
 
 const messageService = new MessageService();
 
@@ -52,16 +51,8 @@ const sendMessage = async (
     const { roomId } = req.params;
     const { text } = req.body;
 
-    const user = await iamServiceClient.getUserById((req as any).user.userId);
-    if (!user) {
-      throw new AppError(404, "User not found");
-    }
-
-    await messageService.createMessage(
-      roomId,
-      user._id,
-      text
-    );
+    const auth = (req as any).auth as { userId: string };
+    await messageService.createMessage(roomId, auth.userId, text);
 
     res.status(200).json({ message: "Message sent successfully" });
   } catch (error) {
@@ -112,12 +103,8 @@ const deleteMessage = async (
   try {
     const { roomId, messageId } = req.params;
 
-    const user = await iamServiceClient.getUserById((req as any).user.userId);
-    if (!user) {
-      throw new AppError(404, "User not found");
-    }
-
-    await messageService.deleteMessage(roomId, messageId, user._id);
+    const auth = (req as any).auth as { userId: string };
+    await messageService.deleteMessage(roomId, messageId, auth.userId);
 
     res.status(200).json({ message: "Message deleted successfully" });
   } catch (error) {
@@ -179,15 +166,11 @@ const updateMessage = async (
 
     console.log(roomId, messageId, text);
 
-    const user = await iamServiceClient.getUserById((req as any).user.userId);
-    if (!user) {
-      throw new AppError(404, "User not found");
-    }
-
+    const auth = (req as any).auth as { userId: string };
     const updatedMessage = await messageService.updateMessage(
       roomId,
       messageId,
-      user._id,
+      auth.userId,
       text
     );
 

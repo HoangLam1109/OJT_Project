@@ -26,7 +26,7 @@ export interface IUser extends Document {
   // Additional fields (commented out for now)
 
   // lastLogin?: Date
-  // lastPasswordChange?: Date
+  lastPasswordChange?: Date
   // failedLoginAttempts?: number
   // isLocked?: boolean
   // lockedUntil?: Date
@@ -133,6 +133,12 @@ const userSchema = new mongoose.Schema<IUser>(
       type: String,
       required: function (this: IUser) {
         return !!this.provider && this.provider !== "local";
+      },
+    },
+    lastPasswordChange: {
+      type: Date,
+      required: function (this: IUser) {
+        return this.provider === "local" || !this.provider;
       },
     },
     avatar: {

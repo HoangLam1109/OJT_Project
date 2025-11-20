@@ -1,4 +1,4 @@
-import dotenv from "dotenv";
+import "./config/env.config.js";
 
 import express from "express";
 import passport from "passport";
@@ -17,8 +17,6 @@ import { errorHandler, notFoundHandler } from "./middlewares/error.middleware.js
 // Import OAuth config to initialize Passport strategies
 import "./config/oauth.config.js";
 
-dotenv.config();
-
 console.log('[IAM Service] Environment loaded:');
 console.log('[IAM Service] PORT:', process.env.PORT);
 console.log('[IAM Service] INTERNAL_API_KEY:', process.env.INTERNAL_API_KEY ? '***' + process.env.INTERNAL_API_KEY.slice(-4) : 'NOT SET');
@@ -35,8 +33,6 @@ process.on('uncaughtException', (error) => {
 });
 
 const app = express();
-// Configure CORS to reflect the incoming origin and allow credentials.
-// When credentials are used, Access-Control-Allow-Origin must not be '*'.
 const corsOptions = {
   origin: process.env.WEB_URL,
   credentials: true,

@@ -140,6 +140,55 @@ export const instrumentsService = {
         }
     },
 
+    // Get all instruments by fetching all pages (for dropdowns, etc.)
+    async getAllInstrumentsList(): Promise<Instrument[]> {
+        try {
+            let allInstruments: BackendInstrument[] = [];
+            let page = 1;
+            const limit = 100; // Max allowed by backend
+            let hasMore = true;
+
+            while (hasMore) {
+                const response = await instrumentsApiClient.get(`${INSTRUMENTS_API_BASE_URL}/`, {
+                    params: { page, limit }
+                });
+                const payload = response.data as unknown;
+                
+                if (isRecord(payload)) {
+                    const list = extractDataArray(payload);
+                    
+                    // Safety check: if we got no results, stop
+                    if (list.length === 0) {
+                        hasMore = false;
+                        break;
+                    }
+                    
+                    allInstruments = [...allInstruments, ...list];
+                    
+                    // Check if there are more pages
+                    const total = typeof payload.total === 'number' ? payload.total : null;
+                    if (total !== null) {
+                        // If we have total, calculate total pages
+                        const totalPages = Math.ceil(total / limit);
+                        hasMore = page < totalPages;
+                    } else {
+                        // If no total provided, check if we got less than limit (means last page)
+                        hasMore = list.length >= limit;
+                    }
+                    
+                    page++;
+                } else {
+                    hasMore = false;
+                }
+            }
+            
+            return allInstruments.map(transformBackendInstrument);
+        } catch (error) {
+            console.error('Error fetching all instruments:', error);
+            throw new Error(apiUtils.getErrorMessage(error));
+        }
+    },
+
     async getInstrumentById(_id: string): Promise<Instrument> {
         try {
             const response = await instrumentsApiClient.get(`${INSTRUMENTS_API_BASE_URL}/${_id}`);
@@ -237,6 +286,94 @@ async deleteInstrument(_id: string): Promise<Instrument> {
     } catch (error) {
         console.error('Error deleting instrument:', error);
         throw new Error(apiUtils.getErrorMessage(error));
+    }
+},
+
+async searchInstruments(keyword: string, page: number = 1, limit: number = 10): Promise<PaginatedResponse> {
+    try {
+        const response = await instrumentsApiClient.get(`${INSTRUMENTS_API_BASE_URL}/search`, {
+            params: { keyword, page, limit }
+        });
+        const payload = response.data as unknown;
+        
+        if (isRecord(payload)) {
+            const list = extractDataArray(payload);
+            const total = typeof payload.total === 'number' ? payload.total : list.length;
+            const currentPage = typeof payload.page === 'number' ? payload.page : page;
+            
+            return {
+                data: list.map(transformBackendInstrument),
+                total,
+                page: currentPage
+            };
+        }
+        
+        const list = extractDataArray(payload);
+        return {
+            data: list.map(transformBackendInstrument),
+            total: list.length,
+            page: 1
+        };
+    } catch (error) {
+        console.error('Error searching instruments:', error);
+        throw new Error(apiUtils.getErrorMessage(error));
+    }
+},
+
+async getInstrumentStats(): Promise<{
+    total: number;
+    active: number;
+    ready: number;
+    maintenance: number;
+}> {
+    try {
+        // Get first page to get total count and sample data
+        const response = await instrumentsApiClient.get(`${INSTRUMENTS_API_BASE_URL}/`, { 
+            params: { page: 1, limit: 100 } 
+        });
+        
+        const payload = response.data as unknown;
+        
+        if (!isRecord(payload)) {
+            return { total: 0, active: 0, ready: 0, maintenance: 0 };
+        }
+
+        const total = typeof payload.total === 'number' ? payload.total : 0;
+        const list = extractDataArray(payload);
+        const instruments = list.map(transformBackendInstrument);
+        
+        // For accurate counts, we need to fetch all pages
+        // Calculate how many pages we need
+        const totalPages = Math.ceil(total / 100);
+        
+        // If we have more than 1 page, fetch remaining pages
+        if (totalPages > 1) {
+            const promises = [];
+            for (let page = 2; page <= totalPages; page++) {
+                promises.push(
+                    instrumentsApiClient.get(`${INSTRUMENTS_API_BASE_URL}/`, { 
+                        params: { page, limit: 100 } 
+                    })
+                );
+            }
+            
+            const results = await Promise.all(promises);
+            results.forEach(res => {
+                const pageList = extractDataArray(res.data as unknown);
+                instruments.push(...pageList.map(transformBackendInstrument));
+            });
+        }
+        
+        // Count based on actual data
+        return {
+            total: instruments.length,
+            active: instruments.filter(i => i.is_active === true).length,
+            ready: instruments.filter(i => i.status === 'Ready').length,
+            maintenance: instruments.filter(i => i.status === 'Maintenance').length
+        };
+    } catch (error) {
+        console.error('Error fetching instrument stats:', error);
+        return { total: 0, active: 0, ready: 0, maintenance: 0 };
     }
 }
 };

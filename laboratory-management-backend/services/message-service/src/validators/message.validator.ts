@@ -2,10 +2,6 @@
 import Joi from "joi";
 
 export const createMessageSchema = Joi.object({
-  roomId: Joi.string().required().messages({
-    "string.empty": "Room ID is required",
-    "any.required": "Room ID is required",
-  }),
   text: Joi.string().required().messages({
     "string.empty": "Can not send an empty message",
     "any.required": "Message content is required",

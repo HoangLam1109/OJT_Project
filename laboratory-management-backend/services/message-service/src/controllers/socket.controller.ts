@@ -1,5 +1,5 @@
 import { Server, Socket } from 'socket.io';
-import iamServiceClient from '../adapters/iam.adapter';
+import iamServiceClient from '../../../shared/src/iam-service/adapter/iam.adapter.js';
 import { MessageService } from '../services/message.service.js';
 import { RoomService } from '../services/room.service.js';
 

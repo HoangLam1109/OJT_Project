@@ -22,7 +22,7 @@ export class RoomRepository implements IRoomRepository {
   constructor(private roomModel: Model<IRoom>) {}
 
   async findById(id: string, fields?: string): Promise<IRoom | null> {
-    return this.roomModel.findById(id, fields || "_id name participants createdAt updatedAt");
+    return this.roomModel.findById(id, fields || "_id name participants createdAt createdBy updatedAt");
   }
 
   async findManyByDate(date: Date): Promise<IRoom[]> {
