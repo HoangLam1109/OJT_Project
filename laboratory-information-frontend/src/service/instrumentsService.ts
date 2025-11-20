@@ -140,6 +140,55 @@ export const instrumentsService = {
         }
     },
 
+    // Get all instruments by fetching all pages (for dropdowns, etc.)
+    async getAllInstrumentsList(): Promise<Instrument[]> {
+        try {
+            let allInstruments: BackendInstrument[] = [];
+            let page = 1;
+            const limit = 100; // Max allowed by backend
+            let hasMore = true;
+
+            while (hasMore) {
+                const response = await instrumentsApiClient.get(`${INSTRUMENTS_API_BASE_URL}/`, {
+                    params: { page, limit }
+                });
+                const payload = response.data as unknown;
+                
+                if (isRecord(payload)) {
+                    const list = extractDataArray(payload);
+                    
+                    // Safety check: if we got no results, stop
+                    if (list.length === 0) {
+                        hasMore = false;
+                        break;
+                    }
+                    
+                    allInstruments = [...allInstruments, ...list];
+                    
+                    // Check if there are more pages
+                    const total = typeof payload.total === 'number' ? payload.total : null;
+                    if (total !== null) {
+                        // If we have total, calculate total pages
+                        const totalPages = Math.ceil(total / limit);
+                        hasMore = page < totalPages;
+                    } else {
+                        // If no total provided, check if we got less than limit (means last page)
+                        hasMore = list.length >= limit;
+                    }
+                    
+                    page++;
+                } else {
+                    hasMore = false;
+                }
+            }
+            
+            return allInstruments.map(transformBackendInstrument);
+        } catch (error) {
+            console.error('Error fetching all instruments:', error);
+            throw new Error(apiUtils.getErrorMessage(error));
+        }
+    },
+
     async getInstrumentById(_id: string): Promise<Instrument> {
         try {
             const response = await instrumentsApiClient.get(`${INSTRUMENTS_API_BASE_URL}/${_id}`);

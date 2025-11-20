@@ -191,12 +191,15 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
   const loadInstruments = async () => {
     try {
       setLoadingInstruments(true);
-      const data = await instrumentsService.getAllInstruments();
+      // Use getAllInstrumentsList to fetch all instruments across all pages
+      const allInstruments = await instrumentsService.getAllInstrumentsList();
       // Filter only active instruments
-      const activeInstruments = data.filter(inst => inst.is_active && !inst.is_deleted);
+      const activeInstruments = allInstruments.filter(inst => inst.is_active && !inst.is_deleted);
       setInstruments(activeInstruments);
     } catch (e) {
       toast.error('Không thể tải danh sách thiết bị');
+      console.error('Error loading instruments:', e);
+      setInstruments([]); // Set empty array on error
     } finally {
       setLoadingInstruments(false);
     }
