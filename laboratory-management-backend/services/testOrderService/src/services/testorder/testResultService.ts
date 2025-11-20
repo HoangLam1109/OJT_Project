@@ -11,8 +11,6 @@ export const TestResultService = {
         // Lấy thông tin Test Order để có tên bệnh nhân
         const order = await TestOrderRepository.findById(test_order_id);
         if (!order) throw new Error("Test Order not found");
-
-        const patientName = order.patient_name;
         
         // Lấy instrument
         const instrument = await instrumentServiceClient.getInstrumentById(order.instrument_id || "");
@@ -52,7 +50,8 @@ export const TestResultService = {
             return {
                 test_order_id: new Types.ObjectId(test_order_id),
                 test_item_id: item._id.toString(),
-                patient_name: patientName ?? "",
+                patient_id : order.patient_id,
+                patient_name: order.patient_name ?? "",
                 instrument_name: instrument.instrument_name,
                 reagent_names: reagent_names,
                 test_type: item.test_type,
@@ -82,6 +81,7 @@ export const TestResultService = {
             {
                 $group: {
                     _id: "$test_order_id",
+                    patient_id: { $first: "$patient_id" },
                     patient_name: { $first: "$patient_name" },
                     test_type: { $first: "$test_type" },
                     totalResults: { $sum: 1 },
@@ -94,6 +94,7 @@ export const TestResultService = {
                 $project: {
                     _id: 0,
                     test_order_id: "$_id",
+                    patient_id: 1,
                     patient_name: 1,
                     test_type: 1,
                     totalResults: 1,
@@ -117,6 +118,7 @@ export const TestResultService = {
             {
                 $group: {
                     _id: "$test_order_id",
+                    patient_id: { $first: "$patient_id" },
                     patient_name: { $first: "$patient_name" },
                     test_type: { $first: "$test_type" },
                     totalResults: { $sum: 1 },
@@ -127,6 +129,7 @@ export const TestResultService = {
                 $project: {
                     _id: 0,
                     test_order_id: "$_id",
+                    patient_id: 1,
                     patient_name: 1,
                     test_type: { $first: "$test_type" },
                     totalResults: 1,
