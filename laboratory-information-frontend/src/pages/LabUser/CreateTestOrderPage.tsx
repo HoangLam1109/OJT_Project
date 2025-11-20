@@ -11,17 +11,30 @@ import { Card, CardContent, CardHeader } from '../../components/common/card';
 import { testItemService, type TestItem } from '../../service/testItemService';
 import { TestItemMultiSelect } from './components/common/TestItemMultiSelect';
 import { PatientSearchInput } from './components/PatientSearchInput';
+import { useTranslation } from 'react-i18next';
 
-const testTypes = [
-  "Sinh hóa máu",
-  "Huyết học tổng quát", 
-  "Vi sinh",
-  "Miễn dịch",
-  "Nội tiết",
-  "Ung thư học"
+// Test type keys - these are used as values and for translation keys
+const testTypeKeys = [
+  "biochemistry",
+  "generalHematology",
+  "microbiology",
+  "immunology",
+  "endocrinology",
+  "oncology"
 ];
- 
+
+// Mapping from translation keys to backend expected values (Vietnamese)
+// Backend expects Vietnamese test type names
+const testTypeKeyToBackendValue: Record<string, string> = {
+  "biochemistry": "Sinh hóa máu",
+  "generalHematology": "Huyết học tổng quát",
+  "microbiology": "Vi sinh",
+  "immunology": "Miễn dịch",
+  "endocrinology": "Nội tiết",
+  "oncology": "Ung thư học"
+};
 const CreateTestOrderPage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuthContext();
@@ -68,15 +81,17 @@ const CreateTestOrderPage: React.FC = () => {
     }
   }, [formData.test_type]);
 
-  const loadTestItems = async (testType: string) => {
+  const loadTestItems = async (testTypeKey: string) => {
     try {
       setLoadingTestItems(true);
-      const items = await testItemService.getAllTestItems(testType);
+      // Convert translation key to backend expected value
+      const backendTestType = testTypeKeyToBackendValue[testTypeKey] || testTypeKey;
+      const items = await testItemService.getAllTestItems(backendTestType);
       setTestItems(items);
       // Reset selected items when test type changes
       setSelectedTestItemIds([]);
     } catch (e) {
-      toast.error('Không thể tải danh sách test items');
+      toast.error(t('testOrder.cannotLoadTestItems'));
       setTestItems([]);
     } finally {
       setLoadingTestItems(false);
@@ -93,22 +108,26 @@ const CreateTestOrderPage: React.FC = () => {
     e.preventDefault();
 
     const newErrors: Record<string, string> = {};
-    if (!formData.patient_name?.trim()) newErrors.patient_name = 'Nhập tên bệnh nhân';
-    if (!formData.test_type) newErrors.test_type = 'Chọn loại xét nghiệm';
-    if (!formData.due_date) newErrors.due_date = 'Chọn hạn hoàn thành';
+    if (!formData.patient_name?.trim()) newErrors.patient_name = t('testOrder.enterPatientName');
+    if (!formData.test_type) newErrors.test_type = t('testOrder.selectTestType');
+    if (!formData.due_date) newErrors.due_date = t('testOrder.selectDueDate');
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      toast.error('Vui lòng điền đầy đủ thông tin bắt buộc');
+      toast.error(t('testOrder.pleaseFillRequiredFields'));
       return;
     }
 
+    // Convert test_type key to backend expected value before navigation
+    const backendTestType = testTypeKeyToBackendValue[formData.test_type] || formData.test_type;
+    
     // Navigate to select instruments page with form data
     const basePath = getBasePath();
     navigate(`${basePath}/select-instruments`, {
       state: {
         formData: {
           ...formData,
+          test_type: backendTestType, // Use backend expected value
           barcode: generateBarcode(),
           test_item_ids: selectedTestItemIds,
         }
@@ -129,8 +148,8 @@ const CreateTestOrderPage: React.FC = () => {
               </div>
             </div>
             <div className="text-center">
-              <p className="text-base md:text-lg font-bold text-blue-700">Tạo lệnh</p>
-              <p className="text-sm md:text-base text-gray-600 hidden md:block mt-1">xét nghiệm mới</p>
+              <p className="text-base md:text-lg font-bold text-blue-700">{t('testOrder.createTestOrder')}</p>
+              <p className="text-sm md:text-base text-gray-600 hidden md:block mt-1">{t('testOrder.newTestOrder')}</p>
             </div>
           </div>
 
@@ -143,7 +162,7 @@ const CreateTestOrderPage: React.FC = () => {
               2
             </div>
             <div className="text-center">
-              <p className="text-base md:text-lg font-semibold text-gray-500">Chọn thiết bị</p>
+              <p className="text-base md:text-lg font-semibold text-gray-500">{t('testOrder.selectInstrument')}</p>
             </div>
           </div>
 
@@ -156,7 +175,7 @@ const CreateTestOrderPage: React.FC = () => {
               3
             </div>
             <div className="text-center">
-              <p className="text-base md:text-lg font-semibold text-gray-500">Chọn thuốc thử</p>
+              <p className="text-base md:text-lg font-semibold text-gray-500">{t('testOrder.selectReagent')}</p>
             </div>
           </div>
         </div>
@@ -175,7 +194,7 @@ const CreateTestOrderPage: React.FC = () => {
             className="flex items-center gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
-            Quay lại
+            {t('testOrder.back')}
           </Button>
           <div className="flex items-center space-x-3">
             <div className="p-2.5 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -183,10 +202,10 @@ const CreateTestOrderPage: React.FC = () => {
             </div>
             <div>
               <h2 className="text-2xl font-semibold text-gray-900">
-                Tạo lệnh xét nghiệm mới
+                {t('testOrder.createTestOrder')}
               </h2>
               <p className="text-sm text-gray-500 mt-0.5">
-                Nhập thông tin để tạo lệnh mới
+                {t('testOrder.enterTestOrderInfo')}
               </p>
             </div>
           </div>
@@ -196,7 +215,7 @@ const CreateTestOrderPage: React.FC = () => {
       {/* Form Card */}
       <Card>
         <CardHeader>
-          <h3 className="text-lg font-semibold">Thông tin lệnh xét nghiệm</h3>
+          <h3 className="text-lg font-semibold">{t('testOrder.testOrderInfo')}</h3>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleNext} className="space-y-6">
@@ -216,7 +235,7 @@ const CreateTestOrderPage: React.FC = () => {
                       patient_id: patientId || '',
                     }));
                   }}
-                  placeholder="Tìm kiếm bệnh nhân theo tên..."
+                  placeholder={t('testOrder.searchPatientByName')}
                   error={errors.patient_name}
                 />
               </div>
@@ -224,7 +243,7 @@ const CreateTestOrderPage: React.FC = () => {
               {/* Loại xét nghiệm */}
               <div className="space-y-2">
                 <Label htmlFor="testType" className="text-sm font-medium">
-                  Loại xét nghiệm <span className="text-red-500">*</span>
+                  {t('testOrder.testType')} <span className="text-red-500">*</span>
                 </Label>
                 <select
                   id="testType"
@@ -237,9 +256,11 @@ const CreateTestOrderPage: React.FC = () => {
                       : 'border-gray-300 bg-white hover:border-gray-400'
                   } disabled:bg-gray-50 disabled:cursor-not-allowed`}
                 >
-                  <option value="">Chọn loại xét nghiệm</option>
-                  {testTypes.map(t => (
-                    <option key={t} value={t}>{t}</option>
+                  <option value="">{t('testOrder.selectTestType')}</option>
+                  {testTypeKeys.map(testTypeKey => (
+                    <option key={testTypeKey} value={testTypeKey}>
+                      {t(`testOrder.${testTypeKey}`)}
+                    </option>
                   ))}
                 </select>
                 {errors.test_type && (
@@ -318,14 +339,14 @@ const CreateTestOrderPage: React.FC = () => {
                 disabled={false}
                 className="px-6 py-2.5 border-gray-300 text-gray-700 hover:bg-gray-50"
               >
-                Hủy
+                {t('testOrder.cancel')}
               </Button>
               <Button
                 type="submit"
                 disabled={false}
                 className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Tiếp theo
+                {t('testOrder.next')}
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </div>

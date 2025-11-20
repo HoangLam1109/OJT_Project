@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Reagent } from '../../data/mockReagentsData';
+import { useTranslation } from 'react-i18next';
 
 interface ReagentDeleteConfirmModalProps {
   isOpen: boolean;
@@ -14,6 +15,7 @@ const ReagentDeleteConfirmModal: React.FC<ReagentDeleteConfirmModalProps> = ({
   onClose,
   onConfirm,
 }) => {
+  const { t } = useTranslation();
   if (!isOpen || !reagent) return null;
 
   return (
@@ -21,17 +23,17 @@ const ReagentDeleteConfirmModal: React.FC<ReagentDeleteConfirmModalProps> = ({
       <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 animate-in slide-in-from-bottom-4 duration-300 border border-gray-200">
         <div className="p-6">
           <h2 className="text-xl font-bold text-gray-900 mb-4">
-            Xác nhận xóa thuốc thử
+            {t('reagent.deleteModal.title')}
           </h2>
           
           <div className="mb-4">
             <p className="text-gray-600 mb-2">
-              Bạn có chắc muốn xóa thuốc thử này?
+              {t('reagent.deleteModal.description')}
             </p>
             <div className="bg-gray-50 p-3 rounded-lg">
               <p className="font-medium text-gray-900">{reagent.name}</p>
-              <p className="text-sm text-gray-600">Số lô: {reagent.lotNumber}</p>
-              <p className="text-sm text-gray-600">Mã: {reagent.id}</p>
+              <p className="text-sm text-gray-600">{t('reagent.deleteModal.lotNumber')}: {reagent.lotNumber}</p>
+              <p className="text-sm text-gray-600">{t('reagent.deleteModal.code')}: {reagent.id}</p>
             </div>
           </div>
 
@@ -40,13 +42,13 @@ const ReagentDeleteConfirmModal: React.FC<ReagentDeleteConfirmModalProps> = ({
               onClick={onClose}
               className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
             >
-              Hủy
+              {t('reagent.cancel')}
             </button>
             <button
               onClick={onConfirm}
               className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
             >
-              Xóa
+              {t('reagent.delete')}
             </button>
           </div>
         </div>

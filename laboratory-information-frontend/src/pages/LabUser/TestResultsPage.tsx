@@ -15,6 +15,7 @@ import {
   Edit,
   Trash2
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 // Import types
 import type { TestResult, TestResultDetail } from './types/TestResultTypes';
@@ -34,6 +35,7 @@ const ViewDetailModal: React.FC<{
   onClose: () => void;
   onUpdateSuccess: () => void;
 }> = ({ result, patientName, isOpen, onClose, onUpdateSuccess }) => {
+  const { t } = useTranslation();
   const [isEditMode, setIsEditMode] = useState(false);
   const [resultValue, setResultValue] = useState<number>(0);
   const [reviewerComment, setReviewerComment] = useState('');
@@ -73,13 +75,13 @@ const ViewDetailModal: React.FC<{
         result_value: resultValue,
         reviewer_comment: reviewerComment,
       });
-      toast.success('Cập nhật kết quả xét nghiệm thành công');
+      toast.success(t('testResult.updateSuccess'));
       setIsEditMode(false);
       onUpdateSuccess();
       onClose();
     } catch (error) {
       console.error('Error updating test result:', error);
-      toast.error('Cập nhật kết quả xét nghiệm thất bại');
+      toast.error(t('testResult.updateFailed'));
     } finally {
       setUpdating(false);
     }
@@ -100,13 +102,13 @@ const ViewDetailModal: React.FC<{
     try {
       setDeleting(true);
       await testResultService.deleteTestResult(result.id);
-      toast.success('Xóa kết quả xét nghiệm thành công');
+      toast.success(t('testResult.deleteSuccess'));
       setShowDeleteConfirm(false);
       onUpdateSuccess();
       onClose();
     } catch (error) {
       console.error('Error deleting test result:', error);
-      toast.error('Xóa kết quả xét nghiệm thất bại');
+      toast.error(t('testResult.deleteFailed'));
     } finally {
       setDeleting(false);
     }
@@ -122,7 +124,7 @@ const ViewDetailModal: React.FC<{
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-semibold">
-              {isEditMode ? 'Chỉnh sửa kết quả xét nghiệm' : 'Chi tiết kết quả xét nghiệm'}
+              {isEditMode ? t('testResult.modal.editTitle') : t('testResult.modal.detailTitle')}
             </h2>
             <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
               <X className="w-6 h-6" />
@@ -133,19 +135,19 @@ const ViewDetailModal: React.FC<{
             <div className="p-4 bg-gray-50 rounded-lg">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-gray-600">Bệnh nhân</p>
+                  <p className="text-sm text-gray-600">{t('testResult.modal.patient')}</p>
                   <p className="font-medium">{patientName}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Chủ đề xét nghiệm</p>
+                  <p className="text-sm text-gray-600">{t('testResult.modal.testType')}</p>
                   <p className="font-medium">{result.test_type}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Loại xét nghiệm</p>
+                  <p className="text-sm text-gray-600">{t('testResult.modal.testItem')}</p>
                   <p className="font-medium">{result.name} ({result.code})</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Kết quả</p>
+                  <p className="text-sm text-gray-600">{t('testResult.modal.result')}</p>
                   {isEditMode ? (
                     <div className="flex items-center gap-2">
                       <Input
@@ -162,29 +164,29 @@ const ViewDetailModal: React.FC<{
                   )}
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Trạng thái</p>
+                  <p className="text-sm text-gray-600">{t('testResult.modal.status')}</p>
                   <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${result.resultStatus === 'normal' ? 'bg-green-100 text-green-800' :
                     result.resultStatus === 'abnormal' ? 'bg-yellow-100 text-yellow-800' :
                       'bg-red-100 text-red-800'
                     }`}>
-                    {result.resultStatus === 'normal' ? 'Bình thường' :
-                      result.resultStatus === 'abnormal' ? 'Bất thường' : 'Nghiêm trọng'}
+                    {result.resultStatus === 'normal' ? t('testResult.status.normal') :
+                      result.resultStatus === 'abnormal' ? t('testResult.status.abnormal') : t('testResult.status.critical')}
                   </span>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Thời gian tạo</p>
+                  <p className="text-sm text-gray-600">{t('testResult.modal.createdAt')}</p>
                   <p className="font-medium">{formatDateTime(result.createdAt)}</p>
                 </div>
               </div>
             </div>
 
             <div className="p-4 bg-blue-50 rounded-lg">
-              <p className="text-sm text-gray-600 mb-2">Nhận xét của người đánh giá</p>
+              <p className="text-sm text-gray-600 mb-2">{t('testResult.modal.reviewerComment')}</p>
               {isEditMode ? (
                 <Textarea
                   value={reviewerComment}
                   onChange={(e) => setReviewerComment(e.target.value)}
-                  placeholder="Nhập nhận xét..."
+                  placeholder={t('testResult.modal.commentPlaceholder')}
                   rows={4}
                   className="w-full"
                 />
@@ -193,7 +195,7 @@ const ViewDetailModal: React.FC<{
                   {result.reviewerComment ? (
                     <p className="text-gray-800">{result.reviewerComment}</p>
                   ) : (
-                    <p className="text-gray-400 italic">Chưa có nhận xét</p>
+                    <p className="text-gray-400 italic">{t('testResult.modal.noComment')}</p>
                   )}
                 </>
               )}
@@ -208,14 +210,14 @@ const ViewDetailModal: React.FC<{
                   onClick={handleCancel}
                   disabled={updating}
                 >
-                  Hủy
+                  {t('testResult.cancel')}
                 </Button>
                 <Button
                   onClick={handleUpdate}
                   disabled={updating}
                   className="bg-blue-600 hover:bg-blue-700"
                 >
-                  {updating ? 'Đang cập nhật...' : 'Cập nhật'}
+                  {updating ? t('testResult.updating') : t('testResult.update')}
                 </Button>
               </>
             ) : (
@@ -226,14 +228,14 @@ const ViewDetailModal: React.FC<{
                   className="text-red-600 hover:text-red-700 hover:bg-red-50"
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
-                  Xóa
+                  {t('testResult.delete')}
                 </Button>
                 <Button
                   onClick={() => setIsEditMode(true)}
                   className="bg-blue-600 hover:bg-blue-700"
                 >
                   <Edit className="w-4 h-4 mr-2" />
-                  Cập nhật
+                  {t('testResult.update')}
                 </Button>
               </>
             )}
@@ -245,9 +247,9 @@ const ViewDetailModal: React.FC<{
       {showDeleteConfirm && (
         <div className="fixed inset-0 flex items-center justify-center z-[60]">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Xác nhận xóa</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('testResult.deleteConfirm.title')}</h3>
             <p className="text-gray-600 mb-6">
-              Bạn có chắc chắn muốn xóa kết quả xét nghiệm <span className="font-semibold">{result?.name}</span> của bệnh nhân <span className="font-semibold">{patientName}</span> không?
+              {t('testResult.deleteConfirm.description', { testName: result?.name, patientName: patientName })}
             </p>
             <div className="flex justify-end gap-3">
               <Button
@@ -255,14 +257,14 @@ const ViewDetailModal: React.FC<{
                 onClick={cancelDelete}
                 disabled={deleting}
               >
-                Hủy
+                {t('testResult.cancel')}
               </Button>
               <Button
                 onClick={confirmDelete}
                 disabled={deleting}
                 className="bg-red-600 hover:bg-red-700 text-white"
               >
-                {deleting ? 'Đang xóa...' : 'Xóa'}
+                {deleting ? t('testResult.deleting') : t('testResult.delete')}
               </Button>
             </div>
           </div>
@@ -274,6 +276,7 @@ const ViewDetailModal: React.FC<{
 
 // Main Component
 const TestResultsPage: React.FC = () => {
+  const { t } = useTranslation();
   const [allResults, setAllResults] = useState<TestResult[]>([]);
   const [filteredResults, setFilteredResults] = useState<TestResult[]>([]);
   const [loading, setLoading] = useState(true);
@@ -293,7 +296,7 @@ const TestResultsPage: React.FC = () => {
       const data = await testResultService.getAllTestResults();
       setAllResults(data);
     } catch (error) {
-      toast.error('Không thể tải danh sách kết quả xét nghiệm');
+      toast.error(t('testResult.cannotLoadResults'));
       console.error('Error loading test results:', error);
     } finally {
       setLoading(false);
@@ -399,14 +402,14 @@ const TestResultsPage: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Kết quả Xét nghiệm</h1>
-          <p className="text-gray-600">Nhập và quản lý kết quả xét nghiệm đã hoàn thành</p>
+          <h1 className="text-2xl font-semibold text-gray-900">{t('testResult.title')}</h1>
+          <p className="text-gray-600">{t('testResult.subtitle')}</p>
         </div>
         <div className="flex items-center space-x-2">
           <FlaskConical className="w-8 h-8 text-green-600" />
           <span className="text-sm text-gray-500">
-            {filteredResults.length} / {allResults.length} kết quả xét nghiệm
-            {searchTerm && ` (tìm thấy ${filteredResults.length} / ${allResults.length})`}
+            {t('testResult.resultsCount', { current: filteredResults.length, total: allResults.length })}
+            {searchTerm && ` ${t('testResult.foundResults', { found: filteredResults.length, total: allResults.length })}`}
           </span>
         </div>
       </div>
@@ -417,14 +420,14 @@ const TestResultsPage: React.FC = () => {
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
               <Label htmlFor="search" className="text-sm font-medium text-gray-700">
-                Tìm kiếm
+                {t('testResult.search')}
               </Label>
               <div className="relative mt-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <Input
                   id="search"
                   type="text"
-                  placeholder="Tìm theo mã xét nghiệm hoặc tên bệnh nhân..."
+                  placeholder={t('testResult.searchPlaceholder')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -435,7 +438,7 @@ const TestResultsPage: React.FC = () => {
             <div className="flex items-end">
               <Button variant="outline" onClick={loadTestResults} className="flex items-center">
                 <Activity className="w-4 h-4 mr-2" />
-                Làm mới
+                {t('testResult.refresh')}
               </Button>
             </div>
           </div>
@@ -447,18 +450,18 @@ const TestResultsPage: React.FC = () => {
         <CardHeader>
           <CardTitle className="flex items-center">
             <FlaskConical className="w-5 h-5 mr-2" />
-            Danh sách Kết quả Xét nghiệm
+            {t('testResult.resultsList')}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           {paginatedResults.length === 0 ? (
             <div className="text-center py-12">
               <FlaskConical className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Không có kết quả xét nghiệm</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">{t('testResult.noResults')}</h3>
               <p className="text-gray-500">
                 {searchTerm
-                  ? 'Không tìm thấy kết quả xét nghiệm phù hợp với từ khóa tìm kiếm'
-                  : 'Chưa có kết quả xét nghiệm nào'
+                  ? t('testResult.noResultsSearch')
+                  : t('testResult.noResultsEmpty')
                 }
               </p>
             </div>
@@ -483,10 +486,10 @@ const TestResultsPage: React.FC = () => {
                             {/* Left content (2 dòng) */}
                             <div>
                               <h3 className="text-base font-semibold text-gray-900">
-                                Tên bệnh nhân: {result.patientName}
+                                {t('testResult.patientName')}: {result.patientName}
                               </h3>
                               <h3 className="text-sm font-medium text-gray-700 mt-1">
-                                Loại xét nghiệm: {result.test_type}
+                                {t('testResult.testType')}: {result.test_type}
                               </h3>
                             </div>
 
@@ -498,7 +501,7 @@ const TestResultsPage: React.FC = () => {
                             />
                           </div>
                           <div className="mt-2 flex items-center gap-6 text-sm text-gray-600">
-                            <span>Tổng số xét nghiệm: <span className="font-medium text-gray-900">{result.totalTests}</span></span>
+                            <span>{t('testResult.totalTests')}: <span className="font-medium text-gray-900">{result.totalTests}</span></span>
                             <span className="text-gray-400">|</span>
                             <span>
                               {new Date(result.createdAt).toLocaleDateString('vi-VN', {
@@ -516,7 +519,7 @@ const TestResultsPage: React.FC = () => {
                       >
                         <div className="px-6 py-4 bg-gradient-to-br from-gray-50 to-gray-100 border-t border-gray-200">
                           <div className="space-y-3">
-                            <h4 className="font-semibold text-sm text-gray-700 mb-3">Chi tiết xét nghiệm:</h4>
+                            <h4 className="font-semibold text-sm text-gray-700 mb-3">{t('testResult.testDetails')}:</h4>
                             <div className="grid grid-cols-1 gap-3">
                               {result.results.map((detail, idx) => (
                                 <div
@@ -530,10 +533,10 @@ const TestResultsPage: React.FC = () => {
                                   <div className="flex-1">
                                     <p className="font-semibold text-sm text-gray-800 mb-1">{detail.name} ({detail.code})</p>
                                     <p className="text-sm text-gray-600">
-                                      Kết quả: <span className="font-bold text-gray-900">{detail.resultValue} {detail.unit}</span>
+                                      {t('testResult.result')}: <span className="font-bold text-gray-900">{detail.resultValue} {detail.unit}</span>
                                     </p>
                                     {detail.reviewerComment && (
-                                      <p className="text-xs text-gray-500 mt-2 italic bg-blue-50 p-2 rounded">Nhận xét: {detail.reviewerComment}</p>
+                                      <p className="text-xs text-gray-500 mt-2 italic bg-blue-50 p-2 rounded">{t('testResult.comment')}: {detail.reviewerComment}</p>
                                     )}
                                   </div>
                                   <div className="flex items-center gap-2 ml-4">
@@ -541,8 +544,8 @@ const TestResultsPage: React.FC = () => {
                                       detail.resultStatus === 'abnormal' ? 'bg-yellow-100 text-yellow-700 border border-yellow-200' :
                                         'bg-red-100 text-red-700 border border-red-200'
                                       }`}>
-                                      {detail.resultStatus === 'normal' ? 'Bình thường' :
-                                        detail.resultStatus === 'abnormal' ? 'Bất thường' : 'Nghiêm trọng'}
+                                      {detail.resultStatus === 'normal' ? t('testResult.status.normal') :
+                                        detail.resultStatus === 'abnormal' ? t('testResult.status.abnormal') : t('testResult.status.critical')}
                                     </span>
                                   </div>
                                 </div>
