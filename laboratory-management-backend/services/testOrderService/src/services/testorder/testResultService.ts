@@ -106,13 +106,10 @@ export const TestResultService = {
 
 
     getTestOrderById: async (testOrderId: string) => {
-
-        const objectId = new Types.ObjectId(testOrderId);
-
         return TestOrderResult.aggregate([
             {
                 $match: {
-                    test_order_id: objectId,
+                    test_order_id: testOrderId,
                     is_deleted: false
                 }
             },
@@ -132,7 +129,7 @@ export const TestResultService = {
                     test_order_id: "$_id",
                     patient_id: 1,
                     patient_name: 1,
-                    test_type: { $first: "$test_type" },
+                    test_type: 1,
                     totalResults: 1,
                     resultsSample: 1
                 }
