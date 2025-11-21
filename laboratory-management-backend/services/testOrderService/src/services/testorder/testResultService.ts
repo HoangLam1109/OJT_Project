@@ -171,7 +171,8 @@ export const TestResultService = {
             // Nếu keyword là chữ → tìm theo patient_name hoặc test_type
             filter.$or = [
                 { patient_name: { $regex: keyword, $options: "i" } },
-                { test_type: { $regex: keyword, $options: "i" } }
+                { test_type: { $regex: keyword, $options: "i" } },
+                { name: { $regex: keyword, $options: "i" } },
             ];
         }
 

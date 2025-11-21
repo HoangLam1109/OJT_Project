@@ -565,7 +565,7 @@ paths:
       parameters:
         - name: keyword
           in: query
-          description: Test Order ID (ObjectId) hoặc Patient Name (partial match)
+          description: Test Order ID (ObjectId) hoặc Patient Name (partial match) hoặc test_type hoặc name(Result)
           required: true
           schema:
             type: string
