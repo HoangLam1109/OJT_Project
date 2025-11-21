@@ -512,18 +512,17 @@ paths:
                     example: "Unknown error"
   
   # ==================== Get: Test Result By testorderId====================
-  /testResult/getById/{id}:
+  /testResult/getResultsByPatientId/{id}:
     get:
       tags:
         - Test Result
-      summary: Lấy thông tin chi tiết của một Test Result theo ID
-      description: |
-        Trả về thông tin một Test Result, bao gồm tên bệnh nhân, tổng số kết quả và toàn bộ danh sách kết quả xét nghiệm.
+      summary: Lấy thông tin chi tiết của một Test Result theo patient_id
+      description: Trả về thông tin một Test Result, bao gồm tên bệnh nhân, tổng số kết quả và toàn bộ danh sách kết quả xét nghiệm.
       parameters:
         - name: id
           in: path
           required: true
-          description: ID của Test Order
+          description: patient_id 
           schema:
             type: string
       responses:

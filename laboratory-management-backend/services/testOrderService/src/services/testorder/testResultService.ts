@@ -6,23 +6,23 @@ import { TestOrderResult } from "../../db/models/TestResult.model.js";
 import instrumentServiceClient from "../warehouse/instrumentServiceClient.js";
 import reagentServiceClient from "../warehouse/reagentServiceClient.js";
 export const TestResultService = {
- 
+
     createRandomResults: async (test_order_id: string, test_item_ids: string[]) => {
         // Lấy thông tin Test Order để có tên bệnh nhân
         const order = await TestOrderRepository.findById(test_order_id);
         if (!order) throw new Error("Test Order not found");
-        
+
         // Lấy instrument
         const instrument = await instrumentServiceClient.getInstrumentById(order.instrument_id || "");
         if (!instrument) throw new Error("Instrument not found");
-        
+
         // Lấy tên reagent
         const reagent_usages = order.reagent_usages || [];
         const reagentArray = await reagentServiceClient.getReagentsByIds(
             reagent_usages.map(ru => ru.reagent_id)
         );
         const reagent_names = reagentArray ? Array.from(reagentArray.values()).map(r => r.reagent_name) : [];
-        
+
         // Lấy thông tin các Test Item
         const items = await TestItem.find({ _id: { $in: test_item_ids } });
 
@@ -50,7 +50,7 @@ export const TestResultService = {
             return {
                 test_order_id: new Types.ObjectId(test_order_id),
                 test_item_id: item._id.toString(),
-                patient_id : order.patient_id,
+                patient_id: order.patient_id,
                 patient_name: order.patient_name ?? "",
                 instrument_name: instrument.instrument_name,
                 reagent_names: reagent_names,
@@ -76,8 +76,8 @@ export const TestResultService = {
         const skip = (page - 1) * limit;
 
         return TestOrderResult.aggregate([
-            { $match: {is_deleted: false} }, 
-            { $sort: { createdAt: -1 } }, 
+            { $match: { is_deleted: false } },
+            { $sort: { createdAt: -1 } },
             {
                 $group: {
                     _id: "$test_order_id",
@@ -105,37 +105,13 @@ export const TestResultService = {
     },
 
 
-    getTestOrderById: async (testOrderId: string) => {
-        return TestOrderResult.aggregate([
-            {
-                $match: {
-                    test_order_id: testOrderId,
-                    is_deleted: false
-                }
-            },
-            {
-                $group: {
-                    _id: "$test_order_id",
-                    patient_id: { $first: "$patient_id" },
-                    patient_name: { $first: "$patient_name" },
-                    test_type: { $first: "$test_type" },
-                    totalResults: { $sum: 1 },
-                    resultsSample: { $push: "$$ROOT" }
-                }
-            },
-            {
-                $project: {
-                    _id: 0,
-                    test_order_id: "$_id",
-                    patient_id: 1,
-                    patient_name: 1,
-                    test_type: 1,
-                    totalResults: 1,
-                    resultsSample: 1
-                }
-            }
-        ]);
+    getTestResultByPatientIdService: async (patient_id: string, page = 1, limit = 10) => {
+        if (!patient_id) {
+            throw new Error("patient_id is required");
+        }
+        return TestResultRepository.findByPatientId(patient_id, page, limit);
     },
+
 
     async softDeleteByOrderId(test_order_id: any) {
         await TestResultRepository.softDeleteByOrderId(test_order_id);
@@ -149,7 +125,7 @@ export const TestResultService = {
             result_value?: number;
             reviewed?: boolean;
             reviewer_comment?: string;
-            result_status?: "normal" | "high" | "low"; 
+            result_status?: "normal" | "high" | "low";
         }
     ) {
         // Lấy record hiện tại
@@ -189,11 +165,14 @@ export const TestResultService = {
         const filter: any = { is_deleted: false };
 
         if (Types.ObjectId.isValid(keyword)) {
-            // Nếu keyword là ObjectId, tìm theo test_order_id
+            // Nếu keyword là ObjectId → tìm theo test_order_id
             filter.test_order_id = new Types.ObjectId(keyword);
         } else if (keyword.trim() !== "") {
-            // Nếu keyword là string, tìm theo patient_name (partial, case-insensitive)
-            filter.patient_name = { $regex: keyword, $options: "i" };
+            // Nếu keyword là chữ → tìm theo patient_name hoặc test_type
+            filter.$or = [
+                { patient_name: { $regex: keyword, $options: "i" } },
+                { test_type: { $regex: keyword, $options: "i" } }
+            ];
         }
 
         const total = await TestOrderResult.countDocuments(filter);
@@ -201,7 +180,7 @@ export const TestResultService = {
         const results = await TestOrderResult.find(filter)
             .skip((page - 1) * limit)
             .limit(limit)
-            .sort({ createdAt: -1 }); // mới nhất lên trước
+            .sort({ createdAt: -1 });
 
         return { results, total };
     },

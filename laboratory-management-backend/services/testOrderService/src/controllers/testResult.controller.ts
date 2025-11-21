@@ -27,38 +27,42 @@ export const getTestOrdersWithResultsSummary = async (req: Request, res: Respons
   }
 };
 
-export const getTestOrderById = async (req: Request, res: Response) => {
+export const getTestResultByPatientId = async (req: Request, res: Response) => {
   try {
-    const id = req.params.id;
+    const patient_id = req.params.id as string;
 
-    if (!id) {
-      return res.status(400).json({
-        success: false,
-        message: "Missing id"
-      });
-    }
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
 
-    const result = await TestResultService.getTestOrderById(id);
+    const { results, total } =
+      await TestResultService.getTestResultByPatientIdService(patient_id, page, limit);
 
-    if (!result || result.length === 0) {
+    if (!results || results.length === 0) {
       return res.status(404).json({
         success: false,
-        message: "Test Order not found"
+        message: "Test Results not found"
       });
     }
 
     return res.json({
       success: true,
-      data: result[0]
+      data: results,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit)
+      }
     });
 
   } catch (error: any) {
     return res.status(500).json({
       success: false,
-      message: error instanceof Error ? error.message : "Unknown error"
+      message: error.message || "Unknown error"
     });
   }
 };
+
 
 export const deleteTestResult = async (req: Request, res: Response) => {
   try {
@@ -147,6 +151,10 @@ export const searchTestResultsPaginated = async (req: Request, res: Response) =>
       _id: r._id,
       test_order_id: r.test_order_id,
       test_item_id: r.test_item_id,
+      patient_id:r.patient_id,
+      test_type: r.test_type,
+      name: r.name,
+      instrument_name: r.instrument_name,
       patient_name: r.patient_name,
       reagent_names: r.reagent_names,
       result_value: r.result_value,
