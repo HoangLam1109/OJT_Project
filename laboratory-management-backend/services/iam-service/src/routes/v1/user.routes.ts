@@ -41,6 +41,12 @@ const avatarUpload = multer({
 });
 
 router.get("/all", authorize(["read:user"]), getUsersWithPagination);
+
+
+router.get("/userProfile", getCurrentUser);
+router.put("/UserProfile/Update", validateUpdateUser, updateProfile);
+
+
 router.get("/me/roles", getCurrentUserRolesAndPrivileges);
 router.get("/staff", getStaff);
 router.get("/:id/roles", authorize(["read:user"]), getUserRolesAndPrivileges);

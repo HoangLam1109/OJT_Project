@@ -5,26 +5,30 @@ import { TestOrderRepository } from "../../repositories/testOrderRepository.js";
 import { TestOrderResult } from "../../db/models/TestResult.model.js";
 import instrumentServiceClient from "../warehouse/instrumentServiceClient.js";
 import reagentServiceClient from "../warehouse/reagentServiceClient.js";
+import patientServiceClient from "../patient/patientServiceClient.js";
 export const TestResultService = {
- 
+
     createRandomResults: async (test_order_id: string, test_item_ids: string[]) => {
-        // Lấy thông tin Test Order để có tên bệnh nhân
+        // Lấy Test Order 
         const order = await TestOrderRepository.findById(test_order_id);
         if (!order) throw new Error("Test Order not found");
-
-        const patientName = order.patient_name;
         
+        // Lấy User
+        const user = await patientServiceClient.getPatientById(order.patient_id);
+        if (!user) throw new Error("User not found");
+        console.log("User:", user);
+
         // Lấy instrument
         const instrument = await instrumentServiceClient.getInstrumentById(order.instrument_id || "");
         if (!instrument) throw new Error("Instrument not found");
-        
+
         // Lấy tên reagent
         const reagent_usages = order.reagent_usages || [];
         const reagentArray = await reagentServiceClient.getReagentsByIds(
             reagent_usages.map(ru => ru.reagent_id)
         );
         const reagent_names = reagentArray ? Array.from(reagentArray.values()).map(r => r.reagent_name) : [];
-        
+
         // Lấy thông tin các Test Item
         const items = await TestItem.find({ _id: { $in: test_item_ids } });
 
@@ -52,7 +56,9 @@ export const TestResultService = {
             return {
                 test_order_id: new Types.ObjectId(test_order_id),
                 test_item_id: item._id.toString(),
-                patient_name: patientName ?? "",
+                user_id: user._id,
+                patient_id: order.patient_id,
+                patient_name: order.patient_name ?? "",
                 instrument_name: instrument.instrument_name,
                 reagent_names: reagent_names,
                 test_type: item.test_type,
@@ -72,69 +78,67 @@ export const TestResultService = {
     },
 
 
-
     getTestOrdersWithResultsSummary: async (page = 1, limit = 10) => {
         const skip = (page - 1) * limit;
 
-        return TestOrderResult.aggregate([
-            { $match: {} }, 
-            { $sort: { createdAt: -1 } }, 
+        const result = await TestOrderResult.aggregate([
+            { $match: { is_deleted: false } },
+
             {
                 $group: {
                     _id: "$test_order_id",
+                    user_id: {$first: "$user_id" },
+                    patient_id: { $first: "$patient_id" },
                     patient_name: { $first: "$patient_name" },
                     test_type: { $first: "$test_type" },
                     totalResults: { $sum: 1 },
                     resultsSample: { $push: "$$ROOT" }
                 }
             },
-            { $skip: skip },
-            { $limit: limit },
+
+            { $sort: { _id: -1 } },
+
             {
-                $project: {
-                    _id: 0,
-                    test_order_id: "$_id",
-                    patient_name: 1,
-                    test_type: 1,
-                    totalResults: 1,
-                    resultsSample: 1
+                $facet: {
+                    data: [
+                        { $skip: skip },
+                        { $limit: limit },
+                        {
+                            $project: {
+                                _id: 0,
+                                test_order_id: "$_id",
+                                user_id: 1,
+                                patient_id: 1,
+                                patient_name: 1,
+                                test_type: 1,
+                                totalResults: 1,
+                                resultsSample: 1
+                            }
+                        }
+                    ],
+
+                    totalCount: [
+                        { $count: "count" }
+                    ]
                 }
             }
         ]);
+
+        const data = result[0].data;
+        const totalCount = result[0].totalCount[0]?.count || 0;
+
+        return { data, totalCount };
     },
 
 
-    getTestOrderById: async (testOrderId: string) => {
 
-        const objectId = new Types.ObjectId(testOrderId);
-
-        return TestOrderResult.aggregate([
-            {
-                $match: {
-                    test_order_id: objectId
-                }
-            },
-            {
-                $group: {
-                    _id: "$test_order_id",
-                    patient_name: { $first: "$patient_name" },
-                    test_type: { $first: "$test_type" },
-                    totalResults: { $sum: 1 },
-                    resultsSample: { $push: "$$ROOT" }
-                }
-            },
-            {
-                $project: {
-                    _id: 0,
-                    test_order_id: "$_id",
-                    patient_name: 1,
-                    test_type: { $first: "$test_type" },
-                    totalResults: 1,
-                    resultsSample: 1
-                }
-            }
-        ]);
+    getTestResultByPatientIdService: async (patient_id: string, page = 1, limit = 10) => {
+        if (!patient_id) {
+            throw new Error("patient_id is required");
+        }
+        return TestResultRepository.findByPatientId(patient_id, page, limit);
     },
+
 
     async softDeleteByOrderId(test_order_id: any) {
         await TestResultRepository.softDeleteByOrderId(test_order_id);
@@ -148,7 +152,7 @@ export const TestResultService = {
             result_value?: number;
             reviewed?: boolean;
             reviewer_comment?: string;
-            result_status?: "normal" | "high" | "low"; 
+            result_status?: "normal" | "high" | "low";
         }
     ) {
         // Lấy record hiện tại
@@ -188,11 +192,15 @@ export const TestResultService = {
         const filter: any = { is_deleted: false };
 
         if (Types.ObjectId.isValid(keyword)) {
-            // Nếu keyword là ObjectId, tìm theo test_order_id
+            // Nếu keyword là ObjectId → tìm theo test_order_id
             filter.test_order_id = new Types.ObjectId(keyword);
         } else if (keyword.trim() !== "") {
-            // Nếu keyword là string, tìm theo patient_name (partial, case-insensitive)
-            filter.patient_name = { $regex: keyword, $options: "i" };
+            // Nếu keyword là chữ → tìm theo patient_name hoặc test_type
+            filter.$or = [
+                { patient_name: { $regex: keyword, $options: "i" } },
+                { test_type: { $regex: keyword, $options: "i" } },
+                { name: { $regex: keyword, $options: "i" } },
+            ];
         }
 
         const total = await TestOrderResult.countDocuments(filter);
@@ -200,7 +208,7 @@ export const TestResultService = {
         const results = await TestOrderResult.find(filter)
             .skip((page - 1) * limit)
             .limit(limit)
-            .sort({ createdAt: -1 }); // mới nhất lên trước
+            .sort({ createdAt: -1 });
 
         return { results, total };
     },

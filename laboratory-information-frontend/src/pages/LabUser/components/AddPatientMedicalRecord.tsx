@@ -7,7 +7,7 @@ import Button from '../../../components/common/button';
 import { patientService, type PatientOption } from '../../../service/patientService';
 import { patientMedicalRecordService, type PatientMedicalRecord } from '../../../service/patientMedicalRecordService';
 import { toast } from 'sonner';
-
+import { useTranslation } from 'react-i18next';
 interface AddPatientMedicalRecordProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
@@ -16,6 +16,7 @@ interface AddPatientMedicalRecordProps {
 }
 
 export default function AddPatientMedicalRecord({ open, onOpenChange, onCreated, patientId }: AddPatientMedicalRecordProps) {
+    const { t } = useTranslation();
     const [creating, setCreating] = useState(false);
     const [form, setForm] = useState({
         patient_id: '',
@@ -166,12 +167,12 @@ export default function AddPatientMedicalRecord({ open, onOpenChange, onCreated,
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-5xl">
         <DialogHeader className="mb-6">
-                    <DialogTitle className="text-2xl">Tạo hồ sơ y tế</DialogTitle>
+                    <DialogTitle className="text-2xl">{t('patient.createMedicalRecord')}</DialogTitle>
                 </DialogHeader>
         <div className="space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                            <Label>Bệnh nhân</Label>
+                            <Label>{t('patient.patientName')}</Label>
                             <div ref={patientSearchContainerRef} className="relative">
                                 <Input
                                     value={patientQuery}
@@ -189,7 +190,7 @@ export default function AddPatientMedicalRecord({ open, onOpenChange, onCreated,
                                         }
                                     }}
                                     onKeyDown={handlePatientKeyDown}
-                                    placeholder="Nhập tên bệnh nhân"
+                                    placeholder={t('patient.enterPatientName')}
                                     disabled={Boolean(patientId)}
                                 />
                                 {showPatientSuggestions && (
@@ -211,7 +212,7 @@ export default function AddPatientMedicalRecord({ open, onOpenChange, onCreated,
                                                         >
                                                             <span className="text-sm font-medium">{patient.fullName}</span>
                                                             {patient.patientCode && (
-                                                                <span className="text-xs opacity-80">Mã bệnh nhân: {patient.patientCode}</span>
+                                                                <span className="text-xs opacity-80">{t('patient.patientCode')}: {patient.patientCode}</span>
                                                             )}
                                                             {patient.email && (
                                                                 <span className="text-xs opacity-80">Email: {patient.email}</span>
@@ -221,37 +222,37 @@ export default function AddPatientMedicalRecord({ open, onOpenChange, onCreated,
                                                 ))}
                                             </ul>
                                         ) : (
-                                            <div className="px-4 py-2 text-sm text-muted-foreground">Không tìm thấy bệnh nhân</div>
+                                            <div className="px-4 py-2 text-sm text-muted-foreground">{t('patient.noPatientFound')}</div>
                                         )}
                                     </div>
                                 )}
                             </div>
                             {selectedPatient?.patientCode && (
-                                <p className="text-xs text-muted-foreground">Mã bệnh nhân hiện chọn: {selectedPatient.patientCode}</p>
+                                <p className="text-xs text-muted-foreground">{t('patient.patientCode')}: {selectedPatient.patientCode}</p>
                             )}
                         </div>
                         <div className="space-y-2">
-                            <Label>Nhóm máu</Label>
+                            <Label>{t('patient.bloodType')}</Label>
                             <Input
                                 value={form.blood_type}
-                                placeholder="Nhập nhóm máu (ví dụ: A+, HH)"
+                                placeholder={t('patient.enterBloodType')}
                                 onChange={(e) => setForm(prev => ({ ...prev, blood_type: e.target.value }))}
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label>Dị ứng</Label>
+                            <Label>{t('patient.allergies')}</Label>
                             <Input value={form.allergies} onChange={(e) => setForm(prev => ({ ...prev, allergies: e.target.value }))} />
                         </div>
                         <div className="space-y-2">
-                            <Label>Bệnh mạn tính</Label>
+                            <Label>{t('patient.chronicConditions')}</Label>
                             <Input value={form.chronic_conditions} onChange={(e) => setForm(prev => ({ ...prev, chronic_conditions: e.target.value }))} />
                         </div>
                         <div className="space-y-2">
-                            <Label>Thuốc đang dùng</Label>
+                            <Label>{t('patient.currentMedications')}</Label>
                             <Input value={form.current_medications} onChange={(e) => setForm(prev => ({ ...prev, current_medications: e.target.value }))} />
                         </div>
                         <div className="space-y-2">
-                            <Label>Tiền sử y khoa</Label>
+                            <Label>{t('patient.medicalHistory')}</Label>
                             <Input
                                 value={form.medical_history}
                                 onChange={(e) => setForm(prev => ({ ...prev, medical_history: e.target.value }))}
@@ -259,27 +260,27 @@ export default function AddPatientMedicalRecord({ open, onOpenChange, onCreated,
                         </div>
 
                         <div className="md:col-span-2 space-y-2">
-                            <Label>Ghi chú lâm sàng</Label>
+                            <Label>{t('patient.clinicalNotes')}</Label>
                             <Textarea value={form.clinical_notes} onChange={(e) => setForm(prev => ({ ...prev, clinical_notes: e.target.value }))} />
                         </div>
                         <div className="md:col-span-2 space-y-2">
-                            <Label>Tóm tắt xét nghiệm gần đây</Label>
+                            <Label>{t('patient.recentTestSummary')}</Label>
                             <Textarea value={form.recent_test_summary} onChange={(e) => setForm(prev => ({ ...prev, recent_test_summary: e.target.value }))} />
                         </div>
                     </div>
                 </div>
         <DialogFooter className="mt-8">
-                    <Button variant="outline" onClick={() => onOpenChange(false)}>Hủy</Button>
+                    <Button variant="outline" onClick={() => onOpenChange(false)}>{t('patient.cancel')}</Button>
                     <Button onClick={async () => {
                         if (!form.patient_id) {
-                            toast.error('Vui lòng chọn bệnh nhân');
+                            toast.error(t('patient.pleaseSelectPatient'));
                             return;
                         }
                         setCreating(true);
                         try {
                             const created = await patientMedicalRecordService.create(form);
                             if (created) {
-                                toast.success('Tạo hồ sơ thành công');
+                                toast.success(t('patient.createMedicalRecordSuccess'));
                                 onOpenChange(false);
                                 onCreated?.(created);
                                 setForm({
@@ -292,23 +293,23 @@ export default function AddPatientMedicalRecord({ open, onOpenChange, onCreated,
                                 setHighlightedPatientIndex(-1);
                                 setShowPatientSuggestions(false);
                             } else {
-                                toast.error('Tạo hồ sơ thất bại');
+                                toast.error(t('patient.createMedicalRecordFailed'));
                             }
                         } catch (error) {
                             const rawMessage = error instanceof Error ? error.message : '';
-                            const duplicateMessage = 'Bệnh nhân này đã có hồ sơ y tế.';
+                            const duplicateMessage = t('patient.patientAlreadyHasMedicalRecord');
                             if (rawMessage && /already exists/i.test(rawMessage)) {
                                 toast.error(duplicateMessage);
                             } else if (rawMessage) {
                                 toast.error(rawMessage);
                             } else {
-                                toast.error('Tạo hồ sơ thất bại');
+                                toast.error(t('patient.createMedicalRecordFailed'));
                             }
                         } finally {
                             setCreating(false);
                         }
                     }} disabled={creating}>
-                        {creating ? 'Đang lưu...' : 'Lưu'}
+                        {creating ? t('patient.saving') : t('patient.save')}
                     </Button>
                 </DialogFooter>
             </DialogContent>

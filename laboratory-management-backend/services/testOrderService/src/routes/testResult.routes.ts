@@ -2,7 +2,7 @@
 import express from "express";
 import {
   getTestOrdersWithResultsSummary,
-  getTestOrderById,
+  getTestResultByPatientId,
   deleteTestResult,
   updateTestResult,
   searchTestResultsPaginated
@@ -15,7 +15,7 @@ router.get("/all", getTestOrdersWithResultsSummary);
 
 router.get("/search", searchTestResultsPaginated);
 
-router.get("/getById/:id", getTestOrderById);
+router.get("/getResultsByPatientId/:id", getTestResultByPatientId);
 
 router.put("/update/:id", updateTestResult);
 

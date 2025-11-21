@@ -1,5 +1,6 @@
 // API Response Types
 export interface TestResultItem {
+  _id: string;
   test_order_id: string;
   test_item_id: string;
   test_type: string;
@@ -38,6 +39,7 @@ export interface TestResult {
 }
 
 export interface TestResultDetail {
+  id: string;
   testItemId: string;
   test_type: string;
   name: string;

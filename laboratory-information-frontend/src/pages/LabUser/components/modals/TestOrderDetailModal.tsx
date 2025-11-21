@@ -5,6 +5,7 @@ import Badge from '../../../../components/common/badge';
 import { Clock, User, TestTube, Microscope, FlaskConical, List } from 'lucide-react';
 import type { TestOrder } from '../../types/TestOrderTypes';
 import { testItemService, type TestItem } from '../../../../service/testItemService';
+import { useTranslation } from 'react-i18next';
 
 interface TestOrderDetailModalProps {
   order: TestOrder | null;
@@ -21,6 +22,7 @@ const TestOrderDetailModal: React.FC<TestOrderDetailModalProps> = ({
   onEdit,
   onClose,
 }) => {
+  const { t } = useTranslation();
   const [testItems, setTestItems] = useState<TestItem[]>([]);
   const [loadingTestItems, setLoadingTestItems] = useState(false);
 
@@ -56,11 +58,11 @@ const TestOrderDetailModal: React.FC<TestOrderDetailModalProps> = ({
     const statusLower = status.toLowerCase();
     switch (statusLower) {
       case 'pending':
-        return <Badge variant="outline"><Clock className="w-3 h-3 mr-1" />Chờ xử lý</Badge>;
+        return <Badge variant="outline"><Clock className="w-3 h-3 mr-1" />{t('testOrder.detail.pending')}</Badge>;
       case 'processing':
-        return <Badge variant="default"><TestTube className="w-3 h-3 mr-1" />Đang xử lý</Badge>;
+        return <Badge variant="default"><TestTube className="w-3 h-3 mr-1" />{t('testOrder.detail.processing')}</Badge>;
       case 'completed':
-        return <Badge variant="default" className="bg-green-600"><TestTube className="w-3 h-3 mr-1" />Hoàn thành</Badge>;
+        return <Badge variant="default" className="bg-green-600" ><TestTube className="w-3 h-3 mr-1" style={{color:'white'}}/><div style={{color:'white'}}>{ t('testOrder.detail.completed')}</div></Badge>;
       default:
         return <Badge>{status}</Badge>;
     }
@@ -70,246 +72,226 @@ const TestOrderDetailModal: React.FC<TestOrderDetailModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <TestTube className="w-5 h-5" />
-            Chi tiết Lệnh Xét nghiệm
-          </DialogTitle>
-          <DialogDescription>
-            Thông tin chi tiết về lệnh xét nghiệm
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-6 py-4">
-          {/* Order Info */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-4 pb-3 border-b">
-              <div>
-                <h3 className="font-mono text-lg font-semibold">{order.barcode || order._id}</h3>
-              </div>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-0 gap-0 bg-gray-50">
+        <div className="p-6 bg-white border-b sticky top-0 z-10">
+          <DialogHeader className="space-y-2">
+            <div className="flex items-center justify-between">
+              <DialogTitle className="flex items-center gap-2 text-xl text-blue-700">
+                <TestTube className="w-6 h-6" />
+                {t('testOrder.detail.title')}
+              </DialogTitle>
               {getStatusBadge(order.status)}
             </div>
+            <DialogDescription className="text-base">
+              {t('testOrder.detail.description')}
+            </DialogDescription>
+          </DialogHeader>
+        </div>
 
-            {/* Patient Information */}
+        <div className="p-6 space-y-8">
+          {/* Order Summary Card */}
+          <div className="bg-white rounded-xl border shadow-sm p-5 flex flex-col md:flex-row justify-between gap-4 items-start md:items-center">
             <div>
-              <h4 className="font-semibold text-sm text-gray-700 mb-3 flex items-center gap-2">
-                <User className="w-4 h-4" />
-                Thông tin Bệnh nhân
-              </h4>
-              <div className="grid grid-cols-2 gap-3 pl-6">
-                <div>
-                  <span className="text-sm text-gray-600">Tên bệnh nhân:</span>
-                  <p className="font-medium">{order.patient_name}</p>
-                </div>
-                <div>
-                  <span className="text-sm text-gray-600">Mã bệnh nhân:</span>
-                  <p className="font-mono text-sm">{order.patient_id}</p>
-                </div>
+              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Mã phiếu (Barcode)</span>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="font-mono text-2xl font-bold text-gray-900 tracking-tight">{order.barcode || order._id}</span>
               </div>
             </div>
-
-            {/* Test Information */}
-            <div>
-              <h4 className="font-semibold text-sm text-gray-700 mb-3 flex items-center gap-2">
-                <TestTube className="w-4 h-4" />
-                Thông tin Xét nghiệm
-              </h4>
-              <div className="grid grid-cols-2 gap-3 pl-6">
+            <div className="flex gap-8">
+              {order.created_at && (
                 <div>
-                  <span className="text-sm text-gray-600">Loại xét nghiệm:</span>
-                  <p className="font-medium">{order.test_type}</p>
+                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('testOrder.detail.sampleDate')}</span>
+                  <p className="font-medium text-gray-900 mt-1">{order.created_at}</p>
                 </div>
-                {order.created_at && (
-                  <div>
-                    <span className="text-sm text-gray-600">Ngày tạo mẫu:</span>
-                    <p className="font-medium">{order.created_at}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-            <div>
-              <div className="grid grid-cols-2 gap-3 pl-6">
-                <div>
-                  <span className="text-sm text-gray-600">Hạn hoàn thành:</span>
-                  <p className="font-medium">{order.due_date}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Test Items Information */}
-            {order.test_item_ids && order.test_item_ids.length > 0 && (
+              )}
               <div>
-                <h4 className="font-semibold text-sm text-gray-700 mb-3 flex items-center gap-2">
-                  <List className="w-4 h-4" />
-                  Test Items
-                </h4>
-                <div className="pl-6">
-                  {loadingTestItems ? (
-                    <p className="text-sm text-gray-500">Đang tải...</p>
-                  ) : testItems.length > 0 ? (
-                    <div className="space-y-2">
-                      {testItems.map((item) => (
-                        <div key={item._id} className="bg-gray-50 p-3 rounded-lg border">
-                          <div className="grid grid-cols-2 gap-3">
-                            <div>
-                              <span className="text-sm text-gray-600">Tên test item:</span>
-                              <p className="font-medium">{item.name}</p>
-                            </div>
-                            <div>
-                              <span className="text-sm text-gray-600">Mã:</span>
-                              <p className="font-mono text-sm">{item.code}</p>
-                            </div>
-                            {item.unit && (
-                              <div>
-                                <span className="text-sm text-gray-600">Đơn vị:</span>
-                                <p className="font-medium">{item.unit}</p>
-                              </div>
-                            )}
-                            {(item.ref_min !== undefined || item.ref_max !== undefined) && (
-                              <div>
-                                <span className="text-sm text-gray-600">Giá trị tham chiếu:</span>
-                                <p className="font-medium">
-                                  {item.ref_min !== undefined && item.ref_max !== undefined
-                                    ? `${item.ref_min} - ${item.ref_max}`
-                                    : item.ref_min !== undefined
-                                    ? `≥ ${item.ref_min}`
-                                    : `≤ ${item.ref_max}`}
-                                </p>
-                              </div>
-                            )}
-                            {item.method && (
-                              <div className="col-span-2">
-                                <span className="text-sm text-gray-600">Phương pháp:</span>
-                                <p className="font-medium">{item.method}</p>
-                              </div>
-                            )}
+                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('testOrder.detail.dueDate')}</span>
+                <p className="font-medium text-gray-900 mt-1">{order.due_date}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Patient Info Card */}
+            <div className="bg-white rounded-xl border shadow-sm p-5 space-y-4">
+              <h4 className="font-semibold text-gray-900 flex items-center gap-2 pb-2 border-b">
+                <User className="w-4 h-4 text-blue-600" />
+                {t('testOrder.detail.patientInfo')}
+              </h4>
+              <div>
+                <span className="text-xs text-gray-500 uppercase tracking-wider">{t('testOrder.detail.patientName')}</span>
+                <p className="text-lg font-medium text-gray-900 mt-1">{order.patient_name}</p>
+              </div>
+            </div>
+
+            {/* Test Info Card */}
+            <div className="bg-white rounded-xl border shadow-sm p-5 space-y-4">
+              <h4 className="font-semibold text-gray-900 flex items-center gap-2 pb-2 border-b">
+                <FlaskConical className="w-4 h-4 text-blue-600" />
+                {t('testOrder.detail.testInfo')}
+              </h4>
+              <div>
+                <span className="text-xs text-gray-500 uppercase tracking-wider">{t('testOrder.detail.testType')}</span>
+                <p className="text-lg font-medium text-gray-900 mt-1">{order.test_type}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Test Items Section */}
+          {order.test_item_ids && order.test_item_ids.length > 0 && (
+            <div className="space-y-3">
+              <h4 className="font-semibold text-gray-900 flex items-center gap-2">
+                <List className="w-5 h-5 text-blue-600" />
+                {t('testOrder.detail.testItems')}
+              </h4>
+
+              {loadingTestItems ? (
+                <div className="p-8 text-center text-gray-500 bg-white rounded-xl border border-dashed">
+                  {t('testOrder.detail.loading')}
+                </div>
+              ) : testItems.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {testItems.map((item) => (
+                    <div key={item._id} className="bg-white p-4 rounded-xl border shadow-sm hover:shadow-md transition-shadow">
+                      <div className="flex justify-between items-start mb-2">
+                        <h5 className="font-semibold text-gray-900">{item.name}</h5>
+                        <Badge variant="outline" className="font-mono text-xs">{item.code}</Badge>
+                      </div>
+                      <div className="space-y-1 text-sm">
+                        {item.unit && (
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">{t('testOrder.detail.unit')}</span>
+                            <span className="font-medium">{item.unit}</span>
                           </div>
-                        </div>
-                      ))}
+                        )}
+                        {(item.ref_min !== undefined || item.ref_max !== undefined) && (
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">{t('testOrder.detail.referenceValue')}</span>
+                            <span className="font-medium text-blue-600">
+                              {item.ref_min !== undefined && item.ref_max !== undefined
+                                ? `${item.ref_min} - ${item.ref_max}`
+                                : item.ref_min !== undefined
+                                  ? `≥ ${item.ref_min}`
+                                  : `≤ ${item.ref_max}`}
+                            </span>
+                          </div>
+                        )}
+                        {item.method && (
+                          <div className="flex justify-between pt-1 border-t mt-2">
+                            <span className="text-gray-500">{t('testOrder.detail.method')}:</span>
+                            <span className="font-medium">{item.method}</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  ) : (
-                    <p className="text-sm text-gray-500">Không có test items</p>
-                  )}
+                  ))}
                 </div>
-              </div>
-            )}
+              ) : (
+                <div className="p-8 text-center text-gray-500 bg-white rounded-xl border border-dashed">
+                  {t('testOrder.detail.noTestItems')}
+                </div>
+              )}
+            </div>
+          )}
 
-            {/* Instrument Information */}
-            {order.instrument && (
-              <div>
-                <h4 className="font-semibold text-sm text-gray-700 mb-3 flex items-center gap-2">
-                  <Microscope className="w-4 h-4" />
-                  Thông tin Thiết bị
-                </h4>
-                <div className="grid grid-cols-2 gap-3 pl-6">
-                  <div>
-                    <span className="text-sm text-gray-600">Mã thiết bị:</span>
-                    <p className="font-mono text-sm">{order.instrument.instrument_code}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm text-gray-600">Tên thiết bị:</span>
-                    <p className="font-medium">{order.instrument.instrument_name}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm text-gray-600">Loại thiết bị:</span>
-                    <p className="font-medium">{order.instrument.instrument_type}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm text-gray-600">Nhà sản xuất:</span>
-                    <p className="font-medium">{order.instrument.manufacturer}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm text-gray-600">Trạng thái:</span>
-                    <Badge variant={order.instrument.status === 'Ready' ? 'default' : 'secondary'} className="mt-1">
-                      {order.instrument.status}
-                    </Badge>
+          {/* Instrument & Reagents Grid */}
+          {(order.instrument || (order.reagents && order.reagents.length > 0)) && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Instrument */}
+              {order.instrument && (
+                <div className="bg-white rounded-xl border shadow-sm p-5 space-y-4">
+                  <h4 className="font-semibold text-gray-900 flex items-center gap-2 pb-2 border-b">
+                    <Microscope className="w-4 h-4 text-blue-600" />
+                    {t('testOrder.detail.instrumentInfo')}
+                  </h4>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-500">{t('testOrder.detail.instrumentName')}</span>
+                      <span className="font-medium">{order.instrument.instrument_name}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-500">{t('testOrder.detail.instrumentCode')}</span>
+                      <span className="font-mono text-sm bg-gray-100 px-2 py-0.5 rounded">{order.instrument.instrument_code}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-500">{t('testOrder.status')}</span>
+                      <Badge variant={order.instrument.status === 'Ready' ? 'default' : 'secondary'}>
+                        {order.instrument.status}
+                      </Badge>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Reagents Information */}
-            {order.reagents && order.reagents.length > 0 && (
-              <div>
-                <h4 className="font-semibold text-sm text-gray-700 mb-3 flex items-center gap-2">
-                  <FlaskConical className="w-4 h-4" />
-                  Thông tin Hóa chất
-                </h4>
-                <div className="pl-6">
-                  <div className="space-y-2">
+              {/* Reagents */}
+              {order.reagents && order.reagents.length > 0 && (
+                <div className="bg-white rounded-xl border shadow-sm p-5 space-y-4">
+                  <h4 className="font-semibold text-gray-900 flex items-center gap-2 pb-2 border-b">
+                    <FlaskConical className="w-4 h-4 text-blue-600" />
+                    {t('testOrder.detail.reagentInfo')}
+                  </h4>
+                  <div className="space-y-3 max-h-[200px] overflow-y-auto pr-2">
                     {order.reagents.map((reagent, index) => (
-                      <div key={reagent.reagent_id || index} className="bg-gray-50 p-3 rounded-lg border">
-                        <div className="grid grid-cols-2 gap-3">
-                          <div>
-                            <span className="text-sm text-gray-600">Tên hóa chất:</span>
-                            <p className="font-medium">{reagent.reagent_name}</p>
-                          </div>
-                          <div>
-                            <span className="text-sm text-gray-600">Loại:</span>
-                            <p className="font-medium">{reagent.reagent_type}</p>
-                          </div>
-                          <div>
-                            <span className="text-sm text-gray-600">Số lượng đã dùng:</span>
-                            <p className="font-medium">{reagent.quantity_used}</p>
-                          </div>
-                          <div>
-                            <span className="text-sm text-gray-600">Trạng thái:</span>
-                            <Badge variant={reagent.status === 'Available' ? 'default' : 'secondary'} className="mt-1">
-                              {reagent.status}
-                            </Badge>
-                          </div>
+                      <div key={reagent.reagent_id || index} className="flex justify-between items-center p-2 bg-gray-50 rounded-lg text-sm">
+                        <div>
+                          <p className="font-medium text-gray-900">{reagent.reagent_name}</p>
+                          <p className="text-xs text-gray-500">{reagent.reagent_type}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-medium">{reagent.quantity_used}</p>
+                          <span className={`text-xs ${reagent.status === 'Available' ? 'text-green-600' : 'text-gray-500'}`}>
+                            {reagent.status}
+                          </span>
                         </div>
                       </div>
                     ))}
                   </div>
                 </div>
-              </div>
-            )}
-
-            {/* Notes */}
-            <div>
-              <h4 className="font-semibold text-sm text-gray-700 mb-2">Ghi chú:</h4>
-              <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded-lg">
-                {order.notes?.trim() ? order.notes : 'Không có ghi chú'}
-              </p>
+              )}
             </div>
+          )}
 
-
+          {/* Notes */}
+          <div className="bg-amber-50 rounded-xl border border-amber-100 p-5">
+            <h4 className="font-semibold text-amber-900 mb-2 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+              {t('testOrder.detail.notes')}
+            </h4>
+            <p className="text-sm text-amber-800">
+              {order.notes?.trim() ? order.notes : t('testOrder.detail.noNotes')}
+            </p>
           </div>
+
         </div>
 
-        <DialogFooter className="flex items-center justify-end gap-3 sm:gap-2 pt-4 mt-2">
-
-          {/* Nút cập nhật */}
-          {onEdit && (
-            <Button
-              variant="default"
-              onClick={() => {
-                onEdit(order);
-                onClose();
-              }}
-              className="px-6"
-            >
-              Cập nhật
-            </Button>
-          )}
-
-          {/* Nút xóa */}
-          {onDelete && (
-            <Button
-              variant="destructive"
-              onClick={() => {
-                onDelete(order);
-                onClose();
-              }}
-              className="px-6"
-            >
-              Xóa
-            </Button>
-          )}
-        </DialogFooter>
-
+        <div className="p-6 bg-white border-t sticky bottom-0 z-10">
+          <DialogFooter className="flex items-center justify-end gap-3">
+            {onEdit && (
+              <Button
+                variant="default"
+                onClick={() => {
+                  onEdit(order);
+                  onClose();
+                }}
+                className="px-6"
+              >
+                {t('testOrder.detail.update')}
+              </Button>
+            )}
+            {onDelete && (
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  onDelete(order);
+                  onClose();
+                }}
+                className="px-6"
+              >
+                {t('testOrder.detail.delete')}
+              </Button>
+            )}
+          </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );

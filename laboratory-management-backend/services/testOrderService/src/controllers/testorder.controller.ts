@@ -146,14 +146,12 @@ export const getAllOrdersGroupedByPatientId = async (req: Request, res: Response
       page,
       limit
     );
-
     if (!GroupOfOnePatientData.length) {
       return res.json({ success: true, data: null });
     }
-
     const { patient_name, orders, totalOrders } = GroupOfOnePatientData[0];
-    const totalPages = Math.ceil(totalOrders / limit); // tính số trang
-
+    const totalPages = Math.ceil(totalOrders / limit);
+    
     return res.json({
       success: true,
       data: {
@@ -167,7 +165,6 @@ export const getAllOrdersGroupedByPatientId = async (req: Request, res: Response
         }
       }
     });
-
   } catch (error) {
     return res.status(500).json({
       success: false,
@@ -229,7 +226,8 @@ export const searchTestOrders = async (req: Request, res: Response) => {
 export const createTestOrder = async (req: Request, res: Response) => {
   try {
     const { ...orderData } = req.body;
-    const order = await TestOrderService.createOrder(orderData);
+    const operatorId = (req as any).userId;
+    const order = await TestOrderService.createOrder(orderData, operatorId);
     res.status(201).json({ message: "Test order created successfully", order });
   } catch (error: any) {
     res.status(400).json({ message: error.message });
@@ -241,7 +239,8 @@ export const updateTestOrder = async (req: Request, res: Response) => {
     const id = req.params.id as string;
     const data = req.body;
     const updatedBy = data.updated_by;
-    const updated = await TestOrderService.updateOrder(id, data, updatedBy);
+    const operatorId = (req as any).userId;
+    const updated = await TestOrderService.updateOrder(id, data, updatedBy, operatorId);
 
     return res.json({
       success: true,
@@ -259,9 +258,10 @@ export const softDeleteTestOrder = async (req: Request, res: Response) => {
   try {
     const _id = req.params.id as string;
     const { deleted_by } = req.body;
-    const deletedBy = deleted_by || (req as any).user?.name || 'system';
+    const operatorId = (req as any).userId;
+    const deletedBy = deleted_by || 'system';
 
-    const deletedOrder = await TestOrderService.softDelete(_id, deletedBy);
+    const deletedOrder = await TestOrderService.softDelete(_id, deletedBy, operatorId);
     if (!deletedOrder) {
       return res.status(404).json({ message: 'Test order not found' });
     }
@@ -279,6 +279,7 @@ export const updateTestOrderStatus = async (req: Request, res: Response) => {
   try {
     const id = req.params.id as string;
     const { status, updated_by } = req.body;
+    const operatorId = (req as any).userId;
 
     if (!updated_by) {
       return res.status(400).json({
@@ -294,7 +295,8 @@ export const updateTestOrderStatus = async (req: Request, res: Response) => {
         message: "Trạng thái không hợp lệ",
       });
     }
-    const updated = await TestOrderService.updateStatus(id, status, updated_by);
+    const updated = await TestOrderService.updateStatus(id, status, updated_by, operatorId);
+
     // Nếu status là Completed thì tự động tạo Test Results
     if (status === "Completed") {
       const testItemIds: Types.ObjectId[] = updated.test_item_ids ?? [];

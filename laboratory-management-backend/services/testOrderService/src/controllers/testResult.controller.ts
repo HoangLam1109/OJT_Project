@@ -6,61 +6,66 @@ export const getTestOrdersWithResultsSummary = async (req: Request, res: Respons
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
+    const { data, totalCount } = await TestResultService.getTestOrdersWithResultsSummary(page, limit);
 
-    const testOrders = await TestResultService.getTestOrdersWithResultsSummary(page, limit);
-    const totalPages = Math.ceil(testOrders.length / limit);
     return res.json({
       success: true,
-      data: testOrders,
+      data,
       pagination: {
         page,
         limit,
-        totalPages: totalPages
+        totalCount,
+        totalPages: Math.ceil(totalCount / limit)
+      }
+    });
+
+
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: error instanceof Error ? error.message : "Unknown error"
+    });
+  }
+};
+
+export const getTestResultByPatientId = async (req: Request, res: Response) => {
+  try {
+    const patient_id = req.params.id as string;
+
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+
+    const { results, total } =
+      await TestResultService.getTestResultByPatientIdService(patient_id, page, limit);
+
+    if (!results || results.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Test Results not found"
+      });
+    }
+
+    return res.json({
+      success: true,
+      data: results,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit)
       }
     });
 
   } catch (error: any) {
     return res.status(500).json({
       success: false,
-      message: error instanceof Error ? error.message : "Unknown error"
+      message: error.message || "Unknown error"
     });
   }
 };
 
-export const getTestOrderById = async (req: Request, res: Response) => {
-  try {
-    const id = req.params.id;
 
-    if (!id) {
-      return res.status(400).json({
-        success: false,
-        message: "Missing id"
-      });
-    }
-
-    const result = await TestResultService.getTestOrderById(id);
-
-    if (!result || result.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "Test Order not found"
-      });
-    }
-
-    return res.json({
-      success: true,
-      data: result[0]
-    });
-
-  } catch (error: any) {
-    return res.status(500).json({
-      success: false,
-      message: error instanceof Error ? error.message : "Unknown error"
-    });
-  }
-};
-
-export const deleteTestResult = async (req: Request, res:Response ) => {
+export const deleteTestResult = async (req: Request, res: Response) => {
   try {
     const test_order_id = req.params.id;
 
@@ -86,8 +91,6 @@ export const deleteTestResult = async (req: Request, res:Response ) => {
 export const updateTestResult = async (req: Request, res: Response) => {
   try {
     const id = req.params.id as string;
-
-    // Lấy các field muốn update từ body
     const { result_value, reviewed, reviewer_comment } = req.body;
 
     const updateData: {
@@ -97,10 +100,19 @@ export const updateTestResult = async (req: Request, res: Response) => {
     } = {};
 
     if (result_value !== undefined) updateData.result_value = result_value;
-    if (reviewed !== undefined) updateData.reviewed = reviewed;
-    if (reviewer_comment !== undefined) updateData.reviewer_comment = reviewer_comment;
 
-    // Gọi service
+    if (reviewer_comment !== undefined) {
+      // Chuyển null hoặc undefined thành chuỗi rỗng
+      const safeComment = reviewer_comment ?? '';
+      updateData.reviewer_comment = safeComment;
+
+      // Nếu có comment → reviewed = true, nếu comment rỗng → reviewed = false
+      updateData.reviewed = safeComment.trim() !== '' ? true : false;
+    } else if (reviewed !== undefined) {
+      // Nếu không update comment mà chỉ update reviewed
+      updateData.reviewed = reviewed;
+    }
+
     const result = await TestResultService.updateTestResult(id, updateData);
 
     return res.json({
@@ -122,6 +134,7 @@ export const updateTestResult = async (req: Request, res: Response) => {
   }
 };
 
+
 export const searchTestResultsPaginated = async (req: Request, res: Response) => {
   try {
     const keyword = (req.query.keyword as string) || "";
@@ -139,6 +152,10 @@ export const searchTestResultsPaginated = async (req: Request, res: Response) =>
       _id: r._id,
       test_order_id: r.test_order_id,
       test_item_id: r.test_item_id,
+      patient_id: r.patient_id,
+      test_type: r.test_type,
+      name: r.name,
+      instrument_name: r.instrument_name,
       patient_name: r.patient_name,
       reagent_names: r.reagent_names,
       result_value: r.result_value,

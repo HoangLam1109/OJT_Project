@@ -4,7 +4,7 @@ import Button from '../../../components/common/button';
 import { Progress } from '../../../components/common/progress';
 import { TestTube, PlayCircle, Pause, CheckCircle } from 'lucide-react';
 import type { TestOrder } from '../types/TestOrderTypes';
-import { getStatusBadge } from '../utils/testOrderUtils';
+import { getStatusBadge, translateTestType } from '../utils/testOrderUtils';
 import Pagination from '../../../components/common/pagination';
 import { useTranslation } from 'react-i18next';
 interface TestOrderListProps {
@@ -60,7 +60,7 @@ const TestOrderList: React.FC<TestOrderListProps> = ({
                     </div>
                     <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
                       <p>{t('testOrder.patient')}: <span className="text-gray-900">{order.patient_name}</span></p>
-                      <p>{t('testOrder.testType')}: <span className="text-gray-900">{order.test_type}</span></p>
+                      <p>{t('testOrder.testType')}: <span className="text-gray-900">{translateTestType(order.test_type, t)}</span></p>
                       <p>{t('testOrder.deadline')}: <span className="text-gray-900">{order.due_date}</span></p>
                     </div>
                   </div>

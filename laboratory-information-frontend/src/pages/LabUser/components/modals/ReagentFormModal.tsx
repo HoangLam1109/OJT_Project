@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Reagent } from '../../data/mockReagentsData';
+import { useTranslation } from 'react-i18next';
 
 interface ReagentFormModalProps {
   isOpen: boolean;
@@ -18,6 +19,7 @@ const ReagentFormModal: React.FC<ReagentFormModalProps> = ({
   onSave,
   onChange,
 }) => {
+  const { t } = useTranslation();
   if (!isOpen) return null;
 
   return (
@@ -25,13 +27,13 @@ const ReagentFormModal: React.FC<ReagentFormModalProps> = ({
       <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom-4 duration-300 border border-gray-200">
         <div className="p-6">
           <h2 className="text-xl font-bold text-gray-900 mb-4">
-            {isEdit ? 'Chỉnh sửa thuốc thử' : 'Thêm thuốc thử mới'}
+            {isEdit ? t('reagent.formModal.editTitle') : t('reagent.formModal.addTitle')}
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Tên thuốc thử *
+                {t('reagent.formModal.name')} *
               </label>
               <input
                 type="text"
@@ -44,7 +46,7 @@ const ReagentFormModal: React.FC<ReagentFormModalProps> = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Số lô *
+                {t('reagent.formModal.lotNumber')} *
               </label>
               <input
                 type="text"
@@ -57,7 +59,7 @@ const ReagentFormModal: React.FC<ReagentFormModalProps> = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nhà sản xuất
+                {t('reagent.formModal.manufacturer')}
               </label>
               <input
                 type="text"
@@ -69,7 +71,7 @@ const ReagentFormModal: React.FC<ReagentFormModalProps> = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Ngày nhập
+                {t('reagent.formModal.receivedDate')}
               </label>
               <input
                 type="date"
@@ -81,7 +83,7 @@ const ReagentFormModal: React.FC<ReagentFormModalProps> = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Ngày hết hạn *
+                {t('reagent.formModal.expiryDate')} *
               </label>
               <input
                 type="date"
@@ -94,7 +96,7 @@ const ReagentFormModal: React.FC<ReagentFormModalProps> = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Số lượng *
+                {t('reagent.formModal.quantity')} *
               </label>
               <input
                 type="number"
@@ -108,7 +110,7 @@ const ReagentFormModal: React.FC<ReagentFormModalProps> = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Vị trí lưu trữ
+                {t('reagent.formModal.storageLocation')}
               </label>
               <input
                 type="text"
@@ -120,23 +122,23 @@ const ReagentFormModal: React.FC<ReagentFormModalProps> = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Trạng thái
+                {t('reagent.formModal.status')}
               </label>
               <select
                 value={reagent.status || 'Available'}
                 onChange={(e) => onChange('status', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="Available">Có sẵn</option>
-                <option value="Low Stock">Sắp hết</option>
-                <option value="Expired">Hết hạn</option>
-                <option value="Depleted">Hết hàng</option>
+                <option value="Available">{t('reagent.status.available')}</option>
+                <option value="Low Stock">{t('reagent.status.lowStock')}</option>
+                <option value="Expired">{t('reagent.status.expired')}</option>
+                <option value="Depleted">{t('reagent.status.depleted')}</option>
               </select>
             </div>
 
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Ghi chú
+                {t('reagent.formModal.notes')}
               </label>
               <textarea
                 value={reagent.notes || ''}
@@ -152,13 +154,13 @@ const ReagentFormModal: React.FC<ReagentFormModalProps> = ({
               onClick={onClose}
               className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
             >
-              Hủy
+              {t('reagent.cancel')}
             </button>
             <button
               onClick={onSave}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
-              Lưu
+              {t('reagent.save')}
             </button>
           </div>
         </div>

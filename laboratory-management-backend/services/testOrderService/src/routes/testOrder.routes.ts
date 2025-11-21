@@ -26,9 +26,9 @@ router.get("/testOrder/group-by-patient", getAllOrdersGroupedByPatientId);
 router.get("/testOrder/:id", getTestOrderById);
 
 // CRUD
-router.post("/testOrder/create", createTestOrder);
-router.put("/testOrder/update/:id", updateTestOrder);
-router.delete("/testOrder/delete/:id", softDeleteTestOrder);
-router.put("/testOrder/:id/status", updateTestOrderStatus);
+router.post("/testOrder/create", AuthenticateUser.authenticateUser, createTestOrder);
+router.put("/testOrder/update/:id", AuthenticateUser.authenticateUser, updateTestOrder);
+router.delete("/testOrder/delete/:id", AuthenticateUser.authenticateUser, softDeleteTestOrder);
+router.put("/testOrder/:id/status", AuthenticateUser.authenticateUser, updateTestOrderStatus);
 
 export default router;

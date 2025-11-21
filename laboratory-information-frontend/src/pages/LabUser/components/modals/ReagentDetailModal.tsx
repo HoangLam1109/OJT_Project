@@ -2,6 +2,7 @@ import React from 'react';
 import { mockTestOrders, mockAuditLogs } from '../../data/mockReagentsData';
 import type { Reagent } from '../../data/mockReagentsData';
 import { getStatusBadge, formatDate } from '../../utils/reagentUtils';
+import { useTranslation } from 'react-i18next';
 
 interface ReagentDetailModalProps {
   isOpen: boolean;
@@ -10,6 +11,7 @@ interface ReagentDetailModalProps {
 }
 
 const ReagentDetailModal: React.FC<ReagentDetailModalProps> = ({ isOpen, reagent, onClose }) => {
+  const { t } = useTranslation();
   if (!isOpen || !reagent) return null;
 
   return (
@@ -17,53 +19,53 @@ const ReagentDetailModal: React.FC<ReagentDetailModalProps> = ({ isOpen, reagent
       <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom-4 duration-300 border border-gray-200">
         <div className="p-6">
           <h2 className="text-xl font-bold text-gray-900 mb-4">
-            Chi tiết thuốc thử: {reagent.name}
+            {t('reagent.detailModal.title')}: {reagent.name}
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-3">Thông tin cơ bản</h3>
+              <h3 className="text-lg font-semibold text-gray-800 mb-3">{t('reagent.detailModal.basicInfo')}</h3>
               <div className="space-y-3">
                 <div>
-                  <span className="font-medium text-gray-600">Mã lô:</span>
+                  <span className="font-medium text-gray-600">{t('reagent.detailModal.lotNumber')}:</span>
                   <span className="ml-2 text-gray-900">{reagent.lotNumber}</span>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-600">Tên thuốc thử:</span>
+                  <span className="font-medium text-gray-600">{t('reagent.detailModal.name')}:</span>
                   <span className="ml-2 text-gray-900">{reagent.name}</span>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-600">Nhà sản xuất:</span>
-                  <span className="ml-2 text-gray-900">{reagent.manufacturer || 'Không có'}</span>
+                  <span className="font-medium text-gray-600">{t('reagent.detailModal.manufacturer')}:</span>
+                  <span className="ml-2 text-gray-900">{reagent.manufacturer || t('reagent.detailModal.noInfo')}</span>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-600">Ngày nhập:</span>
+                  <span className="font-medium text-gray-600">{t('reagent.detailModal.receivedDate')}:</span>
                   <span className="ml-2 text-gray-900">{formatDate(reagent.receivedDate)}</span>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-600">Ngày hết hạn:</span>
+                  <span className="font-medium text-gray-600">{t('reagent.detailModal.expiryDate')}:</span>
                   <span className="ml-2 text-gray-900">{formatDate(reagent.expiryDate)}</span>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-600">Số lượng:</span>
+                  <span className="font-medium text-gray-600">{t('reagent.detailModal.quantity')}:</span>
                   <span className="ml-2 text-gray-900">{reagent.quantity}</span>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-600">Trạng thái:</span>
+                  <span className="font-medium text-gray-600">{t('reagent.detailModal.status')}:</span>
                   <span className="ml-2">{getStatusBadge(reagent.status)}</span>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-600">Vị trí lưu trữ:</span>
+                  <span className="font-medium text-gray-600">{t('reagent.detailModal.storageLocation')}:</span>
                   <span className="ml-2 text-gray-900">{reagent.storageLocation}</span>
                 </div>
               </div>
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-3">Thông tin sử dụng</h3>
+              <h3 className="text-lg font-semibold text-gray-800 mb-3">{t('reagent.detailModal.usageInfo')}</h3>
               <div className="space-y-3">
                 <div>
-                  <span className="font-medium text-gray-600">Đơn xét nghiệm liên kết:</span>
+                  <span className="font-medium text-gray-600">{t('reagent.detailModal.linkedTestOrders')}:</span>
                   <div className="ml-2">
                     {reagent.usedInTests.length > 0 ? (
                       <div className="space-y-1">
@@ -77,14 +79,14 @@ const ReagentDetailModal: React.FC<ReagentDetailModalProps> = ({ isOpen, reagent
                         })}
                       </div>
                     ) : (
-                      <span className="text-gray-500">Chưa có</span>
+                      <span className="text-gray-500">{t('reagent.detailModal.none')}</span>
                     )}
                   </div>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-600">Ghi chú:</span>
+                  <span className="font-medium text-gray-600">{t('reagent.detailModal.notes')}:</span>
                   <p className="ml-2 text-gray-900 mt-1">
-                    {reagent.notes || 'Không có ghi chú'}
+                    {reagent.notes || t('reagent.detailModal.noNotes')}
                   </p>
                 </div>
               </div>
@@ -92,7 +94,7 @@ const ReagentDetailModal: React.FC<ReagentDetailModalProps> = ({ isOpen, reagent
           </div>
 
           <div className="mt-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-3">Lịch sử hoạt động gần đây</h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">{t('reagent.detailModal.recentActivity')}</h3>
             <div className="space-y-2">
               {mockAuditLogs
                 .filter(log => log.reagentId === reagent.id)
@@ -116,7 +118,7 @@ const ReagentDetailModal: React.FC<ReagentDetailModalProps> = ({ isOpen, reagent
               onClick={onClose}
               className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
             >
-              Đóng
+              {t('reagent.close')}
             </button>
           </div>
         </div>

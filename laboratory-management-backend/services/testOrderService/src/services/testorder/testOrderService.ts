@@ -5,6 +5,9 @@ import { CreateOrderInput, ReagentUsage, UpdateOrderInput } from "../../db/model
 import { ITestOrder } from "../../db/models/TestOrder.model.js";
 import TestOrder from "../../db/models/TestOrder.model.js";
 import mongoose from "mongoose";
+import testOrderMonitoringService from "../monitoring/testOrderMonitoring.service.js";
+import iamServiceClient from "../iam/iamServiceClient.js";
+import { unknown } from "zod";
 
 export const TestOrderService = {
 
@@ -57,7 +60,7 @@ export const TestOrderService = {
 
 
 
-  async createOrder(data: CreateOrderInput): Promise<ITestOrder> {
+  async createOrder(data: CreateOrderInput, operatorId?: string): Promise<ITestOrder> {
     // Validate: cần có patient_id hoặc patient_name
     if (!data.patient_id && !data.patient_name?.trim()) {
       throw new Error('Cần có patient_id hoặc patient_name để tạo đơn xét nghiệm');
@@ -134,11 +137,38 @@ export const TestOrderService = {
         quantity_current: newQuantityCurrent,
       });
     }
+
+    // Monitoring
+    try {
+      let user = null;
+      const userIdToFetch = operatorId;
+      
+      if (userIdToFetch) {
+        try {
+          user = await iamServiceClient.getUserById(userIdToFetch);
+        } catch (e) {
+          console.warn("[TestOrderService] Could not fetch user details for monitoring:", e);
+        }
+      }
+
+      await testOrderMonitoringService.recordTestOrderCreated({
+        testOrderId: createdOrder._id as unknown as string,
+        eventMessage: "Test order created",
+        newValues: createdOrder.toObject(),
+        operatorId: userIdToFetch || data.created_by,
+        operatorEmail: user?.email ?? null,
+        operatorName: user?.fullName || (data.created_by !== 'system' ? data.created_by : null),
+        operatorRole: user?.role ?? null
+      });
+    } catch (error) {
+      console.error("[TestOrderService] Failed to log create event", error);
+    }
+
     return createdOrder;
   },
 
 
-  async updateOrder(id: string, data: UpdateOrderInput, updated_by: any): Promise<ITestOrder | null> {
+  async updateOrder(id: string, data: UpdateOrderInput, updated_by: any, operatorId?: string): Promise<ITestOrder | null> {
     //  Lấy order hiện tại từ DB
     const existingOrder = await TestOrderRepository.findById(id);
     if (!existingOrder) throw new Error(`Order ${id} not found`);
@@ -197,6 +227,33 @@ export const TestOrderService = {
       }
     }
 
+    // Monitoring
+    try {
+      let user = null;
+      const userIdToFetch = operatorId;
+      
+      if (userIdToFetch) {
+        try {
+          user = await iamServiceClient.getUserById(userIdToFetch);
+        } catch (e) {
+          console.warn("[TestOrderService] Could not fetch user details for monitoring:", e);
+        }
+      }
+
+      await testOrderMonitoringService.recordTestOrderUpdated({
+        testOrderId: id,
+        eventMessage: "Test order updated",
+        oldValues: existingOrder.toObject(),
+        newValues: updatedOrder?.toObject(),
+        operatorId: userIdToFetch || updated_by,
+        operatorEmail: user?.email ?? null,
+        operatorName: user?.fullName || (updated_by !== 'system' ? updated_by : undefined),
+        operatorRole: user?.role ?? null
+      });
+    } catch (error) {
+      console.error("[TestOrderService] Failed to log update event", error);
+    }
+
     return updatedOrder;
   },
 
@@ -204,7 +261,8 @@ export const TestOrderService = {
   async updateStatus(
     id: string,
     status: string,
-    updated_by: string
+    updated_by: string,
+    operatorId?: string
   ): Promise<ITestOrder> {
     const order = await TestOrderRepository.findById(id);
     if (!order) throw new Error('Không tìm thấy lệnh xét nghiệm');
@@ -230,11 +288,38 @@ export const TestOrderService = {
       }
     }
 
+    // Monitoring
+    try {
+      let user = null;
+      const userIdToFetch = operatorId;
+      
+      if (userIdToFetch) {
+        try {
+          user = await iamServiceClient.getUserById(userIdToFetch);
+        } catch (e) {
+          console.warn("[TestOrderService] Could not fetch user details for monitoring:", e);
+        }
+      }
+
+      await testOrderMonitoringService.recordTestOrderUpdated({
+        testOrderId: id,
+        eventMessage: `Test order status updated to ${status}`,
+        oldValues: order.toObject(),
+        newValues: updatedOrder?.toObject(),
+        operatorId: userIdToFetch || updated_by,
+        operatorEmail: user?.email ?? null,
+        operatorName: user?.fullName || (updated_by !== 'system' ? updated_by : null),
+        operatorRole: user?.role ?? null
+      });
+    } catch (error) {
+      console.error("[TestOrderService] Failed to log status update event", error);
+    }
+
     return updatedOrder;
   },
 
 
-  async softDelete(_id: string, deleted_by: string): Promise<ITestOrder | null> {
+  async softDelete(_id: string, deleted_by: string, operatorId?: string): Promise<ITestOrder | null> {
     const order = await TestOrderRepository.findById(_id);
     if (!order) throw new Error("Order không tìm thấy!");
     // Chỉ hồi lại tồn kho nếu order chưa thực hiện
@@ -262,6 +347,34 @@ export const TestOrderService = {
     }
 
     const softDeleteTestOrder = await TestOrderRepository.softDelete(_id, deleted_by);
+
+    // Monitoring
+    try {
+      let user = null;
+      const userIdToFetch = operatorId || (deleted_by !== 'system' ? deleted_by : null);
+      
+      if (userIdToFetch) {
+        try {
+          user = await iamServiceClient.getUserById(userIdToFetch);
+        } catch (e) {
+          console.warn("[TestOrderService] Could not fetch user details for monitoring:", e);
+        }
+      }
+
+      await testOrderMonitoringService.recordTestOrderDeleted({
+        testOrderId: _id,
+        eventMessage: "Test order soft deleted",
+        oldValues: order.toObject(),
+        newValues: softDeleteTestOrder?.toObject(),
+        operatorId: userIdToFetch || deleted_by,
+        operatorEmail: user?.email ?? null,
+        operatorName: user?.fullName || (deleted_by !== 'system' ? deleted_by : null),
+        operatorRole: user?.role ?? null
+      });
+    } catch (error) {
+      console.error("[TestOrderService] Failed to log delete event", error);
+    }
+
     return softDeleteTestOrder;
   },
 

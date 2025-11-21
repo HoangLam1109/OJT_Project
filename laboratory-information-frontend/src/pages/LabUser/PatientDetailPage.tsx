@@ -11,13 +11,14 @@ import { testResultService } from '../../service/testResultService';
 import type { TestOrder } from '../LabUser/types/TestOrderTypes';
 import type { TestResult } from '../LabUser/types/TestResultTypes';
 import { toast } from 'sonner';
-// Removed create medical record from detail page per requirement
+import { useTranslation } from 'react-i18next';
 import EditPatientMedicalRecord from './components/EditPatientMedicalRecord';
 import { DeleteConfirmDialog } from '../admin/components/DeleteConfirmDialog';
 import MedicalRecordViewModal from '@/pages/LabUser/components/modals/MedicalRecordViewModal';
 import TestResultModal from '@/pages/LabUser/components/modals/TestResultModal';
 
 const PatientDetailPage: React.FC = () => {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [patient, setPatient] = useState<PatientOption | null>(null);
@@ -43,7 +44,7 @@ const PatientDetailPage: React.FC = () => {
       const detail = await viewPatientDetail(id);
       setPatientDetail(detail);
     } catch (error) {
-      toast.error('Không thể tải thông tin bệnh nhân');
+      toast.error(t('patient.cannotLoadPatientInfo'));
       console.error('Error loading patient:', error);
     } finally {
       setLoading(false);
@@ -56,7 +57,7 @@ const PatientDetailPage: React.FC = () => {
       const res = await patientMedicalRecordService.getAll({ page: 1, limit: 50, patientId: patient.id });
       setMedicalRecords(res.records || []);
     } catch (error) {
-      toast.error('Không thể tải hồ sơ y tế');
+      toast.error(t('patient.cannotLoadMedicalRecords'));
       console.error('Error loading medical records:', error);
     }
   }, [patient]);
@@ -67,8 +68,6 @@ const PatientDetailPage: React.FC = () => {
       const { orders } = await testOrderService.getAllTestOrders(1, 100);
       // Filter orders by patient_id
       const patientOrders = orders.filter(order => order.patient_id === patient.id);
-      console.log('Patient orders:', patientOrders); // Debug log
-      console.log('Patient ID:', patient.id); // Debug log
       setTestOrders(patientOrders);
     } catch (error) {
       console.error('Error loading test orders:', error);
@@ -91,13 +90,13 @@ const PatientDetailPage: React.FC = () => {
     try {
       const ok = await patientMedicalRecordService.remove(deleteTarget.id);
       if (ok) {
-        toast.success('Xóa hồ sơ thành công');
+        toast.success(t('patient.deleteMedicalRecordSuccess'));
         setRefreshKey(k => k + 1);
       } else {
-        toast.error('Xóa hồ sơ thất bại');
+        toast.error(t('patient.deleteMedicalRecordFailed'));
       }
     } catch {
-      toast.error('Xóa hồ sơ thất bại');
+      toast.error(t('patient.deleteMedicalRecordFailed'));
     } finally {
       setDeleteTarget(null);
     }
@@ -112,16 +111,16 @@ const PatientDetailPage: React.FC = () => {
         setSelectedTestResult(result);
         setTestResultModalOpen(true);
       } else {
-        toast.info('Chưa có kết quả xét nghiệm');
+        toast.info(t('patient.noTestResult'));
       }
     } catch (error) {
-      toast.error('Không thể tải kết quả xét nghiệm');
+      toast.error(t('patient.cannotLoadTestResult'));
       console.error('Error loading test result:', error);
     }
   };
 
   const formatDateTime = (isoString?: string) => {
-    if (!isoString) return 'Chưa cập nhật';
+    if (!isoString) return t('patient.notUpdated');
     try {
       const date = new Date(isoString);
       return date.toLocaleString('vi-VN', {
@@ -132,7 +131,7 @@ const PatientDetailPage: React.FC = () => {
         minute: '2-digit'
       });
     } catch {
-      return 'Chưa cập nhật';
+      return t('patient.notUpdated');
     }
   };
 
@@ -151,8 +150,8 @@ const PatientDetailPage: React.FC = () => {
       <div className="p-6">
         <div className="text-center py-12">
           <User className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Không tìm thấy bệnh nhân</h3>
-          <Button onClick={() => navigate(-1)}>Quay lại</Button>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">{t('patient.patientNotFound')}</h3>
+          <Button onClick={() => navigate(-1)}>{t('patient.backToHome')}</Button>
         </div>
       </div>
     );
@@ -166,8 +165,8 @@ const PatientDetailPage: React.FC = () => {
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900">Chi tiết bệnh nhân</h1>
-            <p className="text-gray-600">Thông tin và hồ sơ y tế của bệnh nhân</p>
+            <h1 className="text-2xl font-semibold text-gray-900">{t('patient.patientDetail')}</h1>
+            <p className="text-gray-600">{t('patient.patientDetailDescription')}</p>
           </div>
         </div>
         <div />
@@ -177,38 +176,38 @@ const PatientDetailPage: React.FC = () => {
         <CardHeader>
           <CardTitle className="flex items-center">
             <User className="w-5 h-5 mr-2" />
-            Thông tin bệnh nhân
+            {t('patient.patientInfo')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <Label className="text-sm text-gray-600">Mã bệnh nhân</Label>
+              <Label className="text-sm text-gray-600">{t('patient.patientCode')}</Label>
               <p className="text-lg font-semibold mt-1">{patient.patientCode || patient.id}</p>
             </div>
             <div>
-              <Label className="text-sm text-gray-600">Họ và tên</Label>
+              <Label className="text-sm text-gray-600">{t('patient.patientName')}</Label>
               <p className="text-lg mt-1">{patient.fullName}</p>
             </div>
             <div>
-              <Label className="text-sm text-gray-600">Ngày sinh</Label>
+              <Label className="text-sm text-gray-600">{t('patient.dateOfBirth')}</Label>
               <p className="text-lg mt-1">{patient.dateOfBirth ? new Date(patient.dateOfBirth).toLocaleDateString('vi-VN') : 'Chưa cập nhật'}</p>
             </div>
             <div>
-              <Label className="text-sm text-gray-600">Giới tính</Label>
+              <Label className="text-sm text-gray-600">{t('patient.gender')}</Label>
               <p className="text-lg mt-1">{patient.gender?.toLowerCase() === 'male' ? 'Nam' : patient.gender?.toLowerCase() === 'female' ? 'Nữ' : 'Khác'}</p>
             </div>
             <div>
-              <Label className="text-sm text-gray-600">Số điện thoại</Label>
-              <p className="text-lg mt-1">{patient.phoneNumber || 'Chưa cập nhật'}</p>
+              <Label className="text-sm text-gray-600">{t('patient.phoneNumber')}</Label>
+              <p className="text-lg mt-1">{patient.phoneNumber || t('patient.notUpdated')}</p>
             </div>
             <div>
               <Label className="text-sm text-gray-600">Email</Label>
-              <p className="text-lg mt-1">{patient.email || 'Chưa cập nhật'}</p>
+              <p className="text-lg mt-1">{patient.email || t('patient.notUpdated')}</p>
             </div>
             <div className="md:col-span-2">
-              <Label className="text-sm text-gray-600">Địa chỉ</Label>
-              <p className="text-lg mt-1">{patient.address || 'Chưa cập nhật'}</p>
+              <Label className="text-sm text-gray-600">{t('patient.address')}</Label>
+              <p className="text-lg mt-1">{patient.address || t('patient.notUpdated')}</p>
             </div>
           </div>
         </CardContent>
@@ -219,18 +218,18 @@ const PatientDetailPage: React.FC = () => {
         <CardHeader>
           <CardTitle className="flex items-center">
             <User className="w-5 h-5 mr-2" />
-            Thông tin người thân bệnh nhân
+            {t('patient.emergencyContactInfo')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <Label className="text-sm text-gray-600">Họ và tên người thân</Label>
-              <p className="text-lg mt-1">{patientDetail?.emergency_contact?.name || 'Chưa cập nhật'}</p>
+              <Label className="text-sm text-gray-600">{t('patient.emergencyContactName')}</Label>
+              <p className="text-lg mt-1">{patientDetail?.emergency_contact?.name || t('patient.notUpdated')}</p>
             </div>
             <div>
-              <Label className="text-sm text-gray-600">Số điện thoại người thân</Label>
-              <p className="text-lg mt-1">{patientDetail?.emergency_contact?.phone || 'Chưa cập nhật'}</p>
+              <Label className="text-sm text-gray-600">{t('patient.emergencyContactPhone')}</Label>
+              <p className="text-lg mt-1">{patientDetail?.emergency_contact?.phone || t('patient.notUpdated')}</p>
             </div>
           </div>
         </CardContent>
@@ -242,18 +241,18 @@ const PatientDetailPage: React.FC = () => {
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center">
               <FileText className="w-5 h-5 mr-2" />
-              Hồ sơ y tế
+              {t('patient.medicalRecord')}
             </div>
             {medicalRecords.length > 0 && (
               <div className="flex items-center gap-2">
                 <Button variant="ghost" size="sm" onClick={() => setViewId(medicalRecords[0]._id)} title="Xem chi tiết">
-                  <Eye className="w-4 h-4 mr-1" />Xem
+                  <Eye className="w-4 h-4 mr-1" />{t('patient.viewDetails')}
                 </Button>
                 <Button variant="ghost" size="sm" onClick={() => setEditId(medicalRecords[0]._id)} title="Chỉnh sửa">
-                  <Pencil className="w-4 h-4 mr-1" />Sửa
+                  <Pencil className="w-4 h-4 mr-1" />{t('patient.edit')}
                 </Button>
                 <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700" onClick={() => setDeleteTarget({ id: medicalRecords[0]._id, name: medicalRecords[0].record_code })} title="Xóa">
-                  <Trash2 className="w-4 h-4 mr-1" />Xóa
+                  <Trash2 className="w-4 h-4 mr-1" />{t('patient.delete')}
                 </Button>
               </div>
             )}
@@ -263,16 +262,16 @@ const PatientDetailPage: React.FC = () => {
           {medicalRecords.length === 0 ? (
             <div className="text-center py-8">
               <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500">Chưa có hồ sơ y tế</p>
+              <p className="text-gray-500">{t('patient.noMedicalRecord')}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <Label className="text-sm text-gray-600">Nhóm máu</Label>
+                <Label className="text-sm text-gray-600">{t('patient.bloodType')}</Label>
                 <p className="text-lg mt-1">{medicalRecords[0].blood_type || 'Chưa cập nhật'}</p>
               </div>
               <div>
-                <Label className="text-sm text-gray-600">Dị ứng</Label>
+                <Label className="text-sm text-gray-600">{t('patient.allergies')}</Label>
                 <p className="text-lg mt-1">
                   {medicalRecords[0].allergies 
                     ? (Array.isArray(medicalRecords[0].allergies) 
@@ -282,7 +281,7 @@ const PatientDetailPage: React.FC = () => {
                 </p>
               </div>
               <div>
-                <Label className="text-sm text-gray-600">Bệnh mạn tính</Label>
+                <Label className="text-sm text-gray-600">{t('patient.chronicConditions')}</Label>
                 <p className="text-lg mt-1">
                   {medicalRecords[0].chronic_conditions 
                     ? (Array.isArray(medicalRecords[0].chronic_conditions) 
@@ -292,11 +291,11 @@ const PatientDetailPage: React.FC = () => {
                 </p>
               </div>
               <div>
-                <Label className="text-sm text-gray-600">Thời gian tạo</Label>
+                <Label className="text-sm text-gray-600">{t('patient.createdAt')}</Label>
                 <p className="text-lg mt-1">{formatDate(medicalRecords[0].created_at)}</p>
               </div>
               <div className="md:col-span-2">
-                <Label className="text-sm text-gray-600">Tiền sử y khoa</Label>
+                <Label className="text-sm text-gray-600">{t('patient.medicalHistory')}</Label>
                 <p className="text-lg mt-1">{medicalRecords[0].medical_history || 'Chưa cập nhật'}</p>
               </div>
             </div>
@@ -309,23 +308,23 @@ const PatientDetailPage: React.FC = () => {
         <CardHeader>
           <CardTitle className="flex items-center">
             <FlaskConical className="w-5 h-5 mr-2" />
-            Kết quả xét nghiệm
+            {t('patient.testResult')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           {testOrders.length === 0 ? (
             <div className="text-center py-8">
               <FlaskConical className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500">Chưa có kết quả xét nghiệm</p>
+              <p className="text-gray-500">{t('patient.noTestResult')}</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">Tên thiết bị</th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">Thuốc thử</th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">Thời gian</th>
+                    <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">{t('patient.instrumentName')}</th>
+                    <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">{t('patient.reagentName')}</th>
+                    <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">{t('patient.createdAt')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -334,15 +333,15 @@ const PatientDetailPage: React.FC = () => {
                       key={order._id} 
                       className="border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
                       onClick={() => handleViewTestResult(order._id)}
-                      title="Click để xem kết quả xét nghiệm"
+                      title={t('patient.clickToViewTestResult')}
                     >
                       <td className="py-3 px-4 text-sm text-gray-900">
-                        {order.instrument?.instrument_name || 'Chưa cập nhật'}
+                        {order.instrument?.instrument_name || t('patient.notUpdated')}
                       </td>
                       <td className="py-3 px-4 text-sm text-gray-900">
                         {order.reagents && order.reagents.length > 0
                           ? order.reagents.map((r: { reagent_name: string }) => r.reagent_name).join(', ')
-                          : 'Chưa cập nhật'}
+                          : t('patient.notUpdated')}
                       </td>
                       <td className="py-3 px-4 text-sm text-gray-600">
                         {formatDateTime(order.created_at)}

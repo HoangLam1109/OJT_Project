@@ -21,47 +21,47 @@ const HeroSection = () => {
       <div className="absolute top-1/3 right-10 w-16 h-16 bg-accent/20 rounded-full animate-pulse-soft"></div>
       
       {/* Content */}
-      <div className="relative z-10 container mx-auto px-4 text-center text-white">
+      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 animate-fade-up">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold mb-4 sm:mb-6 animate-fade-up">
             {t("hero.title")}
             <span className="block gradient-text text-white">
               {t("hero.subtitle")}
             </span>
           </h1>
           
-          <p className="text-xl md:text-2xl text-white/90 mb-8 animate-fade-up" style={{ animationDelay: '0.2s' }}>
+          <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-white/90 mb-6 sm:mb-8 animate-fade-up px-4" style={{ animationDelay: '0.2s' }}>
             {t("hero.description")}
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-up" style={{ animationDelay: '0.4s' }}>
-            <Button size="lg" className="group">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center animate-fade-up px-4" style={{ animationDelay: '0.4s' }}>
+            <Button size="lg" className="group w-full sm:w-auto">
               {t("hero.button")}
               <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
             
-            <Button variant="outline" size="lg" className="group bg-white/10 text-white border-white/30 hover:bg-white/20">
+            <Button variant="outline" size="lg" className="group bg-white/10 text-white border-white/30 hover:bg-white/20 w-full sm:w-auto">
               <Play className="mr-2" />
               {t("hero.demo")}
             </Button>
           </div>
           
-          <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-8 text-center animate-fade-up" style={{ animationDelay: '0.6s' }}>
-            <div>
-              <div className="text-3xl font-bold text-white">500+</div>
-              <div className="text-white/80">{t("hero.laboratory")}</div>
+          <div className="mt-8 sm:mt-10 md:mt-12 grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 md:gap-8 text-center animate-fade-up px-2" style={{ animationDelay: '0.6s' }}>
+            <div className="p-2">
+              <div className="text-2xl sm:text-3xl font-bold text-white">500+</div>
+              <div className="text-xs sm:text-sm md:text-base text-white/80">{t("hero.laboratory")}</div>
             </div>
-            <div>
-              <div className="text-3xl font-bold text-white">1M+</div>
-              <div className="text-white/80">{t("hero.test")}</div>
+            <div className="p-2">
+              <div className="text-2xl sm:text-3xl font-bold text-white">1M+</div>
+              <div className="text-xs sm:text-sm md:text-base text-white/80">{t("hero.test")}</div>
             </div>
-            <div>
-              <div className="text-3xl font-bold text-white">99.9%</div>
-              <div className="text-white/80">{t("hero.time")}</div>
+            <div className="p-2">
+              <div className="text-2xl sm:text-3xl font-bold text-white">99.9%</div>
+              <div className="text-xs sm:text-sm md:text-base text-white/80">{t("hero.time")}</div>
             </div>
-            <div>
-              <div className="text-3xl font-bold text-white">24/7</div>
-              <div className="text-white/80">{t("hero.support")}</div>
+            <div className="p-2">
+              <div className="text-2xl sm:text-3xl font-bold text-white">24/7</div>
+              <div className="text-xs sm:text-sm md:text-base text-white/80">{t("hero.support")}</div>
             </div>
           </div>
         </div>

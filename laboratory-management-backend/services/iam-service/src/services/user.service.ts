@@ -355,6 +355,10 @@ export class UserService {
 
       delete (newUser as any).password;
       return { data: newUser, passwordChanged: true };
-    } else return { data: userData, passwordChanged: false };
+    } else {
+      const cleanData = { ...userData };
+      delete (cleanData as any).password;
+      return { data: cleanData, passwordChanged: false };
+    }
   }
 }

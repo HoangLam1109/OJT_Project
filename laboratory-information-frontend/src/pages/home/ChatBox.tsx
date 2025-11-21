@@ -74,27 +74,27 @@ const ChatBox = () => {
       {!isOpen && (
         <Button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg hover:scale-110 transition-transform z-[100] bg-white text-primary hover:bg-white hover:text-primary"
+          className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 h-12 w-12 sm:h-14 sm:w-14 rounded-full shadow-lg hover:scale-110 transition-transform z-[100] bg-white text-primary hover:bg-white hover:text-primary"
           size="icon"
         >
-          <MessageCircle className="h-6 w-6" />
+          <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6" />
         </Button>
       )}
 
       {/* Chat Window */}
       {isOpen && (
-        <Card className="fixed bottom-6 right-6 w-96 h-[500px] shadow-elegant z-[100] flex flex-col bg-gradient-to-b from-primary to-primary/30 p-0 rounded-none overflow-hidden gap-0">
+        <Card className="fixed bottom-4 right-4 left-4 sm:bottom-6 sm:right-6 sm:left-auto sm:w-96 h-[calc(100vh-2rem)] sm:h-[500px] max-h-[600px] shadow-elegant z-[100] flex flex-col bg-gradient-to-b from-primary to-primary/30 p-0 rounded-lg sm:rounded-none overflow-hidden gap-0">
 
 
           {/* Header */}
-          <div className="bg-gradient-to-r from-[#007BFF] via-[#0056CC] to-[#004199] p-4 flex items-center justify-between">
+          <div className="bg-gradient-to-r from-[#007BFF] via-[#0056CC] to-[#004199] p-3 sm:p-4 flex items-center justify-between">
 
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-                <MessageCircle className="h-5 w-5 text-white" />
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/20 flex items-center justify-center">
+                <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
               </div>
               <div>
-                <h3 className="font-semibold text-white">Hỗ trợ trực tuyến</h3>
+                <h3 className="text-sm sm:text-base font-semibold text-white">Hỗ trợ trực tuyến</h3>
                 <p className="text-xs text-white/80">Trực tuyến</p>
               </div>
             </div>
@@ -102,14 +102,14 @@ const ChatBox = () => {
               variant="ghost"
               size="icon"
               onClick={() => setIsOpen(false)}
-              className="text-white hover:bg-white/20"
+              className="text-white hover:bg-white/20 h-8 w-8 sm:h-10 sm:w-10"
             >
-              <X className="h-5 w-5" />
+              <X className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto bg-white p-2 space-y-2">
+          <div className="flex-1 overflow-y-auto bg-white p-2 sm:p-3 space-y-2">
 
             {messages.map((message) => (
               <div
@@ -117,21 +117,21 @@ const ChatBox = () => {
                 className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}
               >
                 <div
-                  className={`max-w-[80%] rounded-lg p-3 ${
+                  className={`max-w-[85%] sm:max-w-[80%] rounded-lg p-2 sm:p-3 ${
                     message.sender === "user"
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted text-foreground"
                   }`}
                 >
-                  <p className="text-sm">{message.text}</p>
+                  <p className="text-xs sm:text-sm break-words">{message.text}</p>
                 </div>
               </div>
             ))}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="max-w-[80%] rounded-lg p-3 bg-muted text-foreground">
+                <div className="max-w-[85%] sm:max-w-[80%] rounded-lg p-2 sm:p-3 bg-muted text-foreground">
                   <div className="flex items-center gap-1">
-                    <span className="text-sm">Thinking...</span>
+                    <span className="text-xs sm:text-sm">Thinking...</span>
                     <span className="flex gap-0.5">
                       <span className="w-1 h-1 bg-foreground rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
                       <span className="w-1 h-1 bg-foreground rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
@@ -144,7 +144,7 @@ const ChatBox = () => {
           </div>
 
           {/* Input */}
-          <div className="border-t bg-white rounded-b-lg">
+          <div className="border-t bg-white rounded-b-lg p-2 sm:p-0">
             <div className="flex gap-2">
               <Textarea
                 value={inputMessage}
@@ -156,15 +156,15 @@ const ChatBox = () => {
                   }
                 }}
                 placeholder="Nhập tin nhắn..."
-                className="flex-1 min-h-[44px] max-h-[100px] resize-none bg-white"
+                className="flex-1 min-h-[40px] sm:min-h-[44px] max-h-[80px] sm:max-h-[100px] resize-none bg-white text-sm"
               />
               <Button 
                 onClick={handleSendMessage} 
                 size="icon" 
-                className="shrink-0"
+                className="shrink-0 h-10 w-10 sm:h-auto sm:w-auto"
                 disabled={isLoading || !inputMessage.trim()}
               >
-                <Send className="h-4 w-4" />
+                <Send className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               </Button>
             </div>
           </div>

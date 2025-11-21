@@ -10,6 +10,7 @@ import {
 import Button from '../../../components/common/button';
 import { AlertTriangle, Trash2 } from 'lucide-react';
 import type { Instrument } from '../types/Instrument';
+import { useTranslation } from 'react-i18next';
 
 interface DeleteInstrumentConfirmDialogProps {
   open: boolean;
@@ -24,6 +25,7 @@ export function DeleteInstrumentConfirmDialog({
   instrument,
   onConfirm,
 }: DeleteInstrumentConfirmDialogProps) {
+  const { t } = useTranslation();
   if (!instrument) return null;
 
   const handleConfirm = () => {
@@ -41,10 +43,10 @@ export function DeleteInstrumentConfirmDialog({
             </div>
             <div>
               <DialogTitle className="text-lg font-semibold text-gray-900">
-                Xác nhận xóa thiết bị
+                {t('service.instrument.deleteDialog.title')}
               </DialogTitle>
               <DialogDescription className="text-sm text-gray-600 mt-1">
-                Bạn có chắc chắn muốn xóa thiết bị này? Hành động này không thể hoàn tác.
+                {t('service.instrument.deleteDialog.description')}
               </DialogDescription>
             </div>
           </div>
@@ -55,18 +57,18 @@ export function DeleteInstrumentConfirmDialog({
             <div className="flex items-start gap-3">
               <Trash2 className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
               <div className="text-sm text-red-800">
-                <p className="font-medium mb-1">Thông tin thiết bị sẽ bị xóa:</p>
+                <p className="font-medium mb-1">{t('service.instrument.deleteDialog.infoWillBeDeleted')}</p>
                 <p className="text-gray-700">
                   <strong>{instrument.instrument_name}</strong>
                 </p>
                 {instrument.instrument_type && (
                   <p className="text-gray-600 text-xs mt-1">
-                    Loại: {instrument.instrument_type}
+                    {t('service.instrument.instrumentType')}: {instrument.instrument_type}
                   </p>
                 )}
                 {instrument.location && (
                   <p className="text-gray-600 text-xs">
-                    Vị trí: {instrument.location}
+                    {t('service.instrument.location')}: {instrument.location}
                   </p>
                 )}
               </div>
@@ -76,14 +78,14 @@ export function DeleteInstrumentConfirmDialog({
 
         <DialogFooter className="gap-3">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Hủy
+            {t('service.instrument.cancel')}
           </Button>
           <Button
             onClick={handleConfirm}
             className="bg-red-600 hover:bg-red-700 text-white"
           >
             <Trash2 className="w-4 h-4 mr-2" />
-            Xóa thiết bị
+            {t('service.instrument.deleteDialog.deleteButton')}
           </Button>
         </DialogFooter>
       </DialogContent>

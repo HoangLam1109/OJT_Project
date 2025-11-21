@@ -38,36 +38,36 @@ export function ServicesSection() {
   ];
 
   return (
-    <section className="px-6 py-20 bg-gray-50/50">
+    <section className="px-4 sm:px-6 py-12 sm:py-16 md:py-20 bg-gray-50/50">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl text-gray-900 mb-4">
+        <div className="text-center mb-8 sm:mb-12 md:mb-16">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl text-gray-900 mb-3 sm:mb-4 px-4">
             {t("services.title")}
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto px-4">
             {t("services.description")}
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
           {services.map((service, index) => (
             <Card key={index} className="group bg-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
-              <CardContent className="p-8">
-                <div className="text-center space-y-6">
+              <CardContent className="p-4 sm:p-6 md:p-8">
+                <div className="text-center space-y-4 sm:space-y-6">
                   <div className="flex justify-center">
-                    <div className="p-4 bg-gray-50 rounded-2xl group-hover:scale-110 transition-transform duration-300">
+                    <div className="p-3 sm:p-4 bg-gray-50 rounded-2xl group-hover:scale-110 transition-transform duration-300">
                       {service.icon}
                     </div>
                   </div>
                   <div>
-                    <h3 className="text-xl text-gray-900 mb-3">{service.title}</h3>
-                    <p className="text-gray-600 mb-4">{service.description}</p>
+                    <h3 className="text-lg sm:text-xl text-gray-900 mb-2 sm:mb-3">{service.title}</h3>
+                    <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4">{service.description}</p>
                   </div>
                   <div className="space-y-2">
                     {service.features.map((feature, idx) => (
-                      <div key={idx} className="flex items-center gap-2 text-sm text-gray-600">
-                        <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
-                        <span>{feature}</span>
+                      <div key={idx} className="flex items-start sm:items-center gap-2 text-xs sm:text-sm text-gray-600">
+                        <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-green-500 flex-shrink-0 mt-0.5 sm:mt-0" />
+                        <span className="text-left">{feature}</span>
                       </div>
                     ))}
                   </div>

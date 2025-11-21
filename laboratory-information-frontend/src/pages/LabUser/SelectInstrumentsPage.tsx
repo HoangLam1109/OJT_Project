@@ -10,6 +10,7 @@ import { Input } from '../../components/common/input';
 import { instrumentsService } from '../../service/instrumentsService';
 import Badge from '../../components/common/badge';
 import Pagination from '../../components/common/pagination';
+import { useTranslation } from 'react-i18next';
 
 interface SelectedInstrument {
   instrumentId: string;
@@ -22,6 +23,7 @@ interface LocationState {
 }
 
 const SelectInstrumentsPage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const state = location.state as LocationState | null;
@@ -47,20 +49,25 @@ const SelectInstrumentsPage: React.FC = () => {
 
   useEffect(() => {
     if (!state?.formData) {
-      toast.error('Thiếu thông tin form');
+      toast.error(t('testOrder.missingFormData'));
       const basePath = getBasePath();
       navigate(`${basePath}/create-test-order`);
     }
-  }, [state, navigate]);
+  }, [state, navigate, t]);
 
   // Load instruments from API
   useEffect(() => {
     const loadInstruments = async () => {
       setIsLoading(true);
       try {
-        const response = await instrumentsService.getAllInstruments(currentPage, itemsPerPage);
+        // Only fetch instruments with status 'Ready'
+        const response = await instrumentsService.getAllInstruments(currentPage, itemsPerPage, 'Ready');
         setInstruments(response.data || []);
         setTotalInstruments(response.total || 0);
+        
+        // Update selected instruments if they exist in the new page
+        // Note: Since we only allow 1 selection, we might want to keep it even if not on current page
+        // But the original code was trying to update the instrument details in selectedInstruments
         setSelectedInstruments(prev => {
           const updated = { ...prev };
           (response.data || []).forEach(inst => {
@@ -73,11 +80,12 @@ const SelectInstrumentsPage: React.FC = () => {
           });
           return updated;
         });
+
         if (response.page && response.page !== currentPage) {
           setCurrentPage(response.page);
         }
       } catch (error) {
-        const message = error instanceof Error ? error.message : 'Không thể tải danh sách thiết bị';
+        const message = error instanceof Error ? error.message : t('testOrder.cannotLoadInstruments');
         toast.error(message);
       } finally {
         setIsLoading(false);
@@ -89,17 +97,19 @@ const SelectInstrumentsPage: React.FC = () => {
 
   const handleToggleSelect = (instrument: Instrument) => {
     setSelectedInstruments(prev => {
-      const newState = { ...prev };
-      if (newState[instrument._id]) {
-        delete newState[instrument._id];
-      } else {
-        newState[instrument._id] = {
+      // If the clicked instrument is already selected, deselect it
+      if (prev[instrument._id]) {
+        return {};
+      }
+      
+      // Otherwise, select ONLY this instrument (replace any existing selection)
+      return {
+        [instrument._id]: {
           instrumentId: instrument._id,
           quantity: 1,
           instrument,
-        };
-      }
-      return newState;
+        }
+      };
     });
   };
 
@@ -113,7 +123,7 @@ const SelectInstrumentsPage: React.FC = () => {
     }
 
     if (Object.keys(selectedInstruments).length === 0) {
-      toast.error('Vui lòng chọn ít nhất một thiết bị');
+      toast.error(t('testOrder.pleaseSelectAtLeastOneInstrument'));
       return;
     }
 
@@ -161,20 +171,18 @@ const SelectInstrumentsPage: React.FC = () => {
     });
   }, [instruments, searchQuery]);
 
-  const totalPages = Math.max(1, Math.ceil(totalInstruments / itemsPerPage));
-
   const statusConfig = (status: Instrument['status']) => {
     switch (status) {
       case 'Ready':
-        return { label: 'Sẵn sàng', variant: 'default' as const };
+        return { label: t('testOrder.statusReady'), variant: 'default' as const };
       case 'Processing':
-        return { label: 'Đang chạy', variant: 'secondary' as const };
+        return { label: t('testOrder.statusProcessing'), variant: 'secondary' as const };
       case 'Maintenance':
-        return { label: 'Bảo trì', variant: 'outline' as const };
+        return { label: t('testOrder.statusMaintenance'), variant: 'outline' as const };
       case 'Error':
-        return { label: 'Lỗi', variant: 'destructive' as const };
+        return { label: t('testOrder.statusError'), variant: 'destructive' as const };
       default:
-        return { label: 'Ngưng hoạt động', variant: 'outline' as const };
+        return { label: t('testOrder.statusInactive'), variant: 'outline' as const };
     }
   };
 
@@ -204,8 +212,8 @@ const SelectInstrumentsPage: React.FC = () => {
               </div>
             </div>
             <div className="text-center">
-              <p className="text-base md:text-lg font-bold text-blue-700">Tạo lệnh</p>
-              <p className="text-sm md:text-base text-gray-600 hidden md:block mt-1">xét nghiệm mới</p>
+              <p className="text-base md:text-lg font-bold text-blue-700">{t('testOrder.createOrder')}</p>
+              <p className="text-sm md:text-base text-gray-600 hidden md:block mt-1">{t('testOrder.newTestOrder')}</p>
             </div>
           </div>
 
@@ -220,7 +228,7 @@ const SelectInstrumentsPage: React.FC = () => {
               </div>
             </div>
             <div className="text-center">
-              <p className="text-base md:text-lg font-bold text-blue-700">Chọn thiết bị</p>
+              <p className="text-base md:text-lg font-bold text-blue-700">{t('testOrder.selectInstrument')}</p>
             </div>
           </div>
 
@@ -233,7 +241,7 @@ const SelectInstrumentsPage: React.FC = () => {
               3
             </div>
             <div className="text-center">
-              <p className="text-base md:text-lg font-semibold text-gray-500">Chọn thuốc thử</p>
+              <p className="text-base md:text-lg font-semibold text-gray-500">{t('testOrder.selectReagent')}</p>
             </div>
           </div>
         </div>
@@ -252,14 +260,14 @@ const SelectInstrumentsPage: React.FC = () => {
             className="flex items-center gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
-            Quay lại
+            {t('testOrder.back')}
           </Button>
           <div>
             <h2 className="text-2xl font-semibold text-gray-900">
-              Chọn thiết bị
+              {t('testOrder.selectInstrumentTitle')}
             </h2>
             <p className="text-sm text-gray-500 mt-0.5">
-              Chọn thiết bị và số lượng để thực hiện xét nghiệm
+              {t('testOrder.selectInstrumentDescription')}
             </p>
           </div>
         </div>
@@ -269,13 +277,13 @@ const SelectInstrumentsPage: React.FC = () => {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between gap-4">
-            <h3 className="text-lg font-semibold">Danh sách thiết bị</h3>
+            <h3 className="text-lg font-semibold">{t('testOrder.instrumentList')}</h3>
             <div className="flex items-center gap-3 flex-1 justify-end max-w-md">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
                   type="text"
-                  placeholder="Tìm kiếm theo tên, mã số thiết bị..."
+                  placeholder={t('testOrder.searchInstrumentPlaceholder')}
                   value={searchQuery}
                   onChange={(e) => {
                     setSearchQuery(e.target.value);
@@ -286,7 +294,7 @@ const SelectInstrumentsPage: React.FC = () => {
               </div>
               {searchQuery && (
                 <span className="text-sm text-gray-500 whitespace-nowrap">
-                  Tìm thấy {filteredInstruments.length} thiết bị
+                  {t('testOrder.foundInstruments', { count: filteredInstruments.length })}
                 </span>
               )}
             </div>
@@ -297,23 +305,23 @@ const SelectInstrumentsPage: React.FC = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-12">Chọn</TableHead>
-                  <TableHead>Tên thiết bị</TableHead>
-                  <TableHead>Trạng thái</TableHead>
-                  <TableHead>Vị trí</TableHead>
+                  <TableHead className="w-12">{t('testOrder.select')}</TableHead>
+                  <TableHead>{t('testOrder.instrumentName')}</TableHead>
+                  <TableHead>{t('testOrder.status')}</TableHead>
+                  <TableHead>{t('testOrder.location')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
                   <TableRow>
                     <TableCell colSpan={4} className="text-center py-8 text-gray-500">
-                      Đang tải danh sách thiết bị...
+                      {t('testOrder.loadingInstruments')}
                     </TableCell>
                   </TableRow>
                 ) : filteredInstruments.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={4} className="text-center py-8 text-gray-500">
-                      Không tìm thấy thiết bị nào
+                      {t('testOrder.noInstrumentsFound')}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -327,13 +335,13 @@ const SelectInstrumentsPage: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => handleToggleSelect(instrument)}
-                            className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
                               isSelected
                                 ? 'bg-blue-600 border-blue-600'
                                 : 'border-gray-300 hover:border-blue-400'
                             }`}
                           >
-                            {isSelected && <Check className="w-3 h-3 text-white" />}
+                            {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
                           </button>
                         </TableCell>
                         <TableCell className="font-medium">
@@ -343,7 +351,7 @@ const SelectInstrumentsPage: React.FC = () => {
                           <Badge variant={variant}>{label}</Badge>
                         </TableCell>
                         <TableCell className="text-sm text-gray-600">
-                          {instrument.location || 'Chưa cập nhật'}
+                          {instrument.location || t('testOrder.notUpdated')}
                         </TableCell>
                       </TableRow>
                     );
@@ -365,17 +373,17 @@ const SelectInstrumentsPage: React.FC = () => {
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Thiết bị đã chọn</h3>
+            <h3 className="text-lg font-semibold">{t('testOrder.selectedInstruments')}</h3>
           </div>
         </CardHeader>
         <CardContent>
           {selectedInstrumentsList.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-sm text-gray-500">
-                Chưa có thiết bị nào được chọn
+                {t('testOrder.noInstrumentsSelected')}
               </p>
               <p className="text-xs text-gray-400 mt-2">
-                Chọn thiết bị từ danh sách bên trên
+                {t('testOrder.selectFromList')}
               </p>
             </div>
           ) : (
@@ -393,14 +401,14 @@ const SelectInstrumentsPage: React.FC = () => {
                       {instrument.instrument_code}
                     </p>
                     <p className="text-xs text-gray-600 mt-1">
-                      Số lượng: <span className="font-semibold text-blue-600">1</span>
+                      {t('testOrder.quantity')}: <span className="font-semibold text-blue-600">1</span>
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={() => handleToggleSelect(instrument)}
                     className="ml-2 p-1 hover:bg-red-100 rounded-full transition-colors flex-shrink-0"
-                    title="Bỏ chọn"
+                    title={t('testOrder.cancel')}
                   >
                     <X className="w-4 h-4 text-red-600" />
                   </button>
@@ -422,7 +430,7 @@ const SelectInstrumentsPage: React.FC = () => {
           }}
           className="px-6 py-2.5 border-gray-300 text-gray-700 hover:bg-gray-50"
         >
-          Hủy
+          {t('testOrder.cancel')}
         </Button>
         <Button
           type="button"
@@ -430,7 +438,7 @@ const SelectInstrumentsPage: React.FC = () => {
           disabled={Object.keys(selectedInstruments).length === 0}
           className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Tiếp theo
+          {t('testOrder.next')}
           <ArrowRight className="w-4 h-4" />
         </Button>
       </div>
