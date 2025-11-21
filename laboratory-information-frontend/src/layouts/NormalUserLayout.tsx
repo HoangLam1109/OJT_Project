@@ -62,7 +62,7 @@ const NormalUserLayoutContent: React.FC<LayoutContentProps> = ({
   const navigationItemsWithBadges = useMemo(
     () =>
       navigationItems.map((item) =>
-        item.id === 'chat' ? { ...item, badgeCount: unreadCount } : item
+        item.id === 'chat' ? { ...item, badgeCount: unreadCount > 0 ? unreadCount : undefined } : item
       ),
     [unreadCount]
   );

@@ -134,7 +134,7 @@ export function Sidebar({
                       {!sidebarCollapsed && (
                         <>
                           <span className="flex-1 text-left text-sm sm:text-base">{item.label}</span>
-                          {item.badgeCount && item.badgeCount > 0 && (
+                          {item.badgeCount !== undefined && item.badgeCount !== null && item.badgeCount > 0 && (
                             <span className="ml-auto inline-flex min-w-[18px] sm:min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-[11px] font-semibold text-white">
                               {item.badgeCount > 9 ? '9+' : item.badgeCount}
                             </span>
@@ -142,7 +142,7 @@ export function Sidebar({
                         </>
                       )}
                     </Button>
-                    {sidebarCollapsed && item.badgeCount && item.badgeCount > 0 && (
+                    {sidebarCollapsed && item.badgeCount !== undefined && item.badgeCount !== null && item.badgeCount > 0 && (
                       <span className="pointer-events-none absolute -top-1 -right-1 inline-flex h-3.5 sm:h-4 min-w-[14px] sm:min-w-[16px] items-center justify-center rounded-full bg-red-500 px-0.5 sm:px-1 text-[9px] sm:text-[10px] font-semibold text-white">
                         {item.badgeCount > 9 ? '9+' : item.badgeCount}
                       </span>
