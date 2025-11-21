@@ -40,8 +40,6 @@ const ViewDetailModal: React.FC<{
   const [resultValue, setResultValue] = useState<number>(0);
   const [reviewerComment, setReviewerComment] = useState('');
   const [updating, setUpdating] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deleting, setDeleting] = useState(false);
 
   // Initialize form values when result changes
   useEffect(() => {
@@ -94,46 +92,22 @@ const ViewDetailModal: React.FC<{
     setIsEditMode(false);
   };
 
-  const handleDelete = () => {
-    setShowDeleteConfirm(true);
-  };
-
-  const confirmDelete = async () => {
-    try {
-      setDeleting(true);
-      await testResultService.deleteTestResult(result.id);
-      toast.success(t('testResult.deleteSuccess'));
-      setShowDeleteConfirm(false);
-      onUpdateSuccess();
-      onClose();
-    } catch (error) {
-      console.error('Error deleting test result:', error);
-      toast.error(t('testResult.deleteFailed'));
-    } finally {
-      setDeleting(false);
-    }
-  };
-
-  const cancelDelete = () => {
-    setShowDeleteConfirm(false);
-  };
-
   return (
-    <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
+    <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50 p-2 sm:p-4 animate-in fade-in duration-300">
       <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom-4 duration-300 border border-gray-200">
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold">
+        <div className="p-4 sm:p-6">
+          <div className="flex justify-between items-center mb-4 sm:mb-6">
+            <h2 className="text-lg sm:text-xl font-semibold">
               {isEditMode ? t('testResult.modal.editTitle') : t('testResult.modal.detailTitle')}
             </h2>
             <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-              <X className="w-6 h-6" />
+              <X className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
           </div>
 
           <div className="space-y-4">
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <div className="grid grid-cols-2 gap-4">
+            <div className="p-3 sm:p-4 bg-gray-50 rounded-lg">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <p className="text-sm text-gray-600">{t('testResult.modal.patient')}</p>
                   <p className="font-medium">{patientName}</p>
@@ -155,7 +129,7 @@ const ViewDetailModal: React.FC<{
                         step="0.01"
                         value={resultValue}
                         onChange={(e) => setResultValue(parseFloat(e.target.value))}
-                        className="w-32"
+                        className="w-full sm:w-32"
                       />
                       <span className="font-medium text-gray-700">{result.unit}</span>
                     </div>
@@ -180,7 +154,7 @@ const ViewDetailModal: React.FC<{
               </div>
             </div>
 
-            <div className="p-4 bg-blue-50 rounded-lg">
+            <div className="p-3 sm:p-4 bg-blue-50 rounded-lg">
               <p className="text-sm text-gray-600 mb-2">{t('testResult.modal.reviewerComment')}</p>
               {isEditMode ? (
                 <Textarea
@@ -202,74 +176,37 @@ const ViewDetailModal: React.FC<{
             </div>
           </div>
 
-          <div className="flex justify-between mt-6">
+          <div className="flex flex-col sm:flex-row justify-end mt-4 sm:mt-6 gap-2 sm:gap-3">
             {isEditMode ? (
               <>
                 <Button
                   variant="outline"
                   onClick={handleCancel}
                   disabled={updating}
+                  className="w-full sm:w-auto"
                 >
                   {t('testResult.cancel')}
                 </Button>
                 <Button
                   onClick={handleUpdate}
                   disabled={updating}
-                  className="bg-blue-600 hover:bg-blue-700"
+                  className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
                 >
                   {updating ? t('testResult.updating') : t('testResult.update')}
                 </Button>
               </>
             ) : (
-              <>
-                <Button
-                  variant="outline"
-                  onClick={handleDelete}
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  {t('testResult.delete')}
-                </Button>
-                <Button
-                  onClick={() => setIsEditMode(true)}
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  <Edit className="w-4 h-4 mr-2" />
-                  {t('testResult.update')}
-                </Button>
-              </>
+              <Button
+                onClick={() => setIsEditMode(true)}
+                className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
+              >
+                <Edit className="w-4 h-4 mr-2" />
+                {t('testResult.update')}
+              </Button>
             )}
           </div>
         </div>
       </div>
-
-      {/* Delete Confirmation Dialog */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 flex items-center justify-center z-[60]">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('testResult.deleteConfirm.title')}</h3>
-            <p className="text-gray-600 mb-6">
-              {t('testResult.deleteConfirm.description', { testName: result?.name, patientName: patientName })}
-            </p>
-            <div className="flex justify-end gap-3">
-              <Button
-                variant="outline"
-                onClick={cancelDelete}
-                disabled={deleting}
-              >
-                {t('testResult.cancel')}
-              </Button>
-              <Button
-                onClick={confirmDelete}
-                disabled={deleting}
-                className="bg-red-600 hover:bg-red-700 text-white"
-              >
-                {deleting ? t('testResult.deleting') : t('testResult.delete')}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
@@ -289,6 +226,11 @@ const TestResultsPage: React.FC = () => {
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    testOrderId: string;
+    patientName: string;
+  } | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const loadTestResults = useCallback(async () => {
     try {
@@ -301,7 +243,7 @@ const TestResultsPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   // Load data on mount
   useEffect(() => {
@@ -355,6 +297,32 @@ const TestResultsPage: React.FC = () => {
     });
   };
 
+  const handleDeleteClick = (e: React.MouseEvent, testOrderId: string, patientName: string) => {
+    e.stopPropagation();
+    setDeleteConfirm({ testOrderId, patientName });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteConfirm) return;
+    
+    try {
+      setDeleting(true);
+      await testResultService.deleteTestResult(deleteConfirm.testOrderId);
+      toast.success(t('testResult.deleteSuccess'));
+      setDeleteConfirm(null);
+      await loadTestResults();
+    } catch (error) {
+      console.error('Error deleting test result:', error);
+      toast.error(t('testResult.deleteFailed'));
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const cancelDelete = () => {
+    setDeleteConfirm(null);
+  };
+
   if (loading) {
     return (
       <div className="p-6 space-y-6">
@@ -398,16 +366,16 @@ const TestResultsPage: React.FC = () => {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">{t('testResult.title')}</h1>
-          <p className="text-gray-600">{t('testResult.subtitle')}</p>
+          <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">{t('testResult.title')}</h1>
+          <p className="text-sm sm:text-base text-gray-600">{t('testResult.subtitle')}</p>
         </div>
         <div className="flex items-center space-x-2">
-          <FlaskConical className="w-8 h-8 text-green-600" />
-          <span className="text-sm text-gray-500">
+          <FlaskConical className="w-6 h-6 sm:w-8 sm:h-8 text-green-600" />
+          <span className="text-xs sm:text-sm text-gray-500">
             {t('testResult.resultsCount', { current: filteredResults.length, total: allResults.length })}
             {searchTerm && ` ${t('testResult.foundResults', { found: filteredResults.length, total: allResults.length })}`}
           </span>
@@ -416,8 +384,8 @@ const TestResultsPage: React.FC = () => {
 
       {/* Filters */}
       <Card>
-        <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row gap-4">
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <div className="flex-1">
               <Label htmlFor="search" className="text-sm font-medium text-gray-700">
                 {t('testResult.search')}
@@ -435,8 +403,8 @@ const TestResultsPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex items-end">
-              <Button variant="outline" onClick={loadTestResults} className="flex items-center">
+            <div className="flex sm:items-end">
+              <Button variant="outline" onClick={loadTestResults} className="flex items-center w-full sm:w-auto justify-center">
                 <Activity className="w-4 h-4 mr-2" />
                 {t('testResult.refresh')}
               </Button>
@@ -481,28 +449,37 @@ const TestResultsPage: React.FC = () => {
                         className="cursor-pointer"
                         onClick={() => toggleRow(result.testOrderId)}
                       >
-                        <div className="px-6 py-4">
-                          <div className="flex justify-between items-center">
+                        <div className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
+                          <div className="flex justify-between items-start sm:items-center gap-2">
                             {/* Left content (2 dòng) */}
-                            <div>
-                              <h3 className="text-base font-semibold text-gray-900">
+                            <div className="flex-1 min-w-0">
+                              <h3 className="text-sm sm:text-base font-semibold text-gray-900 truncate">
                                 {t('testResult.patientName')}: {result.patientName}
                               </h3>
-                              <h3 className="text-sm font-medium text-gray-700 mt-1">
+                              <h3 className="text-xs sm:text-sm font-medium text-gray-700 mt-1">
                                 {t('testResult.testType')}: {result.test_type}
                               </h3>
                             </div>
 
-                            <ChevronDown
-                              className={`w-5 h-5 transition-all duration-300 ${isExpanded
-                                ? 'transform rotate-180 text-blue-500'
-                                : 'text-gray-400'
-                                }`}
-                            />
+                            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+                              <button
+                                onClick={(e) => handleDeleteClick(e, result.testOrderId, result.patientName)}
+                                className="p-1.5 sm:p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                title={t('testResult.delete')}
+                              >
+                                <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                              </button>
+                              <ChevronDown
+                                className={`w-4 h-4 sm:w-5 sm:h-5 transition-all duration-300 ${isExpanded
+                                  ? 'transform rotate-180 text-blue-500'
+                                  : 'text-gray-400'
+                                  }`}
+                              />
+                            </div>
                           </div>
-                          <div className="mt-2 flex items-center gap-6 text-sm text-gray-600">
+                          <div className="mt-2 flex flex-wrap items-center gap-2 sm:gap-6 text-xs sm:text-sm text-gray-600">
                             <span>{t('testResult.totalTests')}: <span className="font-medium text-gray-900">{result.totalTests}</span></span>
-                            <span className="text-gray-400">|</span>
+                            <span className="hidden sm:inline text-gray-400">|</span>
                             <span>
                               {new Date(result.createdAt).toLocaleDateString('vi-VN', {
                                 day: '2-digit',
@@ -517,30 +494,30 @@ const TestResultsPage: React.FC = () => {
                         className={`overflow-hidden transition-all duration-300 ease-in-out ${isExpanded ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
                           }`}
                       >
-                        <div className="px-6 py-4 bg-gradient-to-br from-gray-50 to-gray-100 border-t border-gray-200">
+                        <div className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 bg-gradient-to-br from-gray-50 to-gray-100 border-t border-gray-200">
                           <div className="space-y-3">
-                            <h4 className="font-semibold text-sm text-gray-700 mb-3">{t('testResult.testDetails')}:</h4>
-                            <div className="grid grid-cols-1 gap-3">
+                            <h4 className="font-semibold text-xs sm:text-sm text-gray-700 mb-2 sm:mb-3">{t('testResult.testDetails')}:</h4>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 max-h-[280px] overflow-y-auto pr-1 custom-scrollbar">
                               {result.results.map((detail, idx) => (
                                 <div
                                   key={idx}
-                                  className="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 shadow-sm cursor-pointer hover:shadow-md hover:border-blue-300 transition-all"
+                                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 bg-white rounded-lg border border-gray-200 shadow-sm cursor-pointer hover:shadow-md hover:border-blue-300 transition-all gap-2 sm:gap-0"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleViewDetail(detail, result.patientName);
                                   }}
                                 >
-                                  <div className="flex-1">
-                                    <p className="font-semibold text-sm text-gray-800 mb-1">{detail.name} ({detail.code})</p>
-                                    <p className="text-sm text-gray-600">
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-semibold text-xs sm:text-sm text-gray-800 mb-1">{detail.name} ({detail.code})</p>
+                                    <p className="text-xs sm:text-sm text-gray-600">
                                       {t('testResult.result')}: <span className="font-bold text-gray-900">{detail.resultValue} {detail.unit}</span>
                                     </p>
                                     {detail.reviewerComment && (
-                                      <p className="text-xs text-gray-500 mt-2 italic bg-blue-50 p-2 rounded">{t('testResult.comment')}: {detail.reviewerComment}</p>
+                                      <p className="text-xs text-gray-500 mt-2 italic bg-blue-50 p-2 rounded break-words">{t('testResult.comment')}: {detail.reviewerComment}</p>
                                     )}
                                   </div>
-                                  <div className="flex items-center gap-2 ml-4">
-                                    <span className={`px-3 py-1.5 text-xs font-semibold rounded-full whitespace-nowrap ${detail.resultStatus === 'normal' ? 'bg-green-100 text-green-700 border border-green-200' :
+                                  <div className="flex items-center gap-2 sm:ml-4">
+                                    <span className={`px-2 sm:px-3 py-1 sm:py-1.5 text-xs font-semibold rounded-full whitespace-nowrap ${detail.resultStatus === 'normal' ? 'bg-green-100 text-green-700 border border-green-200' :
                                       detail.resultStatus === 'abnormal' ? 'bg-yellow-100 text-yellow-700 border border-yellow-200' :
                                         'bg-red-100 text-red-700 border border-red-200'
                                       }`}>
@@ -559,7 +536,7 @@ const TestResultsPage: React.FC = () => {
                 })}
               </div>
               {totalPages > 1 && (
-                <div className="flex justify-center p-4 border-t border-gray-200">
+                <div className="flex justify-center p-3 sm:p-4 border-t border-gray-200">
                   <Pagination
                     currentPage={currentPage}
                     totalPages={totalPages}
@@ -581,6 +558,41 @@ const TestResultsPage: React.FC = () => {
           onClose={() => setViewModalOpen(false)}
           onUpdateSuccess={loadTestResults}
         />
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-[60] p-3 sm:p-4">
+          <div className="bg-white rounded-lg p-4 sm:p-6 max-w-md w-full mx-3 sm:mx-4 shadow-xl border border-gray-200 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-2 sm:gap-3 text-red-600 mb-3 sm:mb-4">
+              <Trash2 className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900">{t('testResult.deleteConfirm.title')}</h3>
+            </div>
+            <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">
+              {t('testResult.deleteConfirm.description', { 
+                testName: deleteConfirm.patientName, 
+                patientName: deleteConfirm.patientName 
+              })}
+            </p>
+            <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3">
+              <Button
+                variant="outline"
+                onClick={cancelDelete}
+                disabled={deleting}
+                className="w-full sm:w-auto"
+              >
+                {t('testResult.cancel')}
+              </Button>
+              <Button
+                onClick={confirmDelete}
+                disabled={deleting}
+                className="bg-red-600 hover:bg-red-700 text-white w-full sm:w-auto"
+              >
+                {deleting ? t('testResult.deleting') : t('testResult.delete')}
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

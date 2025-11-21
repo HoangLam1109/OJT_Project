@@ -10,8 +10,10 @@ import { toast } from 'sonner';
 import { Card, CardContent, CardHeader } from '../../components/common/card';
 import { testItemService, type TestItem } from '../../service/testItemService';
 import { TestItemMultiSelect } from './components/common/TestItemMultiSelect';
-import { PatientSearchInput } from './components/PatientSearchInput';
 import { useTranslation } from 'react-i18next';
+import { type PatientOption } from '../../service/patientService';
+import { PatientSearchInput } from '../../components/common/patient/PatientSearchInput';
+import { validateDueDate } from './utils/testOrderUtils';
 
 // Test type keys - these are used as values and for translation keys
 const testTypeKeys = [
@@ -38,6 +40,19 @@ const CreateTestOrderPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuthContext();
+
+  const [patientQuery, setPatientQuery] = useState('');
+  const [selectedPatient, setSelectedPatient] = useState<PatientOption | null>(null);
+
+  const handleSelectPatient = (patient: PatientOption) => {
+      setSelectedPatient(patient);
+      setPatientQuery(patient.fullName ?? '');
+      setFormData(prev => ({
+          ...prev,
+          patient_name: patient.fullName ?? '',
+          patient_id: patient.id
+      }));
+  };
 
   // Detect current route base path (service, labuser, or admin)
   const getBasePath = () => {
@@ -110,7 +125,11 @@ const CreateTestOrderPage: React.FC = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.patient_name?.trim()) newErrors.patient_name = t('testOrder.enterPatientName');
     if (!formData.test_type) newErrors.test_type = t('testOrder.selectTestType');
-    if (!formData.due_date) newErrors.due_date = t('testOrder.selectDueDate');
+    
+    const dueDateError = validateDueDate(formData.due_date || '', t);
+    if (dueDateError) {
+      newErrors.due_date = dueDateError;
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -227,17 +246,26 @@ const CreateTestOrderPage: React.FC = () => {
                   Bệnh nhân <span className="text-red-500">*</span>
                 </Label>
                 <PatientSearchInput
-                  value={formData.patient_name}
-                  onChange={(patientName, patientId) => {
-                    setFormData(prev => ({
-                      ...prev,
-                      patient_name: patientName,
-                      patient_id: patientId || '',
-                    }));
+                  value={patientQuery}
+                  onChange={(value) => {
+                    setPatientQuery(value);
+                    if (selectedPatient && value !== (selectedPatient.fullName ?? '')) {
+                      setSelectedPatient(null);
+                      setFormData((prev) => ({ ...prev, patient_id: '', patient_name: value }));
+                    } else {
+                      setFormData((prev) => ({ ...prev, patient_name: value }));
+                    }
                   }}
-                  placeholder={t('testOrder.searchPatientByName')}
+                  onSelect={handleSelectPatient}
+                  selectedPatient={selectedPatient}
                   error={errors.patient_name}
                 />
+                {selectedPatient?.patientCode && (
+                    <p className="text-xs text-muted-foreground">{t('patient.patientCode')}: {selectedPatient.patientCode}</p>
+                )}
+                {errors.patient_name && (
+                  <p className="text-sm text-red-600">{errors.patient_name}</p>
+                )}
               </div>
 
               {/* Loại xét nghiệm */}

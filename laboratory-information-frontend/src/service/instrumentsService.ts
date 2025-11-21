@@ -109,10 +109,14 @@ const extractDataItem = (payload: unknown): BackendInstrument => {
 };
 
 export const instrumentsService = {
-    async getAllInstruments(page: number = 1, limit: number = 10): Promise<PaginatedResponse> {
+    async getAllInstruments(page: number = 1, limit: number = 10, status?: string): Promise<PaginatedResponse> {
         try {
+            const params: Record<string, unknown> = { page, limit };
+            if (status) {
+                params.status = status;
+            }
             const response = await instrumentsApiClient.get(`${INSTRUMENTS_API_BASE_URL}/`, {
-                params: { page, limit }
+                params
             });
             const payload = response.data as unknown;
             
