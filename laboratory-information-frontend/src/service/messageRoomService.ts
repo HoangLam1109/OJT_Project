@@ -90,7 +90,7 @@ export const messageApi = {
   sendMessage(roomId: string, text: string) {
     return messageServiceClient.post<{ message: string }>(
       `/messages/send/${roomId}`,
-      { roomId, text }
+      { text }
     );
   },
 };

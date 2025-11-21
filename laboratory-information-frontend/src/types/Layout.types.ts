@@ -11,6 +11,7 @@ export interface NavigationItem {
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   dropdownItems?: DropdownItem[];
+  badgeCount?: number;
 }
 
 export interface SidebarProps {
