@@ -16,6 +16,6 @@ export const ROLE_PERMISSIONS: Record<RoleCode, string[]> = {
 
 export type RoleCode = (typeof ROLE_CODES)[keyof typeof ROLE_CODES];
 
-export function isValidRoleCode(roleCode: string): roleCode is RoleCode {
-  return Object.values(ROLE_CODES).includes(roleCode as RoleCode);
+export function isValidRoleCode(roleCode: string): boolean {
+  return /^[A-Z0-9_]{2,30}$/.test(roleCode);
 }

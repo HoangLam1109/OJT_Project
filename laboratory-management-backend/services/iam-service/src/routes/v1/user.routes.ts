@@ -13,6 +13,7 @@ import {
   updateProfile,
   uploadAvatar,
   getStaff,
+  getCurrentUser,
 } from "../../controllers/user.controller.js";
 import { authorize } from "../../middlewares/authorize.middleware.js";
 import {
@@ -45,6 +46,7 @@ router.get("/staff", getStaff);
 router.get("/:id/roles", authorize(["read:user"]), getUserRolesAndPrivileges);
 router.get("/:id", authorize(["read:user"]), getUser);
 
+router.get("/me", getCurrentUser);
 router.post("/profile", validateUpdateUser, updateProfile);
 router.post("/profile/avatar", avatarUpload.single("avatar"), uploadAvatar);
 

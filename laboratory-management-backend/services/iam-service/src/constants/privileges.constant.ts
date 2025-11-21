@@ -73,11 +73,6 @@ export const PRIVILEGE_DESCRIPTIONS: Record<PrivilegeCode, string> = {
   [PRIVILEGE_CODES.SYSTEM_ADMIN]: "Full system access",
 };
 
-// Helper function to validate privilege codes
-export function isValidPrivilegeCode(code: string): code is PrivilegeCode {
-  return Object.values(PRIVILEGE_CODES).includes(code as PrivilegeCode);
-}
-
 // Default role to privilege mapping
 export const ROLE_PRIVILEGES: Record<string, PrivilegeCode[]> = {
   [ROLE_CODES.ADMIN]: [
@@ -171,5 +166,9 @@ export const PRIVILEGES_BY_CATEGORY = {
   ],
   [PRIVILEGE_CATEGORIES.SYSTEM]: [PRIVILEGE_CODES.SYSTEM_ADMIN],
 } as const;
+
+export function isValidPrivilegeCode(code: string): code is PrivilegeCode {
+  return Object.values(PRIVILEGE_CODES).includes(code as PrivilegeCode);
+}
 
 export const DEFAULT_ROLES = Object.values(ROLE_CODES);

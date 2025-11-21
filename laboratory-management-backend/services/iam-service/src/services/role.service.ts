@@ -9,6 +9,7 @@ import {
 import { PaginationUtils } from "../utils/pagination.util.js";
 import { isValidPrivilegeCode } from "../constants/privileges.constant.js";
 import { computeChanges } from "../utils/diff.util.js";
+import { isValidRoleCode } from "../constants/roles.constant.js";
 
 export interface CreateRoleData {
   roleCode: string;
@@ -48,7 +49,6 @@ export class RoleService {
       throw new Error("Role with this code already exists");
     }
 
-    // Validate privileges if provided
     if (roleData.privileges && roleData.privileges.length > 0) {
       const invalidPrivileges = roleData.privileges.filter(
         (priv) => !isValidPrivilegeCode(priv)
@@ -58,6 +58,10 @@ export class RoleService {
           `Invalid privilege codes: ${invalidPrivileges.join(", ")}`
         );
       }
+    }
+
+    if (!isValidRoleCode(roleData.roleCode)) {
+      throw new Error("Invalid role code");
     }
 
     const newRole = await roleRepository.create(roleData);
@@ -70,7 +74,11 @@ export class RoleService {
       "isActive",
       "privileges",
     ];
-    const createDiffs = computeChanges<IRole>(undefined, newRole ?? undefined, createFields);
+    const createDiffs = computeChanges<IRole>(
+      undefined,
+      newRole ?? undefined,
+      createFields
+    );
 
     await logEvent({
       eventCode: "E_00028",
@@ -89,13 +97,11 @@ export class RoleService {
     roleData: UpdateRoleData,
     performedBy?: string
   ): Promise<IRole | null> {
-    // Check if role exists
     const role = await roleRepository.findById(roleId);
     if (!role) {
       throw new Error("Role not found");
     }
 
-    // Prevent modification of system roles
     if (
       role.isSystemRole &&
       (roleData.roleCode || roleData.isSystemRole === false)
@@ -112,7 +118,10 @@ export class RoleService {
       }
     }
 
-    // Validate privileges if being updated
+    if (roleData.privileges && roleData.privileges.length === 0) {
+      throw new Error("Privileges can't be empty");
+    }
+
     if (roleData.privileges && roleData.privileges.length > 0) {
       const invalidPrivileges = roleData.privileges.filter(
         (priv) => !isValidPrivilegeCode(priv)
@@ -176,7 +185,6 @@ export class RoleService {
     roleId: string,
     performedBy?: string
   ): Promise<IRole | null> {
-    // Check if role exists
     const role = await roleRepository.findById(roleId);
     if (!role) {
       throw new Error("Role not found");
@@ -196,7 +204,11 @@ export class RoleService {
       "isActive",
       "privileges",
     ];
-    const deleteDiffs = computeChanges<IRole>(role ?? undefined, undefined, deleteFields);
+    const deleteDiffs = computeChanges<IRole>(
+      role ?? undefined,
+      undefined,
+      deleteFields
+    );
     await logEvent({
       eventCode: "E_00030",
       action: "DELETE",
@@ -219,7 +231,14 @@ export class RoleService {
       throw new Error("Role not found");
     }
 
-    // Validate privileges
+    if (!privileges || privileges.length === 0) {
+      throw new Error("Privileges can't be empty ");
+    }
+
+    if (role.isSystemRole) {
+      throw new Error("Cannot modify privileges of system role");
+    }
+
     const invalidPrivileges = privileges.filter(
       (priv) => !isValidPrivilegeCode(priv)
     );
@@ -247,9 +266,22 @@ export class RoleService {
       throw new Error("Role not found");
     }
 
+    if (!privileges || privileges.length === 0) {
+      throw new Error("Privileges can't be empty");
+    }
+
+    if (role.isSystemRole) {
+      throw new Error("Cannot modify privileges of system role");
+    }
+
     const updatedPrivileges = role.privileges.filter(
       (priv: string) => !privileges.includes(priv)
     );
+
+    if (updatedPrivileges.length === 0) {
+      throw new Error("Cannot remove all privileges from a role");
+    }
+
     return this.updateRole(
       role._id,
       { privileges: updatedPrivileges },
