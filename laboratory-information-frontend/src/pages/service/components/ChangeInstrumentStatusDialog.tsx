@@ -14,6 +14,7 @@ import Button from "../../../components/common/button";
 import type { Instrument } from "../types/Instrument";
 import { toast } from "sonner";
 import { instrumentsService } from "../../../service/instrumentsService";
+import { useTranslation } from "react-i18next";
 
 interface ChangeInstrumentStatusDialogProps {
   open: boolean;
@@ -28,6 +29,7 @@ export function ChangeInstrumentStatusDialog({
   instrument,
   onStatusChange,
 }: ChangeInstrumentStatusDialogProps) {
+  const { t } = useTranslation();
   const [instrumentName, setInstrumentName] = useState("");
   const [instrumentType, setInstrumentType] = useState("");
   const [manufacturer, setManufacturer] = useState("");
@@ -72,10 +74,10 @@ export function ChangeInstrumentStatusDialog({
       const updatedInstrument = await instrumentsService.updateInstrument(instrument._id, updatePayload);
 
       onStatusChange(updatedInstrument);
-      toast.success("✅ Thông tin thiết bị đã được cập nhật!");
+      toast.success(t('service.instrument.updateSuccess'));
       onOpenChange(false);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Không thể cập nhật thông tin thiết bị";
+      const message = error instanceof Error ? error.message : t('service.instrument.cannotUpdateInstrument');
       toast.error(message);
     } finally {
       setIsSubmitting(false);
@@ -86,9 +88,9 @@ export function ChangeInstrumentStatusDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-6">
         <DialogHeader>
-          <DialogTitle>Cập nhật Thông tin Thiết bị</DialogTitle>
+          <DialogTitle>{t('service.instrument.updateDialog.title')}</DialogTitle>
           <DialogDescription>
-            Cập nhật thông tin và trạng thái của thiết bị
+            {t('service.instrument.updateDialog.description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -97,24 +99,24 @@ export function ChangeInstrumentStatusDialog({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Tên thiết bị */}
             <div className="space-y-2">
-              <Label htmlFor="instrument_name">Tên thiết bị</Label>
+              <Label htmlFor="instrument_name">{t('service.instrument.instrumentName')}</Label>
               <Input
                 id="instrument_name"
                 value={instrumentName}
                 onChange={(e) => setInstrumentName(e.target.value)}
-                placeholder="Nhập tên thiết bị"
+                placeholder={t('service.instrument.updateDialog.instrumentNamePlaceholder')}
               />
             </div>
 
             {/* Loại thiết bị */}
             <div className="space-y-2">
-              <Label htmlFor="instrument_type">Loại thiết bị</Label>
+              <Label htmlFor="instrument_type">{t('service.instrument.instrumentType')}</Label>
               <Select
                 value={instrumentType}
                 onValueChange={(value) => setInstrumentType(value)}
               >
                 <SelectTrigger className="bg-white border border-gray-300 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                  <SelectValue placeholder="Chọn loại thiết bị" />
+                  <SelectValue placeholder={t('service.instrument.updateDialog.instrumentTypePlaceholder')} />
                 </SelectTrigger>
                 <SelectContent className="bg-white border border-gray-200 shadow-md">
                   {[
@@ -136,10 +138,10 @@ export function ChangeInstrumentStatusDialog({
 
             {/* Nhà sản xuất */}
             <div className="space-y-2">
-              <Label>Nhà sản xuất</Label>
+              <Label>{t('service.instrument.updateDialog.manufacturer')}</Label>
               <Select value={manufacturer} onValueChange={setManufacturer}>
                 <SelectTrigger className="bg-white border border-gray-300 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                  <SelectValue placeholder="Chọn nhà sản xuất" />
+                  <SelectValue placeholder={t('service.instrument.updateDialog.manufacturerPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent className="bg-white border border-gray-200 shadow-md">
                   {[
@@ -162,10 +164,10 @@ export function ChangeInstrumentStatusDialog({
 
             {/* Vị trí */}
             <div className="space-y-2">
-              <Label htmlFor="location">Vị trí</Label>
+              <Label htmlFor="location">{t('service.instrument.location')}</Label>
               <Select value={location} onValueChange={setLocation}>
                 <SelectTrigger className="bg-white border border-gray-300 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                  <SelectValue placeholder="Chọn vị trí" />
+                  <SelectValue placeholder={t('service.instrument.updateDialog.locationPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent className="bg-white border border-gray-200 shadow-md">
                   <SelectItem value="Phòng Huyết học">Phòng Huyết học</SelectItem>
@@ -181,31 +183,31 @@ export function ChangeInstrumentStatusDialog({
 
           {/* Status Section */}
           <div className="space-y-2">
-            <Label>Trạng thái</Label>
+            <Label>{t('service.instrument.status')}</Label>
             <Select value={status} onValueChange={(v) => setStatus(v as Instrument['status'])}>
               <SelectTrigger className="w-full bg-white border border-gray-300 text-gray-900 focus:ring-2 focus:ring-blue-500">
-                <SelectValue placeholder="Chọn trạng thái" />
+                <SelectValue placeholder={t('service.instrument.updateDialog.statusPlaceholder')} />
               </SelectTrigger>
               <SelectContent className="w-full bg-white border border-gray-200 shadow-md">
-                <SelectItem value="Ready">Sẵn sàng</SelectItem>
-                <SelectItem value="Processing">Đang xử lý</SelectItem>
-                <SelectItem value="Maintenance">Bảo trì</SelectItem>
-                <SelectItem value="Error">Lỗi</SelectItem>
-                <SelectItem value="Inactive">Ngưng hoạt động</SelectItem>
+                <SelectItem value="Ready">{t('service.instrument.statusReady')}</SelectItem>
+                <SelectItem value="Processing">{t('service.instrument.statusProcessing')}</SelectItem>
+                <SelectItem value="Maintenance">{t('service.instrument.statusMaintenance')}</SelectItem>
+                <SelectItem value="Error">{t('service.instrument.statusError')}</SelectItem>
+                <SelectItem value="Inactive">{t('service.instrument.statusInactive')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           {/* Active Status */}
           <div className="space-y-2">
-            <Label>Trạng thái hoạt động</Label>
+            <Label>{t('service.instrument.updateDialog.activeStatus')}</Label>
             <Select value={isActive ? "active" : "inactive"} onValueChange={(v) => setIsActive(v === "active")}>
               <SelectTrigger className="bg-white border border-gray-300 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                <SelectValue placeholder="Chọn trạng thái hoạt động" />
+                <SelectValue placeholder={t('service.instrument.updateDialog.activeStatusPlaceholder')} />
               </SelectTrigger>
               <SelectContent className="bg-white border border-gray-200 shadow-md">
-                <SelectItem value="active">Hoạt động</SelectItem>
-                <SelectItem value="inactive">Tạm dừng</SelectItem>
+                <SelectItem value="active">{t('service.instrument.detail.active')}</SelectItem>
+                <SelectItem value="inactive">{t('service.instrument.detail.paused')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -214,10 +216,10 @@ export function ChangeInstrumentStatusDialog({
 
         <DialogFooter className="mt-4">
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
-            Hủy
+            {t('service.instrument.cancel')}
           </Button>
           <Button onClick={handleConfirm} disabled={isSubmitting}>
-            {isSubmitting ? "Đang cập nhật..." : "Xác nhận thay đổi"}
+            {isSubmitting ? t('service.instrument.updateDialog.updating') : t('service.instrument.updateDialog.confirmButton')}
           </Button>
         </DialogFooter>
       </DialogContent>

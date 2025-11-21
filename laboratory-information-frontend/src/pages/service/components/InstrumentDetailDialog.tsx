@@ -18,6 +18,7 @@ import {
     AlertCircle,
     Loader2,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface InstrumentDetailDialogProps {
     open: boolean;
@@ -30,6 +31,7 @@ export function InstrumentDetailDialog({
     onOpenChange,
     instrumentId,
 }: InstrumentDetailDialogProps) {
+    const { t } = useTranslation();
     const [instrument, setInstrument] = useState<Instrument | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -45,7 +47,7 @@ export function InstrumentDetailDialog({
                     setIsLoading(false);
                 })
                 .catch((err) => {
-                    const message = err instanceof Error ? err.message : "Không thể tải thông tin thiết bị";
+                    const message = err instanceof Error ? err.message : t('service.instrument.cannotLoadInstrumentInfo');
                     setError(message);
                     setIsLoading(false);
                     toast.error(message);
@@ -59,11 +61,11 @@ export function InstrumentDetailDialog({
 
     const getStatusBadge = (status: string) => {
         const map: Record<string, { text: string; variant: string }> = {
-            Ready: { text: "Sẵn sàng", variant: "default" },
-            Processing: { text: "Đang chạy", variant: "secondary" },
-            Maintenance: { text: "Bảo trì", variant: "outline" },
-            Error: { text: "Lỗi", variant: "destructive" },
-            Inactive: { text: "Ngưng hoạt động", variant: "destructive" },
+            Ready: { text: t('service.instrument.statusReady'), variant: "default" },
+            Processing: { text: t('service.instrument.statusProcessing'), variant: "secondary" },
+            Maintenance: { text: t('service.instrument.statusMaintenance'), variant: "outline" },
+            Error: { text: t('service.instrument.statusError'), variant: "destructive" },
+            Inactive: { text: t('service.instrument.statusInactive'), variant: "destructive" },
         };
         const data = map[status] || { text: status, variant: "outline" };
         return <Badge variant={data.variant as "default" | "secondary" | "destructive" | "outline"}>{data.text}</Badge>;
@@ -78,17 +80,17 @@ export function InstrumentDetailDialog({
                 <DialogHeader className="pb-2 border-b border-gray-100">
                     <DialogTitle className="flex items-center gap-2 text-xl font-semibold text-gray-800">
                         <Monitor className="w-5 h-5 text-blue-600" />
-                        Chi tiết thiết bị
+                        {t('service.instrument.detail.title')}
                     </DialogTitle>
                     <DialogDescription className="text-gray-500">
-                        Thông tin chi tiết về thiết bị xét nghiệm
+                        {t('service.instrument.detail.description')}
                     </DialogDescription>
                 </DialogHeader>
 
                 {isLoading ? (
                     <div className="flex items-center justify-center py-12">
                         <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-                        <span className="ml-3 text-gray-600">Đang tải thông tin...</span>
+                        <span className="ml-3 text-gray-600">{t('service.instrument.detail.loading')}</span>
                     </div>
                 ) : error ? (
                     <div className="flex flex-col items-center justify-center py-12">
@@ -97,37 +99,37 @@ export function InstrumentDetailDialog({
                     </div>
                 ) : !instrument ? (
                     <div className="flex items-center justify-center py-12">
-                        <p className="text-gray-600">Không tìm thấy thông tin thiết bị</p>
+                        <p className="text-gray-600">{t('service.instrument.detail.notFound')}</p>
                     </div>
                 ) : (
                     <div className="space-y-6 pt-4">
                         {/* Basic Info */}
                         <div className="grid grid-cols-2 gap-6">
                             <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                                <Label className="text-xs text-gray-500">Mã thiết bị</Label>
+                                <Label className="text-xs text-gray-500">{t('service.instrument.detail.instrumentCode')}</Label>
                                 <p className="font-mono text-sm mt-1">{instrument.instrument_code}</p>
                             </div>
                             <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                                <Label className="text-xs text-gray-500">Trạng thái</Label>
+                                <Label className="text-xs text-gray-500">{t('service.instrument.status')}</Label>
                                 <div className="mt-1 flex items-center gap-2">
                                     {getStatusBadge(instrument.status)}
                                     {instrument.is_active ? (
                                         <Badge variant="outline" className="bg-green-50 text-green-700">
-                                            Hoạt động
+                                            {t('service.instrument.detail.active')}
                                         </Badge>
                                     ) : (
                                         <Badge variant="outline" className="bg-gray-50 text-gray-600">
-                                            Tạm dừng
+                                            {t('service.instrument.detail.paused')}
                                         </Badge>
                                     )}
                                 </div>
                             </div>
                             <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                                <Label className="text-xs text-gray-500">Tên thiết bị</Label>
+                                <Label className="text-xs text-gray-500">{t('service.instrument.instrumentName')}</Label>
                                 <p className="mt-1">{instrument.instrument_name}</p>
                             </div>
                             <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                                <Label className="text-xs text-gray-500">Loại thiết bị</Label>
+                                <Label className="text-xs text-gray-500">{t('service.instrument.instrumentType')}</Label>
                                 <p className="mt-1">{instrument.instrument_type}</p>
                             </div>
                         </div>
@@ -137,12 +139,12 @@ export function InstrumentDetailDialog({
                         {/* Connection & Location */}
                         <div className="grid grid-cols-2 gap-6">
                             <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                                <Label className="text-xs text-gray-500">Nhà sản xuất</Label>
-                                <p className="mt-1">{instrument.manufacturer || "Chưa có thông tin"}</p>
+                                <Label className="text-xs text-gray-500">{t('service.instrument.detail.manufacturer')}</Label>
+                                <p className="mt-1">{instrument.manufacturer || t('service.instrument.detail.noInfo')}</p>
                             </div>
                             <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                                <Label className="text-xs text-gray-500">Vị trí</Label>
-                                <p className="mt-1">{instrument.location || "Chưa có thông tin"}</p>
+                                <Label className="text-xs text-gray-500">{t('service.instrument.location')}</Label>
+                                <p className="mt-1">{instrument.location || t('service.instrument.detail.noInfo')}</p>
                             </div>
                         </div>
 
@@ -152,7 +154,7 @@ export function InstrumentDetailDialog({
                         <div className="grid grid-cols-2 gap-6">
                             <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                                 <Label className="text-sm flex items-center gap-2 text-gray-700">
-                                    <Calendar className="w-4 h-4" /> Ngày tạo
+                                    <Calendar className="w-4 h-4" /> {t('service.instrument.detail.createdAt')}
                                 </Label>
                                 <p className="text-sm mt-1">
                                     <span className="font-mono">
@@ -163,13 +165,13 @@ export function InstrumentDetailDialog({
                                 </p>
                                 {instrument.created_by && (
                                     <p className="text-xs text-gray-500 mt-1">
-                                        Tạo bởi: {instrument.created_by}
+                                        {t('service.instrument.detail.createdBy')}: {instrument.created_by}
                                     </p>
                                 )}
                             </div>
                             <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                                 <Label className="text-sm flex items-center gap-2 text-gray-700">
-                                    <Calendar className="w-4 h-4" /> Cập nhật lần cuối
+                                    <Calendar className="w-4 h-4" /> {t('service.instrument.detail.updatedAt')}
                                 </Label>
                                 <p className="text-sm mt-1">
                                     <span className="font-mono">
@@ -180,7 +182,7 @@ export function InstrumentDetailDialog({
                                 </p>
                                 {instrument.updated_by && (
                                     <p className="text-xs text-gray-500 mt-1">
-                                        Cập nhật bởi: {instrument.updated_by}
+                                        {t('service.instrument.detail.updatedBy')}: {instrument.updated_by}
                                     </p>
                                 )}
                             </div>

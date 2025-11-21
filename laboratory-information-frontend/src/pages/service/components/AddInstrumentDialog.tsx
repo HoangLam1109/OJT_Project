@@ -9,16 +9,11 @@ import {
 } from '../../../components/common/dialog';
 import Button from '../../../components/common/button';
 import { Label } from '../../../components/common/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '../../../components/common/select';
+import { Input } from '../../../components/common/input';
 import { toast } from 'sonner';
 import type { Instrument } from '../types/Instrument';
 import { instrumentsService } from '../../../service/instrumentsService';
+import { useTranslation } from 'react-i18next';
 
 interface AddInstrumentDialogProps {
     open: boolean;
@@ -33,11 +28,19 @@ interface InstrumentFormData {
     location: string;
 }
 
+interface ValidationErrors {
+    instrument_name?: string;
+    instrument_type?: string;
+    manufacturer?: string;
+    location?: string;
+}
+
 export function AddInstrumentDialog({
     open,
     onOpenChange,
     onAddInstrument,
 }: AddInstrumentDialogProps) {
+    const { t } = useTranslation();
     const [newInstrument, setNewInstrument] = useState<InstrumentFormData>({
         instrument_name: '',
         instrument_type: '',
@@ -45,6 +48,7 @@ export function AddInstrumentDialog({
         location: '',
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [errors, setErrors] = useState<ValidationErrors>({});
 
     const resetForm = useCallback(() => {
         setNewInstrument({
@@ -53,6 +57,7 @@ export function AddInstrumentDialog({
             manufacturer: '',
             location: '',
         });
+        setErrors({});
     }, []);
 
     // Reset form when dialog closes
@@ -63,9 +68,92 @@ export function AddInstrumentDialog({
         }
     }, [open, resetForm]);
 
+    const validateField = (field: keyof InstrumentFormData, value: string): string | undefined => {
+        switch (field) {
+            case 'instrument_name':
+                if (!value.trim()) {
+                    return t('service.instrument.validation.instrumentNameRequired');
+                }
+                if (value.trim().length < 3) {
+                    return t('service.instrument.validation.instrumentNameMinLength');
+                }
+                if (value.trim().length > 200) {
+                    return t('service.instrument.validation.instrumentNameMaxLength');
+                }
+                break;
+            case 'instrument_type':
+                if (!value.trim()) {
+                    return t('service.instrument.validation.instrumentTypeRequired');
+                }
+                if (value.trim().length < 3) {
+                    return t('service.instrument.validation.instrumentTypeMinLength');
+                }
+                if (value.trim().length > 100) {
+                    return t('service.instrument.validation.instrumentTypeMaxLength');
+                }
+                break;
+            case 'manufacturer':
+                if (value.trim() && value.trim().length < 2) {
+                    return t('service.instrument.validation.manufacturerMinLength');
+                }
+                if (value.trim().length > 100) {
+                    return t('service.instrument.validation.manufacturerMaxLength');
+                }
+                break;
+            case 'location':
+                if (value.trim() && value.trim().length < 2) {
+                    return t('service.instrument.validation.locationMinLength');
+                }
+                if (value.trim().length > 100) {
+                    return t('service.instrument.validation.locationMaxLength');
+                }
+                break;
+        }
+        return undefined;
+    };
+
+    const validateForm = (): boolean => {
+        const newErrors: ValidationErrors = {};
+        
+        const instrumentNameError = validateField('instrument_name', newInstrument.instrument_name);
+        if (instrumentNameError) newErrors.instrument_name = instrumentNameError;
+
+        const instrumentTypeError = validateField('instrument_type', newInstrument.instrument_type);
+        if (instrumentTypeError) newErrors.instrument_type = instrumentTypeError;
+
+        const manufacturerError = validateField('manufacturer', newInstrument.manufacturer);
+        if (manufacturerError) newErrors.manufacturer = manufacturerError;
+
+        const locationError = validateField('location', newInstrument.location);
+        if (locationError) newErrors.location = locationError;
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const handleFieldChange = (field: keyof InstrumentFormData, value: string) => {
+        setNewInstrument((prev) => ({ ...prev, [field]: value }));
+        
+        // Clear error for this field when user starts typing
+        if (errors[field]) {
+            setErrors((prev) => {
+                const updated = { ...prev };
+                delete updated[field];
+                return updated;
+            });
+        }
+    };
+
+    const handleBlur = (field: keyof InstrumentFormData) => {
+        const error = validateField(field, newInstrument[field]);
+        if (error) {
+            setErrors((prev) => ({ ...prev, [field]: error }));
+        }
+    };
+
     const handleSubmit = async () => {
-        if (!newInstrument.instrument_name || !newInstrument.instrument_type) {
-            toast.error('⚠️ Vui lòng điền đầy đủ các trường bắt buộc');
+        if (!validateForm()) {
+            toast.error(t('service.instrument.validation.checkFields'));
             return;
         }
 
@@ -82,9 +170,9 @@ export function AddInstrumentDialog({
             onAddInstrument(createdInstrument);
             onOpenChange(false);
             resetForm();
-            toast.success('✅ Thêm thiết bị thành công');
+            toast.success(t('service.instrument.addSuccess'));
         } catch (error) {
-            const message = error instanceof Error ? error.message : 'Không thể thêm thiết bị';
+            const message = error instanceof Error ? error.message : t('service.instrument.cannotAddInstrument');
             toast.error(message);
         } finally {
             setIsSubmitting(false);
@@ -96,138 +184,93 @@ export function AddInstrumentDialog({
             <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle className="text-lg font-semibold text-blue-700">
-                        Thêm Thiết bị mới
+                        {t('service.instrument.addDialog.title')}
                     </DialogTitle>
                     <DialogDescription className="text-sm text-gray-600">
-                        Nhập thông tin chi tiết để thêm thiết bị vào hệ thống quản lý
+                        {t('service.instrument.addDialog.description')}
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="grid grid-cols-2 gap-4 mt-2">
                     {/* Instrument Name */}
                     <div className="space-y-2">
-                        <Label htmlFor="instrument_name">Tên thiết bị *</Label>
-                        <Select
+                        <Label htmlFor="instrument_name">{t('service.instrument.addDialog.instrumentName')} *</Label>
+                        <Input
+                            id="instrument_name"
+                            type="text"
                             value={newInstrument.instrument_name}
-                            onValueChange={(value) =>
-                                setNewInstrument({
-                                    ...newInstrument,
-                                    instrument_name: value,
-                                })
-                            }
-                        >
-                            <SelectTrigger className="bg-white border border-gray-300 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                <SelectValue placeholder="Chọn loại thiết bị hoặc nhập tên thiết bị" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-white border border-gray-200 shadow-md">
-                                {[
-                                    'Máy phân tích huyết học HA-500',
-                                    'Máy sinh hóa tự động AU480',
-                                    'Máy đông máu ACL TOP 300',
-                                    'Máy xét nghiệm nước tiểu Urisys 1100',
-                                    'Máy miễn dịch tự động Architect i1000SR',
-                                    'Máy PCR Rotor-Gene Q',
-                                    'Thiết bị khác'
-                                ].map((name) => (
-                                    <SelectItem key={name} value={name}>
-                                        {name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                            onChange={(e) => handleFieldChange('instrument_name', e.target.value)}
+                            onBlur={() => handleBlur('instrument_name')}
+                            placeholder={t('service.instrument.addDialog.instrumentNamePlaceholder')}
+                            className={errors.instrument_name ? 'border-red-500' : ''}
+                            aria-invalid={!!errors.instrument_name}
+                        />
+                        {errors.instrument_name && (
+                            <p className="text-sm text-red-500 mt-1">{errors.instrument_name}</p>
+                        )}
                     </div>
 
                     {/* Instrument Type */}
                     <div className="space-y-2">
-                        <Label htmlFor="instrument_type">Loại thiết bị *</Label>
-                        <Select
+                        <Label htmlFor="instrument_type">{t('service.instrument.addDialog.instrumentType')} *</Label>
+                        <Input
+                            id="instrument_type"
+                            type="text"
                             value={newInstrument.instrument_type}
-                            onValueChange={(value) =>
-                                setNewInstrument({ ...newInstrument, instrument_type: value })
-                            }
-                        >
-                            <SelectTrigger className="bg-white border border-gray-300 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                <SelectValue placeholder="Chọn loại thiết bị" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-white border border-gray-200 shadow-md">
-                                {[
-                                    'Máy phân tích huyết học',
-                                    'Máy sinh hóa tự động',
-                                    'Máy đông máu',
-                                    'Máy xét nghiệm nước tiểu',
-                                    'Máy miễn dịch tự động',
-                                    'Máy PCR',
-                                    'Thiết bị khác'
-                                ].map((type) => (
-                                    <SelectItem key={type} value={type}>
-                                        {type}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                            onChange={(e) => handleFieldChange('instrument_type', e.target.value)}
+                            onBlur={() => handleBlur('instrument_type')}
+                            placeholder={t('service.instrument.addDialog.instrumentTypePlaceholder')}
+                            className={errors.instrument_type ? 'border-red-500' : ''}
+                            aria-invalid={!!errors.instrument_type}
+                        />
+                        {errors.instrument_type && (
+                            <p className="text-sm text-red-500 mt-1">{errors.instrument_type}</p>
+                        )}
                     </div>
 
                     {/* Manufacturer */}
                     <div className="space-y-2">
-                        <Label>Nhà sản xuất</Label>
-                        <Select
+                        <Label htmlFor="manufacturer">{t('service.instrument.addDialog.manufacturer')}</Label>
+                        <Input
+                            id="manufacturer"
+                            type="text"
                             value={newInstrument.manufacturer}
-                            onValueChange={(value) =>
-                                setNewInstrument({ ...newInstrument, manufacturer: value })
-                            }
-                        >
-                            <SelectTrigger className="bg-white border border-gray-300 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                <SelectValue placeholder="Chọn nhà sản xuất" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-white border border-gray-200 shadow-md">
-                                {[
-                                    'Sysmex',
-                                    'Roche',
-                                    'Abbott',
-                                    'Siemens',
-                                    'Beckman Coulter',
-                                    'Bio-Rad',
-                                    'Radiometer',
-                                    'Khác',
-                                ].map((m) => (
-                                    <SelectItem key={m} value={m}>
-                                        {m}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                            onChange={(e) => handleFieldChange('manufacturer', e.target.value)}
+                            onBlur={() => handleBlur('manufacturer')}
+                            placeholder={t('service.instrument.addDialog.manufacturerPlaceholder')}
+                            className={errors.manufacturer ? 'border-red-500' : ''}
+                            aria-invalid={!!errors.manufacturer}
+                        />
+                        {errors.manufacturer && (
+                            <p className="text-sm text-red-500 mt-1">{errors.manufacturer}</p>
+                        )}
                     </div>
 
                     {/* Location */}
                     <div className="space-y-2">
-                        <Label htmlFor="location">Vị trí</Label>
-                        <Select
+                        <Label htmlFor="location">{t('service.instrument.addDialog.location')}</Label>
+                        <Input
+                            id="location"
+                            type="text"
                             value={newInstrument.location}
-                            onValueChange={(value) =>
-                                setNewInstrument({ ...newInstrument, location: value })
-                            }
-                        >
-                            <SelectTrigger className="bg-white border border-gray-300 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                <SelectValue placeholder="Chọn vị trí" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-white border border-gray-200 shadow-md">
-                                <SelectItem value="Phòng Huyết học">Phòng Huyết học</SelectItem>
-                                <SelectItem value="Phòng Sinh hóa">Phòng Sinh hóa</SelectItem>
-                                <SelectItem value="Phòng Miễn dịch">Phòng Miễn dịch</SelectItem>
-                                <SelectItem value="Phòng Vi sinh">Phòng Vi sinh</SelectItem>
-                                <SelectItem value="Phòng Nước tiểu">Phòng Nước tiểu</SelectItem>
-                                <SelectItem value="Phòng Đông máu">Phòng Đông máu</SelectItem>
-                            </SelectContent>
-                        </Select>
+                            onChange={(e) => handleFieldChange('location', e.target.value)}
+                            onBlur={() => handleBlur('location')}
+                            placeholder={t('service.instrument.addDialog.locationPlaceholder')}
+                            className={errors.location ? 'border-red-500' : ''}
+                            aria-invalid={!!errors.location}
+                        />
+                        {errors.location && (
+                            <p className="text-sm text-red-500 mt-1">{errors.location}</p>
+                        )}
                     </div>
                 </div>
 
                 <DialogFooter className="mt-4">
                     <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
-                        Hủy
+                        {t('service.instrument.cancel')}
                     </Button>
                     <Button onClick={handleSubmit} disabled={isSubmitting}>
-                        {isSubmitting ? 'Đang thêm...' : 'Thêm thiết bị'}
+                        {isSubmitting ? t('service.instrument.addDialog.adding') : t('service.instrument.addDialog.addButton')}
                     </Button>
                 </DialogFooter>
             </DialogContent>

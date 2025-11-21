@@ -77,3 +77,40 @@ export const filterTestOrders = (
   return filtered;
 };
 
+/**
+ * Helper function to translate test type from backend to localized string
+ * Maps Vietnamese test type values to translation keys
+ * @param testType - Test type string from backend
+ * @param t - Translation function from useTranslation hook
+ * @returns Translated test type string
+ */
+export const translateTestType = (testType: string, t: (key: string) => string): string => {
+  if (!testType) return testType;
+
+  // Mapping from backend test type values to translation keys
+  const testTypeMap: Record<string, string> = {
+    'Sinh hóa máu': 'testOrder.biochemistry',
+    'Huyết học tổng quát': 'testOrder.generalHematology',
+    'Vi sinh': 'testOrder.microbiology',
+    'Miễn dịch': 'testOrder.immunology',
+    'Nội tiết': 'testOrder.endocrinology',
+    'Ung thư học': 'testOrder.oncology',
+    // Also support English values if backend sends them
+    'Biochemistry': 'testOrder.biochemistry',
+    'General Hematology': 'testOrder.generalHematology',
+    'Microbiology': 'testOrder.microbiology',
+    'Immunology': 'testOrder.immunology',
+    'Endocrinology': 'testOrder.endocrinology',
+    'Oncology': 'testOrder.oncology',
+  };
+
+  const translationKey = testTypeMap[testType];
+  
+  if (translationKey) {
+    return t(translationKey);
+  }
+
+  // Fallback: return original value if no mapping found
+  return testType;
+};
+

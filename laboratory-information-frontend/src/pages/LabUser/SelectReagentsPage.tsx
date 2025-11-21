@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader } from '../../components/common/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/common/table';
 import { Input } from '../../components/common/input';
 import Pagination from '../../components/common/pagination';
+import { useTranslation } from 'react-i18next';
 
 interface SelectedReagent {
   reagentId: string;
@@ -23,6 +24,7 @@ interface LocationState {
 }
 
 const SelectReagentsPage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuthContext();
@@ -61,11 +63,11 @@ const SelectReagentsPage: React.FC = () => {
 
   useEffect(() => {
     if (!state?.formData || !state?.instruments) {
-      toast.error('Thiếu thông tin form');
+      toast.error(t('testOrder.missingFormData'));
       const basePath = getBasePath();
       navigate(`${basePath}/create-test-order`);
     }
-  }, [state, navigate]);
+  }, [state, navigate, t]);
 
   // Fetch reagents from API
   useEffect(() => {
@@ -83,7 +85,7 @@ const SelectReagentsPage: React.FC = () => {
         setCurrentPage(1);
       } catch (error: any) {
         console.error('Error fetching reagents:', error);
-        toast.error(error.message || 'Không thể tải danh sách thuốc thử');
+        toast.error(error.message || t('testOrder.cannotLoadReagents'));
         setBaseReagents([]);
         setReagents([]);
         setTotalItems(0);
@@ -123,7 +125,7 @@ const SelectReagentsPage: React.FC = () => {
       } catch (error: any) {
         if (isCancelled) return;
         console.error('Error searching reagents:', error);
-        toast.error(error.message || 'Không thể tìm kiếm thuốc thử');
+        toast.error(error.message || t('testOrder.cannotSearchReagents'));
       } finally {
         if (!isCancelled) {
           setSearchLoading(false);
@@ -174,7 +176,7 @@ const SelectReagentsPage: React.FC = () => {
 
   const handleSubmit = async () => {
     if (!state?.formData || !state?.instruments) {
-      toast.error('Thiếu thông tin form');
+      toast.error(t('testOrder.missingFormData'));
       return;
     }
 
@@ -190,7 +192,7 @@ const SelectReagentsPage: React.FC = () => {
       };
 
       await testOrderService.createTestOrder(submitData);
-      toast.success('Tạo lệnh thành công!');
+      toast.success(t('testOrder.orderCreatedSuccess'));
       const basePath = getBasePath();
       navigate(`${basePath}/test-orders`);
 
@@ -244,8 +246,8 @@ const SelectReagentsPage: React.FC = () => {
               </div>
             </div>
             <div className="text-center">
-              <p className="text-base md:text-lg font-bold text-blue-700">Tạo lệnh</p>
-              <p className="text-sm md:text-base text-gray-600 hidden md:block mt-1">xét nghiệm mới</p>
+              <p className="text-base md:text-lg font-bold text-blue-700">{t('testOrder.createOrder')}</p>
+              <p className="text-sm md:text-base text-gray-600 hidden md:block mt-1">{t('testOrder.newTestOrder')}</p>
             </div>
           </div>
 
@@ -265,7 +267,7 @@ const SelectReagentsPage: React.FC = () => {
               </div>
             </div>
             <div className="text-center">
-              <p className="text-base md:text-lg font-bold text-blue-700">Chọn thiết bị</p>
+              <p className="text-base md:text-lg font-bold text-blue-700">{t('testOrder.selectInstrument')}</p>
             </div>
           </div>
 
@@ -280,7 +282,7 @@ const SelectReagentsPage: React.FC = () => {
               </div>
             </div>
             <div className="text-center">
-              <p className="text-base md:text-lg font-bold text-blue-700">Chọn thuốc thử</p>
+              <p className="text-base md:text-lg font-bold text-blue-700">{t('testOrder.selectReagent')}</p>
             </div>
           </div>
         </div>
@@ -299,14 +301,14 @@ const SelectReagentsPage: React.FC = () => {
             className="flex items-center gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
-            Quay lại
+            {t('testOrder.back')}
           </Button>
           <div>
             <h2 className="text-2xl font-semibold text-gray-900">
-              Chọn thuốc thử
+              {t('testOrder.selectReagentTitle')}
             </h2>
             <p className="text-sm text-gray-500 mt-0.5">
-              Chọn thuốc thử và số lượng để thực hiện xét nghiệm
+              {t('testOrder.selectReagentDescription')}
             </p>
           </div>
         </div>
@@ -316,13 +318,13 @@ const SelectReagentsPage: React.FC = () => {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between gap-4">
-            <h3 className="text-lg font-semibold">Danh sách thuốc thử</h3>
+            <h3 className="text-lg font-semibold">{t('testOrder.reagentList')}</h3>
             <div className="flex items-center gap-3 flex-1 justify-end max-w-md">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
                   type="text"
-                  placeholder="Tìm kiếm theo tên, mã thuốc thử..."
+                  placeholder={t('testOrder.searchReagentPlaceholder')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10 pr-4 py-2 w-full"
@@ -330,7 +332,7 @@ const SelectReagentsPage: React.FC = () => {
               </div>
               {searchQuery && (
                 <span className="text-sm text-gray-500 whitespace-nowrap">
-                  {searchLoading ? 'Đang tìm...' : `Tìm thấy ${totalItems} thuốc thử`}
+                  {searchLoading ? t('testOrder.searchingReagents') : t('testOrder.foundReagents', { count: totalItems })}
                 </span>
               )}
             </div>
@@ -341,12 +343,12 @@ const SelectReagentsPage: React.FC = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-12">Chọn</TableHead>
-                  <TableHead>Tên thuốc thử</TableHead>
-                  <TableHead>Hạn sử dụng</TableHead>
-                  <TableHead>Vị trí lưu trữ</TableHead>
-                  <TableHead className="w-32">Số lượng</TableHead>
-                  <TableHead className="w-32">Còn lại</TableHead>
+                  <TableHead className="w-12">{t('testOrder.select')}</TableHead>
+                  <TableHead>{t('testOrder.reagentName')}</TableHead>
+                  <TableHead>{t('testOrder.expiryDate')}</TableHead>
+                  <TableHead>{t('testOrder.storageLocation')}</TableHead>
+                  <TableHead className="w-32">{t('testOrder.quantity')}</TableHead>
+                  <TableHead className="w-32">{t('testOrder.remaining')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -356,7 +358,7 @@ const SelectReagentsPage: React.FC = () => {
                       <div className="flex flex-col items-center justify-center gap-2">
                         <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                         <span className="text-sm text-gray-500">
-                          {isLoading ? 'Đang tải danh sách thuốc thử...' : 'Đang tìm thuốc thử...'}
+                          {isLoading ? t('testOrder.loadingReagents') : t('testOrder.searchingReagentsLoading')}
                         </span>
                       </div>
                     </TableCell>
@@ -364,7 +366,7 @@ const SelectReagentsPage: React.FC = () => {
                 ) : paginatedReagents.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center py-8 text-gray-500">
-                      Không tìm thấy thuốc thử nào
+                      {t('testOrder.noReagentsFound')}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -396,7 +398,7 @@ const SelectReagentsPage: React.FC = () => {
                         {reagent.expiryDate}
                       </TableCell>
                       <TableCell className="text-sm text-gray-600">
-                        {reagent.storageLocation || 'Chưa cập nhật'}
+                        {reagent.storageLocation || t('testOrder.notUpdated')}
                       </TableCell>
                       <TableCell>
                         {isSelected ? (
@@ -438,7 +440,7 @@ const SelectReagentsPage: React.FC = () => {
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Thuốc thử đã chọn</h3>
+            <h3 className="text-lg font-semibold">{t('testOrder.selectedReagents')}</h3>
             {selectedReagentsList.length > 0 && (
               <span className="text-sm text-gray-500 bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
                 {selectedReagentsList.length}
@@ -450,10 +452,10 @@ const SelectReagentsPage: React.FC = () => {
           {selectedReagentsList.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-sm text-gray-500">
-                Chưa có thuốc thử nào được chọn
+                {t('testOrder.noReagentsSelected')}
               </p>
               <p className="text-xs text-gray-400 mt-2">
-                Chọn thuốc thử từ danh sách bên trên
+                {t('testOrder.selectReagentsFromList')}
               </p>
             </div>
           ) : (
@@ -468,17 +470,17 @@ const SelectReagentsPage: React.FC = () => {
                       {reagent.name}
                     </p>
                     <p className="text-xs text-gray-500 font-mono mt-1">
-                      HSD: {reagent.expiryDate} • {reagent.storageLocation || 'Chưa cập nhật'}
+                      {t('testOrder.expiryDate')}: {reagent.expiryDate} • {reagent.storageLocation || t('testOrder.notUpdated')}
                     </p>
                     <p className="text-xs text-gray-600 mt-1">
-                      Số lượng: <span className="font-semibold text-blue-600">{reagent.quantity}</span>
+                      {t('testOrder.quantity')}: <span className="font-semibold text-blue-600">{reagent.quantity}</span>
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={() => handleToggleSelect(reagent.id)}
                     className="ml-2 p-1 hover:bg-red-100 rounded-full transition-colors flex-shrink-0"
-                    title="Bỏ chọn"
+                    title={t('testOrder.cancel')}
                   >
                     <X className="w-4 h-4 text-red-600" />
                   </button>
@@ -501,7 +503,7 @@ const SelectReagentsPage: React.FC = () => {
           disabled={isSubmitting}
           className="px-6 py-2.5 border-gray-300 text-gray-700 hover:bg-gray-50"
         >
-          Hủy
+          {t('testOrder.cancel')}
         </Button>
         <Button
           type="button"
@@ -509,7 +511,7 @@ const SelectReagentsPage: React.FC = () => {
           disabled={isSubmitting}
           className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isSubmitting ? 'Đang tạo...' : 'Tạo lệnh'}
+          {isSubmitting ? t('testOrder.creatingOrder') : t('testOrder.createOrderButton')}
           <ArrowRight className="w-4 h-4" />
         </Button>
       </div>
