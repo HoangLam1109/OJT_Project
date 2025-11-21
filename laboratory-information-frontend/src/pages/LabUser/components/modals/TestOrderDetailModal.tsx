@@ -5,6 +5,7 @@ import Badge from '../../../../components/common/badge';
 import { Clock, User, TestTube, Microscope, FlaskConical, List } from 'lucide-react';
 import type { TestOrder } from '../../types/TestOrderTypes';
 import { testItemService, type TestItem } from '../../../../service/testItemService';
+import { useTranslation } from 'react-i18next';
 
 interface TestOrderDetailModalProps {
   order: TestOrder | null;
@@ -21,6 +22,7 @@ const TestOrderDetailModal: React.FC<TestOrderDetailModalProps> = ({
   onEdit,
   onClose,
 }) => {
+  const { t } = useTranslation();
   const [testItems, setTestItems] = useState<TestItem[]>([]);
   const [loadingTestItems, setLoadingTestItems] = useState(false);
 
@@ -56,11 +58,11 @@ const TestOrderDetailModal: React.FC<TestOrderDetailModalProps> = ({
     const statusLower = status.toLowerCase();
     switch (statusLower) {
       case 'pending':
-        return <Badge variant="outline"><Clock className="w-3 h-3 mr-1" />Chờ xử lý</Badge>;
+        return <Badge variant="outline"><Clock className="w-3 h-3 mr-1" />{t('testOrder.detail.pending')}</Badge>;
       case 'processing':
-        return <Badge variant="default"><TestTube className="w-3 h-3 mr-1" />Đang xử lý</Badge>;
+        return <Badge variant="default"><TestTube className="w-3 h-3 mr-1" />{t('testOrder.detail.processing')}</Badge>;
       case 'completed':
-        return <Badge variant="default" className="bg-green-600"><TestTube className="w-3 h-3 mr-1" />Hoàn thành</Badge>;
+        return <Badge variant="default" className="bg-green-600"><TestTube className="w-3 h-3 mr-1" />{t('testOrder.detail.completed')}</Badge>;
       default:
         return <Badge>{status}</Badge>;
     }
@@ -74,10 +76,10 @@ const TestOrderDetailModal: React.FC<TestOrderDetailModalProps> = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <TestTube className="w-5 h-5" />
-            Chi tiết Lệnh Xét nghiệm
+            {t('testOrder.detail.title')}
           </DialogTitle>
           <DialogDescription>
-            Thông tin chi tiết về lệnh xét nghiệm
+            {t('testOrder.detail.description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -95,15 +97,15 @@ const TestOrderDetailModal: React.FC<TestOrderDetailModalProps> = ({
             <div>
               <h4 className="font-semibold text-sm text-gray-700 mb-3 flex items-center gap-2">
                 <User className="w-4 h-4" />
-                Thông tin Bệnh nhân
+                {t('testOrder.detail.patientInfo')}
               </h4>
               <div className="grid grid-cols-2 gap-3 pl-6">
                 <div>
-                  <span className="text-sm text-gray-600">Tên bệnh nhân:</span>
+                  <span className="text-sm text-gray-600">{t('testOrder.detail.patientName')}</span>
                   <p className="font-medium">{order.patient_name}</p>
                 </div>
                 <div>
-                  <span className="text-sm text-gray-600">Mã bệnh nhân:</span>
+                  <span className="text-sm text-gray-600">{t('testOrder.detail.patientCode')}</span>
                   <p className="font-mono text-sm">{order.patient_id}</p>
                 </div>
               </div>
@@ -113,16 +115,16 @@ const TestOrderDetailModal: React.FC<TestOrderDetailModalProps> = ({
             <div>
               <h4 className="font-semibold text-sm text-gray-700 mb-3 flex items-center gap-2">
                 <TestTube className="w-4 h-4" />
-                Thông tin Xét nghiệm
+                {t('testOrder.detail.testInfo')}
               </h4>
               <div className="grid grid-cols-2 gap-3 pl-6">
                 <div>
-                  <span className="text-sm text-gray-600">Loại xét nghiệm:</span>
+                  <span className="text-sm text-gray-600">{t('testOrder.detail.testType')}</span>
                   <p className="font-medium">{order.test_type}</p>
                 </div>
                 {order.created_at && (
                   <div>
-                    <span className="text-sm text-gray-600">Ngày tạo mẫu:</span>
+                    <span className="text-sm text-gray-600">{t('testOrder.detail.sampleDate')}</span>
                     <p className="font-medium">{order.created_at}</p>
                   </div>
                 )}
@@ -131,7 +133,7 @@ const TestOrderDetailModal: React.FC<TestOrderDetailModalProps> = ({
             <div>
               <div className="grid grid-cols-2 gap-3 pl-6">
                 <div>
-                  <span className="text-sm text-gray-600">Hạn hoàn thành:</span>
+                  <span className="text-sm text-gray-600">{t('testOrder.detail.dueDate')}</span>
                   <p className="font-medium">{order.due_date}</p>
                 </div>
               </div>
@@ -142,33 +144,33 @@ const TestOrderDetailModal: React.FC<TestOrderDetailModalProps> = ({
               <div>
                 <h4 className="font-semibold text-sm text-gray-700 mb-3 flex items-center gap-2">
                   <List className="w-4 h-4" />
-                  Test Items
+                  {t('testOrder.detail.testItems')}
                 </h4>
                 <div className="pl-6">
                   {loadingTestItems ? (
-                    <p className="text-sm text-gray-500">Đang tải...</p>
+                    <p className="text-sm text-gray-500">{t('testOrder.detail.loading')}</p>
                   ) : testItems.length > 0 ? (
                     <div className="space-y-2">
                       {testItems.map((item) => (
                         <div key={item._id} className="bg-gray-50 p-3 rounded-lg border">
                           <div className="grid grid-cols-2 gap-3">
                             <div>
-                              <span className="text-sm text-gray-600">Tên test item:</span>
+                              <span className="text-sm text-gray-600">{t('testOrder.detail.testItemName')}</span>
                               <p className="font-medium">{item.name}</p>
                             </div>
                             <div>
-                              <span className="text-sm text-gray-600">Mã:</span>
+                              <span className="text-sm text-gray-600">{t('testOrder.detail.code')}</span>
                               <p className="font-mono text-sm">{item.code}</p>
                             </div>
                             {item.unit && (
                               <div>
-                                <span className="text-sm text-gray-600">Đơn vị:</span>
+                                <span className="text-sm text-gray-600">{t('testOrder.detail.unit')}</span>
                                 <p className="font-medium">{item.unit}</p>
                               </div>
                             )}
                             {(item.ref_min !== undefined || item.ref_max !== undefined) && (
                               <div>
-                                <span className="text-sm text-gray-600">Giá trị tham chiếu:</span>
+                                <span className="text-sm text-gray-600">{t('testOrder.detail.referenceValue')}</span>
                                 <p className="font-medium">
                                   {item.ref_min !== undefined && item.ref_max !== undefined
                                     ? `${item.ref_min} - ${item.ref_max}`
@@ -180,7 +182,7 @@ const TestOrderDetailModal: React.FC<TestOrderDetailModalProps> = ({
                             )}
                             {item.method && (
                               <div className="col-span-2">
-                                <span className="text-sm text-gray-600">Phương pháp:</span>
+                                <span className="text-sm text-gray-600">{t('testOrder.detail.method')}</span>
                                 <p className="font-medium">{item.method}</p>
                               </div>
                             )}
@@ -189,7 +191,7 @@ const TestOrderDetailModal: React.FC<TestOrderDetailModalProps> = ({
                       ))}
                     </div>
                   ) : (
-                    <p className="text-sm text-gray-500">Không có test items</p>
+                    <p className="text-sm text-gray-500">{t('testOrder.detail.noTestItems')}</p>
                   )}
                 </div>
               </div>
@@ -200,27 +202,27 @@ const TestOrderDetailModal: React.FC<TestOrderDetailModalProps> = ({
               <div>
                 <h4 className="font-semibold text-sm text-gray-700 mb-3 flex items-center gap-2">
                   <Microscope className="w-4 h-4" />
-                  Thông tin Thiết bị
+                  {t('testOrder.detail.instrumentInfo')}
                 </h4>
                 <div className="grid grid-cols-2 gap-3 pl-6">
                   <div>
-                    <span className="text-sm text-gray-600">Mã thiết bị:</span>
+                    <span className="text-sm text-gray-600">{t('testOrder.detail.instrumentCode')}</span>
                     <p className="font-mono text-sm">{order.instrument.instrument_code}</p>
                   </div>
                   <div>
-                    <span className="text-sm text-gray-600">Tên thiết bị:</span>
+                    <span className="text-sm text-gray-600">{t('testOrder.detail.instrumentName')}</span>
                     <p className="font-medium">{order.instrument.instrument_name}</p>
                   </div>
                   <div>
-                    <span className="text-sm text-gray-600">Loại thiết bị:</span>
+                    <span className="text-sm text-gray-600">{t('testOrder.detail.instrumentType')}</span>
                     <p className="font-medium">{order.instrument.instrument_type}</p>
                   </div>
                   <div>
-                    <span className="text-sm text-gray-600">Nhà sản xuất:</span>
+                    <span className="text-sm text-gray-600">{t('testOrder.detail.manufacturer')}</span>
                     <p className="font-medium">{order.instrument.manufacturer}</p>
                   </div>
                   <div>
-                    <span className="text-sm text-gray-600">Trạng thái:</span>
+                    <span className="text-sm text-gray-600">{t('testOrder.status')}</span>
                     <Badge variant={order.instrument.status === 'Ready' ? 'default' : 'secondary'} className="mt-1">
                       {order.instrument.status}
                     </Badge>
@@ -234,7 +236,7 @@ const TestOrderDetailModal: React.FC<TestOrderDetailModalProps> = ({
               <div>
                 <h4 className="font-semibold text-sm text-gray-700 mb-3 flex items-center gap-2">
                   <FlaskConical className="w-4 h-4" />
-                  Thông tin Hóa chất
+                  {t('testOrder.detail.reagentInfo')}
                 </h4>
                 <div className="pl-6">
                   <div className="space-y-2">
@@ -242,19 +244,19 @@ const TestOrderDetailModal: React.FC<TestOrderDetailModalProps> = ({
                       <div key={reagent.reagent_id || index} className="bg-gray-50 p-3 rounded-lg border">
                         <div className="grid grid-cols-2 gap-3">
                           <div>
-                            <span className="text-sm text-gray-600">Tên hóa chất:</span>
+                            <span className="text-sm text-gray-600">{t('testOrder.detail.reagentName')}</span>
                             <p className="font-medium">{reagent.reagent_name}</p>
                           </div>
                           <div>
-                            <span className="text-sm text-gray-600">Loại:</span>
+                            <span className="text-sm text-gray-600">{t('testOrder.detail.reagentType')}</span>
                             <p className="font-medium">{reagent.reagent_type}</p>
                           </div>
                           <div>
-                            <span className="text-sm text-gray-600">Số lượng đã dùng:</span>
+                            <span className="text-sm text-gray-600">{t('testOrder.detail.quantityUsed')}</span>
                             <p className="font-medium">{reagent.quantity_used}</p>
                           </div>
                           <div>
-                            <span className="text-sm text-gray-600">Trạng thái:</span>
+                            <span className="text-sm text-gray-600">{t('testOrder.status')}</span>
                             <Badge variant={reagent.status === 'Available' ? 'default' : 'secondary'} className="mt-1">
                               {reagent.status}
                             </Badge>
@@ -269,9 +271,9 @@ const TestOrderDetailModal: React.FC<TestOrderDetailModalProps> = ({
 
             {/* Notes */}
             <div>
-              <h4 className="font-semibold text-sm text-gray-700 mb-2">Ghi chú:</h4>
+              <h4 className="font-semibold text-sm text-gray-700 mb-2">{t('testOrder.detail.notes')}</h4>
               <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded-lg">
-                {order.notes?.trim() ? order.notes : 'Không có ghi chú'}
+                {order.notes?.trim() ? order.notes : t('testOrder.detail.noNotes')}
               </p>
             </div>
 
@@ -291,7 +293,7 @@ const TestOrderDetailModal: React.FC<TestOrderDetailModalProps> = ({
               }}
               className="px-6"
             >
-              Cập nhật
+              {t('testOrder.detail.update')}
             </Button>
           )}
 
@@ -305,7 +307,7 @@ const TestOrderDetailModal: React.FC<TestOrderDetailModalProps> = ({
               }}
               className="px-6"
             >
-              Xóa
+              {t('testOrder.detail.delete')}
             </Button>
           )}
         </DialogFooter>

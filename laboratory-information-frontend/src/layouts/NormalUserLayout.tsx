@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Sidebar } from '../components/common/Sidebar';
 import { TopHeader } from '../components/common/TopHeader';
 import type { NavigationItem } from '../types/Layout.types';
 import type { User } from '../types/User';
+import { MessageNotificationProvider, useMessageNotificationContext } from '../context/MessageNotificationContext';
 
 interface NormalUserLayoutProps {
   currentUser: User;
   onLogout: () => void;
   currentPage: string;
   onNavigate: (page: string) => void;
+  children?: React.ReactNode;
 }
 
 const navigationItems: NavigationItem[] = [
@@ -34,27 +36,41 @@ const navigationItems: NavigationItem[] = [
   }
 ];
 
-interface NormalUserLayoutProps {
-  currentUser: User;
-  onLogout: () => void;
-  currentPage: string;
-  onNavigate: (page: string) => void;
-  children?: React.ReactNode;
+interface LayoutContentProps extends NormalUserLayoutProps {
+  sidebarCollapsed: boolean;
+  setSidebarCollapsed: (value: boolean) => void;
 }
 
-export const NormalUserLayout: React.FC<NormalUserLayoutProps> = ({
+const NormalUserLayoutContent: React.FC<LayoutContentProps> = ({
   currentUser,
   onLogout,
   currentPage,
   onNavigate,
-  children
+  children,
+  sidebarCollapsed,
+  setSidebarCollapsed,
 }) => {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const { unreadCount, markAllAsRead } = useMessageNotificationContext();
+  const isChatPage = currentPage?.startsWith('chat');
+
+  useEffect(() => {
+    if (isChatPage) {
+      markAllAsRead();
+    }
+  }, [isChatPage, markAllAsRead]);
+
+  const navigationItemsWithBadges = useMemo(
+    () =>
+      navigationItems.map((item) =>
+        item.id === 'chat' ? { ...item, badgeCount: unreadCount } : item
+      ),
+    [unreadCount]
+  );
 
   return (
     <div className="flex h-screen bg-gray-100">
-      <Sidebar 
-        navigationItems={navigationItems}
+      <Sidebar
+        navigationItems={navigationItemsWithBadges}
         currentUserName={currentUser.name}
         currentUserRole="Người dùng thường"
         currentPage={currentPage}
@@ -65,11 +81,42 @@ export const NormalUserLayout: React.FC<NormalUserLayoutProps> = ({
       />
       <div className={`flex-1 flex flex-col overflow-hidden ${sidebarCollapsed ? 'ml-16' : 'ml-64'}`}>
         <TopHeader />
-        <main className="flex-1 overflow-y-auto bg-gray-50 p-6">
-          {children}
-        </main>
+        <main className="flex-1 overflow-y-auto bg-gray-50 p-6">{children}</main>
       </div>
     </div>
+  );
+};
+
+export const NormalUserLayout: React.FC<NormalUserLayoutProps> = ({
+  currentUser,
+  onLogout,
+  currentPage,
+  onNavigate,
+  children,
+}) => {
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const isChatPage = currentPage?.startsWith('chat');
+
+  return (
+    <MessageNotificationProvider
+      options={{
+        enabled: true,
+        suppressToasts: Boolean(isChatPage),
+        autoClear: false,
+        pollInterval: 2000,
+      }}
+    >
+      <NormalUserLayoutContent
+        currentUser={currentUser}
+        onLogout={onLogout}
+        currentPage={currentPage}
+        onNavigate={onNavigate}
+        sidebarCollapsed={sidebarCollapsed}
+        setSidebarCollapsed={setSidebarCollapsed}
+      >
+        {children}
+      </NormalUserLayoutContent>
+    </MessageNotificationProvider>
   );
 };
 

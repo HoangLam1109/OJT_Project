@@ -143,7 +143,7 @@ export function AdminPatientManagementPage() {
         const emergencyObj = (bb.emergency_contact ?? bb.emergencyContact ?? {}) as Record<string, unknown>;
         const medicalHistory = Array.isArray(bb.medicalHistory) ? bb.medicalHistory as string[] : (bb.medicalHistory ? [String(bb.medicalHistory)] : []);
         const allergies = Array.isArray(bb.allergies) ? bb.allergies as string[] : [];
-        const status = String(bb.is_active === false ? 'inactive' : (bb.is_deleted ? 'deceased' : (bb.status ?? 'active')));
+        const status = String(bb.is_active === false ? 'inactive' : (bb.status ?? 'active'));
         const createdAt = String(bb.created_at ?? bb.createdAt ?? '');
         const updatedAt = String(bb.updated_at ?? bb.updatedAt ?? '');
         const lastVisit = String(bb.last_visit_date ?? bb.lastVisit ?? '');
@@ -328,7 +328,6 @@ export function AdminPatientManagementPage() {
                 <option value="all">{t('patient.allStatus')}</option>
                 <option value="active">{t('patient.activeStatus')}</option>
                 <option value="inactive">{t('patient.inactiveStatus')}</option>
-                <option value="deceased">{t('patient.deceasedStatus')}</option>
               </select>
             </div>
           </div>
@@ -393,7 +392,7 @@ export function AdminPatientManagementPage() {
                           {patient.bloodType}
                         </span>
                       ) : (
-                        <span className="text-sm text-gray-500 italic">Chưa có</span>
+                        <span className="text-sm text-gray-500 italic">{t('patient.noBloodType')}</span>
                       )}
                     </td>
                     <td className="py-3 px-4">
@@ -406,7 +405,7 @@ export function AdminPatientManagementPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          title="Xem chi tiết"
+                          title={t('patient.viewDetails')}
                           onClick={() => navigate(`${isLabUser ? '/labuser/patients' : '/admin/patient-management'}/${patient.id}`)}
                         >
                           <Eye className="w-4 h-4" />
@@ -414,7 +413,7 @@ export function AdminPatientManagementPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          title="Chỉnh sửa"
+                          title={t('patient.edit')}
                           onClick={() => openEditModal(patient.id)}
                         >
                           <Edit className="w-4 h-4" />
@@ -422,7 +421,7 @@ export function AdminPatientManagementPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          title="Xóa"
+                          title={t('patient.delete')}
                           className="text-red-600 hover:text-red-700"
                           onClick={() => setDeleteTarget({ id: patient.id, name: patient.name })}
                         >
@@ -448,14 +447,14 @@ export function AdminPatientManagementPage() {
     // Only update emergency contact fields
     if (!modalState.patient) {
       console.error('Missing patient for update');
-      toast.error('Cập nhật thất bại');
+      toast.error(t('patient.updateFailed'));
       return;
     }
 
     const patientId = modalState.patient._id ?? modalState.patient.id;
     if (!patientId) {
       console.error('Missing patient ID for update');
-      toast.error('Cập nhật thất bại');
+      toast.error(t('patient.updateFailed'));
       return;
     }
 
@@ -494,15 +493,15 @@ export function AdminPatientManagementPage() {
           })
         );
 
-        toast.success('Cập nhật người dùng thành công ');
+        toast.success(t('patient.updateSuccess'));
         closeModal();
       } else {
         console.error('Update failed - no response from server');
-        toast.error('Cập nhật thất bại');
+        toast.error(t('patient.updateFailed'));
       }
     } catch (err) {
       console.error('Failed to update patient:', err);
-      toast.error('Cập nhật thất bại');
+      toast.error(t('patient.updateFailed'));
     }
   }}
 />

@@ -35,8 +35,10 @@ import { AddInstrumentDialog } from "./components/AddInstrumentDialog";
 import { ChangeInstrumentStatusDialog } from "./components/ChangeInstrumentStatusDialog";
 import { DeleteInstrumentConfirmDialog } from "./components/DeleteInstrumentConfirmDialog";
 import { instrumentsService } from "../../service/instrumentsService";
+import { useTranslation } from "react-i18next";
 
 export default function ServiceInstrumentPage() {
+    const { t } = useTranslation();
     const [instruments, setInstruments] = useState<Instrument[]>([]);
     const [totalInstruments, setTotalInstruments] = useState(0);
     const [currentPage, setCurrentPage] = useState(1);
@@ -82,8 +84,8 @@ export default function ServiceInstrumentPage() {
                     setInstruments(response.data);
                     setTotalInstruments(response.total);
                 }
-            } catch (error) {
-                const message = error instanceof Error ? error.message : "Không thể tải danh sách thiết bị";
+                } catch (error) {
+                const message = error instanceof Error ? error.message : t('service.instrument.cannotLoadInstruments');
                 toast.error(message);
             }
         }, 500); // Debounce 500ms
@@ -111,14 +113,14 @@ export default function ServiceInstrumentPage() {
             // Reload stats
             const statsData = await instrumentsService.getInstrumentStats();
             setStats(statsData);
-        } catch (error) {
-            const message = error instanceof Error ? error.message : "Không thể tải danh sách thiết bị";
-            toast.error(message);
-        }
+                } catch (error) {
+                const message = error instanceof Error ? error.message : t('service.instrument.cannotLoadInstruments');
+                toast.error(message);
+            }
     };
 
     const handleAddInstrument = async () => {
-        toast.success("Thiết bị đã được thêm thành công!");
+            toast.success(t('service.instrument.addSuccess'));
         // Refresh the current page to get updated data
         try {
             if (instrumentSearchTerm.trim()) {
@@ -137,10 +139,10 @@ export default function ServiceInstrumentPage() {
             // Reload stats
             const statsData = await instrumentsService.getInstrumentStats();
             setStats(statsData);
-        } catch (error) {
-            const message = error instanceof Error ? error.message : "Không thể tải danh sách thiết bị";
-            toast.error(message);
-        }
+                } catch (error) {
+                const message = error instanceof Error ? error.message : t('service.instrument.cannotLoadInstruments');
+                toast.error(message);
+            }
     };
     const handleOpenDetail = (instrument: Instrument) => {
         setSelectedInstrumentId(instrument._id);
@@ -162,7 +164,7 @@ export default function ServiceInstrumentPage() {
                 setSelectedInstrumentId(null);
                 setOpenDialog(false);
             }
-            toast.success('Thiết bị đã được xóa thành công');
+            toast.success(t('service.instrument.deleteSuccess'));
             setShowDeleteDialog(false);
             setInstrumentToDelete(null);
             
@@ -184,7 +186,7 @@ export default function ServiceInstrumentPage() {
             const statsData = await instrumentsService.getInstrumentStats();
             setStats(statsData);
         } catch (error) {
-            const message = error instanceof Error ? error.message : "Không thể xóa thiết bị";
+            const message = error instanceof Error ? error.message : t('service.instrument.cannotDeleteInstrument');
             toast.error(message);
         }
     };
@@ -202,16 +204,16 @@ export default function ServiceInstrumentPage() {
             {/* Header */}
             <div className="flex justify-between items-center">
                 <div>
-                    <h2 className="text-xl font-semibold">Quản lý Thiết bị</h2>
+                    <h2 className="text-xl font-semibold">{t('service.instrument.title')}</h2>
                     <p className="text-gray-600">
-                        Thêm, xem, kích hoạt/vô hiệu hóa thiết bị
+                        {t('service.instrument.subtitle')}
                     </p>
                 </div>
                 <div className="flex items-center space-x-4">
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                         <Input
-                            placeholder="Tìm kiếm thiết bị..."
+                            placeholder={t('service.instrument.searchPlaceholder')}
                             className="pl-10 w-80"
                             value={instrumentSearchTerm}
                             onChange={(e) => setInstrumentSearchTerm(e.target.value)}
@@ -231,7 +233,7 @@ export default function ServiceInstrumentPage() {
                         onClick={() => setOpenAddDialog(true)}
                     >
                         <Plus className="w-4 h-4 mr-2" />
-                        Thêm thiết bị
+                        {t('service.instrument.addInstrument')}
                     </Button>
                 </div>
             </div>
@@ -242,7 +244,7 @@ export default function ServiceInstrumentPage() {
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-gray-600 mb-1">Tổng thiết bị</p>
+                                <p className="text-sm text-gray-600 mb-1">{t('service.instrument.totalInstruments')}</p>
                                 <p className="text-2xl text-blue-600">{stats.total}</p>
                             </div>
                             <Monitor className="w-8 h-8 text-blue-600" />
@@ -254,7 +256,7 @@ export default function ServiceInstrumentPage() {
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-gray-600 mb-1">Đang hoạt động</p>
+                                <p className="text-sm text-gray-600 mb-1">{t('service.instrument.activeInstruments')}</p>
                                 <p className="text-2xl text-green-600">{stats.active}</p>
                             </div>
                             <CheckCircle className="w-8 h-8 text-green-600" />
@@ -266,7 +268,7 @@ export default function ServiceInstrumentPage() {
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-gray-600 mb-1">Sẵn sàng</p>
+                                <p className="text-sm text-gray-600 mb-1">{t('service.instrument.readyInstruments')}</p>
                                 <p className="text-2xl text-blue-600">{stats.ready}</p>
                             </div>
                             <PlayCircle className="w-8 h-8 text-blue-600" />
@@ -278,7 +280,7 @@ export default function ServiceInstrumentPage() {
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-gray-600 mb-1">Đang bảo trì</p>
+                                <p className="text-sm text-gray-600 mb-1">{t('service.instrument.maintenanceInstruments')}</p>
                                 <p className="text-2xl text-orange-600">{stats.maintenance}</p>
                             </div>
                             <Wrench className="w-8 h-8 text-orange-600" />
@@ -292,14 +294,14 @@ export default function ServiceInstrumentPage() {
                 <CardHeader>
                     <div className="flex items-center justify-between">
                         <div>
-                            <CardTitle>Danh sách Thiết bị</CardTitle>
+                            <CardTitle>{t('service.instrument.instrumentList')}</CardTitle>
                             <CardDescription>
-                                Hiển thị {instruments.length} / {totalInstruments} thiết bị{instrumentSearchTerm ? ` (tìm kiếm: "${instrumentSearchTerm}")` : ''}
+                                {t('service.instrument.displayInstruments', { current: instruments.length, total: totalInstruments })}{instrumentSearchTerm ? ` ${t('service.instrument.searching', { term: instrumentSearchTerm })}` : ''}
                             </CardDescription>
                         </div>
                         {instrumentSearchTerm && (
                             <Button variant="outline" size="sm" onClick={() => setInstrumentSearchTerm("")}>
-                                Xóa bộ lọc
+                                {t('service.instrument.clearFilter')}
                             </Button>
                         )}
                     </div>
@@ -309,11 +311,11 @@ export default function ServiceInstrumentPage() {
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Tên thiết bị</TableHead>
-                                    <TableHead>Loại thiết bị</TableHead>
-                                    <TableHead>Vị trí</TableHead>
-                                    <TableHead>Trạng thái</TableHead>   
-                                    <TableHead>Thao tác</TableHead>
+                                    <TableHead>{t('service.instrument.instrumentName')}</TableHead>
+                                    <TableHead>{t('service.instrument.instrumentType')}</TableHead>
+                                    <TableHead>{t('service.instrument.location')}</TableHead>
+                                    <TableHead>{t('service.instrument.status')}</TableHead>   
+                                    <TableHead>{t('service.instrument.actions')}</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -335,14 +337,14 @@ export default function ServiceInstrumentPage() {
                                                 }
                                             >
                                                 {instrument.status === "Ready"
-                                                    ? "Sẵn sàng"
+                                                    ? t('service.instrument.statusReady')
                                                     : instrument.status === "Processing"
-                                                        ? "Đang chạy"
+                                                        ? t('service.instrument.statusProcessing')
                                                         : instrument.status === "Maintenance"
-                                                            ? "Bảo trì"
+                                                            ? t('service.instrument.statusMaintenance')
                                                             : instrument.status === "Error"
-                                                                ? "Lỗi"
-                                                                : "Ngưng hoạt động"}
+                                                                ? t('service.instrument.statusError')
+                                                                : t('service.instrument.statusInactive')}
                                             </Badge>
                                         </TableCell>
                                         
@@ -381,12 +383,12 @@ export default function ServiceInstrumentPage() {
                     ) : (
                         <div className="text-center py-12">
                             <Monitor className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                            <h3 className="text-lg text-gray-900 mb-2">Không tìm thấy thiết bị</h3>
+                            <h3 className="text-lg text-gray-900 mb-2">{t('service.instrument.noInstrumentsFound')}</h3>
                             <p className="text-sm text-gray-600 mb-4">
-                                Không có thiết bị nào phù hợp với tiêu chí tìm kiếm
+                                {t('service.instrument.noInstrumentsFoundDescription')}
                             </p>
                             <Button variant="outline" onClick={() => setInstrumentSearchTerm("")}>
-                                Xóa bộ lọc
+                                {t('service.instrument.clearFilter')}
                             </Button>
                         </div>
                     )}
