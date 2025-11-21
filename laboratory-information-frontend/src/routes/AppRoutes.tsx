@@ -129,6 +129,11 @@ const roleRoutes: Record<string, RoleRouteConfig> = {
       { path: "reagents", component: ReagentManagementPage },
       { path: "audit-reports", component: AdminAuditReportsPage },
       { path: "profile", component: Profile, componentProps: { currentUser: null } },
+      { path: "create-test-order", component: CreateTestOrderPage },
+      {path: "select-instruments", component: SelectInstrumentsPage},
+      {path: "select-reagents", component: SelectReagentsPage},
+      {path: "patient-management/:id", component: PatientDetailPage},
+      {path: "audit-reports/:id", component: EventLogDetailPage},
     ],
   },
   MANAGER: {
@@ -157,6 +162,9 @@ const roleRoutes: Record<string, RoleRouteConfig> = {
       { path: "chat", component: LabUserChatPage },
       { path: "profile", component: Profile, componentProps: { currentUser: null } },
       { path: "patients/:id", component: PatientDetailPage },
+      {path : "create-test-order", component: CreateTestOrderPage},
+      {path: "select-instruments", component: SelectInstrumentsPage},
+      {path: "select-reagents", component: SelectReagentsPage},
     ],
   },
   SERVICE: {
@@ -174,6 +182,9 @@ const roleRoutes: Record<string, RoleRouteConfig> = {
         component: TestOrdersPage,
       },
       { path: "profile", component: Profile, componentProps: { currentUser: null } },
+      { path: "create-test-order", component: CreateTestOrderPage },
+      { path: "select-instruments", component: SelectInstrumentsPage },
+      { path: "select-reagents", component: SelectReagentsPage },
     ],
   },
 };
@@ -403,228 +414,6 @@ export function AppRoutes() {
           navigate
         )
       )}
-
-      <Route
-        path="/admin/create-test-order"
-        element={
-          <ProtectedRoute allowedRoles={["ADMIN"]}>
-            <AdminLayout
-              currentUser={user!}
-              onLogout={onLogout}
-              currentPage="test-orders"
-              onNavigate={(page) => {
-                setCurrentPage("ADMIN", page);
-                navigate(`/admin`);
-              }}
-            >
-              <CreateTestOrderPage />
-            </AdminLayout>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/select-instruments"
-        element={
-          <ProtectedRoute allowedRoles={["ADMIN"]}>
-            <AdminLayout
-              currentUser={user!}
-              onLogout={onLogout}
-              currentPage="test-orders"
-              onNavigate={(page) => {
-                setCurrentPage("ADMIN", page);
-                navigate(`/admin`);
-              }}
-            >
-              <SelectInstrumentsPage />
-            </AdminLayout>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/select-reagents"
-        element={
-          <ProtectedRoute allowedRoles={["ADMIN"]}>
-            <AdminLayout
-              currentUser={user!}
-              onLogout={onLogout}
-              currentPage="test-orders"
-              onNavigate={(page) => {
-                setCurrentPage("ADMIN", page);
-                navigate(`/admin`);
-              }}
-            >
-              <SelectReagentsPage />
-            </AdminLayout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/labuser/create-test-order"
-        element={
-          <ProtectedRoute allowedRoles={["LAB_USER"]}>
-            <LabUserLayout
-              currentUser={user!}
-              onLogout={onLogout}
-              currentPage="test-orders"
-              onNavigate={(page) => {
-                setCurrentPage("LAB_USER", page);
-                navigate(`/labuser`);
-              }}
-            >
-              <CreateTestOrderPage />
-            </LabUserLayout>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/labuser/select-instruments"
-        element={
-          <ProtectedRoute allowedRoles={["LAB_USER"]}>
-            <LabUserLayout
-              currentUser={user!}
-              onLogout={onLogout}
-              currentPage="test-orders"
-              onNavigate={(page) => {
-                setCurrentPage("LAB_USER", page);
-                navigate(`/labuser`);
-              }}
-            >
-              <SelectInstrumentsPage />
-            </LabUserLayout>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/labuser/select-reagents"
-        element={
-          <ProtectedRoute allowedRoles={["LAB_USER"]}>
-            <LabUserLayout
-              currentUser={user!}
-              onLogout={onLogout}
-              currentPage="test-orders"
-              onNavigate={(page) => {
-                setCurrentPage("LAB_USER", page);
-                navigate(`/labuser`);
-              }}
-            >
-              <SelectReagentsPage />
-            </LabUserLayout>
-          </ProtectedRoute>
-        }
-      />
-   
-      <Route
-        path="/service/create-test-order"
-        element={
-          <ProtectedRoute allowedRoles={["SERVICE"]}>
-            <ServiceLayout
-              currentUser={user!}
-              onLogout={onLogout}
-              currentPage="test-orders"
-              onNavigate={(page) => {
-                setCurrentPage("SERVICE", page);
-                navigate(`/service`);
-              }}
-            >
-              <CreateTestOrderPage />
-            </ServiceLayout>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/service/select-instruments"
-        element={
-          <ProtectedRoute allowedRoles={["SERVICE"]}>
-            <ServiceLayout
-              currentUser={user!}
-              onLogout={onLogout}
-              currentPage="test-orders"
-              onNavigate={(page) => {
-                setCurrentPage("SERVICE", page);
-                navigate(`/service`);
-              }}
-            >
-              <SelectInstrumentsPage />
-            </ServiceLayout>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/service/select-reagents"
-        element={
-          <ProtectedRoute allowedRoles={["SERVICE"]}>
-            <ServiceLayout
-              currentUser={user!}
-              onLogout={onLogout}
-              currentPage="test-orders"
-              onNavigate={(page) => {
-                setCurrentPage("SERVICE", page);
-                navigate(`/service`);
-              }}
-            >
-              <SelectReagentsPage />
-            </ServiceLayout>
-          </ProtectedRoute>
-        }
-      />
-
-      {/* <Route
-        path="/labuser/patients/:id"
-        element={
-          <ProtectedRoute allowedRoles={["LAB_USER"]}>
-            <LabUserLayout
-              currentUser={user!}
-              onLogout={onLogout}
-              currentPage="patients"
-              onNavigate={(page) => {
-                setCurrentPage("LAB_USER", page);
-                navigate(`/labuser`);
-              }}
-            >
-              <PatientDetailPage />
-            </LabUserLayout>
-          </ProtectedRoute>
-        }
-      /> */}
-
-      <Route
-        path="/admin/patient-management/:id"
-        element={
-          <ProtectedRoute allowedRoles={["ADMIN"]}>
-            <AdminLayout
-              currentUser={user!}
-              onLogout={onLogout}
-              currentPage="patient-management"
-              onNavigate={(page) => {
-                setCurrentPage("ADMIN", page);
-                navigate(`/admin`);
-              }}
-            >
-              {<PatientDetailPage />}
-            </AdminLayout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/admin/audit-reports/:id"
-        element={
-          <ProtectedRoute allowedRoles={["ADMIN"]}>
-            <AdminLayout
-              currentUser={user!}
-              onLogout={onLogout}
-              currentPage="audit-reports"
-              onNavigate={(page) => {
-                setCurrentPage("ADMIN", page);
-                navigate(`/admin`);
-              }}
-            >
-              {<EventLogDetailPage />}
-            </AdminLayout>
-          </ProtectedRoute>
-        }
-      />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
