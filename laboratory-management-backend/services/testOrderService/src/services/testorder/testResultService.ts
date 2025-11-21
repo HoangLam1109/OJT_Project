@@ -5,7 +5,7 @@ import { TestOrderRepository } from "../../repositories/testOrderRepository.js";
 import { TestOrderResult } from "../../db/models/TestResult.model.js";
 import instrumentServiceClient from "../warehouse/instrumentServiceClient.js";
 import reagentServiceClient from "../warehouse/reagentServiceClient.js";
-import iamServiceClient from "../iam/iamServiceClient.js";
+import patientServiceClient from "../patient/patientServiceClient.js";
 export const TestResultService = {
 
     createRandomResults: async (test_order_id: string, test_item_ids: string[]) => {
@@ -14,8 +14,9 @@ export const TestResultService = {
         if (!order) throw new Error("Test Order not found");
         
         // Lấy User
-        const user = await iamServiceClient.getUserById(order.patient_id);
+        const user = await patientServiceClient.getPatientById(order.patient_id);
         if (!user) throw new Error("User not found");
+        console.log("User:", user);
 
         // Lấy instrument
         const instrument = await instrumentServiceClient.getInstrumentById(order.instrument_id || "");
