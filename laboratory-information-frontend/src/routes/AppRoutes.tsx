@@ -157,6 +157,8 @@ const roleRoutes: Record<string, RoleRouteConfig> = {
       { path: "chat", component: LabUserChatPage },
       { path: "profile", component: Profile, componentProps: { currentUser: null } },
       { path: "patients/:id", component: PatientDetailPage },
+      {path: "/select-instruments", component: SelectInstrumentsPage },
+      // {path: "/create-test-order", component: CreateTestOrderPage}
     ],
   },
   SERVICE: {
