@@ -94,9 +94,9 @@ export class TestResultService {
     }
   }
 
-  async deleteTestResult(id: string): Promise<void> {
+  async deleteTestResult(test_order_id: string): Promise<void> {
     try {
-      await testResultClient.delete(`/testResult/delete/${id}`);
+      await testResultClient.delete(`/testResult/delete/${test_order_id}`);
     } catch (error) {
       console.error('Error deleting test result:', error);
       throw new Error('Không thể xóa kết quả xét nghiệm');
