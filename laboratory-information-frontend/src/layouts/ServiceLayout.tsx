@@ -56,7 +56,7 @@ export function ServiceLayout({
         onLogout={onLogout}
       />
       <div className={`flex-1 flex flex-col transition-all duration-300 ${
-        sidebarCollapsed ? 'ml-16' : 'ml-64'
+        sidebarCollapsed ? 'md:ml-16' : 'md:ml-64'
       }`}>
         <TopHeader />
         <main className="flex-1 p-6 bg-gray-50 overflow-auto">{children}</main>
