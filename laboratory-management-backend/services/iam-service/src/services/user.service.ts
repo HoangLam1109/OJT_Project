@@ -47,7 +47,7 @@ export class UserService {
   async getUser(userId: string): Promise<IUser | null> {
     return await userRepository.findById(
       userId,
-      "_id email fullName phoneNumber identityNumber gender age dateOfBirth address role isActive"
+      "_id email fullName phoneNumber identityNumber gender age dateOfBirth address role isActive avatar createdAt updatedAt"
     );
   }
 
@@ -341,6 +341,10 @@ export class UserService {
 
       delete (newUser as any).password;
       return { data: newUser, passwordChanged: true };
-    } else return { data: userData, passwordChanged: false };
+    } else {
+      const cleanData = { ...userData };
+      delete (cleanData as any).password;
+      return { data: cleanData, passwordChanged: false };
+    }
   }
 }

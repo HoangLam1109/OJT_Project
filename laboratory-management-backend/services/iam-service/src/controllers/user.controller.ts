@@ -29,7 +29,7 @@ const getCurrentUser = async (
 ): Promise<void> => {
   /*
     #swagger.auto = false
-    #swagger.tags = ['User CRUD']
+    #swagger.tags = ['User Profile']
     #swagger.description = 'Get profile information of the authenticated user'
     #swagger.security = [{"apiKeyAuth": []}]
     #swagger.responses[200] = {
@@ -448,7 +448,7 @@ const updateUser = async (
         phoneNumber: '0123456789',
         address: '123 Main St',
         avatar: 'https://example.com/avatar.png',
-        password: 'secret123',
+        password: '',
         isActive: true,
         role: ['USER']
       }
@@ -510,12 +510,12 @@ const updateProfile = async (
         fullName: 'John Doe',
         identityNumber: '012345678901',
         gender: 'Male',
-        age: 22,
+        age: 22 ,
         dateOfBirth: '2002-01-01',
         phoneNumber: '0123456789',
         address: '123 Main St',
-        password: 'secret123',
-        isActive: true,
+        avatar: 'https://jbagy.me/wp-content/uploads/2025/03/Hinh-anh-avatar-anime-nu-cute-2.jpg',
+        password: 'secret1',
       }
     }
     #swagger.responses[200] = {
@@ -937,4 +937,5 @@ export {
   getCurrentUserRolesAndPrivileges,
   lockUser,
   assignRoleToUser,
+  getCurrentUser,
 };

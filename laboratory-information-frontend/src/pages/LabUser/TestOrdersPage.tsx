@@ -189,7 +189,7 @@ const handleStatusChange = async (
     if (!selectedOrder) return;
     try {
       await testOrderService.deleteTestOrder(selectedOrder._id, user?.name ?? 'system');
-      toast.success(`Đã xóa lệnh xét nghiệm ${selectedOrder._id} thành công`);
+      toast.success(`Đã xóa lệnh xét nghiệm "${selectedOrder.patient_name}" thành công`);
       setDeleteModalOpen(false);
       await loadTestOrders(currentPage);
     } catch (error) {
