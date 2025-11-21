@@ -71,13 +71,12 @@ export const TestResultService = {
     },
 
 
-
     getTestOrdersWithResultsSummary: async (page = 1, limit = 10) => {
         const skip = (page - 1) * limit;
 
-        return TestOrderResult.aggregate([
+        const result = await TestOrderResult.aggregate([
             { $match: { is_deleted: false } },
-            { $sort: { createdAt: -1 } },
+
             {
                 $group: {
                     _id: "$test_order_id",
@@ -88,21 +87,40 @@ export const TestResultService = {
                     resultsSample: { $push: "$$ROOT" }
                 }
             },
-            { $skip: skip },
-            { $limit: limit },
+
+            { $sort: { _id: -1 } },
+
             {
-                $project: {
-                    _id: 0,
-                    test_order_id: "$_id",
-                    patient_id: 1,
-                    patient_name: 1,
-                    test_type: 1,
-                    totalResults: 1,
-                    resultsSample: 1
+                $facet: {
+                    data: [
+                        { $skip: skip },
+                        { $limit: limit },
+                        {
+                            $project: {
+                                _id: 0,
+                                test_order_id: "$_id",
+                                patient_id: 1,
+                                patient_name: 1,
+                                test_type: 1,
+                                totalResults: 1,
+                                resultsSample: 1
+                            }
+                        }
+                    ],
+
+                    totalCount: [
+                        { $count: "count" }
+                    ]
                 }
             }
         ]);
+
+        const data = result[0].data;
+        const totalCount = result[0].totalCount[0]?.count || 0;
+
+        return { data, totalCount };
     },
+
 
 
     getTestResultByPatientIdService: async (patient_id: string, page = 1, limit = 10) => {

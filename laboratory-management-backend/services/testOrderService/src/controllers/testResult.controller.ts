@@ -6,18 +6,19 @@ export const getTestOrdersWithResultsSummary = async (req: Request, res: Respons
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
+    const { data, totalCount } = await TestResultService.getTestOrdersWithResultsSummary(page, limit);
 
-    const testOrders = await TestResultService.getTestOrdersWithResultsSummary(page, limit);
-    const totalPages = Math.ceil(testOrders.length / limit);
     return res.json({
       success: true,
-      data: testOrders,
+      data,
       pagination: {
         page,
         limit,
-        totalPages: totalPages
+        totalCount,
+        totalPages: Math.ceil(totalCount / limit)
       }
     });
+
 
   } catch (error: any) {
     return res.status(500).json({
@@ -151,7 +152,7 @@ export const searchTestResultsPaginated = async (req: Request, res: Response) =>
       _id: r._id,
       test_order_id: r.test_order_id,
       test_item_id: r.test_item_id,
-      patient_id:r.patient_id,
+      patient_id: r.patient_id,
       test_type: r.test_type,
       name: r.name,
       instrument_name: r.instrument_name,

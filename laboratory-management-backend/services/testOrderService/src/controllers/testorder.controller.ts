@@ -146,14 +146,12 @@ export const getAllOrdersGroupedByPatientId = async (req: Request, res: Response
       page,
       limit
     );
-
     if (!GroupOfOnePatientData.length) {
       return res.json({ success: true, data: null });
     }
-
     const { patient_name, orders, totalOrders } = GroupOfOnePatientData[0];
-    const totalPages = Math.ceil(totalOrders / limit); // tính số trang
-
+    const totalPages = Math.ceil(totalOrders / limit);
+    
     return res.json({
       success: true,
       data: {
@@ -167,7 +165,6 @@ export const getAllOrdersGroupedByPatientId = async (req: Request, res: Response
         }
       }
     });
-
   } catch (error) {
     return res.status(500).json({
       success: false,

@@ -525,6 +525,18 @@ paths:
           description: patient_id 
           schema:
             type: string
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Trang hiện tại
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 5
+          description: Số lượng test result trên mỗi trang
       responses:
         "200":
           description: Thành công – Trả về thông tin chi tiết test result
