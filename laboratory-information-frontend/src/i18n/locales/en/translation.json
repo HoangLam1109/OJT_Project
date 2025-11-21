@@ -398,6 +398,7 @@
     "clickToViewTestResult":"Click to view test result"
   },
   "testOrder":{
+    "progress": "Progress...",
       "notLoading": "Failed to load test orders",
       "notSearching": "Failed to search test orders",
       "notUploading":"Failed to update test orders",

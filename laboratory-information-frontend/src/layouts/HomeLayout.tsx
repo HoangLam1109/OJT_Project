@@ -1,6 +1,5 @@
 import type { LoginAndRegisterType } from '../types/Login.type'; 
 import { useEffect } from 'react';
-import { useAuthContext } from '../hooks/useAuthContext';
 import {
   HeroSection,
   FeaturesSection,
@@ -15,7 +14,6 @@ import ChatBox from '../pages/home/ChatBox';
 
 
 export function HomeLayout({ onShowLogin, onShowRegister }: LoginAndRegisterType) {
-  const { onLogout } = useAuthContext();
 
   useEffect(() => {
     const elements = document.querySelectorAll('[data-animate]');

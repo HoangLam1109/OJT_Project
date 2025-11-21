@@ -512,18 +512,17 @@ paths:
                     example: "Unknown error"
   
   # ==================== Get: Test Result By testorderId====================
-  /testResult/getById/{id}:
+  /testResult/getResultsByPatientId/{id}:
     get:
       tags:
         - Test Result
-      summary: Lấy thông tin chi tiết của một Test Result theo ID
-      description: |
-        Trả về thông tin một Test Result, bao gồm tên bệnh nhân, tổng số kết quả và toàn bộ danh sách kết quả xét nghiệm.
+      summary: Lấy thông tin chi tiết của một Test Result theo patient_id
+      description: Trả về thông tin một Test Result, bao gồm tên bệnh nhân, tổng số kết quả và toàn bộ danh sách kết quả xét nghiệm.
       parameters:
         - name: id
           in: path
           required: true
-          description: ID của Test Order
+          description: patient_id 
           schema:
             type: string
       responses:
@@ -566,7 +565,7 @@ paths:
       parameters:
         - name: keyword
           in: query
-          description: Test Order ID (ObjectId) hoặc Patient Name (partial match)
+          description: Test Order ID (ObjectId) hoặc Patient Name (partial match) hoặc test_type hoặc name(Result)
           required: true
           schema:
             type: string
@@ -788,7 +787,7 @@ paths:
       parameters:
         - name: id
           in: path
-          description: Test Result ID to delete
+          description: Test Order ID to delete
           required: true
           schema:
             type: string
