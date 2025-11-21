@@ -6,7 +6,8 @@
     "login": "Đăng nhập",
     "hello": "Xin chào",
     "logout": "Đăng xuất",
-    "loggingOut": "Đang đăng xuất..."
+    "loggingOut": "Đang đăng xuất...",
+    "goToDashboard": "Đi đến Trang chính"
   },
   "login": {
     "welcome": "Chào mừng trở lại",

@@ -153,6 +153,7 @@ const roleRoutes: Record<string, RoleRouteConfig> = {
       { path: "reagents", component: ReagentManagementPage },
       { path: "chat", component: LabUserChatPage },
       { path: "profile", component: Profile, componentProps: { currentUser: null } },
+      { path: "patients/:id", component: PatientDetailPage },
     ],
   },
   SERVICE: {
@@ -565,7 +566,7 @@ export function AppRoutes() {
         }
       />
 
-      <Route
+      {/* <Route
         path="/labuser/patients/:id"
         element={
           <ProtectedRoute allowedRoles={["LAB_USER"]}>
@@ -582,7 +583,7 @@ export function AppRoutes() {
             </LabUserLayout>
           </ProtectedRoute>
         }
-      />
+      /> */}
 
       <Route
         path="/admin/patient-management/:id"
