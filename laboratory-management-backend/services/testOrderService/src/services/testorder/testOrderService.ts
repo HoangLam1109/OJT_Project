@@ -7,6 +7,7 @@ import TestOrder from "../../db/models/TestOrder.model.js";
 import mongoose from "mongoose";
 import testOrderMonitoringService from "../monitoring/testOrderMonitoring.service.js";
 import iamServiceClient from "../iam/iamServiceClient.js";
+import { unknown } from "zod";
 
 export const TestOrderService = {
 
@@ -151,13 +152,13 @@ export const TestOrderService = {
       }
 
       await testOrderMonitoringService.recordTestOrderCreated({
-        testOrderId: createdOrder._id.toString(),
+        testOrderId: createdOrder._id as string,
         eventMessage: "Test order created",
         newValues: createdOrder.toObject(),
         operatorId: userIdToFetch || data.created_by,
-        operatorEmail: user?.email,
-        operatorName: user?.fullName || (data.created_by !== 'system' ? data.created_by : undefined),
-        operatorRole: user?.role
+        operatorEmail: user?.email ?? null,
+        operatorName: user?.fullName || (data.created_by !== 'system' ? data.created_by : null),
+        operatorRole: user?.role ?? null
       });
     } catch (error) {
       console.error("[TestOrderService] Failed to log create event", error);
@@ -245,9 +246,9 @@ export const TestOrderService = {
         oldValues: existingOrder.toObject(),
         newValues: updatedOrder?.toObject(),
         operatorId: userIdToFetch || updated_by,
-        operatorEmail: user?.email,
+        operatorEmail: user?.email ?? null,
         operatorName: user?.fullName || (updated_by !== 'system' ? updated_by : undefined),
-        operatorRole: user?.role
+        operatorRole: user?.role ?? null
       });
     } catch (error) {
       console.error("[TestOrderService] Failed to log update event", error);
@@ -306,9 +307,9 @@ export const TestOrderService = {
         oldValues: order.toObject(),
         newValues: updatedOrder?.toObject(),
         operatorId: userIdToFetch || updated_by,
-        operatorEmail: user?.email,
-        operatorName: user?.fullName || (updated_by !== 'system' ? updated_by : undefined),
-        operatorRole: user?.role
+        operatorEmail: user?.email ?? null,
+        operatorName: user?.fullName || (updated_by !== 'system' ? updated_by : null),
+        operatorRole: user?.role ?? null
       });
     } catch (error) {
       console.error("[TestOrderService] Failed to log status update event", error);
@@ -366,9 +367,9 @@ export const TestOrderService = {
         oldValues: order.toObject(),
         newValues: softDeleteTestOrder?.toObject(),
         operatorId: userIdToFetch || deleted_by,
-        operatorEmail: user?.email,
-        operatorName: user?.fullName || (deleted_by !== 'system' ? deleted_by : undefined),
-        operatorRole: user?.role
+        operatorEmail: user?.email ?? null,
+        operatorName: user?.fullName || (deleted_by !== 'system' ? deleted_by : null),
+        operatorRole: user?.role ?? null
       });
     } catch (error) {
       console.error("[TestOrderService] Failed to log delete event", error);
