@@ -6,7 +6,8 @@
     "login": "Login",
     "hello": "Hello",
     "logout": "Logout",
-    "loggingOut": "Logging out..."
+    "loggingOut": "Logging out...",
+    "goToDashboard": "Go to Dashboard"
   },
   "login": {
     "welcome": "Welcome back",  

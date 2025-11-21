@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useAuthContext } from "../../hooks/useAuthContext";
 import { useNavigate } from "react-router-dom";
 import { logoutUser } from "../../service/authService/logoutApi";
+import { LanguageToggle } from "../../components/common/LanguageToggle";
 
 interface HomeHeaderProps {
   onShowLogin: () => void;
@@ -12,18 +13,45 @@ interface HomeHeaderProps {
 }
 
 export function HomeHeader({ onShowLogin, onShowRegister }: HomeHeaderProps) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { user, onLogout } = useAuthContext();
   const navigate = useNavigate();
   const [, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [logoutLoading, setLogoutLoading] = useState(false);
   const lastYRef = useRef(0);
-  const currentLanguage = i18n.language || "vi";
 
-  const toggleLanguage = () => {
-    const newLang = currentLanguage === "vi" ? "en" : "vi";
-    i18n.changeLanguage(newLang);
+  const getRolePath = () => {
+    if (!user || !user.role || user.role.length === 0) return "/";
+    
+    // Thứ tự ưu tiên role
+    const rolePriority: Array<'ADMIN' | 'MANAGER' | 'LAB_USER' | 'SERVICE' | 'USER'> = 
+      ["ADMIN", "MANAGER", "LAB_USER", "SERVICE", "USER"];
+    
+    for (const role of rolePriority) {
+      if (user.role.includes(role)) {
+        switch (role) {
+          case "ADMIN":
+            return "/admin/dashboard";
+          case "MANAGER":
+            return "/manager/user-management";
+          case "LAB_USER":
+            return "/labuser/dashboard";
+          case "SERVICE":
+            return "/service/dashboard";
+          case "USER":
+            return "/user/dashboard";
+          default:
+            return "/";
+        }
+      }
+    }
+    return "/";
+  };
+
+  const handleGoToDashboard = () => {
+    const path = getRolePath();
+    navigate(path);
   };
 
   const handleLogout = async () => {
@@ -93,55 +121,22 @@ export function HomeHeader({ onShowLogin, onShowRegister }: HomeHeaderProps) {
         {/* Language Switcher + Login/Register or User Info + Logout */}
         <div className="flex items-center gap-3">
           {/* Language Toggle Switch */}
-          <div
-            onClick={toggleLanguage}
-            className="relative flex items-center bg-gray-100 rounded-full px-1.5 py-1 cursor-pointer transition-all duration-300 hover:bg-gray-200 shadow-sm"
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                toggleLanguage();
-              }
-            }}
-            title={currentLanguage === "en" ? "Switch to Vietnamese" : "Chuyển sang Tiếng Anh"}
-          >
-            {/* Toggle Track */}
-            <div className="relative flex items-center w-16 h-9">
-              {/* Toggle Button with Flag */}
-              <div
-                className={`absolute top-0.5 bottom-0.5 w-8 h-8 rounded-full bg-white shadow-md transition-all duration-300 flex items-center justify-center overflow-hidden ${
-                  currentLanguage === "vi" ? "translate-x-[2rem]" : "translate-x-0"
-                }`}
-              >
-                {currentLanguage === "vi" ? (
-                  <svg width="18" height="18" viewBox="0 0 20 20" className="rounded-full">
-                    <rect width="20" height="20" fill="#DA020E" />
-                    <path
-                      d="M10 5L11.18 8.09L14.5 8.64L12 11.18L12.64 14.5L10 12.82L7.36 14.5L8 11.18L5.5 8.64L8.82 8.09L10 5Z"
-                      fill="#FFD700"
-                    />
-                  </svg>
-                ) : (
-                  <svg width="18" height="18" viewBox="0 0 20 20" className="rounded-full">
-                    <rect width="20" height="20" fill="#012169" />
-                    <path d="M0 0L20 20M20 0L0 20" stroke="#FFF" strokeWidth="2.5" />
-                    <path d="M0 10L20 10M10 0L10 20" stroke="#FFF" strokeWidth="3.5" />
-                    <path d="M0 0L20 20M20 0L0 20" stroke="#C8102E" strokeWidth="1.2" />
-                    <path d="M0 10L20 10M10 0L10 20" stroke="#C8102E" strokeWidth="2" />
-                  </svg>
-                )}
-              </div>
-            </div>
-          </div>
+          <LanguageToggle />
 
           {user ? (
-            /* User is logged in - Show greeting, username, and logout button */
+            /* User is logged in - Show greeting, username, go to dashboard, and logout button */
             <>
               <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg shadow-sm">
                 <span className="font-medium text-gray-700">{t("header.hello")},</span>
                 <span className="font-semibold text-gray-900">{user.name}</span>
               </div>
+              <Button
+                onClick={handleGoToDashboard}
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
+              >
+                {t("header.goToDashboard")}
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
               <Button
                 onClick={handleLogout}
                 disabled={logoutLoading}
