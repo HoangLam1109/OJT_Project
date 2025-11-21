@@ -145,9 +145,7 @@ const SelectInstrumentsPage: React.FC = () => {
     const readinessPriority: Record<Instrument['status'], number> = {
       Ready: 0,
       Processing: 1,
-      Maintenance: 2,
-      Error: 3,
-      Inactive: 4,
+      Inactive: 2,
     };
 
     const query = searchQuery.toLowerCase().trim();
@@ -177,10 +175,6 @@ const SelectInstrumentsPage: React.FC = () => {
         return { label: t('testOrder.statusReady'), variant: 'default' as const };
       case 'Processing':
         return { label: t('testOrder.statusProcessing'), variant: 'secondary' as const };
-      case 'Maintenance':
-        return { label: t('testOrder.statusMaintenance'), variant: 'outline' as const };
-      case 'Error':
-        return { label: t('testOrder.statusError'), variant: 'destructive' as const };
       default:
         return { label: t('testOrder.statusInactive'), variant: 'outline' as const };
     }

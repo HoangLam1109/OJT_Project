@@ -50,7 +50,7 @@ export default function ServiceInstrumentPage() {
     const [showChangeModeDialog, setShowChangeModeDialog] = useState(false);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [instrumentToDelete, setInstrumentToDelete] = useState<Instrument | null>(null);
-    const [stats, setStats] = useState({ total: 0, active: 0, ready: 0, maintenance: 0 });
+    const [stats, setStats] = useState({ total: 0, active: 0, ready: 0 });
     const itemsPerPage = 10;
 
     // Load stats on mount
@@ -239,7 +239,7 @@ export default function ServiceInstrumentPage() {
             </div>
 
             {/* Thống kê */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Card className="glass-strong hover-lift">
                     <CardContent className="p-6">
                         <div className="flex items-center justify-between">
@@ -272,18 +272,6 @@ export default function ServiceInstrumentPage() {
                                 <p className="text-2xl text-blue-600">{stats.ready}</p>
                             </div>
                             <PlayCircle className="w-8 h-8 text-blue-600" />
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card className="glass-strong hover-lift">
-                    <CardContent className="p-6">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm text-gray-600 mb-1">{t('service.instrument.maintenanceInstruments')}</p>
-                                <p className="text-2xl text-orange-600">{stats.maintenance}</p>
-                            </div>
-                            <Wrench className="w-8 h-8 text-orange-600" />
                         </div>
                     </CardContent>
                 </Card>
@@ -331,20 +319,14 @@ export default function ServiceInstrumentPage() {
                                                         ? "default"
                                                         : instrument.status === "Processing"
                                                             ? "secondary"
-                                                            : instrument.status === "Maintenance"
-                                                                ? "outline"
-                                                                : "destructive"
+                                                            : "destructive"
                                                 }
                                             >
                                                 {instrument.status === "Ready"
                                                     ? t('service.instrument.statusReady')
                                                     : instrument.status === "Processing"
                                                         ? t('service.instrument.statusProcessing')
-                                                        : instrument.status === "Maintenance"
-                                                            ? t('service.instrument.statusMaintenance')
-                                                            : instrument.status === "Error"
-                                                                ? t('service.instrument.statusError')
-                                                                : t('service.instrument.statusInactive')}
+                                                        : t('service.instrument.statusInactive')}
                                             </Badge>
                                         </TableCell>
                                         

@@ -63,8 +63,6 @@ export function InstrumentDetailDialog({
         const map: Record<string, { text: string; variant: string }> = {
             Ready: { text: t('service.instrument.statusReady'), variant: "default" },
             Processing: { text: t('service.instrument.statusProcessing'), variant: "secondary" },
-            Maintenance: { text: t('service.instrument.statusMaintenance'), variant: "outline" },
-            Error: { text: t('service.instrument.statusError'), variant: "destructive" },
             Inactive: { text: t('service.instrument.statusInactive'), variant: "destructive" },
         };
         const data = map[status] || { text: status, variant: "outline" };

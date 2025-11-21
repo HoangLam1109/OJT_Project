@@ -294,6 +294,79 @@ export class UserService {
       throw new Error('Không thể thay đổi trạng thái người dùng');
     }
   }
+
+  async getLabUsers(params: PaginationParams = {}): Promise<{
+    users: ManagerUser[];
+    pagination: {
+      limit: number;
+      cursor?: string;
+      hasNext: boolean;
+      total?: number;
+    };
+  }> {
+    try {
+      const queryParams = new URLSearchParams();
+      
+      if (params.limit !== undefined) {
+        queryParams.append('limit', params.limit.toString());
+      }
+      if (params.cursor) {
+        queryParams.append('cursor', params.cursor);
+      }
+      if (params.sortBy) {
+        queryParams.append('sortBy', params.sortBy);
+      }
+      if (params.sortOrder) {
+        queryParams.append('sortOrder', params.sortOrder);
+      }
+
+      const queryString = queryParams.toString();
+      const endpoint = queryString ? `/user/staff?${queryString}` : '/user/staff';
+      
+      const response = await apiService.get<BackendPaginatedResponse<BackendUser>>(endpoint);
+
+      const mappedPagination = {
+        limit: response.pagination.limit,
+        cursor: response.pagination.nextCursor,
+        hasNext: response.pagination.hasNextPage,
+        total: response.pagination.totalCount,
+      } as const;
+
+      return {
+        users: response.data.map(transformBackendUser),
+        pagination: mappedPagination
+      };
+    } catch (error) {
+      console.error('Error fetching lab users:', error);
+      throw new Error('Không thể tải danh sách nhân viên phòng thí nghiệm');
+    }
+  }
+
+  async getAllLabUsers(): Promise<ManagerUser[]> {
+    try {
+      const allUsers: ManagerUser[] = [];
+      let cursor: string | undefined = undefined;
+      let hasNext = true;
+
+      while (hasNext) {
+        const result = await this.getLabUsers({
+          limit: 100,
+          cursor,
+          sortBy: 'fullName',
+          sortOrder: 'asc'
+        });
+        
+        allUsers.push(...result.users);
+        cursor = result.pagination.cursor;
+        hasNext = result.pagination.hasNext;
+      }
+
+      return allUsers;
+    } catch (error) {
+      console.error('Error fetching all lab users:', error);
+      throw new Error('Không thể tải danh sách nhân viên phòng thí nghiệm');
+    }
+  }
 }
 
 export const userService = new UserService();

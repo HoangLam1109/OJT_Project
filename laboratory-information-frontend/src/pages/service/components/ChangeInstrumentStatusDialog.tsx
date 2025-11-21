@@ -191,8 +191,6 @@ export function ChangeInstrumentStatusDialog({
               <SelectContent className="w-full bg-white border border-gray-200 shadow-md">
                 <SelectItem value="Ready">{t('service.instrument.statusReady')}</SelectItem>
                 <SelectItem value="Processing">{t('service.instrument.statusProcessing')}</SelectItem>
-                <SelectItem value="Maintenance">{t('service.instrument.statusMaintenance')}</SelectItem>
-                <SelectItem value="Error">{t('service.instrument.statusError')}</SelectItem>
                 <SelectItem value="Inactive">{t('service.instrument.statusInactive')}</SelectItem>
               </SelectContent>
             </Select>
