@@ -4,7 +4,7 @@ export interface Instrument {
   instrument_name: string;
   instrument_type: string;
   manufacturer?: string;
-  status: "Ready" | "Processing" | "Maintenance" | "Error" | "Inactive";
+  status: "Ready" | "Processing" | "Inactive";
   is_active: boolean;
   location?: string;
   created_at: Date;
