@@ -46,7 +46,7 @@ router.get("/staff", getStaff);
 router.get("/:id/roles", authorize(["read:user"]), getUserRolesAndPrivileges);
 router.get("/:id", authorize(["read:user"]), getUser);
 
-router.get("/me", getCurrentUser);
+router.get("/profile/me", getCurrentUser);
 router.post("/profile", validateUpdateUser, updateProfile);
 router.post("/profile/avatar", avatarUpload.single("avatar"), uploadAvatar);
 

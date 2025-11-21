@@ -29,7 +29,7 @@ const getCurrentUser = async (
 ): Promise<void> => {
   /*
     #swagger.auto = false
-    #swagger.tags = ['User CRUD']
+    #swagger.tags = ['User Profile']
     #swagger.description = 'Get profile information of the authenticated user'
     #swagger.security = [{"apiKeyAuth": []}]
     #swagger.responses[200] = {
