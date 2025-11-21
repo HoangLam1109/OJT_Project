@@ -5,12 +5,17 @@ import { TestOrderRepository } from "../../repositories/testOrderRepository.js";
 import { TestOrderResult } from "../../db/models/TestResult.model.js";
 import instrumentServiceClient from "../warehouse/instrumentServiceClient.js";
 import reagentServiceClient from "../warehouse/reagentServiceClient.js";
+import iamServiceClient from "../iam/iamServiceClient.js";
 export const TestResultService = {
 
     createRandomResults: async (test_order_id: string, test_item_ids: string[]) => {
-        // Lấy thông tin Test Order để có tên bệnh nhân
+        // Lấy Test Order 
         const order = await TestOrderRepository.findById(test_order_id);
         if (!order) throw new Error("Test Order not found");
+        
+        // Lấy User
+        const user = await iamServiceClient.getUserById(order.patient_id);
+        if (!user) throw new Error("User not found");
 
         // Lấy instrument
         const instrument = await instrumentServiceClient.getInstrumentById(order.instrument_id || "");
@@ -50,6 +55,7 @@ export const TestResultService = {
             return {
                 test_order_id: new Types.ObjectId(test_order_id),
                 test_item_id: item._id.toString(),
+                user_id: user._id,
                 patient_id: order.patient_id,
                 patient_name: order.patient_name ?? "",
                 instrument_name: instrument.instrument_name,
@@ -80,6 +86,7 @@ export const TestResultService = {
             {
                 $group: {
                     _id: "$test_order_id",
+                    user_id: {$first: "$user_id" },
                     patient_id: { $first: "$patient_id" },
                     patient_name: { $first: "$patient_name" },
                     test_type: { $first: "$test_type" },
@@ -99,6 +106,7 @@ export const TestResultService = {
                             $project: {
                                 _id: 0,
                                 test_order_id: "$_id",
+                                user_id: 1,
                                 patient_id: 1,
                                 patient_name: 1,
                                 test_type: 1,
