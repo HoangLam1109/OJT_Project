@@ -152,7 +152,7 @@ export const TestOrderService = {
       }
 
       await testOrderMonitoringService.recordTestOrderCreated({
-        testOrderId: createdOrder._id as string,
+        testOrderId: createdOrder._id as unknown as string,
         eventMessage: "Test order created",
         newValues: createdOrder.toObject(),
         operatorId: userIdToFetch || data.created_by,
