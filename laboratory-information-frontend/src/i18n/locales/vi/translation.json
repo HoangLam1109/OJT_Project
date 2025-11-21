@@ -398,6 +398,7 @@
     "clickToViewTestResult": "Nhấp để xem kết quả xét nghiệm"
   },
   "testOrder": {
+    "progress": "Tiến trình...",
     "notLoading": "Không thể tải đơn xét nghiệm",
     "notSearching": "Không thể tìm kiếm đơn xét nghiệm",
     "notUploading": "Không thể cập nhật đơn xét nghiệm",
