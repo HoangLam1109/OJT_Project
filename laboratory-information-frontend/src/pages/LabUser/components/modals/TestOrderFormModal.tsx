@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../../components/common/dialog';
 import { Input } from '../../../../components/common/input';
 import { Label } from '../../../../components/common/label';
 import Button from '../../../../components/common/button';
-import { Edit3, X, FileText } from 'lucide-react';
+import { Edit3, FileText, User, Microscope, ClipboardList, Clock, TestTube, FlaskConical } from 'lucide-react';
 import type { TestOrder } from '../../types/TestOrderTypes';
+import Badge from '../../../../components/common/badge';
 
 import { useAuthContext } from '../../../../hooks/useAuthContext';
 import { patientService, type PatientOption } from '../../../../service/patientService';
@@ -17,6 +19,7 @@ import { toast } from 'sonner';
 import { testOrderService } from '../../../../service/testOrderService';
 import { testItemService, type TestItem } from '../../../../service/testItemService';
 import { TestItemMultiSelect } from '../common/TestItemMultiSelect';
+import { validateDueDate } from '../../utils/testOrderUtils';
 
 interface TestOrderFormModalProps {
   order: TestOrder | null;
@@ -84,6 +87,20 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
   const [testItems, setTestItems] = useState<TestItem[]>([]);
   const [loadingTestItems, setLoadingTestItems] = useState(false);
   const [selectedTestItemIds, setSelectedTestItemIds] = useState<string[]>([]);
+
+  const getStatusBadge = (status: string) => {
+    const statusLower = status.toLowerCase();
+    switch (statusLower) {
+      case 'pending':
+        return <Badge variant="outline"><Clock className="w-3 h-3 mr-1" />Chờ xử lý</Badge>;
+      case 'processing':
+        return <Badge variant="default"><TestTube className="w-3 h-3 mr-1" />Đang thực hiện</Badge>;
+      case 'completed':
+        return <Badge variant="default" className="bg-green-600" ><TestTube className="w-3 h-3 mr-1" style={{color:'white'}}/><div style={{color:'white'}}>Hoàn thành</div></Badge>;
+      default:
+        return <Badge>{status}</Badge>;
+    }
+  };
 
   /* =================== RESET KHI MỞ MODAL =================== */
   useEffect(() => {
@@ -258,7 +275,11 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
     const newErrors: Record<string, string> = {};
     if (!formData.patient_id) newErrors.patient_id = 'Chọn bệnh nhân';
     if (!formData.test_type) newErrors.test_type = 'Chọn loại xét nghiệm';
-    if (!formData.due_date) newErrors.due_date = 'Chọn hạn hoàn thành';
+    
+    const dueDateError = validateDueDate(formData.due_date || '');
+    if (dueDateError) {
+      newErrors.due_date = dueDateError;
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -308,127 +329,134 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-200">
-        <div className="p-6">
-          {/* Header */}
-          <div className="flex justify-between items-start mb-6">
-            <div className="flex items-center space-x-3">
-              <div className="p-2.5 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Edit3 className="w-5 h-5 text-blue-600" />
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900">
-                  {isEdit ? 'Chỉnh sửa lệnh xét nghiệm' : 'Tạo lệnh xét nghiệm mới'}
-                </h2>
-                <p className="text-sm text-gray-500 mt-0.5">
-                  {isEdit
-                    ? `Mã: ${order?.barcode || 'N/A'}`
-                    : 'Nhập thông tin để tạo lệnh mới'}
-                </p>
-              </div>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0 gap-0 bg-gray-50">
+        <div className="p-6 bg-white border-b sticky top-0 z-10">
+          <DialogHeader className="space-y-2">
+            <div className="flex items-center justify-between">
+              <DialogTitle className="flex items-center gap-2 text-xl text-blue-700">
+                {isEdit ? <Edit3 className="w-6 h-6" /> : <ClipboardList className="w-6 h-6" />}
+                {isEdit ? 'Chỉnh sửa lệnh xét nghiệm' : 'Tạo lệnh xét nghiệm mới'}
+              </DialogTitle>
+              {isEdit && order && getStatusBadge(order.status)}
             </div>
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-500 hover:text-gray-700"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+            <DialogDescription className="text-base">
+              {isEdit ? `Cập nhật thông tin cho mã phiếu: ${order?.barcode}` : 'Điền đầy đủ thông tin để tạo lệnh xét nghiệm mới'}
+            </DialogDescription>
+          </DialogHeader>
+        </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Thông tin barcode (chỉ hiển thị khi edit) */}
+        <div className="p-6 space-y-6">
+          <form id="test-order-form" onSubmit={handleSubmit} className="space-y-6">
+            
+            {/* Summary Card - Only in Edit Mode */}
             {isEdit && (
-              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                <Label className="text-sm font-medium">Mã barcode</Label>
-                <div className="mt-1 font-mono text-lg text-blue-700">
-                  {formData.barcode || 'Chưa có'}
+              <div className="bg-white rounded-xl border shadow-sm p-5 flex flex-col md:flex-row justify-between gap-4 items-start md:items-center">
+                <div>
+                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Mã phiếu (Barcode)</span>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="font-mono text-2xl font-bold text-gray-900 tracking-tight">{order?.barcode || order?._id}</span>
+                  </div>
+                </div>
+                <div className="flex gap-8">
+                   {order?.created_at && (
+                    <div>
+                      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Ngày tạo</span>
+                      <p className="font-medium text-gray-900 mt-1">{new Date(order.created_at).toLocaleDateString('vi-VN')}</p>
+                    </div>
+                   )}
                 </div>
               </div>
             )}
 
-            {/* Bệnh nhân và Loại xét nghiệm - cùng hàng */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Bệnh nhân */}
-              <div className="space-y-2">
-                <Label htmlFor="patient" className="text-sm font-medium">
-                  Bệnh nhân <span className="text-red-500">*</span>
-                </Label>
-                <select
-                  id="patient"
-                  value={formData.patient_id}
-                  onChange={(e) => handlePatientChange(e.target.value)}
-                  disabled={loadingPatients || isSubmitting}
-                  className={`w-full rounded-lg border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                    errors.patient_id 
-                      ? 'border-red-500 bg-red-50' 
-                      : 'border-gray-300 bg-white hover:border-gray-400'
-                  } disabled:bg-gray-50 disabled:cursor-not-allowed`}
-                >
-                  <option value="">
-                    {loadingPatients ? 'Đang tải...' : formData.patient_name}
-                  </option>
-                  {patients.map(p => (
-                    <option key={p.id} value={p.id}>
-                      {p.fullName} {p.patientCode && `(${p.patientCode})`}
-                    </option>
-                  ))}
-                </select>
-                {errors.patient_id && (
-                  <p className="text-sm text-red-600">{errors.patient_id}</p>
-                )}
-              </div>
+            {/* Card 1: Thông tin chung */}
+            <div className="bg-white rounded-xl border shadow-sm p-5 space-y-4">
+              <h4 className="font-semibold text-gray-900 flex items-center gap-2 pb-2 border-b">
+                <User className="w-4 h-4 text-blue-600" />
+                Thông tin chung
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Patient Select */}
+                <div className="space-y-2">
+                  <Label htmlFor="patient" className="text-sm font-medium text-gray-700">
+                    Bệnh nhân <span className="text-red-500">*</span>
+                  </Label>
+                  <select
+                    id="patient"
+                    value={formData.patient_id}
+                    onChange={(e) => handlePatientChange(e.target.value)}
+                    disabled={loadingPatients || isSubmitting || isEdit}
+                    className={`appearance-none w-full rounded-lg border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                      errors.patient_id 
+                        ? 'border-red-500 bg-red-50' 
+                        : 'border-gray-300 bg-white hover:border-gray-400'
+                    } disabled:bg-gray-50 disabled:cursor-not-allowed`}
+                  >
+                    <option value="">-- Chọn bệnh nhân --</option>
+                    {patients.map(p => (
+                      <option key={p.id} value={p.id}>
+                        {p.fullName} {p.patientCode && `(${p.patientCode})`}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.patient_id && <p className="text-sm text-red-600 mt-1">{errors.patient_id}</p>}
+                </div>
 
-              {/* Loại xét nghiệm */}
-              <div className="space-y-2">
-                <Label htmlFor="test_type" className="text-sm font-medium">
-                  Loại xét nghiệm <span className="text-red-500">*</span>
-                </Label>
-                <select
-                  id="test_type"
-                  value={formData.test_type}
-                  onChange={(e) => setFormData(prev => ({ ...prev, test_type: e.target.value }))}
-                  disabled={isSubmitting}
-                  className={`w-full rounded-lg border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                    errors.test_type 
-                      ? 'border-red-500 bg-red-50' 
-                      : 'border-gray-300 bg-white hover:border-gray-400'
-                  } disabled:bg-gray-50 disabled:cursor-not-allowed`}
-                >
-                  <option value="">Chọn loại xét nghiệm</option>
-                  {testTypes.map(t => (
-                    <option key={t} value={t}>{t}</option>
-                  ))}
-                </select>
-                {errors.test_type && (
-                  <p className="text-sm text-red-600">{errors.test_type}</p>
-                )}
+                {/* Test Type Select */}
+                <div className="space-y-2">
+                  <Label htmlFor="test_type" className="text-sm font-medium text-gray-700">
+                    Loại xét nghiệm <span className="text-red-500">*</span>
+                  </Label>
+                  <select
+                    id="test_type"
+                    value={formData.test_type}
+                    onChange={(e) => setFormData(prev => ({ ...prev, test_type: e.target.value }))}
+                    disabled={isSubmitting}
+                    className={`w-full rounded-lg border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                      errors.test_type 
+                        ? 'border-red-500 bg-red-50' 
+                        : 'border-gray-300 bg-white hover:border-gray-400'
+                    } disabled:bg-gray-50 disabled:cursor-not-allowed`}
+                  >
+                    <option value="">-- Chọn loại xét nghiệm --</option>
+                    {testTypes.map(t => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
+                  </select>
+                  {errors.test_type && <p className="text-sm text-red-600 mt-1">{errors.test_type}</p>}
+                </div>
               </div>
             </div>
 
-            {/* Test Items - hiển thị khi đã chọn loại xét nghiệm */}
-            {formData.test_type && (
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">
-                  Test Items
-                </Label>
-                <TestItemMultiSelect
-                  options={testItems}
-                  value={selectedTestItemIds}
-                  onChange={setSelectedTestItemIds}
-                  placeholder={loadingTestItems ? 'Đang tải...' : 'Chọn test items'}
-                  searchPlaceholder="Tìm kiếm test items..."
-                  disabled={loadingTestItems || isSubmitting}
-                />
-              </div>
-            )}
+            {/* Card 2: Chi tiết & Thời gian */}
+            <div className="bg-white rounded-xl border shadow-sm p-5 space-y-4">
+              <h4 className="font-semibold text-gray-900 flex items-center gap-2 pb-2 border-b">
+                <FlaskConical className="w-4 h-4 text-blue-600" />
+                Chi tiết chỉ định
+              </h4>
 
-            {/* Hạn hoàn thành - full width */}
-            <div className="space-y-2">
-              <Label htmlFor="dueDate" className="text-sm font-medium">
-                Hạn hoàn thành <span className="text-red-500">*</span>
-              </Label>
-              <div className="relative">
+              {/* Test Items */}
+              {formData.test_type && (
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-700">
+                    Danh sách chỉ số (Test Items)
+                  </Label>
+                  <TestItemMultiSelect
+                    options={testItems}
+                    value={selectedTestItemIds}
+                    onChange={setSelectedTestItemIds}
+                    placeholder={loadingTestItems ? 'Đang tải...' : 'Chọn test items'}
+                    searchPlaceholder="Tìm kiếm test items..."
+                    disabled={loadingTestItems || isSubmitting}
+                  />
+                </div>
+              )}
+
+              {/* Due Date */}
+              <div className="space-y-2">
+                <Label htmlFor="dueDate" className="text-sm font-medium text-gray-700">
+                  Hạn hoàn thành <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="dueDate"
                   type="date"
@@ -440,62 +468,60 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
                       ? 'border-red-500 bg-red-50' 
                       : 'border-gray-300 bg-white hover:border-gray-400'
                   } disabled:bg-gray-50 disabled:cursor-not-allowed`}
-                  placeholder="dd/mm/yyyy"
                 />
-              </div>
-              {errors.due_date && (
-                <p className="text-sm text-red-600">{errors.due_date}</p>
-              )}
-            </div>
-
-            {/* Thiết bị và Thuốc thử - cùng hàng */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Thiết bị */}
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">
-                  Thiết bị
-                </Label>
-                <SearchableDropdown
-                  options={instruments.map(inst => ({
-                    id: inst._id,
-                    label: `${inst.instrument_name} (${inst.instrument_code})`,
-                    ...inst,
-                  }))}
-                  value={instrumentId}
-                  onChange={setInstrumentId}
-                  placeholder={loadingInstruments ? 'Đang tải...' : 'Chọn thiết bị'}
-                  searchPlaceholder="Tìm kiếm thiết bị..."
-                  disabled={loadingInstruments || isSubmitting}
-                  getOptionLabel={(opt) => opt.label}
-                />
-              </div>
-
-              {/* Thuốc thử */}
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">
-                  Thuốc thử
-                </Label>
-                <SearchableMultiSelect
-                  options={reagents.map(r => ({
-                    id: r.id,
-                    name: r.name,
-                    lotNumber: r.lotNumber,
-                    quantity: r.quantity,
-                  }))}
-                  value={reagentUsages}
-                  onChange={setReagentUsages}
-                  placeholder={loadingReagents ? 'Đang tải...' : 'Chọn thuốc thử'}
-                  searchPlaceholder="Tìm kiếm thuốc thử..."
-                  disabled={loadingReagents || isSubmitting}
-                />
+                {errors.due_date && <p className="text-sm text-red-600 mt-1">{errors.due_date}</p>}
               </div>
             </div>
 
-            {/* Ghi chú */}
-            <div className="space-y-2">
-              <Label htmlFor="notes" className="text-sm font-medium">
+            {/* Card 3: Tài nguyên & Thiết bị */}
+            <div className="bg-white rounded-xl border shadow-sm p-5 space-y-4">
+              <h4 className="font-semibold text-gray-900 flex items-center gap-2 pb-2 border-b">
+                <Microscope className="w-4 h-4 text-blue-600" />
+                Tài nguyên & Thiết bị
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-700">Thiết bị thực hiện</Label>
+                  <SearchableDropdown
+                    options={instruments.map(inst => ({
+                      id: inst._id,
+                      label: `${inst.instrument_name} (${inst.instrument_code})`,
+                      ...inst,
+                    }))}
+                    value={instrumentId}
+                    onChange={setInstrumentId}
+                    placeholder={loadingInstruments ? 'Đang tải...' : 'Chọn thiết bị...'}
+                    searchPlaceholder="Tìm thiết bị..."
+                    disabled={loadingInstruments || isSubmitting}
+                    getOptionLabel={(opt) => opt.label}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-700">Thuốc thử sử dụng</Label>
+                  <SearchableMultiSelect
+                    options={reagents.map(r => ({
+                      id: r.id,
+                      name: r.name,
+                      lotNumber: r.lotNumber,
+                      quantity: r.quantity,
+                    }))}
+                    value={reagentUsages}
+                    onChange={setReagentUsages}
+                    placeholder={loadingReagents ? 'Đang tải...' : 'Chọn thuốc thử...'}
+                    searchPlaceholder="Tìm thuốc thử..."
+                    disabled={loadingReagents || isSubmitting}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Card 4: Ghi chú */}
+            <div className="bg-amber-50 rounded-xl border border-amber-200 p-5 space-y-4">
+              <h4 className="font-semibold text-amber-900 flex items-center gap-2 pb-2 border-b border-amber-200">
+                <FileText className="w-4 h-4 text-amber-700" />
                 Ghi chú
-              </Label>
+              </h4>
               <textarea
                 id="notes"
                 rows={3}
@@ -507,34 +533,42 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
               />
             </div>
 
-            {/* Nút hành động */}
-            <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 mt-6">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onClose}
-                disabled={isSubmitting}
-                className="px-6 py-2.5 border-gray-300 text-gray-700 hover:bg-gray-50"
-              >
-                Hủy
-              </Button>
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <FileText className="w-4 h-4" />
-                {isSubmitting
-                  ? 'Đang lưu...'
-                  : isEdit
-                    ? 'Cập nhật'
-                    : 'Tạo lệnh'}
-              </Button>
-            </div>
           </form>
         </div>
-      </div>
-    </div>
+
+        <div className="p-6 bg-white border-t sticky bottom-0 z-10">
+          <DialogFooter className="flex items-center justify-end gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              disabled={isSubmitting}
+              className="px-6 py-2.5 border-gray-300 text-gray-700 hover:bg-gray-50"
+            >
+              Hủy bỏ
+            </Button>
+            <Button
+              type="submit"
+              form="test-order-form"
+              disabled={isSubmitting}
+              className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+            >
+              {isSubmitting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span>Đang xử lý...</span>
+                </>
+              ) : (
+                <>
+                  <FileText className="w-4 h-4" />
+                  {isEdit ? 'Lưu thay đổi' : 'Tạo lệnh mới'}
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 

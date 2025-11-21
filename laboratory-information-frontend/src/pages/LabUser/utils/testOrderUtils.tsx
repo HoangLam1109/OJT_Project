@@ -114,3 +114,21 @@ export const translateTestType = (testType: string, t: (key: string) => string):
   return testType;
 };
 
+export const validateDueDate = (dueDate: string, t?: (key: string, options?: Record<string, unknown>) => string): string | null => {
+  if (!dueDate) {
+    return t ? t('testOrder.selectDueDate') : 'Chọn hạn hoàn thành';
+  }
+  
+  const now = new Date();
+  // Get local date string in YYYY-MM-DD format
+  const todayStr = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+  
+  if (dueDate < todayStr) {
+    return t 
+      ? t('testOrder.dueDateCannotBeInPast', { defaultValue: "Hạn hoàn thành không được ở trong quá khứ" }) 
+      : "Hạn hoàn thành không được ở trong quá khứ";
+  }
+  
+  return null;
+};
+

@@ -60,9 +60,14 @@ const SelectInstrumentsPage: React.FC = () => {
     const loadInstruments = async () => {
       setIsLoading(true);
       try {
-        const response = await instrumentsService.getAllInstruments(currentPage, itemsPerPage);
+        // Only fetch instruments with status 'Ready'
+        const response = await instrumentsService.getAllInstruments(currentPage, itemsPerPage, 'Ready');
         setInstruments(response.data || []);
         setTotalInstruments(response.total || 0);
+        
+        // Update selected instruments if they exist in the new page
+        // Note: Since we only allow 1 selection, we might want to keep it even if not on current page
+        // But the original code was trying to update the instrument details in selectedInstruments
         setSelectedInstruments(prev => {
           const updated = { ...prev };
           (response.data || []).forEach(inst => {
@@ -75,6 +80,7 @@ const SelectInstrumentsPage: React.FC = () => {
           });
           return updated;
         });
+
         if (response.page && response.page !== currentPage) {
           setCurrentPage(response.page);
         }
@@ -91,17 +97,19 @@ const SelectInstrumentsPage: React.FC = () => {
 
   const handleToggleSelect = (instrument: Instrument) => {
     setSelectedInstruments(prev => {
-      const newState = { ...prev };
-      if (newState[instrument._id]) {
-        delete newState[instrument._id];
-      } else {
-        newState[instrument._id] = {
+      // If the clicked instrument is already selected, deselect it
+      if (prev[instrument._id]) {
+        return {};
+      }
+      
+      // Otherwise, select ONLY this instrument (replace any existing selection)
+      return {
+        [instrument._id]: {
           instrumentId: instrument._id,
           quantity: 1,
           instrument,
-        };
-      }
-      return newState;
+        }
+      };
     });
   };
 
@@ -327,13 +335,13 @@ const SelectInstrumentsPage: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => handleToggleSelect(instrument)}
-                            className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
                               isSelected
                                 ? 'bg-blue-600 border-blue-600'
                                 : 'border-gray-300 hover:border-blue-400'
                             }`}
                           >
-                            {isSelected && <Check className="w-3 h-3 text-white" />}
+                            {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
                           </button>
                         </TableCell>
                         <TableCell className="font-medium">
