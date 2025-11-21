@@ -1,11 +1,17 @@
 // role.validator.ts
 import Joi from "joi";
 import { validatePrivileges } from "../utils/validation.util.js";
+import { isValidRoleCode } from "../constants/roles.constant.js";
 
 export const createRoleSchema = Joi.object({
   roleCode: Joi.string().required().messages({
     'string.empty': 'Role code is required',
     'any.required': 'Role code is required'
+  }).custom((value, helpers) => {
+    if (!isValidRoleCode(value)) {
+      return helpers.error('any.invalid');
+    }
+    return value;
   }),
   roleName: Joi.string().required().messages({
     'string.empty': 'Role name is required',
@@ -33,6 +39,11 @@ export const createRoleSchema = Joi.object({
 export const updateRoleSchema = Joi.object({
   roleCode: Joi.string().messages({
     'string.empty': 'Role code cannot be empty'
+  }).custom((value, helpers) => {
+    if (!isValidRoleCode(value)) {
+      return helpers.error('any.invalid');
+    }
+    return value;
   }),
   roleName: Joi.string().messages({
     'string.empty': 'Role name cannot be empty'

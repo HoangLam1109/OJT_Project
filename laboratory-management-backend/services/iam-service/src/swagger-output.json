@@ -1660,6 +1660,95 @@
         ]
       }
     },
+    "/user/profile/me": {
+      "get": {
+        "tags": [
+          "User Profile"
+        ],
+        "description": "Get profile information of the authenticated user",
+        "responses": {
+          "200": {
+            "description": "Authenticated user profile retrieved successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "user": {
+                  "type": "object",
+                  "properties": {
+                    "_id": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "email": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "fullName": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "identityNumber": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "gender": {
+                      "type": "string",
+                      "example": "Male"
+                    },
+                    "age": {
+                      "type": "number",
+                      "example": 22
+                    },
+                    "dateOfBirth": {
+                      "type": "string",
+                      "example": "2002-01-01"
+                    },
+                    "phoneNumber": {
+                      "type": "string",
+                      "example": "0123456789"
+                    },
+                    "address": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "avatar": {
+                      "type": "string",
+                      "example": "https://example.com/avatar.png"
+                    },
+                    "role": {
+                      "type": "array",
+                      "example": [
+                        "USER"
+                      ],
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
     "/user/profile": {
       "post": {
         "tags": [

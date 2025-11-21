@@ -14,7 +14,8 @@
       "esnext"
     ],
     "types": [
-      "node"
+      "node",
+      "vitest"
     ],
     // Other Outputs
     "sourceMap": true,

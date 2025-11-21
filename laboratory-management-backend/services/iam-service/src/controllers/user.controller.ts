@@ -925,6 +925,7 @@ const lockUser = async (
 
 export {
   getUser,
+  getCurrentUser,
   searchUsersInternal,
   createUser,
   updateUser,

@@ -13,6 +13,7 @@ import { logEvent } from "../utils/logging.util.js";
 import { computeChanges } from "../utils/diff.util.js";
 import { AppError } from "../utils/error.util.js";
 import notifServiceClient from "../../../shared/src/notif-service/adapter/notif.adapter.js";
+import { isValidRoleCode } from "../constants/roles.constant.js";
 
 export interface CreateUserData {
   email: string;
@@ -47,7 +48,19 @@ export class UserService {
   async getUser(userId: string): Promise<IUser | null> {
     return await userRepository.findById(
       userId,
-      "_id email fullName phoneNumber identityNumber gender age dateOfBirth address role isActive avatar createdAt updatedAt"
+      "_id email fullName phoneNumber avatar identityNumber gender age dateOfBirth address role isActive"
+    );
+  }
+
+  async getUsersWithPagination(
+    options: PaginationOptions
+  ): Promise<PaginationResponse<IUser>> {
+    const result = await userRepository.findWithPagination(options);
+    return PaginationUtils.formatResponse(
+      result.data,
+      result.hasNextPage,
+      options,
+      result.totalCount
     );
   }
 
@@ -64,7 +77,6 @@ export class UserService {
       newUser.role = ["USER"];
     }
     const createdUser = await userRepository.create(newUser);
-    console.log(createdUser);
 
     await logEvent({
       eventCode: "E_00023",
@@ -91,6 +103,9 @@ export class UserService {
     performedBy?: string
   ): Promise<IUser | null> {
     const before = await userRepository.findById(userId);
+    if(!before) {
+      throw new Error("User not found");
+    }
     const { data: newUser, passwordChanged } = await this._passwordCheck(
       userId,
       userData,
@@ -136,6 +151,9 @@ export class UserService {
     performedBy?: string
   ): Promise<IUser | null> {
     const before = await userRepository.findById(userId);
+    if(!before) {
+      throw new Error("User not found");
+    }
     const deletedUser = await userRepository.deleteById(userId);
     const deleteFields: (keyof IUser)[] = [
       "email",
@@ -190,6 +208,14 @@ export class UserService {
     performedBy?: string
   ): Promise<IUser | null> {
     const before = await userRepository.findById(userId);
+    if (!before) {
+      throw new Error("User not found");
+    }
+
+    if (role.length === 0 || !role.every((r) => isValidRoleCode(r))) {
+      throw new Error("Invalid role(s)");
+    }
+
     const updatedUser = await userRepository.updateById(userId, { role });
     const roleFields: (keyof IUser)[] = ["role"];
     const roleDiffs = computeChanges<IUser>(
@@ -222,6 +248,9 @@ export class UserService {
     performedBy?: string
   ): Promise<IUser | null> {
     const before = await userRepository.findById(userId);
+    if(!before) {
+      throw new Error("User not found");
+    }
     const updatedUser = await userRepository.updateById(userId, { isActive });
     const lockFields: (keyof IUser)[] = ["isActive"];
     const lockDiffs = computeChanges<IUser>(
@@ -241,20 +270,7 @@ export class UserService {
     return updatedUser;
   }
 
-  async getUsersWithPagination(
-    options: PaginationOptions
-  ): Promise<PaginationResponse<IUser>> {
-    const result = await userRepository.findWithPagination(options);
-    return PaginationUtils.formatResponse(
-      result.data,
-      result.hasNextPage,
-      options,
-      result.totalCount
-    );
-  }
-
   async getUserRolesAndPrivileges(userId: string): Promise<any> {
-    // Get user with role IDs
     const user = await userRepository.findById(
       userId,
       "_id email fullName role isActive isDeleted"
@@ -264,7 +280,6 @@ export class UserService {
       return null;
     }
 
-    // Fetch all roles with their details
     const roles = await RoleModel.find({
       roleCode: { $in: user.role },
     }).select(
@@ -289,7 +304,6 @@ export class UserService {
     };
   }
 
-  // Private helper method to hash passwords (skip for OAuth users)
   private async _passwordCheck(
     userId: string,
     userData: UpdateUserData | CreateUserData,

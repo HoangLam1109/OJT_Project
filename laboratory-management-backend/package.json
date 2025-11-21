@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "test": "vitest",
     "dev": "npm run swagger && tsx watch services/iam-service/src/index.ts",
     "dev:patient": "npm run swagger:patient && nodemon --exec \"node --loader ts-node/esm services/patientService/src/index.ts\"",
     "dev:testOrder": "nodemon --exec \"node --loader ts-node/esm services/testOrderService/src/index.ts\"",
@@ -71,6 +72,7 @@
     "swagger-ui-express": "^5.0.1",
     "typeorm": "^0.3.27",
     "uuid": "^13.0.0",
+    "vitest": "^4.0.12",
     "zod": "^3.25.76"
   },
   "devDependencies": {
