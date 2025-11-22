@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Input } from '../../components/common/input';
-import { Label } from '../../components/common/label';
-import Button from '../../components/common/button';
+import { Input } from '../../../../../components/common/input';
+import { Label } from '../../../../../components/common/label';
+import Button from '../../../../../components/common/button';
 import { Edit3, ArrowLeft, ArrowRight } from 'lucide-react';
-import type { TestOrder } from './types/TestOrderTypes';
-import { useAuthContext } from '../../hooks/useAuthContext';
+import type { TestOrder } from '../../../types/TestOrderTypes';
+import { useAuthContext } from '../../../../../hooks/useAuthContext';
 import { toast } from 'sonner';
-import { Card, CardContent, CardHeader } from '../../components/common/card';
-import { testItemService, type TestItem } from '../../service/testItemService';
-import { TestItemMultiSelect } from './components/common/TestItemMultiSelect';
+import { Card, CardContent, CardHeader } from '../../../../../components/common/card';
+import { testItemService, type TestItem } from '../../../../../service/testItemService';
+import { TestItemMultiSelect } from '../../common/TestItemMultiSelect';
 import { useTranslation } from 'react-i18next';
-import { type PatientOption } from '../../service/patientService';
-import { PatientSearchInput } from '../../components/common/patient/PatientSearchInput';
-import { validateDueDate } from './utils/testOrderUtils';
+import { type PatientOption } from '../../../../../service/patientService';
+import { PatientSearchInput } from '../../../../../components/common/patient/PatientSearchInput';
+import { validateDueDate } from '../../../utils/testOrderUtils';
 
 // Test type keys - these are used as values and for translation keys
 const testTypeKeys = [

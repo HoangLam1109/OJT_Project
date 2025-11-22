@@ -1,15 +1,18 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/common/dialog';
 import type { TestResult } from '@/pages/LabUser/types/TestResultTypes';
 import { Label } from '@/components/common/label';
 
-interface TestResultModalProps {
+interface TestResultDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   testResult: TestResult | null;
 }
 
-const TestResultModal: React.FC<TestResultModalProps> = ({ isOpen, onClose, testResult }) => {
+const TestResultDetailModal: React.FC<TestResultDetailModalProps> = ({ isOpen, onClose, testResult }) => {
+  const { t } = useTranslation();
+
   if (!testResult) return null;
 
   const getStatusColor = (status: string) => {
@@ -28,11 +31,11 @@ const TestResultModal: React.FC<TestResultModalProps> = ({ isOpen, onClose, test
   const getStatusLabel = (status: string) => {
     switch (status.toLowerCase()) {
       case 'normal':
-        return 'Bình thường';
+        return t('testResult.detailModal.status.normal');
       case 'abnormal':
-        return 'Bất thường';
+        return t('testResult.detailModal.status.abnormal');
       case 'critical':
-        return 'Nguy kịch';
+        return t('testResult.detailModal.status.critical');
       default:
         return status;
     }
@@ -42,34 +45,34 @@ const TestResultModal: React.FC<TestResultModalProps> = ({ isOpen, onClose, test
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Chi tiết kết quả xét nghiệm</DialogTitle>
+          <DialogTitle>{t('testResult.detailModal.title')}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
           {/* Thông tin chung */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <Label className="text-sm text-gray-600">Tên bệnh nhân</Label>
+              <Label className="text-sm text-gray-600">{t('testResult.detailModal.patientName')}</Label>
               <p className="text-lg font-semibold mt-1">{testResult.patientName}</p>
             </div>
             <div>
-              <Label className="text-sm text-gray-600">Tổng số kết quả</Label>
+              <Label className="text-sm text-gray-600">{t('testResult.detailModal.totalResults')}</Label>
               <p className="text-lg font-semibold mt-1">{testResult.totalTests}</p>
             </div>
           </div>
 
           {/* Bảng kết quả xét nghiệm */}
           <div>
-            <Label className="text-sm text-gray-600 mb-3 block">Danh sách kết quả xét nghiệm</Label>
+            <Label className="text-sm text-gray-600 mb-3 block">{t('testResult.detailModal.resultsList')}</Label>
             <div className="overflow-x-auto border border-gray-200 rounded-lg">
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-200">
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">STT</th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">Tên xét nghiệm</th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">Mã xét nghiệm</th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">Kết quả</th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">Trạng thái</th>
+                    <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">{t('testResult.detailModal.table.no')}</th>
+                    <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">{t('testResult.detailModal.table.testName')}</th>
+                    <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">{t('testResult.detailModal.table.testCode')}</th>
+                    <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">{t('testResult.detailModal.table.result')}</th>
+                    <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">{t('testResult.detailModal.table.status')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -98,4 +101,4 @@ const TestResultModal: React.FC<TestResultModalProps> = ({ isOpen, onClose, test
   );
 };
 
-export default TestResultModal;
+export default TestResultDetailModal;

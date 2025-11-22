@@ -6,12 +6,12 @@ import {
     DialogTitle,
     DialogDescription,
     DialogFooter,
-} from "../../../components/common/dialog";
-import Button from "../../../components/common/button";
-import Badge from "../../../components/common/badge";
-import { Label } from "../../../components/common/label";
-import type { Instrument } from "../types/Instrument";
-import { instrumentsService } from "../../../service/instrumentsService";
+} from "../../../../components/common/dialog";
+import Button from "../../../../components/common/button";
+import Badge from "../../../../components/common/badge";
+import { Label } from "../../../../components/common/label";
+import type { Instrument } from "../../types/Instrument";
+import { instrumentsService } from "../../../../service/instrumentsService";
 import { toast } from "sonner";
 import {
     Monitor,

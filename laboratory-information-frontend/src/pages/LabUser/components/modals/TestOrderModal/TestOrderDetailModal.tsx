@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../../components/common/dialog';
-import Button from '../../../../components/common/button';
-import Badge from '../../../../components/common/badge';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../../../components/common/dialog';
+import Button from '../../../../../components/common/button';
+import Badge from '../../../../../components/common/badge';
 import { Clock, User, TestTube, Microscope, FlaskConical, List } from 'lucide-react';
-import type { TestOrder } from '../../types/TestOrderTypes';
-import { testItemService, type TestItem } from '../../../../service/testItemService';
+import type { TestOrder } from '../../../types/TestOrderTypes';
+import { testItemService, type TestItem } from '../../../../../service/testItemService';
 import { useTranslation } from 'react-i18next';
 
 interface TestOrderDetailModalProps {

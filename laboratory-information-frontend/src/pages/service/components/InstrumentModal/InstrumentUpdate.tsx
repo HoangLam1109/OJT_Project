@@ -6,14 +6,14 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "../../../components/common/dialog";
-import { Label } from "../../../components/common/label";
-import { Input } from "../../../components/common/input";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "../../../components/common/select";
-import Button from "../../../components/common/button";
-import { type Instrument, validateInstrumentField } from "../types/Instrument";
+} from "../../../../components/common/dialog";
+import { Label } from "../../../../components/common/label";
+import { Input } from "../../../../components/common/input";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "../../../../components/common/select";
+import Button from "../../../../components/common/button";
+import { type Instrument, validateInstrumentField } from "../../types/Instrument";
 import { toast } from "sonner";
-import { instrumentsService } from "../../../service/instrumentsService";
+import { instrumentsService } from "../../../../service/instrumentsService";
 import { useTranslation } from "react-i18next";
 import { Microscope, Tag, Factory, MapPin, Activity, Settings } from 'lucide-react';
 

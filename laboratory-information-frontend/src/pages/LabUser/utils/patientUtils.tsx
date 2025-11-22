@@ -1,4 +1,4 @@
-import type { Patient } from '../data/mockPatientsData';
+import type { Patient } from '../types/Patient';
 
 export const filterPatients = (
   patients: Patient[],

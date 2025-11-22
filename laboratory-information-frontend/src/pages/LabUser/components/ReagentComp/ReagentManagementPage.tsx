@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import type { Reagent } from './types/Reagent';
-import { useAuthContext } from '../../hooks/useAuthContext';
-import { reagentService } from '../../service/reagentService';
+import type { Reagent } from '../../types/Reagent';
+import { useAuthContext } from '../../../../hooks/useAuthContext';
+import { reagentService } from '../../../../service/reagentService';
 import { toast } from 'sonner';
-import ReagentToolbar from './components/ReagentComp/ReagentToolbar';
-import ReagentTable from './components/ReagentComp/ReagentTable';
-import ReagentAddModal from './components/modals/ReagentModal/ReagentAddModal';
-import ReagentEditModal from './components/modals/ReagentModal/ReagentEditModal';
-import ReagentDetailModal from './components/modals/ReagentModal/ReagentDetailModal';
-import ReagentDeleteConfirmModal from './components/modals/ReagentModal/ReagentDeleteModal';
-import { filterReagents } from './utils/reagentUtils';
+import ReagentToolbar from './ReagentToolbar';
+import ReagentTable from './ReagentTable';
+import ReagentAddModal from '../modals/ReagentModal/ReagentAddModal';
+import ReagentEditModal from '../modals/ReagentModal/ReagentEditModal';
+import ReagentDetailModal from '../modals/ReagentModal/ReagentDetailModal';
+import ReagentDeleteConfirmModal from '../modals/ReagentModal/ReagentDeleteModal';
+import { filterReagents } from '../../utils/reagentUtils';
 
 const ReagentManagementPage: React.FC = () => {
   const { user } = useAuthContext();

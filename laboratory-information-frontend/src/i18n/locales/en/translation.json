@@ -517,6 +517,15 @@
         "noNotes": "No notes",
         "update": "Update",
       "delete": "Delete"
+    },
+    "delete": "Delete",
+    "deleteModal": {
+      "title": "Confirm Delete",
+      "description": "This action cannot be undone",
+      "testOrder": "Test Order",
+      "patient": "Patient",
+      "cancel": "Cancel",
+      "delete": "Delete"
     }
   },
   "service": {
@@ -669,6 +678,24 @@
     "deleteConfirm": {
       "title": "Confirm Delete",
       "description": "Are you sure you want to delete test result {{testName}} for patient {{patientName}}?"
+    },
+    "detailModal": {
+      "title": "Test Result Details",
+      "patientName": "Patient Name",
+      "totalResults": "Total Results",
+      "resultsList": "Test Results List",
+      "table": {
+        "no": "No.",
+        "testName": "Test Name",
+        "testCode": "Test Code",
+        "result": "Result",
+        "status": "Status"
+      },
+      "status": {
+        "normal": "Normal",
+        "abnormal": "Abnormal",
+        "critical": "Critical"
+      }
     }
   },
   "reagent": {

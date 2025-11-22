@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '../../../components/common/dialog';
-import { Label } from '../../../components/common/label';
-import { Input } from '../../../components/common/input';
-import { Textarea } from '../../../components/common/textarea';
-import Button from '../../../components/common/button';
-import { patientService, type PatientOption } from '../../../service/patientService';
-import { patientMedicalRecordService, type PatientMedicalRecord } from '../../../service/patientMedicalRecordService';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '../../../../../components/common/dialog';
+import { Label } from '../../../../../components/common/label';
+import { Input } from '../../../../../components/common/input';
+import { Textarea } from '../../../../../components/common/textarea';
+import Button from '../../../../../components/common/button';
+import { patientService, type PatientOption } from '../../../../../service/patientService';
+import { patientMedicalRecordService, type PatientMedicalRecord } from '../../../../../service/patientMedicalRecordService';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 interface AddPatientMedicalRecordProps {
