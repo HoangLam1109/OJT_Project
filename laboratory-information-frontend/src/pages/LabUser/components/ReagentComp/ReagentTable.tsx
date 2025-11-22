@@ -1,8 +1,8 @@
 import React from 'react';
 import { Eye, Edit2, Trash2, Package, AlertTriangle } from 'lucide-react';
-import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '../../../components/common/table';
-import type { Reagent } from '../data/mockReagentsData';
-import { getStatusBadge, formatDate, isExpired, isExpiringSoon, getRowClassName } from '../utils/reagentUtils';
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '../../../../components/common/table';
+import type { Reagent } from '../../types/Reagent';
+import { getStatusBadge, formatDate, isExpired, isExpiringSoon, getRowClassName } from '../../utils/reagentUtils';
 import { useTranslation } from 'react-i18next';
 
 interface ReagentTableProps {

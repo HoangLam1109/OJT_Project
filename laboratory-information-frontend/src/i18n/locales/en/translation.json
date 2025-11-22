@@ -706,6 +706,7 @@
     },
     "detailModal": {
       "title": "Reagent Details",
+      "viewDescription": "Detailed information about the reagent",
       "basicInfo": "Basic Information",
       "lotNumber": "Lot Number",
       "name": "Reagent Name",
@@ -726,15 +727,36 @@
     "formModal": {
       "editTitle": "Edit Reagent",
       "addTitle": "Add New Reagent",
+      "addDescription": "Enter details to add a new reagent to inventory",
+      "editDescription": "Update reagent details",
       "name": "Reagent Name",
+      "type": "Reagent Type",
+      "unit": "Unit of Measure",
       "lotNumber": "Lot Number",
       "manufacturer": "Manufacturer",
       "receivedDate": "Received Date",
       "expiryDate": "Expiry Date",
       "quantity": "Quantity",
+      "lowStockThreshold": "Low Stock Threshold",
       "storageLocation": "Storage Location",
       "status": "Status",
-      "notes": "Notes"
+      "notes": "Notes",
+      "updating": "Updating...",
+      "adding": "Adding..."
+    },
+    "validation": {
+      "nameRequired": "Reagent name is required",
+      "typeRequired": "Reagent type is required",
+      "quantityInvalid": "Invalid quantity",
+      "unitRequired": "Unit of measure is required",
+      "receivedDateRequired": "Received date is required",
+      "receivedDatePast": "Received date must be in the past or today",
+      "expiryDateRequired": "Expiry date is required",
+      "expiryDateFuture": "Expiry date must be in the future",
+      "expiryDateAfterReceived": "Expiry date must be after received date",
+      "thresholdInvalid": "Low stock threshold must be a positive number (> 0)",
+      "locationRequired": "Storage location is required",
+      "checkFields": "Please check the information"
     }
   }
 }

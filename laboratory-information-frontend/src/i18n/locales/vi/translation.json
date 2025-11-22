@@ -704,6 +704,7 @@
     },
     "detailModal": {
       "title": "Chi tiết thuốc thử",
+      "viewDescription": "Chi tiết thông tin thuốc thử",
       "basicInfo": "Thông tin cơ bản",
       "lotNumber": "Mã lô",
       "name": "Tên thuốc thử",
@@ -724,15 +725,36 @@
     "formModal": {
       "editTitle": "Chỉnh sửa thuốc thử",
       "addTitle": "Thêm thuốc thử mới",
+      "addDescription": "Nhập thông tin chi tiết để thêm thuốc thử mới vào kho",
+      "editDescription": "Cập nhật thông tin chi tiết của thuốc thử",
       "name": "Tên thuốc thử",
+      "type": "Loại thuốc thử",
+      "unit": "Đơn vị tính",
       "lotNumber": "Số lô",
       "manufacturer": "Nhà sản xuất",
       "receivedDate": "Ngày nhập",
       "expiryDate": "Ngày hết hạn",
       "quantity": "Số lượng",
+      "lowStockThreshold": "Ngưỡng cảnh báo thấp",
       "storageLocation": "Vị trí lưu trữ",
       "status": "Trạng thái",
-      "notes": "Ghi chú"
+      "notes": "Ghi chú",
+      "updating": "Đang cập nhật...",
+      "adding": "Đang thêm..."
+    },
+    "validation": {
+      "nameRequired": "Tên thuốc thử là bắt buộc",
+      "typeRequired": "Loại thuốc thử là bắt buộc",
+      "quantityInvalid": "Số lượng không hợp lệ",
+      "unitRequired": "Đơn vị tính là bắt buộc",
+      "receivedDateRequired": "Ngày nhập là bắt buộc",
+      "receivedDatePast": "Ngày nhập phải là ngày trong quá khứ hoặc hôm nay",
+      "expiryDateRequired": "Ngày hết hạn là bắt buộc",
+      "expiryDateFuture": "Ngày hết hạn phải là ngày trong tương lai",
+      "expiryDateAfterReceived": "Ngày hết hạn phải sau ngày nhập",
+      "thresholdInvalid": "Ngưỡng cảnh báo phải là số dương (lớn hơn 0)",
+      "locationRequired": "Vị trí lưu trữ là bắt buộc",
+      "checkFields": "Vui lòng kiểm tra lại thông tin"
     }
   }
 }
