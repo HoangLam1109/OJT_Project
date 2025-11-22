@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Button from '../../components/common/button';
 import { ArrowLeft, ArrowRight, Check, Search, X } from 'lucide-react';
-import type { Reagent } from './data/mockReagentsData';
+import type { Reagent } from './types/Reagent';
 import { testOrderService } from '../../service/testOrderService';
 import { reagentService } from '../../service/reagentService';
 import { useAuthContext } from '../../hooks/useAuthContext';

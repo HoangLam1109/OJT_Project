@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Reagent } from '../data/mockReagentsData';
+import type { Reagent } from '../types/Reagent';
 
 export const getStatusBadge = (status: string): React.JSX.Element => {
   const statusClasses = {
