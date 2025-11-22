@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import Button from '../../components/common/button';
+import Button from '../../../../components/common/button';
 import { ArrowLeft, ArrowRight, Check, Search, X } from 'lucide-react';
-import type { Reagent } from './types/Reagent';
-import { testOrderService } from '../../service/testOrderService';
-import { reagentService } from '../../service/reagentService';
-import { useAuthContext } from '../../hooks/useAuthContext';
+import type { Reagent } from '../../types/Reagent';
+import { testOrderService } from '../../../../service/testOrderService';
+import { reagentService } from '../../../../service/reagentService';
+import { useAuthContext } from '../../../../hooks/useAuthContext';
 import { toast } from 'sonner';
-import { Card, CardContent, CardHeader } from '../../components/common/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/common/table';
-import { Input } from '../../components/common/input';
-import Pagination from '../../components/common/pagination';
+import { Card, CardContent, CardHeader } from '../../../../components/common/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../../components/common/table';
+import { Input } from '../../../../components/common/input';
+import Pagination from '../../../../components/common/pagination';
 import { useTranslation } from 'react-i18next';
 
 interface SelectedReagent {

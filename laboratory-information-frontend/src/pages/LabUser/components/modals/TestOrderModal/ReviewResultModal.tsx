@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Input } from '../../../../components/common/input';
-import { Label } from '../../../../components/common/label';
-import Button from '../../../../components/common/button';
+import { Input } from '../../../../../components/common/input';
+import { Label } from '../../../../../components/common/label';
+import Button from '../../../../../components/common/button';
 import { TestTube2, X, Upload, MessageSquare, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
-import type { TestOrder, TestResult, Comment } from '../../types/TestOrderTypes';
+import type { TestOrder, TestResult, Comment } from '../../../types/TestOrderTypes';
 
 interface ReviewResultModalProps {
   order: TestOrder | null;

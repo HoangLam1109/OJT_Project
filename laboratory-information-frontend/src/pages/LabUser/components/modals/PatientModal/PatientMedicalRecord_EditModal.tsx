@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '../../../components/common/dialog';
-import { Label } from '../../../components/common/label';
-import { Input } from '../../../components/common/input';
-import { Textarea } from '../../../components/common/textarea';
-import Button from '../../../components/common/button';
-import { patientMedicalRecordService } from '../../../service/patientMedicalRecordService';
-import { patientService } from '../../../service/patientService';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '../../../../../components/common/dialog';
+import { Label } from '../../../../../components/common/label';
+import { Input } from '../../../../../components/common/input';
+import { Textarea } from '../../../../../components/common/textarea';
+import Button from '../../../../../components/common/button';
+import { patientMedicalRecordService } from '../../../../../service/patientMedicalRecordService';
+import { patientService } from '../../../../../service/patientService';
 import { toast } from 'sonner';
 
 interface EditPatientMedicalRecordProps {

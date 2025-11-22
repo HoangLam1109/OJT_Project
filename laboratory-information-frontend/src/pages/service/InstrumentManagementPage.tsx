@@ -30,10 +30,10 @@ import {
     TableCell,
 } from "../../components/common/table";
 import { toast } from "sonner";
-import { InstrumentDetailDialog } from "./components/InstrumentDetailDialog";
-import { AddInstrumentDialog } from "./components/InstrumentAdd";
-import { ChangeInstrumentStatusDialog } from "./components/InstrumentUpdate";
-import { DeleteInstrumentConfirmDialog } from "./components/DeleteInstrumentConfirmDialog";
+import { InstrumentDetailDialog } from "./components/InstrumentModal/InstrumentDetailDialog";
+import { AddInstrumentDialog } from "./components/InstrumentModal/InstrumentAdd";
+import { ChangeInstrumentStatusDialog } from "./components/InstrumentModal/InstrumentUpdate";
+import { DeleteInstrumentConfirmDialog } from "./components/InstrumentModal/InstrumentDeleteModal";
 import { instrumentsService } from "../../service/instrumentsService";
 import { useTranslation } from "react-i18next";
 

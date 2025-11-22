@@ -1,21 +1,21 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/common/card';
-import Button from '../../components/common/button';
-import { Label } from '../../components/common/label';
+import { Card, CardContent, CardHeader, CardTitle } from '../../../../../components/common/card';
+import Button from '../../../../../components/common/button';
+import { Label } from '../../../../../components/common/label';
 import { ArrowLeft, User, FileText, Eye, Pencil, Trash2, FlaskConical } from 'lucide-react';
-import { patientService, type PatientOption, type PatientDetailResponse, viewPatientDetail } from '../../service/patientService';
-import { patientMedicalRecordService, type PatientMedicalRecord } from '../../service/patientMedicalRecordService';
-import { testOrderService } from '../../service/testOrderService';
-import { testResultService } from '../../service/testResultService';
-import type { TestOrder } from '../LabUser/types/TestOrderTypes';
-import type { TestResult } from '../LabUser/types/TestResultTypes';
+import { patientService, type PatientOption, type PatientDetailResponse, viewPatientDetail } from '../../../../../service/patientService';
+import { patientMedicalRecordService, type PatientMedicalRecord } from '../../../../../service/patientMedicalRecordService';
+import { testOrderService } from '../../../../../service/testOrderService';
+import { testResultService } from '../../../../../service/testResultService';
+import type { TestOrder } from '../../../types/TestOrderTypes';
+import type { TestResult } from '../../../types/TestResultTypes';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import EditPatientMedicalRecord from './components/EditPatientMedicalRecord';
-import { DeleteConfirmDialog } from '../admin/components/DeleteConfirmDialog';
-import MedicalRecordViewModal from '@/pages/LabUser/components/modals/MedicalRecordViewModal';
-import TestResultModal from '@/pages/LabUser/components/modals/TestResultModal';
+import EditPatientMedicalRecord from './PatientMedicalRecord_EditModal';
+import { DeleteConfirmDialog } from '../../../../admin/components/DeleteConfirmDialog';
+import MedicalRecordViewModal from '@/pages/LabUser/components/modals/PatientModal/PatientMedicalRecord_ViewModal';
+import TestResultDetailModal from '@/pages/LabUser/components/modals/PatientModal/PatientMedicalRecord_TestResult_DetailModal';
 
 const PatientDetailPage: React.FC = () => {
   const { t } = useTranslation();
@@ -358,7 +358,7 @@ const PatientDetailPage: React.FC = () => {
   {/* Create MR moved to list page */}
       <EditPatientMedicalRecord id={editId} open={Boolean(editId)} onOpenChange={(o) => { if (!o) setEditId(null); }} onUpdated={() => setRefreshKey(k => k + 1)} />
       <MedicalRecordViewModal recordId={viewId} isOpen={Boolean(viewId)} onClose={() => setViewId(null)} />
-      <TestResultModal 
+      <TestResultDetailModal 
         isOpen={testResultModalOpen} 
         onClose={() => {
           setTestResultModalOpen(false);

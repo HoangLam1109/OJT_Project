@@ -1,10 +1,10 @@
 import React from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../../components/common/dialog';
-import { Label } from '../../../../components/common/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../../components/common/select';
-import Button from '../../../../components/common/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../../../components/common/dialog';
+import { Label } from '../../../../../components/common/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../../../components/common/select';
+import Button from '../../../../../components/common/button';
 import { PlayCircle, Monitor, AlertCircle } from 'lucide-react';
-import type { TestOrder } from '../../types/TestOrderTypes';
+import type { TestOrder } from '../../../types/TestOrderTypes';
 import type { Instrument } from '@/pages/service/types/Instrument';
 // import { getPriorityBadge } from '../../utils/testOrderUtils';
 

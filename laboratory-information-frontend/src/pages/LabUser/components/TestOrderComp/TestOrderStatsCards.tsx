@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardContent } from '../../../components/common/card';
+import { Card, CardContent } from '../../../../components/common/card';
 import { Clock, PlayCircle, CheckCircle } from 'lucide-react';
 import { Skeleton } from '@/components/common/skeleton';
 import {useTranslation} from 'react-i18next'

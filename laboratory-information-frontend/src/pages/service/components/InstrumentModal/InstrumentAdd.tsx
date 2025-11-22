@@ -6,14 +6,14 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from '../../../components/common/dialog';
-import Button from '../../../components/common/button';
-import { Label } from '../../../components/common/label';
-import { Input } from '../../../components/common/input';
+} from '../../../../components/common/dialog';
+import Button from '../../../../components/common/button';
+import { Label } from '../../../../components/common/label';
+import { Input } from '../../../../components/common/input';
 import { toast } from 'sonner';
 import { Microscope, Tag, Factory, MapPin } from 'lucide-react';
-import { type Instrument, validateInstrumentField } from '../types/Instrument';
-import { instrumentsService } from '../../../service/instrumentsService';
+import { type Instrument, validateInstrumentField } from '../../types/Instrument';
+import { instrumentsService } from '../../../../service/instrumentsService';
 import { useTranslation } from 'react-i18next';
 
 interface AddInstrumentDialogProps {

@@ -515,6 +515,15 @@
       "noNotes": "Không có ghi chú",
       "update": "Cập nhật",
       "delete": "Xóa"
+    },
+    "delete": "Xóa",
+    "deleteModal": {
+      "title": "Xác nhận xóa",
+      "description": "Hành động này không thể hoàn tác",
+      "testOrder": "Lệnh xét nghiệm",
+      "patient": "Bệnh nhân",
+      "cancel": "Hủy",
+      "delete": "Xóa"
     }
   },
   "service": {
@@ -667,6 +676,24 @@
     "deleteConfirm": {
       "title": "Xác nhận xóa",
       "description": "Bạn có chắc chắn muốn xóa kết quả xét nghiệm {{testName}} của bệnh nhân {{patientName}} không?"
+    },
+    "detailModal": {
+      "title": "Chi tiết kết quả xét nghiệm",
+      "patientName": "Tên bệnh nhân",
+      "totalResults": "Tổng số kết quả",
+      "resultsList": "Danh sách kết quả xét nghiệm",
+      "table": {
+        "no": "STT",
+        "testName": "Tên xét nghiệm",
+        "testCode": "Mã xét nghiệm",
+        "result": "Kết quả",
+        "status": "Trạng thái"
+      },
+      "status": {
+        "normal": "Bình thường",
+        "abnormal": "Bất thường",
+        "critical": "Nguy kịch"
+      }
     }
   },
   "reagent": {

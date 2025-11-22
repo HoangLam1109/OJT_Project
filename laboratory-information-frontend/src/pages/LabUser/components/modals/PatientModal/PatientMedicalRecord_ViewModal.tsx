@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { X } from 'lucide-react';
-import { Label } from '../../../../components/common/label';
-import { patientMedicalRecordService, type PatientMedicalRecord } from '../../../../service/patientMedicalRecordService';
-import { patientService, type PatientOption } from '../../../../service/patientService';
+import { Label } from '../../../../../components/common/label';
+import { patientMedicalRecordService, type PatientMedicalRecord } from '../../../../../service/patientMedicalRecordService';
+import { patientService, type PatientOption } from '../../../../../service/patientService';
 
 interface MedicalRecordViewModalProps {
   recordId: string | null;
