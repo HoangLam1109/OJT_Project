@@ -83,9 +83,19 @@ const SelectReagentsPage: React.FC = () => {
         setReagents(availableReagents);
         setTotalItems(availableReagents.length);
         setCurrentPage(1);
-      } catch (error: any) {
-        console.error('Error fetching reagents:', error);
-        toast.error(error.message || t('testOrder.cannotLoadReagents'));
+      } catch (error: unknown) {
+        console.error('Lỗi khi tải danh sách thuốc thử:', error);
+
+        let errorMessage = t('testOrder.cannotLoadReagents');
+
+        if (error instanceof Error) {
+          errorMessage = error.message;
+        } else if (typeof error === 'string') {
+          errorMessage = error;
+        }
+
+        toast.error(errorMessage);
+
         setBaseReagents([]);
         setReagents([]);
         setTotalItems(0);
@@ -96,7 +106,7 @@ const SelectReagentsPage: React.FC = () => {
     };
 
     fetchReagents();
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     const trimmedQuery = searchQuery.trim();
@@ -122,11 +132,22 @@ const SelectReagentsPage: React.FC = () => {
         setReagents(selectableReagents);
         setTotalItems(selectableReagents.length);
         setCurrentPage(1);
-      } catch (error: any) {
+      } catch (error: unknown) {
         if (isCancelled) return;
-        console.error('Error searching reagents:', error);
-        toast.error(error.message || t('testOrder.cannotSearchReagents'));
-      } finally {
+
+        console.error('Lỗi khi tìm kiếm thuốc thử:', error);
+
+        let errorMessage = t('testOrder.cannotSearchReagents');
+
+        if (error instanceof Error) {
+          errorMessage = error.message;
+        } else if (typeof error === 'string') {
+          errorMessage = error;
+        }
+
+        toast.error(errorMessage);
+      }
+      finally {
         if (!isCancelled) {
           setSearchLoading(false);
         }
@@ -137,7 +158,7 @@ const SelectReagentsPage: React.FC = () => {
       isCancelled = true;
       clearTimeout(debounceTimer);
     };
-  }, [searchQuery, baseReagents]);
+  }, [searchQuery, baseReagents, t]);
 
   const handleToggleSelect = (reagentId: string) => {
     setSelectedReagents(prev => {
@@ -157,7 +178,7 @@ const SelectReagentsPage: React.FC = () => {
   const handleQuantityChange = (reagentId: string, quantity: number) => {
     const available = availableQuantities[reagentId] || 0;
     const newQuantity = Math.max(1, Math.min(quantity, available));
-    
+
     setSelectedReagents(prev => ({
       ...prev,
       [reagentId]: {
@@ -196,10 +217,23 @@ const SelectReagentsPage: React.FC = () => {
       const basePath = getBasePath();
       navigate(`${basePath}/test-orders`);
 
-    } catch (err: any) {
-      const msg = err.response?.data?.message || 'Lỗi hệ thống';
+    } catch (err: unknown) {
+      console.error('Lỗi khi tạo đơn xét nghiệm:', err);
+
+      let msg = 'Lỗi hệ thống';
+
+      if (err instanceof Error) {
+        msg = err.message;
+      } else if (typeof err === 'object' && err !== null && 'response' in err) {
+        const anyErr = err as { response?: { data?: { message?: string } } };
+        msg = anyErr.response?.data?.message || msg;
+      } else if (typeof err === 'string') {
+        msg = err;
+      }
+
       toast.error(msg);
-    } finally {
+    }
+    finally {
       setIsSubmitting(false);
     }
   };
@@ -371,57 +405,56 @@ const SelectReagentsPage: React.FC = () => {
                   </TableRow>
                 ) : (
                   paginatedReagents.map((reagent) => {
-                  const isSelected = !!selectedReagents[reagent.id];
-                  const selected = selectedReagents[reagent.id];
-                  const remaining = getRemainingQuantity(reagent.id);
-                  const available = availableQuantities[reagent.id] || 0;
+                    const isSelected = !!selectedReagents[reagent.id];
+                    const selected = selectedReagents[reagent.id];
+                    const remaining = getRemainingQuantity(reagent.id);
+                    const available = availableQuantities[reagent.id] || 0;
 
-                  return (
-                    <TableRow key={reagent.id}>
-                      <TableCell>
-                        <button
-                          type="button"
-                          onClick={() => handleToggleSelect(reagent.id)}
-                          className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
-                            isSelected
+                    return (
+                      <TableRow key={reagent.id}>
+                        <TableCell>
+                          <button
+                            type="button"
+                            onClick={() => handleToggleSelect(reagent.id)}
+                            className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${isSelected
                               ? 'bg-blue-600 border-blue-600'
                               : 'border-gray-300 hover:border-blue-400'
-                          }`}
-                        >
-                          {isSelected && <Check className="w-3 h-3 text-white" />}
-                        </button>
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        {reagent.name}
-                      </TableCell>
-                      <TableCell className="text-sm text-gray-600">
-                        {reagent.expiryDate}
-                      </TableCell>
-                      <TableCell className="text-sm text-gray-600">
-                        {reagent.storageLocation || t('testOrder.notUpdated')}
-                      </TableCell>
-                      <TableCell>
-                        {isSelected ? (
-                          <input
-                            type="number"
-                            min="1"
-                            max={available}
-                            value={selected.quantity}
-                            onChange={(e) => handleQuantityChange(reagent.id, parseInt(e.target.value) || 1)}
-                            className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          />
-                        ) : (
-                          <span className="text-gray-400">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <span className={`font-medium ${remaining === 0 ? 'text-red-600' : remaining < 2 ? 'text-yellow-600' : 'text-gray-700'}`}>
-                          {remaining}
-                        </span>
-                        <span className="text-gray-500 text-sm ml-1">/ {available}</span>
-                      </TableCell>
-                    </TableRow>
-                  );
+                              }`}
+                          >
+                            {isSelected && <Check className="w-3 h-3 text-white" />}
+                          </button>
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          {reagent.name}
+                        </TableCell>
+                        <TableCell className="text-sm text-gray-600">
+                          {reagent.expiryDate}
+                        </TableCell>
+                        <TableCell className="text-sm text-gray-600">
+                          {reagent.storageLocation || t('testOrder.notUpdated')}
+                        </TableCell>
+                        <TableCell>
+                          {isSelected ? (
+                            <input
+                              type="number"
+                              min="1"
+                              max={available}
+                              value={selected.quantity}
+                              onChange={(e) => handleQuantityChange(reagent.id, parseInt(e.target.value) || 1)}
+                              className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <span className={`font-medium ${remaining === 0 ? 'text-red-600' : remaining < 2 ? 'text-yellow-600' : 'text-gray-700'}`}>
+                            {remaining}
+                          </span>
+                          <span className="text-gray-500 text-sm ml-1">/ {available}</span>
+                        </TableCell>
+                      </TableRow>
+                    );
                   })
                 )}
               </TableBody>

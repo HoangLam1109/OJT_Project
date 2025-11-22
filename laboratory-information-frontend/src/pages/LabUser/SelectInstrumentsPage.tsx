@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Button from '../../components/common/button';
-import { ArrowLeft, ArrowRight, Check, Search, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Search, X } from 'lucide-react';
 import type { Instrument } from '../service/types/Instrument';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader } from '../../components/common/card';
@@ -93,7 +93,7 @@ const SelectInstrumentsPage: React.FC = () => {
     };
 
     loadInstruments();
-  }, [currentPage]);
+  }, [currentPage, t]);
 
   const handleToggleSelect = (instrument: Instrument) => {
     setSelectedInstruments(prev => {
