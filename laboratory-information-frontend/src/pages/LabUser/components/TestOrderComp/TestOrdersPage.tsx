@@ -2,15 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useAuthContext } from '../../../../hooks/useAuthContext';
-import type { TestOrder, TestResult } from '../../types/TestOrderTypes';
+import type { TestOrder } from '../../types/TestOrderTypes';
 import { testOrderService } from '../../../../service/testOrderService';
-import type { Instrument } from '../../../service/types/Instrument';
 import TestOrderToolbar from './TestOrderToolbar';
 import TestOrderStatsCards from './TestOrderStatsCards';
 import TestOrderList from './TestOrderList';
-import StartTestDialog from '../modals/TestOrderModal/StartTestDialog';
 import TestOrderFormModal from '../modals/TestOrderModal/TestOrderUpdateModal';
-import ReviewResultModal from '../modals/TestOrderModal/ReviewResultModal';
 import DeleteConfirmModal from '../modals/TestOrderModal/TestOrderDeleteModal';
 import TestOrderDetailModal from '../modals/TestOrderModal/TestOrderDetailModal';
 import { calculateStats } from '../../utils/testOrderUtils';
@@ -21,23 +18,19 @@ const TestOrdersPage: React.FC = () => {
   const { user } = useAuthContext();
   const navigate = useNavigate();
   const location = useLocation();
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   const [orders, setOrders] = useState<TestOrder[]>([]);
   const [filteredOrders, setFilteredOrders] = useState<TestOrder[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isInitialLoad, setIsInitialLoad] = useState(true); // Track if it's the first load
-  const [searchInput, setSearchInput] = useState(''); // Input value (immediate)
-  const [searchTerm, setSearchTerm] = useState(''); // Debounced search term (for API)
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [searchInput, setSearchInput] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<TestOrder | null>(null);
   const [formModalOpen, setFormModalOpen] = useState(false);
-  const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
-  const [instruments] = useState<Instrument[]>([]);
-  const [showStartTestDialog, setShowStartTestDialog] = useState(false);
-  const [selectedInstrument, setSelectedInstrument] = useState('');
   const [showDetailDialog, setShowDetailDialog] = useState(false);
-  
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState({
@@ -84,7 +77,7 @@ const TestOrdersPage: React.FC = () => {
 
     return () => clearInterval(interval);
   }, []);
-  
+
   const loadTestOrders = async (page: number = 1) => {
     try {
       setLoading(true);
@@ -121,69 +114,75 @@ const TestOrdersPage: React.FC = () => {
       setIsInitialLoad(false);
     }
   };
-  
+
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
 
 
   // Detect current route base path (admin, service, or labuser)
-  const getBasePath = () => {
-    if (location.pathname.startsWith('/admin')) {
-      return '/admin';
-    }
-    if (location.pathname.startsWith('/service')) {
-      return '/service';
-    }
-    if (location.pathname.startsWith('/admin')) {
-      return '/admin';
-    }
+  const getBasePath = React.useCallback(() => {
+    if (location.pathname.startsWith('/admin')) return '/admin';
+    if (location.pathname.startsWith('/service')) return '/service';
     return '/labuser';
-  };
+  }, [location.pathname]);
 
   const handleCreate = React.useCallback(() => {
     const basePath = getBasePath();
     navigate(`${basePath}/create-test-order`);
-  }, [navigate, location.pathname]);
+  }, [navigate, getBasePath]);
 
 
-  const handleFormSubmit = async (_orderData: Omit<TestOrder, '_id'> | Partial<TestOrder> | TestOrder) => {
+
+  const handleFormSubmit = async () => {
     try {
       // TestOrderFormModal đã gọi API trực tiếp, chỉ cần refresh data
       setFormModalOpen(false);
       setIsEdit(false);
       setSelectedOrder(null);
       await loadTestOrders(currentPage);
-    } catch (error) { 
+    } catch (error) {
       console.error('Error refreshing test orders:', error);
     }
   };
 
-const handleStatusChange = async (
-  orderId: string,
-  newStatus: 'Pending' | 'Processing' | 'Completed'
-) => {
-  try {
-    await testOrderService.changeStatus(orderId, newStatus, user?.name ?? 'system');
-    toast.success(`Đã chuyển sang ${newStatus}`);
+  const handleStatusChange = async (
+    orderId: string,
+    newStatus: 'Pending' | 'Processing' | 'Completed'
+  ) => {
+    try {
+      await testOrderService.changeStatus(orderId, newStatus, user?.name ?? 'system');
+      toast.success(`Đã chuyển sang ${newStatus}`);
 
-    // Optimistic UI – cập nhật ngay, không cần reload
-    const updateOrder = (o: TestOrder) =>
-      o._id === orderId
-        ? {
+      // Optimistic UI – cập nhật ngay, không cần reload
+      const updateOrder = (o: TestOrder) =>
+        o._id === orderId
+          ? {
             ...o,
             status: newStatus,
             processing: newStatus === 'Processing' ? 10 : newStatus === 'Completed' ? 100 : 0
           }
-        : o;
+          : o;
 
-    setOrders(prev => prev.map(updateOrder));
-    setFilteredOrders(prev => prev.map(updateOrder));
-  } catch (error: any) {
-    toast.error(error.response?.data?.message || 'Cập nhật thất bại');
-    console.error('Status change error:', error.response?.data);
-  }
-};
+      setOrders(prev => prev.map(updateOrder));
+      setFilteredOrders(prev => prev.map(updateOrder));
+    } catch (error: unknown) {
+      console.error('Lỗi khi thay đổi trạng thái:', error);
+
+      let msg = 'Cập nhật thất bại';
+
+      if (error instanceof Error) {
+        msg = error.message;
+      } else if (typeof error === 'object' && error !== null && 'response' in error) {
+        const errObj = error as { response?: { data?: { message?: string } } };
+        msg = errObj.response?.data?.message || msg;
+        console.error('Status change error data:', errObj.response?.data);
+      }
+
+      toast.error(msg);
+    }
+
+  };
 
   const handleDeleteConfirm = async () => {
     if (!selectedOrder) return;
@@ -195,48 +194,6 @@ const handleStatusChange = async (
     } catch (error) {
       toast.error('Không thể xóa lệnh xét nghiệm');
       console.error('Error deleting test order:', error);
-    }
-  };
-
-  const handleReviewSubmit = async (_result: Partial<TestResult>) => {
-    try {
-      toast.success('Đã cập nhật kết quả xét nghiệm thành công');
-      setReviewModalOpen(false);
-      loadTestOrders(currentPage);
-    } catch (error) {
-      toast.error(t('testOrder.notUploading'));
-      console.error('Error updating test result:', error);
-    }
-  };
-
-  const handleStartTest = async () => {
-    if (!selectedOrder || !selectedInstrument) {
-      toast.error('Vui lòng chọn đầy đủ thông tin');
-      return;
-    }
-
-    try {
-      // GỌI API ĐỔI STATUS + CẬP NHẬT INSTRUMENT
-      await testOrderService.changeStatus(selectedOrder._id, 'Processing', user?.name ??'');
-
-      // Cập nhật UI tức thì (optimistic)
-      const updateOrder = (o: TestOrder) =>
-        o._id === selectedOrder._id
-          ? { ...o, status: 'Processing', processing: 10 }
-          : o;
-
-      setOrders(prev => prev.map(updateOrder));
-      setFilteredOrders(prev => prev.map(updateOrder));
-
-      toast.success('Đã bắt đầu xét nghiệm');
-    } catch (error: any) {
-      toast.error('Không thể bắt đầu xét nghiệm');
-      console.error(error);
-      return;
-    } finally {
-      setShowStartTestDialog(false);
-      setSelectedOrder(null);
-      setSelectedInstrument('');
     }
   };
 
@@ -260,57 +217,56 @@ const handleStatusChange = async (
     }
   };
 
-  const availableInstruments = instruments.filter(i => i.status === 'Ready' && i.is_active === true);
 
   // Only show full skeleton on initial load, not during search
   if (loading && isInitialLoad) {
-  return (
-    <div className="space-y-6 p-4">
-      {/* Toolbar skeleton */}
-      <div className="flex justify-between items-center">
-        <div className="space-y-2">
-          <Skeleton className="h-6 w-40" />
-          <Skeleton className="h-4 w-64" />
+    return (
+      <div className="space-y-6 p-4">
+        {/* Toolbar skeleton */}
+        <div className="flex justify-between items-center">
+          <div className="space-y-2">
+            <Skeleton className="h-6 w-40" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+          <div className="flex items-center space-x-4">
+            <Skeleton className="h-10 w-80 rounded-md" />
+            <Skeleton className="h-10 w-60 rounded-md" />
+          </div>
         </div>
-        <div className="flex items-center space-x-4">
-          <Skeleton className="h-10 w-80 rounded-md" />
-          <Skeleton className="h-10 w-60 rounded-md" />
-        </div>
-      </div>
 
-      {/* Stats cards skeleton */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        {[...Array(4)].map((_, i) => (
-          <Card key={i} className="p-6">
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-6 w-12" />
-            </div>
-          </Card>
-        ))}
-      </div>
-
-      {/* TestOrderList skeleton */}
-      <Card className="glass-strong hover-lift">
-        <CardHeader>
-          <Skeleton className="h-5 w-32 mb-2" />
-          <Skeleton className="h-4 w-1/2" />
-        </CardHeader>
-        <CardContent>
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="p-4 border rounded-lg bg-white/50 mb-3">
+        {/* Stats cards skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i} className="p-6">
               <div className="space-y-2">
-                <Skeleton className="h-4 w-1/3" />
-                <Skeleton className="h-3 w-2/3" />
-                <Skeleton className="h-3 w-1/2" />
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-6 w-12" />
               </div>
-            </div>
+            </Card>
           ))}
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
+        </div>
+
+        {/* TestOrderList skeleton */}
+        <Card className="glass-strong hover-lift">
+          <CardHeader>
+            <Skeleton className="h-5 w-32 mb-2" />
+            <Skeleton className="h-4 w-1/2" />
+          </CardHeader>
+          <CardContent>
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="p-4 border rounded-lg bg-white/50 mb-3">
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-1/3" />
+                  <Skeleton className="h-3 w-2/3" />
+                  <Skeleton className="h-3 w-1/2" />
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
 
   const stats = calculateStats(orders);
@@ -335,20 +291,6 @@ const handleStatusChange = async (
         isLoading={loading && !isInitialLoad}
       />
 
-      <StartTestDialog
-        isOpen={showStartTestDialog}
-        order={selectedOrder}
-        availableInstruments={availableInstruments}
-        selectedInstrument={selectedInstrument}
-        onClose={() => {
-          setShowStartTestDialog(false);
-          setSelectedOrder(null);
-          setSelectedInstrument('');
-        }}
-        onInstrumentChange={setSelectedInstrument}
-        onConfirm={handleStartTest}
-      />
-
       <TestOrderDetailModal
         order={selectedOrder}
         isOpen={showDetailDialog}
@@ -370,13 +312,6 @@ const handleStatusChange = async (
         onClose={() => setFormModalOpen(false)}
         onSubmit={handleFormSubmit}
         isEdit={isEdit}
-      />
-
-      <ReviewResultModal
-        order={selectedOrder}
-        isOpen={reviewModalOpen}
-        onClose={() => setReviewModalOpen(false)}
-        onSubmit={handleReviewSubmit}
       />
 
       <DeleteConfirmModal

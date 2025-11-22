@@ -1,5 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/common/card';
-import { Settings, Save, RefreshCw, Shield, Database, Bell } from 'lucide-react';
+import { Settings, Save, RefreshCw } from 'lucide-react';
 import Button from '../../components/common/button';
 
 export function AdminSettingsPage() {

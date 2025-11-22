@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, ChevronDown, X } from 'lucide-react';
+import { Search, ChevronDown } from 'lucide-react';
 
 interface SearchableDropdownOption {
   id: string;
   label: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface SearchableDropdownProps {
