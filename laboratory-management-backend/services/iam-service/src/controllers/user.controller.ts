@@ -938,5 +938,4 @@ export {
   getCurrentUserRolesAndPrivileges,
   lockUser,
   assignRoleToUser,
-  getCurrentUser,
 };
