@@ -593,6 +593,8 @@
         "description": "Detailed information about the test instrument",
         "loading": "Loading information...",
         "notFound": "Instrument information not found",
+        "basicInfo": "Basic Information",
+        "locationInfo": "Location Information",
         "instrumentCode": "Instrument Code",
         "active": "Active",
         "paused": "Paused",

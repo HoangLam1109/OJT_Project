@@ -591,6 +591,8 @@
         "description": "Thông tin chi tiết về thiết bị xét nghiệm",
         "loading": "Đang tải thông tin...",
         "notFound": "Không tìm thấy thông tin thiết bị",
+        "basicInfo": "Thông tin cơ bản",
+        "locationInfo": "Thông tin vị trí",
         "instrumentCode": "Mã thiết bị",
         "active": "Hoạt động",
         "paused": "Tạm dừng",

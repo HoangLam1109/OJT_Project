@@ -31,8 +31,8 @@ import {
 } from "../../components/common/table";
 import { toast } from "sonner";
 import { InstrumentDetailDialog } from "./components/InstrumentDetailDialog";
-import { AddInstrumentDialog } from "./components/AddInstrumentDialog";
-import { ChangeInstrumentStatusDialog } from "./components/ChangeInstrumentStatusDialog";
+import { AddInstrumentDialog } from "./components/InstrumentAdd";
+import { ChangeInstrumentStatusDialog } from "./components/InstrumentUpdate";
 import { DeleteInstrumentConfirmDialog } from "./components/DeleteInstrumentConfirmDialog";
 import { instrumentsService } from "../../service/instrumentsService";
 import { useTranslation } from "react-i18next";
@@ -316,9 +316,9 @@ export default function ServiceInstrumentPage() {
                                             <Badge
                                                 variant={
                                                     instrument.status === "Ready"
-                                                        ? "default"
+                                                        ? "success"
                                                         : instrument.status === "Processing"
-                                                            ? "secondary"
+                                                            ? "warning"
                                                             : "destructive"
                                                 }
                                             >
