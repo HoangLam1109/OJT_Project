@@ -3,13 +3,14 @@ import { Card, CardContent } from '../../components/common/card';
 import { Input } from '../../components/common/input';
 import Button from '../../components/common/button';
 import { Search, Download, ClipboardList } from 'lucide-react';
-import { mockTestResults } from './data/mockTest';
+import type { TestResult } from './type/TestResult';
 import { toast } from 'sonner';
+import { mockTestResults } from './type/TestResult';
 
 const TestResults: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredResults = mockTestResults.filter(
+  const filteredResults: TestResult[] = mockTestResults.filter(
     (test) =>
       test.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       test.id.toLowerCase().includes(searchQuery.toLowerCase())

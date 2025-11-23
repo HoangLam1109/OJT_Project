@@ -2,7 +2,7 @@ import React from 'react';
 import { useAuthContext } from '../../hooks/useAuthContext';
 import { Card, CardContent } from '../../components/common/card';
 import { ClipboardList, Clock, CheckCircle } from 'lucide-react';
-import { mockTestResults } from './data/mockTest';
+import { mockTestResults } from './type/TestResult';
 const Dashboard: React.FC = () => {
   const { user } = useAuthContext();
 
