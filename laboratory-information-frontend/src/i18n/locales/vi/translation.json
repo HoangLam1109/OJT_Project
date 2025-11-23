@@ -395,6 +395,7 @@
     "medicalRecord": "Hồ sơ y tế",
     "noMedicalRecord": "Không có hồ sơ y tế",
     "testResult": "Kết quả xét nghiệm",
+    "testTypeName": "Tên loại xét nghiệm",
     "instrumentName": "Tên thiết bị",
     "reagentName": "Tên hóa chất",
     "createdAt": "Ngày tạo",
@@ -643,6 +644,7 @@
     "resultsCount": "{{current}} / {{total}} kết quả xét nghiệm",
     "foundResults": "(tìm thấy {{found}} / {{total}})",
     "search": "Tìm kiếm",
+    "close" :"Đóng",
     "searchPlaceholder": "Tìm theo mã xét nghiệm hoặc tên bệnh nhân...",
     "refresh": "Làm mới",
     "resultsList": "Danh sách Kết quả Xét nghiệm",
@@ -667,6 +669,8 @@
     "deleting": "Đang xóa...",
     "status": {
       "normal": "Bình thường",
+      "high": "Cao",
+      "low": "Thấp",
       "abnormal": "Bất thường",
       "critical": "Nghiêm trọng"
     },
@@ -687,6 +691,23 @@
       "title": "Xác nhận xóa",
       "description": "Bạn có chắc chắn muốn xóa kết quả xét nghiệm {{testName}} của bệnh nhân {{patientName}} không?"
     },
+    "resultModal": {
+      "title": "Chi tiết kết quả xét nghiệm",
+      "description": "Xem chi tiết kết quả các xét nghiệm đã thực hiện",
+      "patientInfo": "Thông tin bệnh nhân",
+      "patientName": "Tên bệnh nhân",
+      "totalTests": "Tổng số xét nghiệm",
+      "testDate": "Ngày xét nghiệm",
+      "resultDetails": "Kết quả chi tiết",
+      "stt": "STT",
+      "testName": "Tên xét nghiệm",
+      "code": "Mã",
+      "result": "Kết quả",
+      "unit": "Đơn vị",
+      "status": "Trạng thái",
+      "note": "Lưu ý",
+      "noteContent": "Kết quả xét nghiệm chỉ mang tính chất tham khảo. Vui lòng tham khảo ý kiến bác sĩ để được tư vấn và điều trị phù hợp."
+    },
     "detailModal": {
       "title": "Chi tiết kết quả xét nghiệm",
       "patientName": "Tên bệnh nhân",
@@ -700,10 +721,12 @@
         "status": "Trạng thái"
       },
       "status": {
-        "normal": "Bình thường",
-        "abnormal": "Bất thường",
-        "critical": "Nguy kịch"
-      }
+      "normal": "Bình thường",
+      "high": "Cao",
+      "low": "Thấp",
+      "abnormal": "Bất thường",
+      "critical": "Nghiêm trọng"
+    }
     }
   },
   "reagent": {

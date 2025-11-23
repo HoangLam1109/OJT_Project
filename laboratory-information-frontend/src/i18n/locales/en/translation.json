@@ -396,6 +396,7 @@
     "medicalRecord":"Medical Record",
     "noMedicalRecord":"No medical record",
     "testResult":"Test Result",
+    "testTypeName":"Test Type Name",
     "instrumentName":"Instrument Name",
     "reagentName":"Reagent Name",
     "createdAt":"Created At",
@@ -646,6 +647,7 @@
     "resultsCount": "{{current}} / {{total}} test results",
     "foundResults": "(found {{found}} / {{total}})",
     "search": "Search",
+    "close" :"Close",
     "searchPlaceholder": "Search by test code or patient name...",
     "refresh": "Refresh",
     "resultsList": "Test Results List",
@@ -670,6 +672,8 @@
     "deleting": "Deleting...",
     "status": {
       "normal": "Normal",
+      "high": "High",
+      "low": "Low",
       "abnormal": "Abnormal",
       "critical": "Critical"
     },
@@ -689,6 +693,23 @@
     "deleteConfirm": {
       "title": "Confirm Delete",
       "description": "Are you sure you want to delete test result {{testName}} for patient {{patientName}}?"
+    },
+    "resultModal": {
+      "title": "Test Result Details",
+      "description": "View details of completed tests",
+      "patientInfo": "Patient Information",
+      "patientName": "Patient Name",
+      "totalTests": "Total Tests",
+      "testDate": "Test Date",
+      "resultDetails": "Result Details",
+      "stt": "No.",
+      "testName": "Test Name",
+      "code": "Code",
+      "result": "Result",
+      "unit": "Unit",
+      "status": "Status",
+      "note": "Note",
+      "noteContent": "Test results are for reference only. Please consult a doctor for proper advice and treatment."
     },
     "detailModal": {
       "title": "Test Result Details",
