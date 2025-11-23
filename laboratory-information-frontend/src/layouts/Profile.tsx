@@ -1,18 +1,19 @@
-import { useState, useEffect } from "react";
-import { Save, X, Mail, Phone, User as UserIcon, Edit3, Calendar, Shield, MapPin, Activity } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Save, X, Mail, Phone, User as UserIcon, Edit3, Calendar, Shield, MapPin, Activity, Upload, Loader2 } from "lucide-react";
 import type { User } from "../types/User";
 import { Input } from "../components/common/input";
 import Button from "../components/common/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/common/card";
 import { Label } from "../components/common/label";
-import apiClient from "../service/apiClient";
+import { profileService } from "../service/profileService";
 import { Skeleton } from "../components/common/skeleton";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
 interface UserProfileData {
   email: string;
   fullName: string;
-  identityNumber: string;
+  identityNumber: string; 
   role: string[];
   avatar: string;
   isActive: boolean;
@@ -34,6 +35,8 @@ export default function Profile({ onUpdateProfile }: ProfileProps) {
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<Partial<UserProfileData>>({});
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -43,11 +46,9 @@ export default function Profile({ onUpdateProfile }: ProfileProps) {
   const fetchProfile = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.get<{ user: UserProfileData }>("/user/userProfile");
-      if (response.data && response.data.user) {
-        setProfile(response.data.user);
-        setFormData(response.data.user);
-      }
+      const userData = await profileService.getProfile();
+      setProfile(userData);
+      setFormData(userData);
     } catch (error) {
       console.error("Failed to fetch profile:", error);
     } finally {
@@ -59,87 +60,13 @@ export default function Profile({ onUpdateProfile }: ProfileProps) {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  /*
-  const handleAvatarClick = () => {
-    if (isEditing) {
-      // fileInputRef.current?.click();
-    }
-  };
-
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const formData = new FormData();
-    formData.append("avatar", file);
-
-    try {
-      // Don't set global loading to avoid full page flicker, maybe just show a toast or local indicator
-      // But for simplicity, let's keep it simple or add a specific loading state if needed.
-      // Using alert for now as per existing pattern
-      
-      await apiClient.post("/user/profile/avatar", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      
-      await fetchProfile(); // Refresh to get new avatar URL
-      alert(t('userProfile.updateAvatarSuccess'));
-    } catch (error) {
-      console.error("Failed to upload avatar:", error);
-      alert(t('userProfile.uploadAvatarError'));
-    }
-  };
-  */
+ 
 
   const handleSave = async () => {
     try {
-      // Prepare data for update (remove email as it's not updatable usually, or backend handles it)
-      const updateData = { ...formData };
+      await profileService.updateProfile(formData);
       
-      // Remove fields that are not allowed in the update payload
-      delete (updateData as Record<string, unknown>)._id;
-      delete (updateData as Record<string, unknown>).updatedAt;
-      delete (updateData as Record<string, unknown>).__v;
-      delete updateData.email; 
-      delete updateData.role; 
-      delete updateData.createdAt;
-      delete updateData.isActive;
-      delete (updateData as Record<string, unknown>).password;
-
-      // Clean up data
-      if (!updateData.dateOfBirth) {
-        delete updateData.dateOfBirth;
-      }
-      if (updateData.age === undefined || updateData.age === null || isNaN(updateData.age)) {
-        delete updateData.age;
-      }
-      if (!updateData.phoneNumber) {
-        delete updateData.phoneNumber;
-      }
-
-      // Normalize gender to Title Case if present
-      if (updateData.gender) {
-        updateData.gender = updateData.gender.charAt(0).toUpperCase() + updateData.gender.slice(1).toLowerCase();
-      }
-
-      // Auto-fix identity number (CCCD/CMND) if user forgot leading zero
-      if (updateData.identityNumber) {
-        const cleanId = updateData.identityNumber.trim();
-        // If 11 digits, assume 12-digit CCCD missing leading 0
-        if (cleanId.length === 11 && /^\d+$/.test(cleanId)) {
-          updateData.identityNumber = '0' + cleanId;
-        }
-        // If 8 digits, assume 9-digit CMND missing leading 0
-        else if (cleanId.length === 8 && /^\d+$/.test(cleanId)) {
-          updateData.identityNumber = '0' + cleanId;
-        }
-      }
-
-      await apiClient.put("/user/UserProfile/Update", updateData);
-      
-      alert(t('userProfile.updateProfileSuccess'));
+      toast.success(t('userProfile.updateProfileSuccess'));
       setIsEditing(false);
       fetchProfile(); // Refresh data
       
@@ -149,7 +76,7 @@ export default function Profile({ onUpdateProfile }: ProfileProps) {
     } catch (error: unknown) {
       console.error("Failed to update profile:", error);
       const message = (error as { response?: { data?: { message?: string } } })?.response?.data?.message || t('userProfile.updateProfileError');
-      alert(message);
+      toast.error(message);
     }
   };
 
@@ -160,9 +87,58 @@ export default function Profile({ onUpdateProfile }: ProfileProps) {
     setIsEditing(false);
   };
 
-  const formatDate = (dateString: string) => {
-    if (!dateString) return t('userProfile.notUpdated');
-    return new Date(dateString).toLocaleDateString("vi-VN");
+  const handleAvatarClick = () => {
+    if (isEditing && fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleAvatarChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error(t('userProfile.avatarFileTypeError'));
+      return;
+    }
+
+    // Validate file size (5MB)
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      toast.error(t('userProfile.avatarFileSizeError'));
+      return;
+    }
+
+    try {
+      setUploadingAvatar(true);
+      const avatarUrl = await profileService.uploadAvatar(file);
+      
+      // Update local state
+      setProfile((prev) => prev ? { ...prev, avatar: avatarUrl } : null);
+      setFormData((prev) => ({ ...prev, avatar: avatarUrl }));
+      
+      toast.success(t('userProfile.updateAvatarSuccess'));
+      
+      // Refresh profile to get latest data
+      await fetchProfile();
+      
+      if (onUpdateProfile) {
+        onUpdateProfile({ avatar: avatarUrl });
+      }
+    } catch (error: unknown) {
+      console.error("Failed to upload avatar:", error);
+      const message = (error as { response?: { data?: { message?: string } } })?.response?.data?.message || 
+                     (error as Error)?.message || 
+                     t('userProfile.uploadAvatarError');
+      toast.error(message);
+    } finally {
+      setUploadingAvatar(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
   };
 
   if (loading) {
@@ -191,19 +167,36 @@ export default function Profile({ onUpdateProfile }: ProfileProps) {
         <div className="h-48 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-t-3xl shadow-lg"></div>
         <div className="absolute -bottom-16 left-10 flex items-end">
           <div className="relative">
-            <img 
-              src={profile.avatar || "https://github.com/shadcn.png"} 
-              alt="Avatar" 
-              className="w-32 h-32 rounded-full border-4 border-white shadow-xl object-cover bg-white"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = "https://github.com/shadcn.png";
-              }}
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleAvatarChange}
+              accept="image/*"
+              className="hidden"
             />
-            {isEditing && (
-              <div className="absolute bottom-0 right-0 bg-white p-1.5 rounded-full shadow-md border border-gray-200 cursor-pointer hover:bg-gray-50">
-                <Edit3 className="w-4 h-4 text-gray-600" />
-              </div>
-            )}
+            <div 
+              className={`relative ${isEditing ? 'cursor-pointer group' : ''}`}
+              onClick={handleAvatarClick}
+            >
+              <img 
+                src={profile.avatar || "https://github.com/shadcn.png"} 
+                alt="Avatar" 
+                className={`w-32 h-32 rounded-full border-4 border-white shadow-xl object-cover bg-white ${isEditing ? 'group-hover:opacity-80 transition-opacity' : ''}`}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = "https://github.com/shadcn.png";
+                }}
+              />
+              {uploadingAvatar && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
+                  <Loader2 className="w-6 h-6 text-white animate-spin" />
+                </div>
+              )}
+              {isEditing && !uploadingAvatar && (
+                <div className="absolute bottom-0 right-0 bg-white p-1.5 rounded-full shadow-md border border-gray-200 cursor-pointer hover:bg-gray-50 group-hover:bg-blue-50 group-hover:border-blue-300 transition-colors">
+                  <Upload className="w-4 h-4 text-gray-600 group-hover:text-blue-600" />
+                </div>
+              )}
+            </div>
           </div>
           <div className="ml-6 mb-4">
             <h1 className="text-3xl font-bold text-gray-900">{profile.fullName}</h1>
@@ -278,12 +271,6 @@ export default function Profile({ onUpdateProfile }: ProfileProps) {
                   <span className="text-sm truncate" title={profile.address}>{profile.address || t('userProfile.notUpdated')}</span>
                 </div>
               </div>
-
-              <div className="pt-4 border-t border-gray-100">
-                <p className="text-xs text-gray-400 text-center">
-                  {t('userProfile.joinedFrom')} {formatDate(profile.createdAt)}
-                </p>
-              </div>
             </CardContent>
           </Card>
         </div>
@@ -309,7 +296,18 @@ export default function Profile({ onUpdateProfile }: ProfileProps) {
                     />
                   </div>
                 </div>
-
+                <div className="space-y-2">
+                  <Label className="text-gray-600 text-sm">{t('userProfile.email')}</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                    <Input
+                      value={formData.email || ''}
+                      onChange={(e) => handleChange("email", e.target.value)}
+                      disabled={!isEditing}
+                      className="pl-9 bg-gray-50/50 border-gray-200 focus:bg-white transition-all"
+                    />
+                  </div>
+                </div>
                 <div className="space-y-2">
                   <Label className="text-gray-600 text-sm">{t('userProfile.phone')}</Label>
                   <div className="relative">
