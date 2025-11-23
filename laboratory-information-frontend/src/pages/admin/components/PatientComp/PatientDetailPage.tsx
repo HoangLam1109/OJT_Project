@@ -11,10 +11,11 @@ import { testResultService } from '../../../../service/testResultService';
 import type { TestResult } from '../../../LabUser/types/TestResultTypes';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import EditPatientMedicalRecord from '../../../LabUser/components/modals/PatientModal/PatientMedicalRecord_EditModal';
+import EditPatientMedicalRecord from '../../../LabUser/components/modals/PatientMedicalRecordModal/PatientMedicalRecordEditModal';
 import { DeleteConfirmDialog } from '../DeleteConfirmDialog';
-import MedicalRecordViewModal from '@/pages/LabUser/components/modals/PatientModal/PatientMedicalRecord_ViewModal';
+import MedicalRecordViewModal from '@/pages/LabUser/components/modals/PatientMedicalRecordModal/PatientMedicalRecordViewModal';
 import TestResultModal from '@/pages/LabUser/components/modals/TestResultModal/TestResultModal';
+
 // Type for test result items from API
 interface TestResultItem {
   _id: string;
