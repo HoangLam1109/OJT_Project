@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../co
 import { Label } from "../components/common/label";
 import apiClient from "../service/apiClient";
 import { Skeleton } from "../components/common/skeleton";
+import { useTranslation } from "react-i18next";
 
 interface UserProfileData {
   email: string;
@@ -33,6 +34,7 @@ export default function Profile({ onUpdateProfile }: ProfileProps) {
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<Partial<UserProfileData>>({});
+  const { t } = useTranslation();
 
   useEffect(() => {
     fetchProfile();
@@ -57,9 +59,10 @@ export default function Profile({ onUpdateProfile }: ProfileProps) {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  /*
   const handleAvatarClick = () => {
     if (isEditing) {
-      fileInputRef.current?.click();
+      // fileInputRef.current?.click();
     }
   };
 
@@ -82,12 +85,13 @@ export default function Profile({ onUpdateProfile }: ProfileProps) {
       });
       
       await fetchProfile(); // Refresh to get new avatar URL
-      alert("Cập nhật ảnh đại diện thành công!");
+      alert(t('userProfile.updateAvatarSuccess'));
     } catch (error) {
       console.error("Failed to upload avatar:", error);
-      alert("Lỗi khi tải lên ảnh đại diện.");
+      alert(t('userProfile.uploadAvatarError'));
     }
   };
+  */
 
   const handleSave = async () => {
     try {
@@ -135,7 +139,7 @@ export default function Profile({ onUpdateProfile }: ProfileProps) {
 
       await apiClient.put("/user/UserProfile/Update", updateData);
       
-      alert("Cập nhật hồ sơ thành công!");
+      alert(t('userProfile.updateProfileSuccess'));
       setIsEditing(false);
       fetchProfile(); // Refresh data
       
@@ -144,7 +148,7 @@ export default function Profile({ onUpdateProfile }: ProfileProps) {
       }
     } catch (error: unknown) {
       console.error("Failed to update profile:", error);
-      const message = (error as { response?: { data?: { message?: string } } })?.response?.data?.message || "Cập nhật thất bại. Vui lòng thử lại.";
+      const message = (error as { response?: { data?: { message?: string } } })?.response?.data?.message || t('userProfile.updateProfileError');
       alert(message);
     }
   };
@@ -157,7 +161,7 @@ export default function Profile({ onUpdateProfile }: ProfileProps) {
   };
 
   const formatDate = (dateString: string) => {
-    if (!dateString) return "Chưa cập nhật";
+    if (!dateString) return t('userProfile.notUpdated');
     return new Date(dateString).toLocaleDateString("vi-VN");
   };
 
@@ -177,7 +181,7 @@ export default function Profile({ onUpdateProfile }: ProfileProps) {
   }
 
   if (!profile) {
-    return <div className="text-center mt-10 text-red-500">Không thể tải thông tin hồ sơ.</div>;
+    return <div className="text-center mt-10 text-red-500">{t('userProfile.loadProfileError')}</div>;
   }
 
   return (
@@ -218,7 +222,7 @@ export default function Profile({ onUpdateProfile }: ProfileProps) {
                 className="bg-white/20 hover:bg-white/30 text-white border-none backdrop-blur-sm"
               >
                 <Edit3 className="w-4 h-4 mr-2" />
-                Chỉnh sửa hồ sơ
+                {t('userProfile.editProfile')}
               </Button>
             ) : (
               <div className="flex gap-2">
@@ -228,14 +232,14 @@ export default function Profile({ onUpdateProfile }: ProfileProps) {
                   className="bg-white/90 hover:bg-white text-gray-700 border-none shadow-sm"
                 >
                   <X className="w-4 h-4 mr-2" />
-                  Hủy
+                  {t('userProfile.cancel')}
                 </Button>
                 <Button
                   onClick={handleSave}
                   className="bg-green-500 hover:bg-green-600 text-white border-none shadow-sm"
                 >
                   <Save className="w-4 h-4 mr-2" />
-                  Lưu thay đổi
+                  {t('userProfile.saveChanges')}
                 </Button>
               </div>
             )}
@@ -249,14 +253,14 @@ export default function Profile({ onUpdateProfile }: ProfileProps) {
             <CardHeader className="bg-gray-50 border-b border-gray-100 pb-4">
               <CardTitle className="text-lg font-semibold flex items-center text-gray-800">
                 <Activity className="w-5 h-5 mr-2 text-blue-500" />
-                Trạng thái & Liên hệ
+                {t('userProfile.statusAndContact')}
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-6 space-y-4">
               <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <span className="text-sm text-gray-500">Trạng thái</span>
+                <span className="text-sm text-gray-500">{t('userProfile.status')}</span>
                 <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${profile.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                  {profile.isActive ? "Đang hoạt động" : "Vô hiệu hóa"}
+                  {profile.isActive ? t('userProfile.active') : t('userProfile.inactive')}
                 </span>
               </div>
               
@@ -267,17 +271,17 @@ export default function Profile({ onUpdateProfile }: ProfileProps) {
                 </div>
                 <div className="flex items-center text-gray-700">
                   <Phone className="w-4 h-4 mr-3 text-gray-400" />
-                  <span className="text-sm">{profile.phoneNumber || "Chưa cập nhật"}</span>
+                  <span className="text-sm">{profile.phoneNumber || t('userProfile.notUpdated')}</span>
                 </div>
                 <div className="flex items-center text-gray-700">
                   <MapPin className="w-4 h-4 mr-3 text-gray-400" />
-                  <span className="text-sm truncate" title={profile.address}>{profile.address || "Chưa cập nhật"}</span>
+                  <span className="text-sm truncate" title={profile.address}>{profile.address || t('userProfile.notUpdated')}</span>
                 </div>
               </div>
 
               <div className="pt-4 border-t border-gray-100">
                 <p className="text-xs text-gray-400 text-center">
-                  Tham gia từ {formatDate(profile.createdAt)}
+                  {t('userProfile.joinedFrom')} {formatDate(profile.createdAt)}
                 </p>
               </div>
             </CardContent>
@@ -288,13 +292,13 @@ export default function Profile({ onUpdateProfile }: ProfileProps) {
         <div className="lg:col-span-2">
           <Card className="border-none shadow-md">
             <CardHeader className="bg-white border-b border-gray-100 pb-4">
-              <CardTitle className="text-xl font-semibold text-gray-800">Thông tin cá nhân</CardTitle>
-              <CardDescription>Quản lý thông tin cá nhân và bảo mật của bạn</CardDescription>
+              <CardTitle className="text-xl font-semibold text-gray-800">{t('userProfile.personalInfo')}</CardTitle>
+              <CardDescription>{t('userProfile.personalInfoDesc')}</CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label className="text-gray-600 text-sm">Họ và tên</Label>
+                  <Label className="text-gray-600 text-sm">{t('userProfile.fullName')}</Label>
                   <div className="relative">
                     <UserIcon className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                     <Input
@@ -307,7 +311,7 @@ export default function Profile({ onUpdateProfile }: ProfileProps) {
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-gray-600 text-sm">Số điện thoại</Label>
+                  <Label className="text-gray-600 text-sm">{t('userProfile.phone')}</Label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                     <Input
@@ -320,7 +324,7 @@ export default function Profile({ onUpdateProfile }: ProfileProps) {
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-gray-600 text-sm">Ngày sinh</Label>
+                  <Label className="text-gray-600 text-sm">{t('userProfile.dob')}</Label>
                   <div className="relative">
                     <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                     <Input
@@ -334,21 +338,21 @@ export default function Profile({ onUpdateProfile }: ProfileProps) {
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-gray-600 text-sm">Giới tính</Label>
+                  <Label className="text-gray-600 text-sm">{t('userProfile.gender')}</Label>
                   <select
                     value={formData.gender || ''}
                     onChange={(e) => handleChange("gender", e.target.value)}
                     disabled={!isEditing}
                     className="w-full h-10 px-3 py-2 rounded-md border border-gray-200 bg-gray-50/50 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                   >
-                    <option value="Male">Nam</option>
-                    <option value="Female">Nữ</option>
-                    <option value="Other">Khác</option>
+                    <option value="Male">{t('userProfile.male')}</option>
+                    <option value="Female">{t('userProfile.female')}</option>
+                    <option value="Other">{t('userProfile.other')}</option>
                   </select>
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-gray-600 text-sm">Tuổi</Label>
+                  <Label className="text-gray-600 text-sm">{t('userProfile.age')}</Label>
                   <Input
                     type="number"
                     value={formData.age || ''}
@@ -359,7 +363,7 @@ export default function Profile({ onUpdateProfile }: ProfileProps) {
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-gray-600 text-sm">CCCD/CMND</Label>
+                  <Label className="text-gray-600 text-sm">{t('userProfile.identityNumber')}</Label>
                   <Input
                     value={formData.identityNumber || ''}
                     onChange={(e) => handleChange("identityNumber", e.target.value)}
@@ -369,7 +373,7 @@ export default function Profile({ onUpdateProfile }: ProfileProps) {
                 </div>
 
                 <div className="md:col-span-2 space-y-2">
-                  <Label className="text-gray-600 text-sm">Địa chỉ</Label>
+                  <Label className="text-gray-600 text-sm">{t('userProfile.address')}</Label>
                   <div className="relative">
                     <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                     <Input

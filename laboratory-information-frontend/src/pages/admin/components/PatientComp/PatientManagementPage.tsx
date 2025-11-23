@@ -1,20 +1,20 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/common/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../../components/common/card';
 import { Users, Search, Eye, Edit, Trash2, Phone, Mail, MapPin, Heart, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import Button from '../../components/common/button';
-import { Input } from '../../components/common/input';
-import type { Patient } from './data/mockPatients';
-import { deletePatient as deletePatientApi, updatePatient as updatePatientApi } from '../../service/patientService';
-import { patientMedicalRecordService, type PatientMedicalRecord } from '../../service/patientMedicalRecordService';
-import { usePatientModal } from './hooks/usePatientModal';
-import { PatientModal } from './components/PatientModal';
-import { DeleteConfirmDialog } from './components/DeleteConfirmDialog';
+import Button from '../../../../components/common/button';
+import { Input } from '../../../../components/common/input';
+import type { Patient } from '../../data/mockPatients';
+import { deletePatient as deletePatientApi, updatePatient as updatePatientApi } from '../../../../service/patientService';
+import { patientMedicalRecordService, type PatientMedicalRecord } from '../../../../service/patientMedicalRecordService';
+import { usePatientModal } from '../../hooks/usePatientModal';
+import { Patient_UpdateModal } from './PatientUpdateModal';
+import { Patient_DeleteModal } from './PatientDeleteModal';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/common/skeleton';
-import { useAuthContext } from '../../hooks/useAuthContext';
-import AddPatientMedicalRecord from '../LabUser/components/modals/PatientModal/PatientMedicalRecord_AddModal';
-import { useAllPatients } from './hooks/useAllPatients';
+import { useAuthContext } from '../../../../hooks/useAuthContext';
+import AddPatientMedicalRecord from '../../../LabUser/components/modals/PatientModal/PatientMedicalRecord_AddModal';
+import { useAllPatients } from '../../hooks/useAllPatients';
 import { useTranslation } from 'react-i18next';
 
 
@@ -438,7 +438,7 @@ export function AdminPatientManagementPage() {
       </Card>
   {renderPagination()}
   {/* Patient modal and delete confirm */}
-      <PatientModal
+      <Patient_UpdateModal
   isOpen={modalState.isOpen}
   mode={modalState.mode}
   patient={modalState.patient}
@@ -507,7 +507,7 @@ export function AdminPatientManagementPage() {
 />
 
 
-      <DeleteConfirmDialog
+      <Patient_DeleteModal
         open={Boolean(deleteTarget)}
         itemName={deleteTarget?.name}
         onCancel={() => setDeleteTarget(null)}
