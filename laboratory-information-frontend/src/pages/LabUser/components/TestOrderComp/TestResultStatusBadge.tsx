@@ -15,9 +15,9 @@ const TestResultStatusBadge: React.FC<TestResultStatusBadgeProps> = ({ status })
   const Icon = config.icon;
 
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.color}`}>
-      <Icon className="w-3 h-3 mr-1" />
-      {status}
+    <span className={`inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium ${config.color}`}>
+      <Icon className="w-3 h-3 mr-1 flex-shrink-0" />
+      <span className="truncate max-w-[100px] sm:max-w-none">{status}</span>
     </span>
   );
 };

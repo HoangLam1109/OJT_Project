@@ -18,9 +18,9 @@ export const Patient_DeleteModal: React.FC<Props> = ({ open, itemName = 'bệnh 
           <DialogTitle>Xác nhận xóa</DialogTitle>
         </DialogHeader>
         <DialogDescription>{description ?? `Bạn có chắc muốn xóa ${itemName}? Hành động này không thể hoàn tác.`}</DialogDescription>
-        <div className="mt-6 flex justify-end gap-2">
-          <Button variant="outline" onClick={onCancel}>Hủy</Button>
-          <Button onClick={onConfirm} className="bg-red-600 hover:bg-red-700 text-white">Xóa</Button>
+        <div className="mt-6 flex flex-col sm:flex-row justify-end gap-2">
+          <Button variant="outline" onClick={onCancel} className="w-full sm:w-auto">Hủy</Button>
+          <Button onClick={onConfirm} className="bg-red-600 hover:bg-red-700 text-white w-full sm:w-auto">Xóa</Button>
         </div>
       </DialogContent>
     </Dialog>

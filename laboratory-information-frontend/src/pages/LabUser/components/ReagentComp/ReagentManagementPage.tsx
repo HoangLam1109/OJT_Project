@@ -259,12 +259,12 @@ const ReagentManagementPage: React.FC = () => {
   };
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
+    <div className="p-4 sm:p-6">
+      <div className="mb-4 sm:mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
           Quản lý Thuốc thử
         </h1>
-        <p className="text-gray-600">
+        <p className="text-sm sm:text-base text-gray-600">
           Quản lý và theo dõi thuốc thử trong phòng xét nghiệm
         </p>
       </div>
@@ -287,9 +287,9 @@ const ReagentManagementPage: React.FC = () => {
 
       {/* Pagination */}
       {filteredReagents.length > 0 && (
-        <div className="flex justify-center items-center gap-2 mt-4">
+        <div className="flex justify-center items-center gap-1 sm:gap-2 mt-4 overflow-x-auto pb-2">
           <button
-            className="px-3 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            className="px-2 sm:px-3 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition flex-shrink-0"
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             disabled={currentPage === 1}
             aria-label="Trang trước"
@@ -300,7 +300,8 @@ const ReagentManagementPage: React.FC = () => {
             const pageNum = i + 1;
             // Show first page, last page, current page, and pages around current
             // If totalPages <= 7, show all pages
-            const showAllPages = totalPages <= 7;
+            // On mobile, show fewer pages
+            const showAllPages = totalPages <= 5;
             const showPage =
               showAllPages ||
               pageNum === 1 ||
@@ -311,7 +312,7 @@ const ReagentManagementPage: React.FC = () => {
               // Show ellipsis
               if (pageNum === currentPage - 2 || pageNum === currentPage + 2) {
                 return (
-                  <span key={pageNum} className="px-2 text-gray-500">
+                  <span key={pageNum} className="px-1 sm:px-2 text-gray-500 flex-shrink-0">
                     ...
                   </span>
                 );
@@ -322,7 +323,7 @@ const ReagentManagementPage: React.FC = () => {
             return (
               <button
                 key={pageNum}
-                className={`px-4 py-2 rounded-lg border transition ${currentPage === pageNum
+                className={`px-3 sm:px-4 py-2 rounded-lg border transition flex-shrink-0 text-sm sm:text-base ${currentPage === pageNum
                   ? 'bg-blue-600 text-white border-blue-600'
                   : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
                   }`}
@@ -333,7 +334,7 @@ const ReagentManagementPage: React.FC = () => {
             );
           })}
           <button
-            className="px-3 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            className="px-2 sm:px-3 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition flex-shrink-0"
             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
             aria-label="Trang sau"

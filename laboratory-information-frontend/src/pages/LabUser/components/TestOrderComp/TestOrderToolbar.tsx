@@ -16,17 +16,17 @@ const TestOrderToolbar: React.FC<TestOrderToolbarProps> = ({
 }) => {
   const {t} = useTranslation();
   return (
-    <div className="flex justify-between items-center">
+    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 sm:gap-0">
       <div>
-        <h2 className="text-xl font-semibold">{t('testOrder.testOrderList')}</h2>
-        <p className="text-gray-600">{t('testOrder.subTestOrderList')}</p>
+        <h2 className="text-lg sm:text-xl font-semibold">{t('testOrder.testOrderList')}</h2>
+        <p className="text-sm sm:text-base text-gray-600">{t('testOrder.subTestOrderList')}</p>
       </div>
-      <div className="flex items-center space-x-4">
-        <div className="relative">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:space-x-4 sm:gap-0">
+        <div className="relative w-full sm:w-auto">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
             placeholder={t('testOrder.searchPlaceholder')}
-            className="pl-10 w-80"
+            className="pl-10 w-full sm:w-64 md:w-80"
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
           />
@@ -34,10 +34,11 @@ const TestOrderToolbar: React.FC<TestOrderToolbarProps> = ({
         {onCreateTestOrder && (
           <Button
             onClick={onCreateTestOrder}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+            className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto"
           >
-            <Plus className="h-4 w-4" />
-            {t('testOrder.createTestOrder')}
+            <Plus className="h-4 w-4 flex-shrink-0" />
+            <span className="hidden sm:inline">{t('testOrder.createTestOrder')}</span>
+            <span className="sm:hidden">Create</span>
           </Button>
         )}
       </div>

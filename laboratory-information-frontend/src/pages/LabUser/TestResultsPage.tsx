@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../../../../components/common/card';
-import Button from '../../../../components/common/button';
-import { Input } from '../../../../components/common/input';
-import { Label } from '../../../../components/common/label';
-import { Textarea } from '../../../../components/common/textarea';
-import Pagination from '../../../../components/common/pagination';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/common/card';
+import Button from '../../components/common/button';
+import { Input } from '../../components/common/input';
+import { Label } from '../../components/common/label';
+import { Textarea } from '../../components/common/textarea';
+import Pagination from '../../components/common/pagination';
 import { toast } from 'sonner';
 import {
   Search,
@@ -18,10 +18,10 @@ import {
 import { useTranslation } from 'react-i18next';
 
 // Import types
-import type { TestResult, TestResultDetail } from '../../types/TestResultTypes';
+import type { TestResult, TestResultDetail } from './types/TestResultTypes';
 
 // Import API
-import { testResultService } from '../../../../service/testResultService';
+import { testResultService } from '../../service/testResultService';
 
 // Import components
 import { Skeleton } from '@/components/common/skeleton';

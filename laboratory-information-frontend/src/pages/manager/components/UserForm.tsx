@@ -101,22 +101,22 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-x1 shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4">
+      <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-[95vw] sm:w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-900">{getTitle()}</h2>
-          <Button variant="ghost" size="icon" onClick={onCancel}>
-            <X className="w-5 h-5" />
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 flex-shrink-0">
+          <h2 className="text-lg sm:text-2xl font-bold text-gray-900">{getTitle()}</h2>
+          <Button variant="ghost" size="icon" onClick={onCancel} className="h-8 w-8 sm:h-10 sm:w-10">
+            <X className="w-4 h-4 sm:w-5 sm:h-5" />
           </Button>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 overflow-y-auto max-h-[calc(90vh-140px)] [&_label]:mb-2">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 overflow-y-auto max-h-[calc(90vh-140px)] [&_label]:mb-2 flex-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             {/* Full Name */}
             <div className="md:col-span-2">
-              <Label htmlFor="fullName">{t('manager.fullName')}</Label>
+              <Label htmlFor="fullName" className="text-sm sm:text-base">{t('manager.fullName')}</Label>
               <Input
                 id="fullName"
                 value={formData.fullName}
@@ -124,8 +124,9 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
                 placeholder="Nguyễn Văn A"
                 disabled={isReadOnly}
                 aria-invalid={!!errors.fullName}
+                className="text-sm sm:text-base"
               />
-              {errors.fullName && <p className="mt-2 text-sm text-red-500">{errors.fullName}</p>}
+              {errors.fullName && <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-red-500">{errors.fullName}</p>}
             </div>
 
             {/* Email */}
@@ -276,12 +277,12 @@ export function UserForm({ mode, user, onSubmit, onCancel }: UserFormProps) {
         </form>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200">
-          <Button variant="outline" onClick={onCancel}>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 p-4 sm:p-6 border-t border-gray-200 flex-shrink-0">
+          <Button variant="outline" onClick={onCancel} className="w-full sm:w-auto text-sm sm:text-base">
             {mode === 'view' ? t('manager.close') : t('manager.cancel')}
           </Button>
           {mode !== 'view' && (
-            <Button type="submit" onClick={handleSubmit}>
+            <Button type="submit" onClick={handleSubmit} className="w-full sm:w-auto text-sm sm:text-base">
               {mode === 'create' ? t('manager.createUser') : t('manager.updateUser')}
             </Button>
           )}

@@ -158,15 +158,15 @@ const PatientDetailPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
+    <div className="space-y-4 sm:space-y-6 p-4 sm:p-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center space-x-2 sm:space-x-4">
           <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900">{t('patient.patientDetail')}</h1>
-            <p className="text-gray-600">{t('patient.patientDetailDescription')}</p>
+            <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">{t('patient.patientDetail')}</h1>
+            <p className="text-sm sm:text-base text-gray-600">{t('patient.patientDetailDescription')}</p>
           </div>
         </div>
         <div />
@@ -180,34 +180,34 @@ const PatientDetailPage: React.FC = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             <div>
-              <Label className="text-sm text-gray-600">{t('patient.patientCode')}</Label>
-              <p className="text-lg font-semibold mt-1">{patient.patientCode || patient.id}</p>
+              <Label className="text-xs sm:text-sm text-gray-600">{t('patient.patientCode')}</Label>
+              <p className="text-base sm:text-lg font-semibold mt-1 break-words">{patient.patientCode || patient.id}</p>
             </div>
             <div>
-              <Label className="text-sm text-gray-600">{t('patient.patientName')}</Label>
-              <p className="text-lg mt-1">{patient.fullName}</p>
+              <Label className="text-xs sm:text-sm text-gray-600">{t('patient.patientName')}</Label>
+              <p className="text-base sm:text-lg mt-1 break-words">{patient.fullName}</p>
             </div>
             <div>
-              <Label className="text-sm text-gray-600">{t('patient.dateOfBirth')}</Label>
-              <p className="text-lg mt-1">{patient.dateOfBirth ? new Date(patient.dateOfBirth).toLocaleDateString('vi-VN') : 'Chưa cập nhật'}</p>
+              <Label className="text-xs sm:text-sm text-gray-600">{t('patient.dateOfBirth')}</Label>
+              <p className="text-base sm:text-lg mt-1">{patient.dateOfBirth ? new Date(patient.dateOfBirth).toLocaleDateString('vi-VN') : 'Chưa cập nhật'}</p>
             </div>
             <div>
-              <Label className="text-sm text-gray-600">{t('patient.gender')}</Label>
-              <p className="text-lg mt-1">{patient.gender?.toLowerCase() === 'male' ? 'Nam' : patient.gender?.toLowerCase() === 'female' ? 'Nữ' : 'Khác'}</p>
+              <Label className="text-xs sm:text-sm text-gray-600">{t('patient.gender')}</Label>
+              <p className="text-base sm:text-lg mt-1">{patient.gender?.toLowerCase() === 'male' ? 'Nam' : patient.gender?.toLowerCase() === 'female' ? 'Nữ' : 'Khác'}</p>
             </div>
             <div>
-              <Label className="text-sm text-gray-600">{t('patient.phoneNumber')}</Label>
-              <p className="text-lg mt-1">{patient.phoneNumber || t('patient.notUpdated')}</p>
+              <Label className="text-xs sm:text-sm text-gray-600">{t('patient.phoneNumber')}</Label>
+              <p className="text-base sm:text-lg mt-1 break-words">{patient.phoneNumber || t('patient.notUpdated')}</p>
             </div>
             <div>
-              <Label className="text-sm text-gray-600">Email</Label>
-              <p className="text-lg mt-1">{patient.email || t('patient.notUpdated')}</p>
+              <Label className="text-xs sm:text-sm text-gray-600">Email</Label>
+              <p className="text-base sm:text-lg mt-1 break-words">{patient.email || t('patient.notUpdated')}</p>
             </div>
-            <div className="md:col-span-2">
-              <Label className="text-sm text-gray-600">{t('patient.address')}</Label>
-              <p className="text-lg mt-1">{patient.address || t('patient.notUpdated')}</p>
+            <div className="sm:col-span-2">
+              <Label className="text-xs sm:text-sm text-gray-600">{t('patient.address')}</Label>
+              <p className="text-base sm:text-lg mt-1 break-words">{patient.address || t('patient.notUpdated')}</p>
             </div>
           </div>
         </CardContent>
@@ -222,14 +222,14 @@ const PatientDetailPage: React.FC = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             <div>
-              <Label className="text-sm text-gray-600">{t('patient.emergencyContactName')}</Label>
-              <p className="text-lg mt-1">{patientDetail?.emergency_contact?.name || t('patient.notUpdated')}</p>
+              <Label className="text-xs sm:text-sm text-gray-600">{t('patient.emergencyContactName')}</Label>
+              <p className="text-base sm:text-lg mt-1 break-words">{patientDetail?.emergency_contact?.name || t('patient.notUpdated')}</p>
             </div>
             <div>
-              <Label className="text-sm text-gray-600">{t('patient.emergencyContactPhone')}</Label>
-              <p className="text-lg mt-1">{patientDetail?.emergency_contact?.phone || t('patient.notUpdated')}</p>
+              <Label className="text-xs sm:text-sm text-gray-600">{t('patient.emergencyContactPhone')}</Label>
+              <p className="text-base sm:text-lg mt-1 break-words">{patientDetail?.emergency_contact?.phone || t('patient.notUpdated')}</p>
             </div>
           </div>
         </CardContent>
@@ -238,21 +238,21 @@ const PatientDetailPage: React.FC = () => {
       {/* Hồ sơ y tế */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
+          <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
             <div className="flex items-center">
-              <FileText className="w-5 h-5 mr-2" />
-              {t('patient.medicalRecord')}
+              <FileText className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+              <span className="text-base sm:text-lg">{t('patient.medicalRecord')}</span>
             </div>
             {medicalRecords.length > 0 && (
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm" onClick={() => setViewId(medicalRecords[0]._id)} title="Xem chi tiết">
-                  <Eye className="w-4 h-4 mr-1" />{t('patient.viewDetails')}
+              <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                <Button variant="ghost" size="sm" onClick={() => setViewId(medicalRecords[0]._id)} title="Xem chi tiết" className="text-xs sm:text-sm">
+                  <Eye className="w-3 h-3 sm:w-4 sm:h-4 mr-1" /><span className="hidden sm:inline">{t('patient.viewDetails')}</span>
                 </Button>
-                <Button variant="ghost" size="sm" onClick={() => setEditId(medicalRecords[0]._id)} title="Chỉnh sửa">
-                  <Pencil className="w-4 h-4 mr-1" />{t('patient.edit')}
+                <Button variant="ghost" size="sm" onClick={() => setEditId(medicalRecords[0]._id)} title="Chỉnh sửa" className="text-xs sm:text-sm">
+                  <Pencil className="w-3 h-3 sm:w-4 sm:h-4 mr-1" /><span className="hidden sm:inline">{t('patient.edit')}</span>
                 </Button>
-                <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700" onClick={() => setDeleteTarget({ id: medicalRecords[0]._id, name: medicalRecords[0].record_code })} title="Xóa">
-                  <Trash2 className="w-4 h-4 mr-1" />{t('patient.delete')}
+                <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700 text-xs sm:text-sm" onClick={() => setDeleteTarget({ id: medicalRecords[0]._id, name: medicalRecords[0].record_code })} title="Xóa">
+                  <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1" /><span className="hidden sm:inline">{t('patient.delete')}</span>
                 </Button>
               </div>
             )}
@@ -265,14 +265,14 @@ const PatientDetailPage: React.FC = () => {
               <p className="text-gray-500">{t('patient.noMedicalRecord')}</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <div>
-                <Label className="text-sm text-gray-600">{t('patient.bloodType')}</Label>
-                <p className="text-lg mt-1">{medicalRecords[0].blood_type || 'Chưa cập nhật'}</p>
+                <Label className="text-xs sm:text-sm text-gray-600">{t('patient.bloodType')}</Label>
+                <p className="text-base sm:text-lg mt-1">{medicalRecords[0].blood_type || 'Chưa cập nhật'}</p>
               </div>
               <div>
-                <Label className="text-sm text-gray-600">{t('patient.allergies')}</Label>
-                <p className="text-lg mt-1">
+                <Label className="text-xs sm:text-sm text-gray-600">{t('patient.allergies')}</Label>
+                <p className="text-base sm:text-lg mt-1 break-words">
                   {medicalRecords[0].allergies 
                     ? (Array.isArray(medicalRecords[0].allergies) 
                         ? medicalRecords[0].allergies.join(', ') 
@@ -281,8 +281,8 @@ const PatientDetailPage: React.FC = () => {
                 </p>
               </div>
               <div>
-                <Label className="text-sm text-gray-600">{t('patient.chronicConditions')}</Label>
-                <p className="text-lg mt-1">
+                <Label className="text-xs sm:text-sm text-gray-600">{t('patient.chronicConditions')}</Label>
+                <p className="text-base sm:text-lg mt-1 break-words">
                   {medicalRecords[0].chronic_conditions 
                     ? (Array.isArray(medicalRecords[0].chronic_conditions) 
                         ? medicalRecords[0].chronic_conditions.join(', ') 
@@ -291,12 +291,12 @@ const PatientDetailPage: React.FC = () => {
                 </p>
               </div>
               <div>
-                <Label className="text-sm text-gray-600">{t('patient.createdAt')}</Label>
-                <p className="text-lg mt-1">{formatDate(medicalRecords[0].created_at)}</p>
+                <Label className="text-xs sm:text-sm text-gray-600">{t('patient.createdAt')}</Label>
+                <p className="text-base sm:text-lg mt-1">{formatDate(medicalRecords[0].created_at)}</p>
               </div>
-              <div className="md:col-span-2">
-                <Label className="text-sm text-gray-600">{t('patient.medicalHistory')}</Label>
-                <p className="text-lg mt-1">{medicalRecords[0].medical_history || 'Chưa cập nhật'}</p>
+              <div className="sm:col-span-2">
+                <Label className="text-xs sm:text-sm text-gray-600">{t('patient.medicalHistory')}</Label>
+                <p className="text-base sm:text-lg mt-1 break-words">{medicalRecords[0].medical_history || 'Chưa cập nhật'}</p>
               </div>
             </div>
           )}
@@ -318,38 +318,40 @@ const PatientDetailPage: React.FC = () => {
               <p className="text-gray-500">{t('patient.noTestResult')}</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">{t('patient.instrumentName')}</th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">{t('patient.reagentName')}</th>
-                    <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">{t('patient.createdAt')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {testOrders.map((order) => (
-                    <tr 
-                      key={order._id} 
-                      className="border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
-                      onClick={() => handleViewTestResult(order._id)}
-                      title={t('patient.clickToViewTestResult')}
-                    >
-                      <td className="py-3 px-4 text-sm text-gray-900">
-                        {order.instrument?.instrument_name || t('patient.notUpdated')}
-                      </td>
-                      <td className="py-3 px-4 text-sm text-gray-900">
-                        {order.reagents && order.reagents.length > 0
-                          ? order.reagents.map((r: { reagent_name: string }) => r.reagent_name).join(', ')
-                          : t('patient.notUpdated')}
-                      </td>
-                      <td className="py-3 px-4 text-sm text-gray-600">
-                        {formatDateTime(order.created_at)}
-                      </td>
+            <div className="overflow-x-auto -mx-4 sm:mx-0">
+              <div className="inline-block min-w-full align-middle">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="border-b border-gray-200">
+                      <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold text-xs sm:text-sm text-gray-700">{t('patient.instrumentName')}</th>
+                      <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold text-xs sm:text-sm text-gray-700">{t('patient.reagentName')}</th>
+                      <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold text-xs sm:text-sm text-gray-700">{t('patient.createdAt')}</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {testOrders.map((order) => (
+                      <tr 
+                        key={order._id} 
+                        className="border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
+                        onClick={() => handleViewTestResult(order._id)}
+                        title={t('patient.clickToViewTestResult')}
+                      >
+                        <td className="py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm text-gray-900 break-words">
+                          {order.instrument?.instrument_name || t('patient.notUpdated')}
+                        </td>
+                        <td className="py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm text-gray-900 break-words">
+                          {order.reagents && order.reagents.length > 0
+                            ? order.reagents.map((r: { reagent_name: string }) => r.reagent_name).join(', ')
+                            : t('patient.notUpdated')}
+                        </td>
+                        <td className="py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm text-gray-600 whitespace-nowrap">
+                          {formatDateTime(order.created_at)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </CardContent>

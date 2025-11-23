@@ -263,68 +263,68 @@ const SelectReagentsPage: React.FC = () => {
   }, [currentPage, totalPages]);
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 sm:space-y-6 p-3 sm:p-4 lg:p-6">
       {/* Step Indicator */}
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-8 mb-8">
-        <div className="flex items-center justify-center gap-4 md:gap-8 flex-wrap">
+      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 sm:p-6 lg:p-8 mb-4 sm:mb-6 lg:mb-8">
+        <div className="flex items-center justify-center gap-2 sm:gap-4 md:gap-8 flex-wrap">
           {/* Step 1 - Completed */}
-          <div className="flex flex-col items-center gap-4 min-w-[140px]">
+          <div className="flex flex-col items-center gap-2 sm:gap-4 min-w-[100px] sm:min-w-[140px]">
             <div className="relative">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white flex items-center justify-center font-bold text-2xl shadow-lg ring-4 ring-blue-100">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white flex items-center justify-center font-bold text-lg sm:text-xl md:text-2xl shadow-lg ring-2 sm:ring-4 ring-blue-100">
                 1
               </div>
-              <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
-                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <div className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
+                <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                 </svg>
               </div>
             </div>
             <div className="text-center">
-              <p className="text-base md:text-lg font-bold text-blue-700">{t('testOrder.createOrder')}</p>
-              <p className="text-sm md:text-base text-gray-600 hidden md:block mt-1">{t('testOrder.newTestOrder')}</p>
+              <p className="text-xs sm:text-sm md:text-base lg:text-lg font-bold text-blue-700">{t('testOrder.createOrder')}</p>
+              <p className="text-xs sm:text-sm md:text-base text-gray-600 hidden sm:block mt-1">{t('testOrder.newTestOrder')}</p>
             </div>
           </div>
 
           {/* Connector 1 - Completed */}
-          <div className="flex-1 min-w-[50px] max-w-[100px] h-1.5 bg-gradient-to-r from-blue-600 to-blue-600 rounded-full mt-[-32px]"></div>
+          <div className="hidden sm:block flex-1 min-w-[30px] sm:min-w-[50px] max-w-[60px] sm:max-w-[100px] h-1 sm:h-1.5 bg-gradient-to-r from-blue-600 to-blue-600 rounded-full mt-[-24px] sm:mt-[-32px]"></div>
 
           {/* Step 2 - Completed */}
-          <div className="flex flex-col items-center gap-4 min-w-[140px]">
+          <div className="flex flex-col items-center gap-2 sm:gap-4 min-w-[100px] sm:min-w-[140px]">
             <div className="relative">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white flex items-center justify-center font-bold text-2xl shadow-lg ring-4 ring-blue-100">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white flex items-center justify-center font-bold text-lg sm:text-xl md:text-2xl shadow-lg ring-2 sm:ring-4 ring-blue-100">
                 2
               </div>
-              <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
-                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <div className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
+                <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                 </svg>
               </div>
             </div>
             <div className="text-center">
-              <p className="text-base md:text-lg font-bold text-blue-700">{t('testOrder.selectInstrument')}</p>
+              <p className="text-xs sm:text-sm md:text-base lg:text-lg font-bold text-blue-700">{t('testOrder.selectInstrument')}</p>
             </div>
           </div>
 
           {/* Connector 2 - Completed */}
-          <div className="flex-1 min-w-[50px] max-w-[100px] h-1.5 bg-gradient-to-r from-blue-600 to-blue-600 rounded-full mt-[-32px]"></div>
+          <div className="hidden sm:block flex-1 min-w-[30px] sm:min-w-[50px] max-w-[60px] sm:max-w-[100px] h-1 sm:h-1.5 bg-gradient-to-r from-blue-600 to-blue-600 rounded-full mt-[-24px] sm:mt-[-32px]"></div>
 
           {/* Step 3 - Active */}
-          <div className="flex flex-col items-center gap-4 min-w-[140px]">
+          <div className="flex flex-col items-center gap-2 sm:gap-4 min-w-[100px] sm:min-w-[140px]">
             <div className="relative">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white flex items-center justify-center font-bold text-2xl shadow-lg ring-4 ring-blue-100 animate-pulse">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white flex items-center justify-center font-bold text-lg sm:text-xl md:text-2xl shadow-lg ring-2 sm:ring-4 ring-blue-100 animate-pulse">
                 3
               </div>
             </div>
             <div className="text-center">
-              <p className="text-base md:text-lg font-bold text-blue-700">{t('testOrder.selectReagent')}</p>
+              <p className="text-xs sm:text-sm md:text-base lg:text-lg font-bold text-blue-700">{t('testOrder.selectReagent')}</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:space-x-4">
           <Button
             variant="ghost"
             size="sm"
@@ -332,16 +332,16 @@ const SelectReagentsPage: React.FC = () => {
               const basePath = getBasePath();
               navigate(`${basePath}/select-instruments`, { state });
             }}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 w-fit"
           >
             <ArrowLeft className="w-4 h-4" />
             {t('testOrder.back')}
           </Button>
           <div>
-            <h2 className="text-2xl font-semibold text-gray-900">
+            <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900">
               {t('testOrder.selectReagentTitle')}
             </h2>
-            <p className="text-sm text-gray-500 mt-0.5">
+            <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
               {t('testOrder.selectReagentDescription')}
             </p>
           </div>
@@ -350,115 +350,123 @@ const SelectReagentsPage: React.FC = () => {
 
       {/* Reagents Table */}
       <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between gap-4">
-            <h3 className="text-lg font-semibold">{t('testOrder.reagentList')}</h3>
-            <div className="flex items-center gap-3 flex-1 justify-end max-w-md">
-              <div className="relative flex-1">
+        <CardHeader className="p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+            <h3 className="text-base sm:text-lg font-semibold">{t('testOrder.reagentList')}</h3>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 flex-1 sm:justify-end sm:max-w-md">
+              <div className="relative flex-1 sm:flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
                   type="text"
                   placeholder={t('testOrder.searchReagentPlaceholder')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 pr-4 py-2 w-full"
+                  className="pl-10 pr-4 py-2 w-full text-sm sm:text-base"
                 />
               </div>
               {searchQuery && (
-                <span className="text-sm text-gray-500 whitespace-nowrap">
+                <span className="text-xs sm:text-sm text-gray-500 whitespace-nowrap">
                   {searchLoading ? t('testOrder.searchingReagents') : t('testOrder.foundReagents', { count: totalItems })}
                 </span>
               )}
             </div>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-12">{t('testOrder.select')}</TableHead>
-                  <TableHead>{t('testOrder.reagentName')}</TableHead>
-                  <TableHead>{t('testOrder.expiryDate')}</TableHead>
-                  <TableHead>{t('testOrder.storageLocation')}</TableHead>
-                  <TableHead className="w-32">{t('testOrder.quantity')}</TableHead>
-                  <TableHead className="w-32">{t('testOrder.remaining')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading || searchLoading ? (
+        <CardContent className="p-4 sm:p-6">
+          <div className="overflow-x-auto -mx-4 sm:mx-0">
+            <div className="inline-block min-w-full align-middle px-4 sm:px-0">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8">
-                      <div className="flex flex-col items-center justify-center gap-2">
-                        <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                        <span className="text-sm text-gray-500">
-                          {isLoading ? t('testOrder.loadingReagents') : t('testOrder.searchingReagentsLoading')}
-                        </span>
-                      </div>
-                    </TableCell>
+                    <TableHead className="w-10 sm:w-12 text-xs sm:text-sm">{t('testOrder.select')}</TableHead>
+                    <TableHead className="text-xs sm:text-sm">{t('testOrder.reagentName')}</TableHead>
+                    <TableHead className="text-xs sm:text-sm hidden sm:table-cell">{t('testOrder.expiryDate')}</TableHead>
+                    <TableHead className="text-xs sm:text-sm hidden md:table-cell">{t('testOrder.storageLocation')}</TableHead>
+                    <TableHead className="w-24 sm:w-32 text-xs sm:text-sm">{t('testOrder.quantity')}</TableHead>
+                    <TableHead className="w-24 sm:w-32 text-xs sm:text-sm">{t('testOrder.remaining')}</TableHead>
                   </TableRow>
-                ) : paginatedReagents.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-gray-500">
-                      {t('testOrder.noReagentsFound')}
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  paginatedReagents.map((reagent) => {
-                    const isSelected = !!selectedReagents[reagent.id];
-                    const selected = selectedReagents[reagent.id];
-                    const remaining = getRemainingQuantity(reagent.id);
-                    const available = availableQuantities[reagent.id] || 0;
-
-                    return (
-                      <TableRow key={reagent.id}>
-                        <TableCell>
-                          <button
-                            type="button"
-                            onClick={() => handleToggleSelect(reagent.id)}
-                            className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${isSelected
-                              ? 'bg-blue-600 border-blue-600'
-                              : 'border-gray-300 hover:border-blue-400'
-                              }`}
-                          >
-                            {isSelected && <Check className="w-3 h-3 text-white" />}
-                          </button>
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          {reagent.name}
-                        </TableCell>
-                        <TableCell className="text-sm text-gray-600">
-                          {reagent.expiryDate}
-                        </TableCell>
-                        <TableCell className="text-sm text-gray-600">
-                          {reagent.storageLocation || t('testOrder.notUpdated')}
-                        </TableCell>
-                        <TableCell>
-                          {isSelected ? (
-                            <input
-                              type="number"
-                              min="1"
-                              max={available}
-                              value={selected.quantity}
-                              onChange={(e) => handleQuantityChange(reagent.id, parseInt(e.target.value) || 1)}
-                              className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
-                          ) : (
-                            <span className="text-gray-400">-</span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <span className={`font-medium ${remaining === 0 ? 'text-red-600' : remaining < 2 ? 'text-yellow-600' : 'text-gray-700'}`}>
-                            {remaining}
+                </TableHeader>
+                <TableBody>
+                  {isLoading || searchLoading ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-6 sm:py-8">
+                        <div className="flex flex-col items-center justify-center gap-2">
+                          <div className="w-5 h-5 sm:w-6 sm:h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                          <span className="text-xs sm:text-sm text-gray-500">
+                            {isLoading ? t('testOrder.loadingReagents') : t('testOrder.searchingReagentsLoading')}
                           </span>
-                          <span className="text-gray-500 text-sm ml-1">/ {available}</span>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
-                )}
-              </TableBody>
-            </Table>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ) : paginatedReagents.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-6 sm:py-8 text-gray-500 text-sm sm:text-base">
+                        {t('testOrder.noReagentsFound')}
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    paginatedReagents.map((reagent) => {
+                      const isSelected = !!selectedReagents[reagent.id];
+                      const selected = selectedReagents[reagent.id];
+                      const remaining = getRemainingQuantity(reagent.id);
+                      const available = availableQuantities[reagent.id] || 0;
+
+                      return (
+                        <TableRow key={reagent.id}>
+                          <TableCell>
+                            <button
+                              type="button"
+                              onClick={() => handleToggleSelect(reagent.id)}
+                              className={`w-4 h-4 sm:w-5 sm:h-5 rounded border-2 flex items-center justify-center transition-colors ${isSelected
+                                ? 'bg-blue-600 border-blue-600'
+                                : 'border-gray-300 hover:border-blue-400'
+                                }`}
+                            >
+                              {isSelected && <Check className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white" />}
+                            </button>
+                          </TableCell>
+                          <TableCell className="font-medium text-xs sm:text-sm">
+                            <div className="truncate max-w-[120px] sm:max-w-none">{reagent.name}</div>
+                            <div className="sm:hidden text-xs text-gray-500 mt-1">
+                              {t('testOrder.expiryDate')}: {reagent.expiryDate}
+                            </div>
+                            <div className="md:hidden text-xs text-gray-500 mt-1">
+                              {reagent.storageLocation || t('testOrder.notUpdated')}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-xs sm:text-sm text-gray-600 hidden sm:table-cell">
+                            {reagent.expiryDate}
+                          </TableCell>
+                          <TableCell className="text-xs sm:text-sm text-gray-600 hidden md:table-cell">
+                            {reagent.storageLocation || t('testOrder.notUpdated')}
+                          </TableCell>
+                          <TableCell>
+                            {isSelected ? (
+                              <input
+                                type="number"
+                                min="1"
+                                max={available}
+                                value={selected.quantity}
+                                onChange={(e) => handleQuantityChange(reagent.id, parseInt(e.target.value) || 1)}
+                                className="w-full px-1.5 sm:px-2 py-1 border border-gray-300 rounded text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              />
+                            ) : (
+                              <span className="text-gray-400 text-xs sm:text-sm">-</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <span className={`font-medium text-xs sm:text-sm ${remaining === 0 ? 'text-red-600' : remaining < 2 ? 'text-yellow-600' : 'text-gray-700'}`}>
+                              {remaining}
+                            </span>
+                            <span className="text-gray-500 text-xs sm:text-sm ml-1">/ {available}</span>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </div>
           <Pagination
             currentPage={currentPage}
@@ -471,20 +479,20 @@ const SelectReagentsPage: React.FC = () => {
 
       {/* Selected Reagents Panel */}
       <Card>
-        <CardHeader className="pb-3">
+        <CardHeader className="pb-3 p-4 sm:p-6">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">{t('testOrder.selectedReagents')}</h3>
+            <h3 className="text-base sm:text-lg font-semibold">{t('testOrder.selectedReagents')}</h3>
             {selectedReagentsList.length > 0 && (
-              <span className="text-sm text-gray-500 bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+              <span className="text-xs sm:text-sm text-gray-500 bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
                 {selectedReagentsList.length}
               </span>
             )}
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 sm:p-6">
           {selectedReagentsList.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-sm text-gray-500">
+            <div className="text-center py-6 sm:py-8">
+              <p className="text-xs sm:text-sm text-gray-500">
                 {t('testOrder.noReagentsSelected')}
               </p>
               <p className="text-xs text-gray-400 mt-2">
@@ -492,17 +500,17 @@ const SelectReagentsPage: React.FC = () => {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {selectedReagentsList.map((reagent) => (
                 <div
                   key={reagent.id}
                   className="flex items-start justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm text-gray-900 truncate">
+                    <p className="font-medium text-xs sm:text-sm text-gray-900 truncate">
                       {reagent.name}
                     </p>
-                    <p className="text-xs text-gray-500 font-mono mt-1">
+                    <p className="text-xs text-gray-500 font-mono mt-1 truncate">
                       {t('testOrder.expiryDate')}: {reagent.expiryDate} • {reagent.storageLocation || t('testOrder.notUpdated')}
                     </p>
                     <p className="text-xs text-gray-600 mt-1">
@@ -525,7 +533,7 @@ const SelectReagentsPage: React.FC = () => {
       </Card>
 
       {/* Action Buttons */}
-      <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+      <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-gray-200">
         <Button
           type="button"
           variant="outline"
@@ -534,7 +542,7 @@ const SelectReagentsPage: React.FC = () => {
             navigate(`${basePath}/select-instruments`, { state });
           }}
           disabled={isSubmitting}
-          className="px-6 py-2.5 border-gray-300 text-gray-700 hover:bg-gray-50"
+          className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-2.5 border-gray-300 text-gray-700 hover:bg-gray-50"
         >
           {t('testOrder.cancel')}
         </Button>
@@ -542,7 +550,7 @@ const SelectReagentsPage: React.FC = () => {
           type="button"
           onClick={handleSubmit}
           disabled={isSubmitting}
-          className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-2.5 bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSubmitting ? t('testOrder.creatingOrder') : t('testOrder.createOrderButton')}
           <ArrowRight className="w-4 h-4" />
