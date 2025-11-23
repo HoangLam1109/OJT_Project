@@ -46,8 +46,8 @@ export function Sidebar({
       <div className={`bg-white shadow-lg transition-all duration-300 ${
         // Mobile: overlay drawer, hidden when collapsed
         sidebarCollapsed 
-          ? 'w-0 -translate-x-full md:translate-x-0 md:w-16' 
-          : 'w-64 md:w-64'
+          ? 'w-0 -translate-x-full overflow-hidden pointer-events-none opacity-0 md:opacity-100 md:pointer-events-auto md:translate-x-0 md:w-16 md:overflow-visible' 
+          : 'w-64 md:w-64 opacity-100'
       } flex flex-col h-screen fixed left-0 top-0 z-40 md:z-40`}>
         
         {/* Header */}

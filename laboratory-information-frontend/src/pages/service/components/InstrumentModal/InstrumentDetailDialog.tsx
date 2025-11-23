@@ -80,24 +80,24 @@ export function InstrumentDetailDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-3xl overflow-hidden border-0 shadow-2xl sm:rounded-2xl p-0">
+            <DialogContent className="max-w-3xl overflow-hidden border-0 shadow-2xl sm:rounded-2xl p-0 max-h-[90vh] flex flex-col">
                 <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-500 to-indigo-600" />
                 
-                <DialogHeader className="pb-6 border-b border-gray-100 px-6 pt-8">
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="p-2 bg-blue-50 rounded-lg">
-                            <Monitor className="w-6 h-6 text-blue-600" />
+                <DialogHeader className="pb-4 sm:pb-6 border-b border-gray-100 px-4 sm:px-6 pt-6 sm:pt-8">
+                    <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                        <div className="p-1.5 sm:p-2 bg-blue-50 rounded-lg flex-shrink-0">
+                            <Monitor className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
                         </div>
-                        <DialogTitle className="text-xl font-bold text-gray-900">
+                        <DialogTitle className="text-lg sm:text-xl font-bold text-gray-900">
                             {t('service.instrument.detail.title')}
                         </DialogTitle>
                     </div>
-                    <DialogDescription className="text-gray-500 ml-11">
+                    <DialogDescription className="text-xs sm:text-sm text-gray-500 ml-8 sm:ml-11">
                         {t('service.instrument.detail.description')}
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="p-6 max-h-[70vh] overflow-y-auto">
+                <div className="p-4 sm:p-6 max-h-[60vh] sm:max-h-[70vh] overflow-y-auto flex-1">
                     {isLoading ? (
                         <div className="flex flex-col items-center justify-center py-12 space-y-4">
                             <div className="p-4 bg-blue-50 rounded-full">
@@ -113,18 +113,18 @@ export function InstrumentDetailDialog({
                             <p className="text-red-600 font-medium">{error}</p>
                         </div>
                     ) : !instrument ? (
-                        <div className="flex items-center justify-center py-12">
-                            <p className="text-gray-600">{t('service.instrument.detail.notFound')}</p>
+                        <div className="flex items-center justify-center py-8 sm:py-12">
+                            <p className="text-sm sm:text-base text-gray-600">{t('service.instrument.detail.notFound')}</p>
                         </div>
                     ) : (
-                        <div className="space-y-8">
+                        <div className="space-y-6 sm:space-y-8">
                             {/* Basic Information Section */}
                             <div>
-                                <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4 flex items-center gap-2">
-                                    <Activity className="w-4 h-4 text-blue-500" />
+                                <h3 className="text-xs sm:text-sm font-semibold text-gray-900 uppercase tracking-wider mb-3 sm:mb-4 flex items-center gap-2">
+                                    <Activity className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-500" />
                                     {t('service.instrument.detail.basicInfo')}
                                 </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                                     {/* Instrument Code */}
                                     <div className="space-y-2">
                                         <Label className="text-sm font-medium text-gray-700">
@@ -181,11 +181,11 @@ export function InstrumentDetailDialog({
 
                             {/* Location & Manufacturer Section */}
                             <div>
-                                <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4 flex items-center gap-2">
-                                    <Factory className="w-4 h-4 text-blue-500" />
+                                <h3 className="text-xs sm:text-sm font-semibold text-gray-900 uppercase tracking-wider mb-3 sm:mb-4 flex items-center gap-2">
+                                    <Factory className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-500" />
                                     {t('service.instrument.detail.locationInfo')}
                                 </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                                     {/* Manufacturer */}
                                     <div className="space-y-2">
                                         <Label className="text-sm font-medium text-gray-700">
@@ -215,8 +215,8 @@ export function InstrumentDetailDialog({
                             </div>
 
                             {/* Metadata Section */}
-                            <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="bg-gray-50 rounded-xl p-3 sm:p-4 border border-gray-100">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                                     <div className="flex items-start gap-3">
                                         <div className="p-2 bg-white rounded-md border border-gray-200 shadow-sm">
                                             <Calendar className="w-4 h-4 text-gray-500" />
@@ -266,11 +266,11 @@ export function InstrumentDetailDialog({
                     )}
                 </div>
 
-                <DialogFooter className="bg-gray-50 px-6 py-4 border-t border-gray-100">
+                <DialogFooter className="bg-gray-50 px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-100">
                     <Button 
                         variant="outline" 
                         onClick={() => onOpenChange(false)}
-                        className="h-10 px-6 border-gray-200 hover:bg-white hover:text-gray-900 hover:border-gray-300 w-full sm:w-auto"
+                        className="h-10 px-4 sm:px-6 border-gray-200 hover:bg-white hover:text-gray-900 hover:border-gray-300 w-full sm:w-auto"
                     >
                         {t('service.instrument.cancel')}
                     </Button>

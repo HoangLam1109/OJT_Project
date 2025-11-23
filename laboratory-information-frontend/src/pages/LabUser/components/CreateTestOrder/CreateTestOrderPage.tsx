@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Input } from '../../../../../components/common/input';
-import { Label } from '../../../../../components/common/label';
-import Button from '../../../../../components/common/button';
+import { Input } from '../../../../components/common/input';
+import { Label } from '../../../../components/common/label';
+import Button from '../../../../components/common/button';
 import { Edit3, ArrowLeft, ArrowRight } from 'lucide-react';
-import type { TestOrder } from '../../../types/TestOrderTypes';
-import { useAuthContext } from '../../../../../hooks/useAuthContext';
+import type { TestOrder } from '../../types/TestOrderTypes';
+import { useAuthContext } from '../../../../hooks/useAuthContext';
 import { toast } from 'sonner';
-import { Card, CardContent, CardHeader } from '../../../../../components/common/card';
-import { testItemService, type TestItem } from '../../../../../service/testItemService';
-import { TestItemMultiSelect } from '../../common/TestItemMultiSelect';
+import { Card, CardContent, CardHeader } from '../../../../components/common/card';
+import { testItemService, type TestItem } from '../../../../service/testItemService';
+import { TestItemMultiSelect } from '../common/TestItemMultiSelect';
 import { useTranslation } from 'react-i18next';
-import { type PatientOption } from '../../../../../service/patientService';
-import { PatientSearchInput } from '../../../../../components/common/patient/PatientSearchInput';
-import { validateDueDate } from '../../../utils/testOrderUtils';
+import { type PatientOption } from '../../../../service/patientService';
+import { PatientSearchInput } from '../../../../components/common/patient/PatientSearchInput';
+import { validateDueDate } from '../../utils/testOrderUtils';
 
 // Test type keys - these are used as values and for translation keys
 const testTypeKeys = [
@@ -163,54 +163,54 @@ const loadTestItems = async (testTypeKey: string) => {
   };
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 sm:space-y-6 p-3 sm:p-4 lg:p-6">
       {/* Step Indicator */}
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-8 mb-8">
-        <div className="flex items-center justify-center gap-4 md:gap-8 flex-wrap">
+      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 sm:p-6 lg:p-8 mb-4 sm:mb-6 lg:mb-8">
+        <div className="flex items-center justify-center gap-2 sm:gap-4 md:gap-8 flex-wrap">
           {/* Step 1 - Active */}
-          <div className="flex flex-col items-center gap-4 min-w-[140px]">
+          <div className="flex flex-col items-center gap-2 sm:gap-4 min-w-[100px] sm:min-w-[140px]">
             <div className="relative">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white flex items-center justify-center font-bold text-2xl shadow-lg ring-4 ring-blue-100 animate-pulse">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white flex items-center justify-center font-bold text-lg sm:text-xl md:text-2xl shadow-lg ring-2 sm:ring-4 ring-blue-100 animate-pulse">
                 1
               </div>
             </div>
             <div className="text-center">
-              <p className="text-base md:text-lg font-bold text-blue-700">{t('testOrder.createTestOrder')}</p>
-              <p className="text-sm md:text-base text-gray-600 hidden md:block mt-1">{t('testOrder.newTestOrder')}</p>
+              <p className="text-xs sm:text-sm md:text-base lg:text-lg font-bold text-blue-700">{t('testOrder.createTestOrder')}</p>
+              <p className="text-xs sm:text-sm md:text-base text-gray-600 hidden sm:block mt-1">{t('testOrder.newTestOrder')}</p>
             </div>
           </div>
 
           {/* Connector 1 */}
-          <div className="flex-1 min-w-[50px] max-w-[100px] h-1.5 bg-gray-300 rounded-full mt-[-32px]"></div>
+          <div className="hidden sm:block flex-1 min-w-[30px] sm:min-w-[50px] max-w-[60px] sm:max-w-[100px] h-1 sm:h-1.5 bg-gray-300 rounded-full mt-[-24px] sm:mt-[-32px]"></div>
 
           {/* Step 2 - Inactive */}
-          <div className="flex flex-col items-center gap-4 min-w-[140px]">
-            <div className="w-16 h-16 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center font-bold text-2xl border-2 border-gray-300">
+          <div className="flex flex-col items-center gap-2 sm:gap-4 min-w-[100px] sm:min-w-[140px]">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center font-bold text-lg sm:text-xl md:text-2xl border-2 border-gray-300">
               2
             </div>
             <div className="text-center">
-              <p className="text-base md:text-lg font-semibold text-gray-500">{t('testOrder.selectInstrument')}</p>
+              <p className="text-xs sm:text-sm md:text-base lg:text-lg font-semibold text-gray-500">{t('testOrder.selectInstrument')}</p>
             </div>
           </div>
 
           {/* Connector 2 */}
-          <div className="flex-1 min-w-[50px] max-w-[100px] h-1.5 bg-gray-300 rounded-full mt-[-32px]"></div>
+          <div className="hidden sm:block flex-1 min-w-[30px] sm:min-w-[50px] max-w-[60px] sm:max-w-[100px] h-1 sm:h-1.5 bg-gray-300 rounded-full mt-[-24px] sm:mt-[-32px]"></div>
 
           {/* Step 3 - Inactive */}
-          <div className="flex flex-col items-center gap-4 min-w-[140px]">
-            <div className="w-16 h-16 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center font-bold text-2xl border-2 border-gray-300">
+          <div className="flex flex-col items-center gap-2 sm:gap-4 min-w-[100px] sm:min-w-[140px]">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center font-bold text-lg sm:text-xl md:text-2xl border-2 border-gray-300">
               3
             </div>
             <div className="text-center">
-              <p className="text-base md:text-lg font-semibold text-gray-500">{t('testOrder.selectReagent')}</p>
+              <p className="text-xs sm:text-sm md:text-base lg:text-lg font-semibold text-gray-500">{t('testOrder.selectReagent')}</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:space-x-4">
           <Button
             variant="ghost"
             size="sm"
@@ -218,20 +218,20 @@ const loadTestItems = async (testTypeKey: string) => {
               const basePath = getBasePath();
               navigate(`${basePath}/test-orders`);
             }}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 w-fit"
           >
             <ArrowLeft className="w-4 h-4" />
             {t('testOrder.back')}
           </Button>
-          <div className="flex items-center space-x-3">
-            <div className="p-2.5 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Edit3 className="w-5 h-5 text-blue-600" />
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            <div className="p-2 sm:p-2.5 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+              <Edit3 className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
             </div>
             <div>
-              <h2 className="text-2xl font-semibold text-gray-900">
+              <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900">
                 {t('testOrder.createTestOrder')}
               </h2>
-              <p className="text-sm text-gray-500 mt-0.5">
+              <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
                 {t('testOrder.enterTestOrderInfo')}
               </p>
             </div>
@@ -241,13 +241,13 @@ const loadTestItems = async (testTypeKey: string) => {
 
       {/* Form Card */}
       <Card>
-        <CardHeader>
-          <h3 className="text-lg font-semibold">{t('testOrder.testOrderInfo')}</h3>
+        <CardHeader className="p-4 sm:p-6">
+          <h3 className="text-base sm:text-lg font-semibold">{t('testOrder.testOrderInfo')}</h3>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleNext} className="space-y-6">
+        <CardContent className="p-4 sm:p-6">
+          <form onSubmit={handleNext} className="space-y-4 sm:space-y-6">
             {/* Bệnh nhân và Loại xét nghiệm - cùng hàng */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               {/* Bệnh nhân */}
               <div className="space-y-2">
                 <Label htmlFor="patient" className="text-sm font-medium">
@@ -364,7 +364,7 @@ const loadTestItems = async (testTypeKey: string) => {
             </div>
 
             {/* Nút hành động */}
-            <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 mt-6">
+            <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-gray-200 mt-4 sm:mt-6">
               <Button
                 type="button"
                 variant="outline"
@@ -373,14 +373,14 @@ const loadTestItems = async (testTypeKey: string) => {
                   navigate(`${basePath}/test-orders`);
                 }}
                 disabled={false}
-                className="px-6 py-2.5 border-gray-300 text-gray-700 hover:bg-gray-50"
+                className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-2.5 border-gray-300 text-gray-700 hover:bg-gray-50"
               >
                 {t('testOrder.cancel')}
               </Button>
               <Button
                 type="submit"
                 disabled={false}
-                className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-2.5 bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {t('testOrder.next')}
                 <ArrowRight className="w-4 h-4" />

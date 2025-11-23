@@ -221,26 +221,26 @@ const TestOrdersPage: React.FC = () => {
   // Only show full skeleton on initial load, not during search
   if (loading && isInitialLoad) {
     return (
-      <div className="space-y-6 p-4">
+      <div className="space-y-4 sm:space-y-6 p-3 sm:p-4 lg:p-6">
         {/* Toolbar skeleton */}
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div className="space-y-2">
-            <Skeleton className="h-6 w-40" />
-            <Skeleton className="h-4 w-64" />
+            <Skeleton className="h-5 sm:h-6 w-32 sm:w-40" />
+            <Skeleton className="h-3 sm:h-4 w-48 sm:w-64" />
           </div>
-          <div className="flex items-center space-x-4">
-            <Skeleton className="h-10 w-80 rounded-md" />
-            <Skeleton className="h-10 w-60 rounded-md" />
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:space-x-4">
+            <Skeleton className="h-10 w-full sm:w-64 md:w-80 rounded-md" />
+            <Skeleton className="h-10 w-full sm:w-48 md:w-60 rounded-md" />
           </div>
         </div>
 
         {/* Stats cards skeleton */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {[...Array(4)].map((_, i) => (
-            <Card key={i} className="p-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          {[...Array(3)].map((_, i) => (
+            <Card key={i} className="p-4 sm:p-6">
               <div className="space-y-2">
                 <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-6 w-12" />
+                <Skeleton className="h-6 sm:h-8 w-12" />
               </div>
             </Card>
           ))}
@@ -248,13 +248,13 @@ const TestOrdersPage: React.FC = () => {
 
         {/* TestOrderList skeleton */}
         <Card className="glass-strong hover-lift">
-          <CardHeader>
-            <Skeleton className="h-5 w-32 mb-2" />
-            <Skeleton className="h-4 w-1/2" />
+          <CardHeader className="p-4 sm:p-6">
+            <Skeleton className="h-4 sm:h-5 w-28 sm:w-32 mb-2" />
+            <Skeleton className="h-3 sm:h-4 w-1/2" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 sm:p-6">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="p-4 border rounded-lg bg-white/50 mb-3">
+              <div key={i} className="p-3 sm:p-4 border rounded-lg bg-white/50 mb-3">
                 <div className="space-y-2">
                   <Skeleton className="h-4 w-1/3" />
                   <Skeleton className="h-3 w-2/3" />
@@ -272,7 +272,7 @@ const TestOrdersPage: React.FC = () => {
   const stats = calculateStats(orders);
 
   return (
-    <div className="space-y-6 p-4">
+    <div className="space-y-4 sm:space-y-6 p-3 sm:p-4 lg:p-6">
       <TestOrderToolbar
         searchTerm={searchInput}
         onSearchChange={setSearchInput}

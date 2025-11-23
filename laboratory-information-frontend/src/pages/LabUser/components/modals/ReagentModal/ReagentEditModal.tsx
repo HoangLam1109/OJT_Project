@@ -103,24 +103,24 @@ export default function ReagentEditModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="max-w-2xl overflow-hidden border-0 shadow-2xl sm:rounded-2xl">
+            <DialogContent className="max-w-2xl w-[95vw] sm:w-full overflow-hidden border-0 shadow-2xl sm:rounded-2xl max-h-[90vh] overflow-y-auto">
                 <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-500 to-indigo-600" />
-                <DialogHeader className="pb-6 border-b border-gray-100 px-6 pt-8">
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="p-2 bg-blue-50 rounded-lg">
-                            <FlaskConical className="w-6 h-6 text-blue-600" />
+                <DialogHeader className="pb-4 sm:pb-6 border-b border-gray-100 px-4 sm:px-6 pt-6 sm:pt-8">
+                    <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                        <div className="p-1.5 sm:p-2 bg-blue-50 rounded-lg flex-shrink-0">
+                            <FlaskConical className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
                         </div>
-                        <DialogTitle className="text-xl font-bold text-gray-900">
+                        <DialogTitle className="text-lg sm:text-xl font-bold text-gray-900">
                             {t('reagent.formModal.editTitle')}
                         </DialogTitle>
                     </div>
-                    <DialogDescription className="text-gray-500 ml-11">
+                    <DialogDescription className="text-xs sm:text-sm text-gray-500 ml-8 sm:ml-11">
                         {t('reagent.formModal.editDescription')}
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="p-6 space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                         {/* Reagent Name */}
                         <div className="space-y-2">
                             <Label htmlFor="reagent_name" className="text-sm font-medium text-gray-700">
@@ -267,19 +267,19 @@ export default function ReagentEditModal({
                     </div>
                 </div>
 
-                <DialogFooter className="bg-gray-50 px-6 py-4 border-t border-gray-100">
+                <DialogFooter className="bg-gray-50 px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-100 flex-col sm:flex-row gap-2 sm:gap-2">
                     <Button 
                         variant="outline" 
                         onClick={onClose} 
                         disabled={isSubmitting}
-                        className="h-10 px-6 border-gray-200 hover:bg-white hover:text-gray-900 hover:border-gray-300"
+                        className="h-10 w-full sm:w-auto px-6 border-gray-200 hover:bg-white hover:text-gray-900 hover:border-gray-300"
                     >
                         {t('reagent.cancel')}
                     </Button>
                     <Button 
                         onClick={handleSubmit} 
                         disabled={isSubmitting}
-                        className="h-10 px-6 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md hover:shadow-lg transition-all"
+                        className="h-10 w-full sm:w-auto px-6 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md hover:shadow-lg transition-all"
                     >
                         {isSubmitting ? (
                             <div className="flex items-center gap-2">

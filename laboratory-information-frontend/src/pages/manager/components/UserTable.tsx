@@ -55,12 +55,12 @@ export function UserTable({ users, onView, onEdit, onDelete, onToggleLock, onFir
 
   if (users.length === 0) {
     return (
-      <div className="text-center py-12">
-        <User className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">
+      <div className="text-center py-8 sm:py-12 px-4">
+        <User className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-gray-400 mb-3 sm:mb-4" />
+        <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">
           {t('manager.noUsersFound')}
         </h3>
-        <p className="text-gray-500">
+        <p className="text-sm sm:text-base text-gray-500">
           {t('manager.noUsersFoundDescription')}
         </p>
       </div>
@@ -69,25 +69,25 @@ export function UserTable({ users, onView, onEdit, onDelete, onToggleLock, onFir
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full border-collapse">
+      <table className="w-full border-collapse min-w-[700px]">
         <thead>
           <tr className="border-b border-gray-200">
-            <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">
+            <th className="text-left py-2 sm:py-3 px-3 sm:px-4 font-semibold text-xs sm:text-sm text-gray-700 whitespace-nowrap">
               {t('manager.user')}
             </th>
-            <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">
+            <th className="text-left py-2 sm:py-3 px-3 sm:px-4 font-semibold text-xs sm:text-sm text-gray-700 whitespace-nowrap">
               {t('manager.role')}
             </th>
-            <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">
+            <th className="text-left py-2 sm:py-3 px-3 sm:px-4 font-semibold text-xs sm:text-sm text-gray-700 whitespace-nowrap hidden md:table-cell">
               {t('manager.contact')}
             </th>
-            <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">
+            <th className="text-left py-2 sm:py-3 px-3 sm:px-4 font-semibold text-xs sm:text-sm text-gray-700 whitespace-nowrap">
               {t('manager.status')}
             </th>
-            <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">
+            <th className="text-left py-2 sm:py-3 px-3 sm:px-4 font-semibold text-xs sm:text-sm text-gray-700 whitespace-nowrap hidden lg:table-cell">
               {t('manager.lastLogin')}
             </th>
-            <th className="text-right py-3 px-4 font-semibold text-sm text-gray-700">
+            <th className="text-right py-2 sm:py-3 px-3 sm:px-4 font-semibold text-xs sm:text-sm text-gray-700 whitespace-nowrap">
               {t('manager.actions')}
             </th>
           </tr>
@@ -98,60 +98,60 @@ export function UserTable({ users, onView, onEdit, onDelete, onToggleLock, onFir
               key={user.id}
               className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
             >
-              <td className="py-3 px-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold">
+              <td className="py-2 sm:py-3 px-3 sm:px-4">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold text-xs sm:text-sm flex-shrink-0">
                     {user.name?.charAt(0)?.toUpperCase() || '?'}
                   </div>
-                  <div>
-                    <div className="font-medium text-gray-900">
+                  <div className="min-w-0 flex-1">
+                    <div className="font-medium text-gray-900 text-xs sm:text-sm truncate">
                       {user.name || 'N/A'}
                     </div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-xs text-gray-500 truncate">
                       {user.email || 'N/A'}
                     </div>
                   </div>
                 </div>
               </td>
-              <td className="py-3 px-4">
+              <td className="py-2 sm:py-3 px-3 sm:px-4">
                 <span
-                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleBadgeColor(
+                  className={`inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleBadgeColor(
                     Array.isArray(user.role) ? user.role[0] : user.role
                   )}`}
                 >
                   {getRoleLabel(Array.isArray(user.role) ? user.role[0] : user.role)}
                 </span>
               </td>
-              <td className="py-3 px-4">
-                <div className="text-sm">
-                  <div className="text-gray-900">
+              <td className="py-2 sm:py-3 px-3 sm:px-4 hidden md:table-cell">
+                <div className="text-xs sm:text-sm">
+                  <div className="text-gray-900 truncate max-w-[120px]">
                     {user.phone_number || 'N/A'}
                   </div>
-                  <div className="text-gray-500 text-xs">
+                  <div className="text-gray-500 text-xs truncate max-w-[120px]">
                     {t('manager.identifyNumber')}: {user.identify_number || 'N/A'}
                   </div>
                 </div>
               </td>
-              <td className="py-3 px-4">
+              <td className="py-2 sm:py-3 px-3 sm:px-4">
                 <span
-                  className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  className={`inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium ${
                     user.active
                       ? 'bg-green-100 text-green-800'
                       : 'bg-red-100 text-red-800'
                   }`}
                 >
                   <span
-                    className={`w-1.5 h-1.5 rounded-full ${
+                    className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
                       user.active ? 'bg-green-600' : 'bg-red-600'
                     }`}
                   />
-                  {user.active ? t('manager.active') : t('manager.inactive')}
+                  <span className="whitespace-nowrap">{user.active ? t('manager.active') : t('manager.inactive')}</span>
                 </span>
               </td>
-              <td className="py-3 px-4 text-sm text-gray-600">
-                {formatDate(user.lastLogin)}
+              <td className="py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm text-gray-600 hidden lg:table-cell">
+                <div className="whitespace-nowrap">{formatDate(user.lastLogin)}</div>
               </td>
-              <td className="py-3 px-4">
+              <td className="py-2 sm:py-3 px-3 sm:px-4">
                 <div className="flex items-center justify-end gap-1">
                   <Button
                     variant="ghost"
@@ -197,8 +197,8 @@ export function UserTable({ users, onView, onEdit, onDelete, onToggleLock, onFir
         </tbody>
       </table>
       {(onFirstPage || onPrevPage || onNextPage || onLastPage) && (
-        <div className="flex items-center justify-between gap-2 py-3 px-2">
-          <div className="text-sm text-gray-600">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 py-4 px-4 border-t border-gray-200">
+          <div className="text-xs sm:text-sm text-gray-600">
             {pageLabel}
           </div>
           <div className="flex items-center gap-1">
@@ -207,7 +207,7 @@ export function UserTable({ users, onView, onEdit, onDelete, onToggleLock, onFir
                 variant="ghost"
                 size="icon"
                 onClick={onFirstPage}
-                  title={t('manager.firstPage')}
+                title={t('manager.firstPage')}
                 disabled={hasPrev === false}
                 className="hover:bg-blue-100 hover:text-blue-700 transition-colors"
               >
