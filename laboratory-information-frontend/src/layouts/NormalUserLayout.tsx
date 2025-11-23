@@ -5,6 +5,8 @@ import type { NavigationItem } from '../types/Layout.types';
 import type { User } from '../types/User';
 import { MessageNotificationProvider, useMessageNotificationContext } from '../context/MessageNotificationContext';
 import { useTranslation } from 'react-i18next';
+import type { UserProfileData } from './Profile';
+import { profileService } from '@/service/profileService';
 
 interface NormalUserLayoutProps {
   currentUser: User;
@@ -69,12 +71,28 @@ const NormalUserLayoutContent: React.FC<LayoutContentProps> = ({
     [unreadCount, navigationItems]
   );
 
+  const [profile, setProfile] = useState<UserProfileData | null>(null);
+  
+    useEffect(() => {
+      loadProfile();
+    }, []);
+  
+    const loadProfile = async () => {
+      try {
+        const data = await profileService.getProfile();
+        setProfile(data);
+      } catch (e) {
+        console.error("Failed to load profile", e);
+      }
+    };
+
   return (
     <div className="flex h-screen bg-gray-100">
       <Sidebar
         navigationItems={navigationItemsWithBadges}
         currentUserName={currentUser.name}
         currentUserRole={t('role.normalUser')}
+        currentUserAvatar={profile?.avatar}
         currentPage={currentPage}
         sidebarCollapsed={sidebarCollapsed}
         setSidebarCollapsed={setSidebarCollapsed}

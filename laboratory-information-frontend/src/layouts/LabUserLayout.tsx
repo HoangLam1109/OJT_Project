@@ -1,10 +1,12 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Sidebar } from '../components/common/Sidebar';
 import { TopHeader } from '../components/common/TopHeader';
 import type { NavigationItem } from '../types/Layout.types';
 import type { User } from '../types/User';
 import { useTranslation } from 'react-i18next';
 import { MessageNotificationProvider, useMessageNotificationContext } from '../context/MessageNotificationContext';
+import { profileService } from '@/service/profileService';
+import type { UserProfileData } from './Profile';
 
 interface LabUserLayoutProps {
   currentUser: User;
@@ -25,6 +27,21 @@ const LabUserLayoutContent: React.FC<LabUserLayoutProps & { sidebarCollapsed: bo
 }) => {
   const { t } = useTranslation();
   const { unreadCount } = useMessageNotificationContext();
+
+  const [profile, setProfile] = useState<UserProfileData | null>(null);
+  
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  const loadProfile = async () => {
+    try {
+      const data = await profileService.getProfile();
+      setProfile(data);
+    } catch (e) {
+      console.error("Failed to load profile", e);
+    }
+  };
 
   const navigationItems: NavigationItem[] = useMemo(() => {
     const baseItems: NavigationItem[] = [
@@ -124,6 +141,7 @@ const LabUserLayoutContent: React.FC<LabUserLayoutProps & { sidebarCollapsed: bo
       <Sidebar
         navigationItems={navigationItems}
         currentUserName={currentUser.name}
+        currentUserAvatar={profile?.avatar}
         currentUserRole={t('sidebar.role')}
         currentPage={currentPage}
         sidebarCollapsed={sidebarCollapsed}
