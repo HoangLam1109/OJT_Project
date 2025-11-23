@@ -12,10 +12,10 @@ import type { TestOrder } from '../../../LabUser/types/TestOrderTypes';
 import type { TestResult } from '../../../LabUser/types/TestResultTypes';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import EditPatientMedicalRecord from '../../../LabUser/components/modals/PatientModal/PatientMedicalRecord_EditModal';
+import EditPatientMedicalRecord from '../../../LabUser/components/modals/PatientMedicalRecordModal/PatientMedicalRecordEditModal';
 import { DeleteConfirmDialog } from '../DeleteConfirmDialog';
-import MedicalRecordViewModal from '@/pages/LabUser/components/modals/PatientModal/PatientMedicalRecord_ViewModal';
-import TestResultDetailModal from '@/pages/LabUser/components/modals/PatientModal/PatientMedicalRecord_TestResult_DetailModal';
+import MedicalRecordViewModal from '@/pages/LabUser/components/modals/PatientMedicalRecordModal/PatientMedicalRecordViewModal';
+import TestResultDetailModal from '@/pages/LabUser/components/modals/PatientMedicalRecordModal/PatientMedicalRecord_TestResult_DetailModal';
 
 const PatientDetailPage: React.FC = () => {
   const { t } = useTranslation();

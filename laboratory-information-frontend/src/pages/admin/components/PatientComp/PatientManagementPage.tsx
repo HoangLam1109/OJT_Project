@@ -13,7 +13,7 @@ import { Patient_DeleteModal } from './PatientDeleteModal';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/common/skeleton';
 import { useAuthContext } from '../../../../hooks/useAuthContext';
-import AddPatientMedicalRecord from '../../../LabUser/components/modals/PatientModal/PatientMedicalRecord_AddModal';
+import AddPatientMedicalRecord from '../../../LabUser/components/modals/PatientMedicalRecordModal/PatientMedicalRecordAddModal';
 import { useAllPatients } from '../../hooks/useAllPatients';
 import { useTranslation } from 'react-i18next';
 
