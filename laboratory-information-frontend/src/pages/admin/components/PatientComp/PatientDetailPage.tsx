@@ -6,16 +6,37 @@ import { Label } from '../../../../components/common/label';
 import { ArrowLeft, User, FileText, Eye, Pencil, Trash2, FlaskConical } from 'lucide-react';
 import { patientService, type PatientOption, type PatientDetailResponse, viewPatientDetail } from '../../../../service/patientService';
 import { patientMedicalRecordService, type PatientMedicalRecord } from '../../../../service/patientMedicalRecordService';
-import { testOrderService } from '../../../../service/testOrderService';
+// import { testOrderService } from '../../../../service/testOrderService';
 import { testResultService } from '../../../../service/testResultService';
-import type { TestOrder } from '../../../LabUser/types/TestOrderTypes';
 import type { TestResult } from '../../../LabUser/types/TestResultTypes';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import EditPatientMedicalRecord from '../../../LabUser/components/modals/PatientModal/PatientMedicalRecord_EditModal';
 import { DeleteConfirmDialog } from '../DeleteConfirmDialog';
 import MedicalRecordViewModal from '@/pages/LabUser/components/modals/PatientModal/PatientMedicalRecord_ViewModal';
-import TestResultDetailModal from '@/pages/LabUser/components/modals/PatientModal/PatientMedicalRecord_TestResult_DetailModal';
+import TestResultModal from '@/pages/LabUser/components/modals/TestResultModal/TestResultModal';
+// Type for test result items from API
+interface TestResultItem {
+  _id: string;
+  test_order_id: string;
+  test_item_id: string;
+  patient_id: string;
+  test_type: string;
+  name: string;
+  instrument_name: string;
+  patient_name: string;
+  reagent_names: string[];
+  code: string;
+  unit: string;
+  result_value: number;
+  result_status: 'normal' | 'high' | 'low';
+  reviewed: boolean;
+  reviewer_comment: string;
+  is_deleted: boolean;
+  deleted_at: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
 
 const PatientDetailPage: React.FC = () => {
   const { t } = useTranslation();
@@ -23,7 +44,7 @@ const PatientDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const [patient, setPatient] = useState<PatientOption | null>(null);
   const [medicalRecords, setMedicalRecords] = useState<PatientMedicalRecord[]>([]);
-  const [testOrders, setTestOrders] = useState<TestOrder[]>([]);
+  const [testResultItems, setTestResultItems] = useState<TestResultItem[]>([]);
   const [selectedTestResult, setSelectedTestResult] = useState<TestResult | null>(null);
   const [testResultModalOpen, setTestResultModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -62,16 +83,19 @@ const PatientDetailPage: React.FC = () => {
     }
   }, [patient, t]);
 
-  const loadTestOrders = useCallback(async () => {
+  const loadTestResults = useCallback(async () => {
     if (!patient) return;
     try {
-      const { orders } = await testOrderService.getAllTestOrders(1, 100);
-      // Filter orders by patient_id
-      const patientOrders = orders.filter(order => order.patient_id === patient.id);
-      setTestOrders(patientOrders);
+      const response = await testResultService.getResultsByPatientId(patient.id);
+      
+      if (response && response.success && response.data) {
+        setTestResultItems(response.data);
+      } else {
+        setTestResultItems([]);
+      }
     } catch (error) {
-      console.error('Error loading test orders:', error);
-      setTestOrders([]);
+      console.error('Error loading test results:', error);
+      setTestResultItems([]);
     }
   }, [patient]);
 
@@ -79,9 +103,9 @@ const PatientDetailPage: React.FC = () => {
   useEffect(() => { 
     if (patient) {
       loadMedicalRecords();
-      loadTestOrders();
+      loadTestResults();
     }
-  }, [patient, refreshKey, loadMedicalRecords, loadTestOrders]);
+  }, [patient, refreshKey, loadMedicalRecords, loadTestResults]);
 
   const formatDate = (iso?: string) => iso ? new Date(iso).toLocaleString('vi-VN') : '-';
 
@@ -118,6 +142,15 @@ const PatientDetailPage: React.FC = () => {
       console.error('Error loading test result:', error);
     }
   };
+
+  // Group test results by test_order_id for display
+  const groupedTestResults = testResultItems.reduce((acc, item) => {
+    if (!acc[item.test_order_id]) {
+      acc[item.test_order_id] = [];
+    }
+    acc[item.test_order_id].push(item);
+    return acc;
+  }, {} as Record<string, TestResultItem[]>);
 
   const formatDateTime = (isoString?: string) => {
     if (!isoString) return t('patient.notUpdated');
@@ -165,7 +198,7 @@ const PatientDetailPage: React.FC = () => {
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div>
-            <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">{t('patient.patientDetail')}</h1>
+             <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">{t('patient.patientDetail')}</h1>
             <p className="text-sm sm:text-base text-gray-600">{t('patient.patientDetailDescription')}</p>
           </div>
         </div>
@@ -180,17 +213,18 @@ const PatientDetailPage: React.FC = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+
             <div>
               <Label className="text-xs sm:text-sm text-gray-600">{t('patient.patientCode')}</Label>
               <p className="text-base sm:text-lg font-semibold mt-1 break-words">{patient.patientCode || patient.id}</p>
             </div>
             <div>
-              <Label className="text-xs sm:text-sm text-gray-600">{t('patient.patientName')}</Label>
+               <Label className="text-xs sm:text-sm text-gray-600">{t('patient.patientName')}</Label>
               <p className="text-base sm:text-lg mt-1 break-words">{patient.fullName}</p>
             </div>
             <div>
-              <Label className="text-xs sm:text-sm text-gray-600">{t('patient.dateOfBirth')}</Label>
+               <Label className="text-xs sm:text-sm text-gray-600">{t('patient.dateOfBirth')}</Label>
               <p className="text-base sm:text-lg mt-1">{patient.dateOfBirth ? new Date(patient.dateOfBirth).toLocaleDateString('vi-VN') : 'Chưa cập nhật'}</p>
             </div>
             <div>
@@ -202,7 +236,7 @@ const PatientDetailPage: React.FC = () => {
               <p className="text-base sm:text-lg mt-1 break-words">{patient.phoneNumber || t('patient.notUpdated')}</p>
             </div>
             <div>
-              <Label className="text-xs sm:text-sm text-gray-600">Email</Label>
+                <Label className="text-xs sm:text-sm text-gray-600">Email</Label>
               <p className="text-base sm:text-lg mt-1 break-words">{patient.email || t('patient.notUpdated')}</p>
             </div>
             <div className="sm:col-span-2">
@@ -244,7 +278,7 @@ const PatientDetailPage: React.FC = () => {
               <span className="text-base sm:text-lg">{t('patient.medicalRecord')}</span>
             </div>
             {medicalRecords.length > 0 && (
-              <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+               <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                 <Button variant="ghost" size="sm" onClick={() => setViewId(medicalRecords[0]._id)} title="Xem chi tiết" className="text-xs sm:text-sm">
                   <Eye className="w-3 h-3 sm:w-4 sm:h-4 mr-1" /><span className="hidden sm:inline">{t('patient.viewDetails')}</span>
                 </Button>
@@ -271,7 +305,7 @@ const PatientDetailPage: React.FC = () => {
                 <p className="text-base sm:text-lg mt-1">{medicalRecords[0].blood_type || 'Chưa cập nhật'}</p>
               </div>
               <div>
-                <Label className="text-xs sm:text-sm text-gray-600">{t('patient.allergies')}</Label>
+                 <Label className="text-xs sm:text-sm text-gray-600">{t('patient.allergies')}</Label>
                 <p className="text-base sm:text-lg mt-1 break-words">
                   {medicalRecords[0].allergies 
                     ? (Array.isArray(medicalRecords[0].allergies) 
@@ -291,7 +325,7 @@ const PatientDetailPage: React.FC = () => {
                 </p>
               </div>
               <div>
-                <Label className="text-xs sm:text-sm text-gray-600">{t('patient.createdAt')}</Label>
+               <Label className="text-xs sm:text-sm text-gray-600">{t('patient.createdAt')}</Label>
                 <p className="text-base sm:text-lg mt-1">{formatDate(medicalRecords[0].created_at)}</p>
               </div>
               <div className="sm:col-span-2">
@@ -312,46 +346,51 @@ const PatientDetailPage: React.FC = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {testOrders.length === 0 ? (
+          {testResultItems.length === 0 ? (
             <div className="text-center py-8">
               <FlaskConical className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-500">{t('patient.noTestResult')}</p>
             </div>
           ) : (
-            <div className="overflow-x-auto -mx-4 sm:mx-0">
-              <div className="inline-block min-w-full align-middle">
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold text-xs sm:text-sm text-gray-700">{t('patient.instrumentName')}</th>
-                      <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold text-xs sm:text-sm text-gray-700">{t('patient.reagentName')}</th>
-                      <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold text-xs sm:text-sm text-gray-700">{t('patient.createdAt')}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {testOrders.map((order) => (
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="border-b border-gray-200">
+                    <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">{t('patient.testTypeName')}</th>
+                    <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">{t('patient.instrumentName')}</th>
+                    <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">{t('patient.reagentName')}</th>
+                    <th className="text-left py-3 px-4 font-semibold text-sm text-gray-700">{t('patient.createdAt')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.entries(groupedTestResults).map(([testOrderId, items]) => {
+                    const firstItem = items[0];
+                    return (
                       <tr 
-                        key={order._id} 
+                        key={testOrderId} 
                         className="border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
-                        onClick={() => handleViewTestResult(order._id)}
+                        onClick={() => handleViewTestResult(testOrderId)}
                         title={t('patient.clickToViewTestResult')}
                       >
-                        <td className="py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm text-gray-900 break-words">
-                          {order.instrument?.instrument_name || t('patient.notUpdated')}
+                        <td className="py-3 px-4 text-sm text-gray-900">
+                          {firstItem.test_type}
                         </td>
-                        <td className="py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm text-gray-900 break-words">
-                          {order.reagents && order.reagents.length > 0
-                            ? order.reagents.map((r: { reagent_name: string }) => r.reagent_name).join(', ')
+                        <td className="py-3 px-4 text-sm text-gray-900">
+                          {firstItem.instrument_name || t('patient.notUpdated')}
+                        </td>
+                        <td className="py-3 px-4 text-sm text-gray-900">
+                          {firstItem.reagent_names && firstItem.reagent_names.length > 0
+                            ? firstItem.reagent_names.join(', ')
                             : t('patient.notUpdated')}
                         </td>
-                        <td className="py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm text-gray-600 whitespace-nowrap">
-                          {formatDateTime(order.created_at)}
+                        <td className="py-3 px-4 text-sm text-gray-600">
+                          {formatDateTime(firstItem.createdAt)}
                         </td>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           )}
         </CardContent>
@@ -360,7 +399,7 @@ const PatientDetailPage: React.FC = () => {
   {/* Create MR moved to list page */}
       <EditPatientMedicalRecord id={editId} open={Boolean(editId)} onOpenChange={(o) => { if (!o) setEditId(null); }} onUpdated={() => setRefreshKey(k => k + 1)} />
       <MedicalRecordViewModal recordId={viewId} isOpen={Boolean(viewId)} onClose={() => setViewId(null)} />
-      <TestResultDetailModal 
+      <TestResultModal 
         isOpen={testResultModalOpen} 
         onClose={() => {
           setTestResultModalOpen(false);
