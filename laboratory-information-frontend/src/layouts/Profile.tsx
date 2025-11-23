@@ -10,7 +10,7 @@ import { Skeleton } from "../components/common/skeleton";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
-interface UserProfileData {
+export interface UserProfileData {
   email: string;
   fullName: string;
   identityNumber: string; 

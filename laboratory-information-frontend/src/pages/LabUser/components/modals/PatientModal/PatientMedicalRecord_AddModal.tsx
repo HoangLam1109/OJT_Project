@@ -166,11 +166,11 @@ export default function AddPatientMedicalRecord({ open, onOpenChange, onCreated,
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-5xl">
-        <DialogHeader className="mb-6">
+                <DialogHeader className="mb-6">
                     <DialogTitle className="text-2xl">{t('patient.createMedicalRecord')}</DialogTitle>
                 </DialogHeader>
-        <div className="space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <Label>{t('patient.patientName')}</Label>
                             <div ref={patientSearchContainerRef} className="relative">
@@ -269,7 +269,7 @@ export default function AddPatientMedicalRecord({ open, onOpenChange, onCreated,
                         </div>
                     </div>
                 </div>
-        <DialogFooter className="mt-8">
+                <DialogFooter className="mt-8">
                     <Button variant="outline" onClick={() => onOpenChange(false)}>{t('patient.cancel')}</Button>
                     <Button onClick={async () => {
                         if (!form.patient_id) {

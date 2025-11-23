@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   LayoutDashboard,
   Beaker,
@@ -11,6 +11,8 @@ import { TopHeader } from '../components/common/TopHeader';
 import type { NavigationItem } from '../types/Layout.types';
 import type { User } from '../types/User';
 import { useTranslation } from 'react-i18next';
+import { profileService } from '@/service/profileService';
+import type { UserProfileData } from './Profile';
 
 interface ServiceLayoutProps {
   children: React.ReactNode;
@@ -20,19 +22,19 @@ interface ServiceLayoutProps {
   onNavigate: (page: string) => void;
 }
 
-export function ServiceLayout({ 
-  children, 
-  currentUser, 
-  onLogout, 
-  currentPage, 
-  onNavigate 
+export function ServiceLayout({
+  children,
+  currentUser,
+  onLogout,
+  currentPage,
+  onNavigate
 }: ServiceLayoutProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { t } = useTranslation();
 
   const navigationItems: NavigationItem[] = [
     { id: 'dashboard', label: t('sidebar.dashboard'), icon: LayoutDashboard },
-    { id: 'event-logs', label: t('sidebar.eventLogs'), icon: Activity }, 
+    { id: 'event-logs', label: t('sidebar.eventLogs'), icon: Activity },
     { id: 'reagents', label: t('sidebar.reagents'), icon: Beaker },
     { id: 'instruments', label: t('sidebar.instruments'), icon: Wrench },
     {
@@ -43,21 +45,37 @@ export function ServiceLayout({
     { id: 'profile', label: t('sidebar.profile'), icon: Settings },
   ];
 
+
+  const [profile, setProfile] = useState<UserProfileData | null>(null);
+
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  const loadProfile = async () => {
+    try {
+      const data = await profileService.getProfile();
+      setProfile(data);
+    } catch (e) {
+      console.error("Failed to load profile", e);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
       <Sidebar
         currentUserName={currentUser.name}
         currentUserRole={t('role.service')}
         currentPage={currentPage}
+        currentUserAvatar={profile?.avatar}
         sidebarCollapsed={sidebarCollapsed}
         setSidebarCollapsed={setSidebarCollapsed}
         onNavigate={onNavigate}
         navigationItems={navigationItems}
         onLogout={onLogout}
       />
-      <div className={`flex-1 flex flex-col transition-all duration-300 ${
-        sidebarCollapsed ? 'md:ml-16' : 'md:ml-64'
-      }`}>
+      <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'md:ml-16' : 'md:ml-64'
+        }`}>
         <TopHeader />
         <main className="flex-1 p-6 bg-gray-50 overflow-auto">{children}</main>
       </div>

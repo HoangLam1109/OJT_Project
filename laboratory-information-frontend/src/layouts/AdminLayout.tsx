@@ -1,14 +1,32 @@
 
 import type { AdminLayoutProps } from '../pages/admin/types/AdminTypes';
 import { Sidebar } from '../components/common/Sidebar';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { LayoutDashboard, Users, FileText, Settings , UserCheck } from 'lucide-react';
 import { TopHeader } from '../components/common/TopHeader';
 import type { NavigationItem } from '../types/Layout.types';
 import { useTranslation } from 'react-i18next';
+import { profileService } from '@/service/profileService';
+import type { UserProfileData } from './Profile';
+
 export function AdminLayout({ children, currentUser, onLogout, currentPage, onNavigate }: AdminLayoutProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { t } = useTranslation();
+  
+    const [profile, setProfile] = useState<UserProfileData | null>(null);
+    
+    useEffect(() => {
+      loadProfile();
+    }, []);
+  
+    const loadProfile = async () => {
+      try {
+        const data = await profileService.getProfile();
+        setProfile(data);
+      } catch (e) {
+        console.error("Failed to load profile", e);
+      }
+    };
 
   const navigationItems: NavigationItem[] = [
     { id: 'dashboard', label: t('sidebar.dashboard'), icon: LayoutDashboard },
@@ -60,6 +78,7 @@ export function AdminLayout({ children, currentUser, onLogout, currentPage, onNa
       <Sidebar
         currentUserName={currentUser.name}
         currentUserRole={t('admin.role')}
+        currentUserAvatar={profile?.avatar}
         currentPage={currentPage}
         sidebarCollapsed={sidebarCollapsed}
         setSidebarCollapsed={setSidebarCollapsed}
