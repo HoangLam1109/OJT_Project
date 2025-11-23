@@ -245,7 +245,7 @@ export function AdminAuditReportsPage() {
                 </div>
               </div>
             </td>
-            <td className="py-3 px-4 text-sm truncate" title={log.service_name}>{getServiceDisplayName(log.service_name)}</td>
+            <td className="py-3 px-4 text-sm truncate" title={log.service_name}>{getServiceDisplayName(log.service_name || "")}</td>
             <td className="py-3 px-4">
               <div className="flex items-start gap-2">
                 {getActionIcon(String(log.action))}

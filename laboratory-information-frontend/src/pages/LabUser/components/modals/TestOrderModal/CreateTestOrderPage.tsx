@@ -96,22 +96,30 @@ const CreateTestOrderPage: React.FC = () => {
     }
   }, [formData.test_type]);
 
-  const loadTestItems = async (testTypeKey: string) => {
-    try {
-      setLoadingTestItems(true);
-      // Convert translation key to backend expected value
-      const backendTestType = testTypeKeyToBackendValue[testTypeKey] || testTypeKey;
-      const items = await testItemService.getAllTestItems(backendTestType);
-      setTestItems(items);
-      // Reset selected items when test type changes
-      setSelectedTestItemIds([]);
-    } catch (e) {
-      toast.error(t('testOrder.cannotLoadTestItems'));
-      setTestItems([]);
-    } finally {
-      setLoadingTestItems(false);
+const loadTestItems = async (testTypeKey: string) => {
+  try {
+    setLoadingTestItems(true);
+    // Convert translation key to backend expected value
+    const backendTestType = testTypeKeyToBackendValue[testTypeKey] || testTypeKey;
+    const items = await testItemService.getAllTestItems(backendTestType);
+    setTestItems(items);
+    // Reset selected items when test type changes
+    setSelectedTestItemIds([]);
+  } catch (error: unknown) {
+    toast.error(t('testOrder.cannotLoadTestItems'));
+    setTestItems([]);
+
+    // Optional: log error safely
+    if (error instanceof Error) {
+      console.error('Error loading test items:', error.message);
+    } else {
+      console.error('Unexpected error:', error);
     }
-  };
+  } finally {
+    setLoadingTestItems(false);
+  }
+};
+
 
   const generateBarcode = (): string => {
     const ts = Date.now().toString(36);

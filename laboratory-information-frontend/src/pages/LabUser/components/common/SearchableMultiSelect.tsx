@@ -11,7 +11,7 @@ interface ReagentOption {
   name: string;
   lotNumber?: string;
   quantity?: number;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface SearchableMultiSelectProps {

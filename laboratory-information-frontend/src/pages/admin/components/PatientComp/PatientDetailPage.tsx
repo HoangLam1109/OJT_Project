@@ -49,7 +49,7 @@ const PatientDetailPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, t]);
 
   const loadMedicalRecords = useCallback(async () => {
     if (!patient) return;
@@ -60,7 +60,7 @@ const PatientDetailPage: React.FC = () => {
       toast.error(t('patient.cannotLoadMedicalRecords'));
       console.error('Error loading medical records:', error);
     }
-  }, [patient]);
+  }, [patient, t]);
 
   const loadTestOrders = useCallback(async () => {
     if (!patient) return;
