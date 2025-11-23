@@ -8,7 +8,7 @@ export interface TestResultItem {
   code: string;
   unit: string;
   result_value: number;
-  result_status: 'normal' | 'abnormal' | 'critical';
+  result_status: 'normal' | 'high' | 'low' | 'abnormal' | 'critical';
   reviewed: boolean;
   reviewer_comment: string;
   patient_name: string;
@@ -46,7 +46,7 @@ export interface TestResultDetail {
   code: string;
   unit: string;
   resultValue: number;
-  resultStatus: 'normal' | 'abnormal' | 'critical';
+  resultStatus: 'normal' | 'high' | 'low' | 'abnormal' | 'critical';
   reviewed: boolean;
   reviewerComment: string;
   createdAt: string;
