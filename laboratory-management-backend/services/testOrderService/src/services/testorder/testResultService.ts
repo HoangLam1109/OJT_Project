@@ -137,7 +137,13 @@ export const TestResultService = {
         }
         return TestResultRepository.findByPatientId(patient_id, page, limit);
     },
-
+    
+    getTestResultByUserIdService: async (user_id: string, page = 1, limit = 10) => {
+        if (!user_id) {
+            throw new Error("user_id is required");
+        }
+        return TestResultRepository.findByUserId(user_id, page, limit);
+    },
 
     async softDeleteByOrderId(test_order_id: any) {
         await TestResultRepository.softDeleteByOrderId(test_order_id);

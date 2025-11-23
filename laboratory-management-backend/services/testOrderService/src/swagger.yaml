@@ -511,7 +511,7 @@ paths:
                     type: string
                     example: "Unknown error"
   
-  # ==================== Get: Test Result By testorderId====================
+  # ==================== Get: Test Result By PatientId====================
   /testResult/getResultsByPatientId/{id}:
     get:
       tags:
@@ -541,7 +541,7 @@ paths:
         "200":
           description: Thành công – Trả về thông tin chi tiết test result
         "404":
-          description: Không tìm thấy test order theo ID
+          description: Không tìm thấy test result theo ID
           content:
             application/json:
               schema:
@@ -566,6 +566,62 @@ paths:
                   message:
                     type: string
                     example: Unknown error   
+
+  # ==================== Get: Test Result By userId====================
+  /testResult/getResultsByUserId/{id}:
+    get:
+      tags:
+        - Test Result
+      summary: Lấy thông tin chi tiết của một Test Result theo user_id
+      description: Trả về thông tin một Test Result, bao gồm tên bệnh nhân, tổng số kết quả và toàn bộ danh sách kết quả xét nghiệm.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: user_id 
+          schema:
+            type: string
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Trang hiện tại
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 5
+          description: Số lượng test result trên mỗi trang
+      responses:
+        "200":
+          description: Thành công – Trả về thông tin chi tiết test result
+        "404":
+          description: Không tìm thấy test result theo ID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Test Result not found
+        "500":
+          description: Lỗi server
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Unknown error  
 
   # ==================== GET: Search Test Results (paginated) ====================    
   /testResult/search:
