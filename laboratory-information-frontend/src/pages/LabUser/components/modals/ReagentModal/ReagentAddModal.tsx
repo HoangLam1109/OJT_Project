@@ -128,7 +128,7 @@ export default function ReagentAddModal({
                                     id="reagent_name"
                                     value={formData.reagent_name}
                                     onChange={(e) => handleFieldChange('reagent_name', e.target.value)}
-                                    placeholder="Nhập tên thuốc thử"
+                                    placeholder={t('reagent.formModal.namePlaceholder')}
                                     className={`pl-10 h-11 transition-all ${errors.reagent_name ? 'border-red-300 focus-visible:ring-red-200' : 'border-gray-200 focus-visible:border-blue-500 focus-visible:ring-blue-200'}`}
                                 />
                             </div>
@@ -138,7 +138,7 @@ export default function ReagentAddModal({
                         {/* Reagent Type */}
                         <div className="space-y-2">
                             <Label htmlFor="reagent_type" className="text-sm font-medium text-gray-700">
-                                {t('reagent.formModal.type') || 'Loại thuốc thử'} <span className="text-red-500">*</span>
+                                {t('reagent.formModal.type')} <span className="text-red-500">*</span>
                             </Label>
                             <div className="relative group">
                                 <Factory className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
@@ -146,7 +146,7 @@ export default function ReagentAddModal({
                                     id="reagent_type"
                                     value={formData.reagent_type}
                                     onChange={(e) => handleFieldChange('reagent_type', e.target.value)}
-                                    placeholder="Nhập loại thuốc thử"
+                                    placeholder={t('reagent.formModal.typePlaceholder')}
                                     className={`pl-10 h-11 transition-all ${errors.reagent_type ? 'border-red-300 focus-visible:ring-red-200' : 'border-gray-200 focus-visible:border-blue-500 focus-visible:ring-blue-200'}`}
                                 />
                             </div>
@@ -174,7 +174,7 @@ export default function ReagentAddModal({
                         {/* Unit of Measure */}
                         <div className="space-y-2">
                             <Label htmlFor="unit_of_measure" className="text-sm font-medium text-gray-700">
-                                {t('reagent.formModal.unit') || 'Đơn vị tính'}
+                                {t('reagent.formModal.unit')}
                             </Label>
                             <div className="relative group">
                                 <Scale className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
@@ -182,7 +182,7 @@ export default function ReagentAddModal({
                                     id="unit_of_measure"
                                     value={formData.unit_of_measure}
                                     onChange={(e) => handleFieldChange('unit_of_measure', e.target.value)}
-                                    placeholder="ml, mg, kit..."
+                                    placeholder={t('reagent.formModal.unitPlaceholder')}
                                     className={`pl-10 h-11 transition-all ${errors.unit_of_measure ? 'border-red-300 focus-visible:ring-red-200' : 'border-gray-200 focus-visible:border-blue-500 focus-visible:ring-blue-200'}`}
                                 />
                             </div>
@@ -228,7 +228,7 @@ export default function ReagentAddModal({
                         {/* Low Stock Threshold */}
                         <div className="space-y-2">
                             <Label htmlFor="low_stock_threshold" className="text-sm font-medium text-gray-700">
-                                {t('reagent.formModal.lowStockThreshold') || 'Ngưỡng cảnh báo thấp'}
+                                {t('reagent.formModal.lowStockThreshold')}
                             </Label>
                             <div className="relative group">
                                 <AlertTriangle className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
@@ -254,7 +254,7 @@ export default function ReagentAddModal({
                                     id="storage_location"
                                     value={formData.storage_location}
                                     onChange={(e) => handleFieldChange('storage_location', e.target.value)}
-                                    placeholder="Vị trí lưu trữ"
+                                    placeholder={t('reagent.formModal.locationPlaceholder')}
                                     className={`pl-10 h-11 transition-all ${errors.storage_location ? 'border-red-300 focus-visible:ring-red-200' : 'border-gray-200 focus-visible:border-blue-500 focus-visible:ring-blue-200'}`}
                                 />
                             </div>
