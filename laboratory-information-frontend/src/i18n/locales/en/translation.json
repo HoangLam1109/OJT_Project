@@ -298,14 +298,17 @@
   "sidebar": {
     "title": "Laboratory Management System",
     "dashboard": "Dashboard",
-    "patients": "Patients",
-    "test-orders": "Test Orders",
-    "test-results": "Test Results",
-    "instruments": "Instruments",
-    "reagents": "Reagents",
-    "chat": "Chat",
+    "userManagement": "User Management",
+    "patientManagement": "Patient Management",
+    "testOrders": "Test Order Management",
+    "auditReports": "Audit Logs",
+    "testResults": "Test Results",
+    "instruments": "Instrument Management",
+    "reagents": "Reagent Management",
     "profile": "Profile",
-    "role": "Laboratory Staff"
+    "role": "Administrator",
+    "eventLogs": "Event Logs",
+    "messages": "Messages"
   },
   "topHeader": {
     "appName": "Laboratory Management System"
@@ -427,6 +430,13 @@
       "cannotLoadTestItems": "Failed to load test items list",
       "enterPatientName": "Enter patient name",
       "selectTestType": "Select test type",
+    "testItems": "Test Items",
+    "selectTestItems": "Select test items",
+    "searchTestItems": "Search test items...",
+    "loading": "Loading...",
+    "dueDate": "Due Date",
+    "notes": "Notes",
+    "notesPlaceholder": "Additional notes (optional)",
       "selectDueDate": "Select due date",
       "pleaseFillRequiredFields": "Please fill in all required fields",
       "newTestOrder": "new test",
@@ -785,6 +795,46 @@
       "locationRequired": "Storage location is required",
       "checkFields": "Please check the information"
     }
+  },
+  "common": {
+    "selectedTestItems": "Selected {{count}} test item(s)",
+    "noResultsFound": "No results found",
+    "allSelected": "All items selected",
+    "code": "Code",
+    "selectTestItems": "Select test items...",
+    "searchTestItems": "Search test items..."
+  },
+  "role": {
+    "normalUser": "Normal User",
+    "service": "Service"
+  },
+  "userProfile": {
+    "updateAvatarSuccess": "Avatar updated successfully!",
+    "uploadAvatarError": "Error uploading avatar.",
+    "updateProfileSuccess": "Profile updated successfully!",
+    "updateProfileError": "Update failed. Please try again.",
+    "notUpdated": "Not updated",
+    "loadProfileError": "Unable to load profile information.",
+    "editProfile": "Edit Profile",
+    "cancel": "Cancel",
+    "saveChanges": "Save Changes",
+    "statusAndContact": "Status & Contact",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "joinedFrom": "Joined from",
+    "personalInfo": "Personal Information",
+    "personalInfoDesc": "Manage your personal information and security",
+    "fullName": "Full Name",
+    "phone": "Phone Number",
+    "dob": "Date of Birth",
+    "gender": "Gender",
+    "male": "Male",
+    "female": "Female",
+    "other": "Other",
+    "age": "Age",
+    "identityNumber": "ID Number",
+    "address": "Address"
   }
 }
 

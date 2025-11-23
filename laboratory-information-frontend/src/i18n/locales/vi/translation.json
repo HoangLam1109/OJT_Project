@@ -297,15 +297,18 @@
   },
   "sidebar": {
     "title": "Hệ thống Quản lý Phòng thí nghiệm",
-    "dashboard": "Bảng điều khiển",
-    "patients": "Bệnh nhân",
-    "test-orders": "Đơn xét nghiệm",
-    "test-results": "Kết quả xét nghiệm",
-    "instruments": "Thiết bị",
-    "reagents": "Hóa chất",
-    "chat": "Trò chuyện",
-    "profile": "Hồ sơ",
-    "role": "Nhân viên phòng thí nghiệm"
+    "dashboard": "Tổng quan",
+    "userManagement": "Quản lý người dùng",
+    "patientManagement": "Quản lý bệnh nhân",
+    "testOrders": "Quản lý đơn xét nghiệm",
+    "auditReports": "Nhật ký sự kiện",
+    "testResults": "Kết quả xét nghiệm",
+    "instruments": "Quản lý thiết bị",
+    "reagents": "Quản lý hóa chất",
+    "profile": "Hồ sơ cá nhân",
+    "role": "Quản trị viên",
+    "eventLogs": "Nhật ký sự kiện",
+    "messages": "Tin nhắn"
   },
   "topHeader": {
     "appName": "Hệ thống Quản lý Phòng thí nghiệm"
@@ -427,6 +430,13 @@
     "cannotLoadTestItems": "Không thể tải danh sách test items",
     "enterPatientName": "Nhập tên bệnh nhân",
     "selectTestType": "Chọn loại xét nghiệm",
+    "testItems": "Chỉ số xét nghiệm",
+    "selectTestItems": "Chọn chỉ số xét nghiệm",
+    "searchTestItems": "Tìm kiếm chỉ số xét nghiệm...",
+    "loading": "Đang tải...",
+    "dueDate": "Hạn hoàn thành",
+    "notes": "Ghi chú",
+    "notesPlaceholder": "Ghi chú thêm (tùy chọn)",
     "selectDueDate": "Chọn hạn hoàn thành",
     "pleaseFillRequiredFields": "Vui lòng điền đầy đủ thông tin bắt buộc",
     "newTestOrder": "xét nghiệm mới",
@@ -783,5 +793,45 @@
       "locationRequired": "Vị trí lưu trữ là bắt buộc",
       "checkFields": "Vui lòng kiểm tra lại thông tin"
     }
+  },
+  "common": {
+    "selectedTestItems": "Đã chọn {{count}} test item(s)",
+    "noResultsFound": "Không tìm thấy kết quả",
+    "allSelected": "Tất cả đã được chọn",
+    "code": "Mã",
+    "selectTestItems": "Chọn test items...",
+    "searchTestItems": "Tìm kiếm test items..."
+  },
+  "role": {
+    "normalUser": "Người dùng thường",
+    "service": "Dịch vụ"
+  },
+  "userProfile": {
+    "updateAvatarSuccess": "Cập nhật ảnh đại diện thành công!",
+    "uploadAvatarError": "Lỗi khi tải lên ảnh đại diện.",
+    "updateProfileSuccess": "Cập nhật hồ sơ thành công!",
+    "updateProfileError": "Cập nhật thất bại. Vui lòng thử lại.",
+    "notUpdated": "Chưa cập nhật",
+    "loadProfileError": "Không thể tải thông tin hồ sơ.",
+    "editProfile": "Chỉnh sửa hồ sơ",
+    "cancel": "Hủy",
+    "saveChanges": "Lưu thay đổi",
+    "statusAndContact": "Trạng thái & Liên hệ",
+    "status": "Trạng thái",
+    "active": "Đang hoạt động",
+    "inactive": "Vô hiệu hóa",
+    "joinedFrom": "Tham gia từ",
+    "personalInfo": "Thông tin cá nhân",
+    "personalInfoDesc": "Quản lý thông tin cá nhân và bảo mật của bạn",
+    "fullName": "Họ và tên",
+    "phone": "Số điện thoại",
+    "dob": "Ngày sinh",
+    "gender": "Giới tính",
+    "male": "Nam",
+    "female": "Nữ",
+    "other": "Khác",
+    "age": "Tuổi",
+    "identityNumber": "CCCD/CMND",
+    "address": "Địa chỉ"
   }
 }

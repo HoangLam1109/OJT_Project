@@ -251,7 +251,7 @@ const loadTestItems = async (testTypeKey: string) => {
               {/* Bệnh nhân */}
               <div className="space-y-2">
                 <Label htmlFor="patient" className="text-sm font-medium">
-                  Bệnh nhân <span className="text-red-500">*</span>
+                  {t('testOrder.patient')} <span className="text-red-500">*</span>
                 </Label>
                 <PatientSearchInput
                   value={patientQuery}
@@ -309,14 +309,14 @@ const loadTestItems = async (testTypeKey: string) => {
             {formData.test_type && (
               <div className="space-y-2">
                 <Label className="text-sm font-medium">
-                  Test Items
+                  {t('testOrder.testItems')}
                 </Label>
                 <TestItemMultiSelect
                   options={testItems}
                   value={selectedTestItemIds}
                   onChange={setSelectedTestItemIds}
-                  placeholder={loadingTestItems ? 'Đang tải...' : 'Chọn test items'}
-                  searchPlaceholder="Tìm kiếm test items..."
+                  placeholder={loadingTestItems ? t('testOrder.loading') : t('testOrder.selectTestItems')}
+                  searchPlaceholder={t('testOrder.searchTestItems')}
                   disabled={loadingTestItems}
                 />
               </div>
@@ -325,7 +325,7 @@ const loadTestItems = async (testTypeKey: string) => {
             {/* Hạn hoàn thành - full width */}
             <div className="space-y-2">
               <Label htmlFor="dueDate" className="text-sm font-medium">
-                Hạn hoàn thành <span className="text-red-500">*</span>
+                {t('testOrder.dueDate')} <span className="text-red-500">*</span>
               </Label>
               <div className="relative">
                 <Input
@@ -350,7 +350,7 @@ const loadTestItems = async (testTypeKey: string) => {
             {/* Ghi chú */}
             <div className="space-y-2">
               <Label htmlFor="notes" className="text-sm font-medium">
-                Ghi chú
+                {t('testOrder.notes')}
               </Label>
               <textarea
                 id="notes"
@@ -359,7 +359,7 @@ const loadTestItems = async (testTypeKey: string) => {
                 onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
                 disabled={false}
                 className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors resize-y hover:border-gray-400 disabled:bg-gray-50 disabled:cursor-not-allowed"
-                placeholder="Ghi chú thêm (tùy chọn)"
+                placeholder={t('testOrder.notesPlaceholder')}
               />
             </div>
 
