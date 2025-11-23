@@ -308,7 +308,7 @@
     "profile": "Hồ sơ cá nhân",
     "role": "Quản trị viên",
     "eventLogs": "Nhật ký sự kiện",
-    "messages": "Tin nhắn"
+    "chat": "Tin nhắn"
   },
   "topHeader": {
     "appName": "Hệ thống Quản lý Phòng thí nghiệm"
@@ -809,6 +809,8 @@
   "userProfile": {
     "updateAvatarSuccess": "Cập nhật ảnh đại diện thành công!",
     "uploadAvatarError": "Lỗi khi tải lên ảnh đại diện.",
+    "avatarFileTypeError": "File phải là hình ảnh",
+    "avatarFileSizeError": "Kích thước file phải nhỏ hơn 5MB",
     "updateProfileSuccess": "Cập nhật hồ sơ thành công!",
     "updateProfileError": "Cập nhật thất bại. Vui lòng thử lại.",
     "notUpdated": "Chưa cập nhật",

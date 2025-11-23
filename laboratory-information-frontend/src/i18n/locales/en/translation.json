@@ -308,7 +308,8 @@
     "profile": "Profile",
     "role": "Administrator",
     "eventLogs": "Event Logs",
-    "messages": "Messages"
+    "chat": "Chat"
+
   },
   "topHeader": {
     "appName": "Laboratory Management System"
@@ -811,6 +812,8 @@
   "userProfile": {
     "updateAvatarSuccess": "Avatar updated successfully!",
     "uploadAvatarError": "Error uploading avatar.",
+    "avatarFileTypeError": "File must be an image",
+    "avatarFileSizeError": "File size must be less than 5MB",
     "updateProfileSuccess": "Profile updated successfully!",
     "updateProfileError": "Update failed. Please try again.",
     "notUpdated": "Not updated",
