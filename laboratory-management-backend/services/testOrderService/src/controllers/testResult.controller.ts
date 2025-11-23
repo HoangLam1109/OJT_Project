@@ -65,6 +65,43 @@ export const getTestResultByPatientId = async (req: Request, res: Response) => {
 };
 
 
+export const getTestResultByUserId = async (req: Request, res: Response) => {
+  try {
+    const user_id = req.params.id as string;
+
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+
+    const { results, total } =
+      await TestResultService.getTestResultByUserIdService(user_id, page, limit);
+
+    if (!results || results.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Test Results not found"
+      });
+    }
+
+    return res.json({
+      success: true,
+      data: results,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit)
+      }
+    });
+
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Unknown error"
+    });
+  }
+};
+
+
 export const deleteTestResult = async (req: Request, res: Response) => {
   try {
     const test_order_id = req.params.id;
