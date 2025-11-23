@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
-import Button from '../../../components/common/button';
-import { Input } from '../../../components/common/input';
-import { Label } from '../../../components/common/label';
+import Button from '../../../../components/common/button';
+import { Input } from '../../../../components/common/input';
+import { Label } from '../../../../components/common/label';
 // import { Select } from '../../../components/common/select';
-import type { PatientDetail, PatientModalMode } from '../hooks/usePatientModal';
+import type { PatientDetail, PatientModalMode } from '../../hooks/usePatientModal';
 
 interface PatientModalProps {
   isOpen: boolean;
@@ -30,7 +30,7 @@ interface PatientFormState {
   created_at?: string;
 }
 
-export const PatientModal: React.FC<PatientModalProps> = ({ isOpen, mode, patient, onClose, onSubmit }) => {
+export const Patient_UpdateModal: React.FC<PatientModalProps> = ({ isOpen, mode, patient, onClose, onSubmit }) => {
   const [formState, setFormState] = useState<PatientFormState>({});
 
   const isReadOnly = mode === 'view';

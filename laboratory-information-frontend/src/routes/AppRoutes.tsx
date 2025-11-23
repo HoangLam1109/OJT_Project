@@ -35,7 +35,7 @@ import { ForgotPasswordPage } from "../pages/login/ForgotPasswordPage";
 import { ForgotPasswordSuccessPage } from "../pages/login/ForgotPasswordSuccessPage";
 import { ResetPasswordPage } from "../pages/login/ResetPasswordPage";
 import SelectInstrumentsPage from "@/pages/LabUser/SelectInstrumentsPage"
-import PatientDetailPage from "@/pages/LabUser/components/modals/PatientModal/Patient_DetailPage";
+import PatientDetailPage from "@/pages/admin/components/PatientComp/PatientDetailPage";
 import EventLogDetailPage from "@/pages/admin/EventLogDetailPage";
 import type { User } from "../types/User";
 import LabUserChatPage from "../pages/LabUser/ChatPage";
