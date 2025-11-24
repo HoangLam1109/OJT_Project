@@ -51,6 +51,7 @@ interface BackendPatient {
     dateOfBirth?: string;
     gender?: string;
     address?: string;
+    avatar?: string;
   } | null;
 }
 
@@ -71,6 +72,7 @@ export interface PatientOption {
   dateOfBirth?: string;
   gender?: string;
   address?: string;
+  avatar?: string;
 }
 
 // Legacy interfaces from develop branch
@@ -113,6 +115,7 @@ export interface UpdatePatientPayload {
   };
   last_test_type?: string;
   is_active?: boolean;
+  avatar?: string;
 }
 
 // Transform backend response to frontend format
@@ -126,6 +129,7 @@ const transformBackendPatient = (backendPatient: BackendPatient): PatientOption 
     dateOfBirth: backendPatient.user?.dateOfBirth,
     gender: backendPatient.user?.gender,
     address: backendPatient.user?.address,
+    avatar: backendPatient.user?.avatar,
   };
 };
 

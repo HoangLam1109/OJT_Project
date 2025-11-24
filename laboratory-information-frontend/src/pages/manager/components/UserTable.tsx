@@ -1,7 +1,7 @@
 import { User, Lock, Unlock, Edit, Trash2, Eye, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from 'lucide-react';
 import Button from '../../../components/common/button';
 import type { ManagerUser } from '../types/ManagerTypes';
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 interface UserTableProps {
   users: ManagerUser[];
   onView: (user: ManagerUser) => void;
@@ -101,7 +101,29 @@ export function UserTable({ users, onView, onEdit, onDelete, onToggleLock, onFir
               <td className="py-2 sm:py-3 px-3 sm:px-4">
                 <div className="flex items-center gap-2 sm:gap-3">
                   <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold text-xs sm:text-sm flex-shrink-0">
-                    {user.name?.charAt(0)?.toUpperCase() || '?'}
+                    {user.avatar ? (
+                      <img
+                        src={user.avatar}
+                        alt={user.name}
+                        className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover flex-shrink-0"
+                        onError={(e) => {
+                          // If image fails to load (CORS or broken URL), fall back to initials
+                          const img = e.currentTarget as HTMLImageElement;
+                          img.style.display = 'none';
+                          const parent = img.parentElement;
+                          if (parent) {
+                            const fallback = document.createElement('div');
+                            fallback.className = 'w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-green-500 to-blue-500 flex items-center justify-center text-white font-semibold text-xs sm:text-sm flex-shrink-0';
+                            fallback.textContent = user.name?.charAt(0) ?? '';
+                            parent.appendChild(fallback);
+                          }
+                        }}
+                      />
+                    ) : (
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-green-500 to-blue-500 flex items-center justify-center text-white font-semibold text-xs sm:text-sm flex-shrink-0">
+                        {user.name.charAt(0)}
+                      </div>
+                    )}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="font-medium text-gray-900 text-xs sm:text-sm truncate">
@@ -134,16 +156,14 @@ export function UserTable({ users, onView, onEdit, onDelete, onToggleLock, onFir
               </td>
               <td className="py-2 sm:py-3 px-3 sm:px-4">
                 <span
-                  className={`inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    user.active
+                  className={`inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium ${user.active
                       ? 'bg-green-100 text-green-800'
                       : 'bg-red-100 text-red-800'
-                  }`}
+                    }`}
                 >
                   <span
-                    className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
-                      user.active ? 'bg-green-600' : 'bg-red-600'
-                    }`}
+                    className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${user.active ? 'bg-green-600' : 'bg-red-600'
+                      }`}
                   />
                   <span className="whitespace-nowrap">{user.active ? t('manager.active') : t('manager.inactive')}</span>
                 </span>
