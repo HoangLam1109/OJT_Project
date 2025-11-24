@@ -12,6 +12,7 @@ export interface User {
   age?: number;
   address?: string;
   date_of_birth?: string;
+  avatar?: string;
 }
 
 export type SafeUser = Pick<User, 'id' | 'name' | 'email' | 'role' | 'active' | 'permissions'>;

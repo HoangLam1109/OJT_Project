@@ -16,6 +16,7 @@ interface BackendUser {
   role?: string[];
   createdAt: string;
   updatedAt: string;
+  avatar?: string;
 }
 
 interface PaginationParams {
@@ -73,6 +74,7 @@ const transformBackendUser = (backendUser: BackendUser): ManagerUser => {
     date_of_birth: formattedDateOfBirth,
     createdAt: backendUser.createdAt || '',
     updatedAt: backendUser.updatedAt || '',
+    avatar: backendUser.avatar || '',
   };
 };
 
@@ -98,6 +100,7 @@ const transformFrontendUser = (frontendUser: UserFormData) => {
     dateOfBirth: new Date(frontendUser.date_of_birth),
     phoneNumber: frontendUser.phone_number,
     address: frontendUser.address,
+    avatar: frontendUser.avatar,
     // isActive: frontendUser.active,
     role: Array.isArray(frontendUser.role) && frontendUser.role.length > 0 
       ? frontendUser.role 

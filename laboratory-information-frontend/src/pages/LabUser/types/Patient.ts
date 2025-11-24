@@ -1,14 +1,31 @@
 export interface Patient {
   id: string;
-  fullName: string;
-  dateOfBirth: string;
-  gender: 'Male' | 'Female' | 'Other';
-  phoneNumber: string;
-  email?: string;
-  address?: string;
-  medicalHistory?: string;
+  name: string;
+  email: string;
+  phone: string;
+  identifyNumber: string;
+
+  gender: 'male' | 'female' | 'other';
+  dateOfBirth: string;  
+  age: number;
+  address: string;
+
+  emergencyContact: {
+    name: string;
+    phone: string;
+    relationship: string;
+  };
+
+  avatar?: string;
+
+  medicalHistory: string[];
+  allergies: string[];
+
+  bloodType: string; 
+
+  status: 'active' | 'inactive';
+
   createdAt: string;
-  createdBy: string;
-  updatedAt?: string;
-  updatedBy?: string;
+  updatedAt: string;
+  lastVisit: string;
 }

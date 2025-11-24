@@ -21,6 +21,7 @@ export interface UserFormData {
   age?: number;
   address: string;
   active: boolean;
+  avatar?: string;
 }
 
 // User filter options
