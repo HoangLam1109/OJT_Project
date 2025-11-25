@@ -9,9 +9,9 @@ import {
 } from '../../../../../components/common/dialog';
 import Button from '../../../../../components/common/button';
 import { Trash2, AlertTriangle } from 'lucide-react';
-import type { TestOrder } from '../../../types/TestOrderTypes';
+import type { TestOrder } from '../../../types/TestOrderTypes.ts';
 import { useTranslation } from 'react-i18next';
-import { translateTestType } from '../../../utils/testOrderUtils';
+import { translateTestType } from '../../../utils/testOrderUtils.tsx';
 
 interface DeleteConfirmModalProps {
   order: TestOrder | null;

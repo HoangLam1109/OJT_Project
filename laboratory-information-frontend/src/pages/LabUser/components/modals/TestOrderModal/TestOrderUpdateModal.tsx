@@ -12,14 +12,14 @@ import { patientService, type PatientOption } from '../../../../../service/patie
 import { instrumentsService } from '../../../../../service/instrumentsService';
 import { reagentService } from '../../../../../service/reagentService';
 import type { Instrument } from '../../../../service/types/Instrument';
-import type { Reagent } from '../../../types/Reagent';
-import { SearchableDropdown } from '../../common/SearchableDropdown';
-import { SearchableMultiSelect } from '../../common/SearchableMultiSelect';
+import type { Reagent } from '../../../types/Reagent.ts';
+import { SearchableDropdown } from '../../common/SearchableDropdown.tsx';
+import { SearchableMultiSelect } from '../../common/SearchableMultiSelect.tsx';
 import { toast } from 'sonner';
 import { testOrderService } from '../../../../../service/testOrderService';
 import { testItemService, type TestItem } from '../../../../../service/testItemService';
-import { TestItemMultiSelect } from '../../common/TestItemMultiSelect';
-import { validateDueDate } from '../../../utils/testOrderUtils';
+import { TestItemMultiSelect } from '../../common/TestItemMultiSelect.tsx';
+import { validateDueDate } from '../../../utils/testOrderUtils.tsx';
 
 interface TestOrderFormModalProps {
   order: TestOrder | null;
@@ -52,7 +52,7 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
   const { user } = useAuthContext();
   const testTypes = [
     "Sinh hóa máu",
-    "Huyết học tổng quát", 
+    "Huyết học tổng quát",
     "Vi sinh",
     "Miễn dịch",
     "Nội tiết",
@@ -96,7 +96,7 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
       case 'processing':
         return <Badge variant="default"><TestTube className="w-3 h-3 mr-1" />Đang thực hiện</Badge>;
       case 'completed':
-        return <Badge variant="default" className="bg-green-600" ><TestTube className="w-3 h-3 mr-1" style={{color:'white'}}/><div style={{color:'white'}}>Hoàn thành</div></Badge>;
+        return <Badge variant="default" className="bg-green-600" ><TestTube className="w-3 h-3 mr-1" style={{ color: 'white' }} /><div style={{ color: 'white' }}>Hoàn thành</div></Badge>;
       default:
         return <Badge>{status}</Badge>;
     }
@@ -198,7 +198,7 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
       setLoadingPatients(true);
       const data = await patientService.getAllPatientsForDropdown();
       setPatients(data);
-    } catch (e) {
+    } catch {
       toast.error('Không thể tải danh sách bệnh nhân');
     } finally {
       setLoadingPatients(false);
@@ -229,7 +229,7 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
       // Filter only available reagents
       const availableReagents = data.filter(r => r.status !== 'Expired');
       setReagents(availableReagents);
-    } catch (e) {
+    } catch {
       toast.error('Không thể tải danh sách thuốc thử');
     } finally {
       setLoadingReagents(false);
@@ -245,7 +245,7 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
       if (!isEdit || !order?.test_item_ids) {
         setSelectedTestItemIds([]);
       }
-    } catch (e) {
+    } catch {
       toast.error('Không thể tải danh sách test items');
       setTestItems([]);
     } finally {
@@ -275,7 +275,7 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
     const newErrors: Record<string, string> = {};
     if (!formData.patient_id) newErrors.patient_id = 'Chọn bệnh nhân';
     if (!formData.test_type) newErrors.test_type = 'Chọn loại xét nghiệm';
-    
+
     const dueDateError = validateDueDate(formData.due_date || '');
     if (dueDateError) {
       newErrors.due_date = dueDateError;
@@ -290,7 +290,7 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
     setErrors({});
     setIsSubmitting(true);
 
-    const submitData: any = {
+    const submitData = {
       patient_id: formData.patient_id,
       patient_name: formData.patient_name,
       test_type: formData.test_type,
@@ -318,10 +318,16 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
       // Gọi callback onSubmit để parent component có thể refresh data
       await onSubmit(submitData);
       onClose();
-    } catch (err: any) {
-      const msg = err.response?.data?.message || err.message || 'Lỗi hệ thống';
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } }; message?: string };
+
+      const msg =
+        error.response?.data?.message ||
+        error.message ||
+        'Lỗi hệ thống';
+
       toast.error(msg);
-    } finally {
+    }finally {
       setIsSubmitting(false);
     }
   };
@@ -348,7 +354,7 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
 
         <div className="p-6 space-y-6">
           <form id="test-order-form" onSubmit={handleSubmit} className="space-y-6">
-            
+
             {/* Summary Card - Only in Edit Mode */}
             {isEdit && (
               <div className="bg-white rounded-xl border shadow-sm p-5 flex flex-col md:flex-row justify-between gap-4 items-start md:items-center">
@@ -359,12 +365,12 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
                   </div>
                 </div>
                 <div className="flex gap-8">
-                   {order?.created_at && (
+                  {order?.created_at && (
                     <div>
                       <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Ngày tạo</span>
                       <p className="font-medium text-gray-900 mt-1">{new Date(order.created_at).toLocaleDateString('vi-VN')}</p>
                     </div>
-                   )}
+                  )}
                 </div>
               </div>
             )}
@@ -386,11 +392,10 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
                     value={formData.patient_id}
                     onChange={(e) => handlePatientChange(e.target.value)}
                     disabled={loadingPatients || isSubmitting || isEdit}
-                    className={`appearance-none w-full rounded-lg border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                      errors.patient_id 
-                        ? 'border-red-500 bg-red-50' 
-                        : 'border-gray-300 bg-white hover:border-gray-400'
-                    } disabled:bg-gray-50 disabled:cursor-not-allowed`}
+                    className={`appearance-none w-full rounded-lg border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${errors.patient_id
+                      ? 'border-red-500 bg-red-50'
+                      : 'border-gray-300 bg-white hover:border-gray-400'
+                      } disabled:bg-gray-50 disabled:cursor-not-allowed`}
                   >
                     <option value="">-- Chọn bệnh nhân --</option>
                     {patients.map(p => (
@@ -412,11 +417,10 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
                     value={formData.test_type}
                     onChange={(e) => setFormData(prev => ({ ...prev, test_type: e.target.value }))}
                     disabled={isSubmitting}
-                    className={`w-full rounded-lg border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                      errors.test_type 
-                        ? 'border-red-500 bg-red-50' 
-                        : 'border-gray-300 bg-white hover:border-gray-400'
-                    } disabled:bg-gray-50 disabled:cursor-not-allowed`}
+                    className={`w-full rounded-lg border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${errors.test_type
+                      ? 'border-red-500 bg-red-50'
+                      : 'border-gray-300 bg-white hover:border-gray-400'
+                      } disabled:bg-gray-50 disabled:cursor-not-allowed`}
                   >
                     <option value="">-- Chọn loại xét nghiệm --</option>
                     {testTypes.map(t => (
@@ -463,11 +467,10 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
                   value={formData.due_date}
                   onChange={(e) => setFormData(prev => ({ ...prev, due_date: e.target.value }))}
                   disabled={isSubmitting}
-                  className={`w-full rounded-lg border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                    errors.due_date 
-                      ? 'border-red-500 bg-red-50' 
-                      : 'border-gray-300 bg-white hover:border-gray-400'
-                  } disabled:bg-gray-50 disabled:cursor-not-allowed`}
+                  className={`w-full rounded-lg border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${errors.due_date
+                    ? 'border-red-500 bg-red-50'
+                    : 'border-gray-300 bg-white hover:border-gray-400'
+                    } disabled:bg-gray-50 disabled:cursor-not-allowed`}
                 />
                 {errors.due_date && <p className="text-sm text-red-600 mt-1">{errors.due_date}</p>}
               </div>

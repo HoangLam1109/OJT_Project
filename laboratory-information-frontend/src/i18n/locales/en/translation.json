@@ -777,6 +777,8 @@
     }
   },
   "reagent": {
+    "title": "Reagent Management",
+    "subtitle": "Manage reagents, view details, add new reagents",
     "searchPlaceholder": "Search by code, name, lot number or manufacturer...",
     "addNew": "Add New Reagent",
     "cancel": "Cancel",

@@ -16,7 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuthContext } from '../../hooks/useAuthContext';
 import { testResultService } from '../../service/testResultService';
 import { Skeleton } from '../../components/common/skeleton';
-import type { TestResult, TestResultDetail } from '../LabUser/types/TestResultTypes';
+import type { TestResult, TestResultDetail } from '../labuser/types/TestResultTypes';
 
 // Read-only View Detail Modal
 const ViewDetailModal: React.FC<{
