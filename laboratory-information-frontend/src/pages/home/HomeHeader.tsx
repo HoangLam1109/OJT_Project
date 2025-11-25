@@ -1,4 +1,4 @@
-import { Microscope, ArrowRight, LogOut } from "lucide-react";
+import { Microscope, ArrowRight, LogOut, ChevronDown } from "lucide-react";
 import Button from "../../components/common/button";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -6,6 +6,7 @@ import { useAuthContext } from "../../hooks/useAuthContext";
 import { useNavigate } from "react-router-dom";
 import { logoutUser } from "../../service/authService/logoutApi";
 import { LanguageToggle } from "../../components/common/LanguageToggle";
+import { profileService } from "../../service/profileService";
 
 interface HomeHeaderProps {
   onShowLogin: () => void;
@@ -19,16 +20,15 @@ export function HomeHeader({ onShowLogin, onShowRegister }: HomeHeaderProps) {
   const [, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [logoutLoading, setLogoutLoading] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [userAvatar, setUserAvatar] = useState<string | undefined>(user?.avatar);
   const lastYRef = useRef(0);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const getRolePath = () => {
     if (!user || !user.role || user.role.length === 0) return "/";
     
-    // Thứ tự ưu tiên role
-    const rolePriority: Array<'ADMIN' | 'MANAGER' | 'LAB_USER' | 'SERVICE' | 'USER'> = 
-      ["ADMIN", "MANAGER", "LAB_USER", "SERVICE", "USER"];
-    
-    for (const role of rolePriority) {
+    for (const role of user.role) {
       if (user.role.includes(role)) {
         switch (role) {
           case "ADMIN":
@@ -98,6 +98,52 @@ export function HomeHeader({ onShowLogin, onShowRegister }: HomeHeaderProps) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Fetch user avatar when user is logged in
+  useEffect(() => {
+    const fetchUserAvatar = async () => {
+      if (user) {
+        // Set initial avatar from context immediately
+        setUserAvatar(user.avatar);
+        
+        try {
+          // Fetch latest avatar from API
+          const profile = await profileService.getCurrentUserProfile();
+          if (profile && profile.avatar) {
+            setUserAvatar(profile.avatar);
+          } else if (profile && !profile.avatar && user.avatar) {
+            // Keep user.avatar if API doesn't return one
+            setUserAvatar(user.avatar);
+          }
+        } catch (error) {
+          console.error("Failed to fetch user avatar:", error);
+          // Keep user.avatar from context if API fails
+          setUserAvatar(user.avatar);
+        }
+      } else {
+        setUserAvatar(undefined);
+      }
+    };
+
+    fetchUserAvatar();
+  }, [user]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    if (isDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isDropdownOpen]);
+
   return (
     <header
       className={`px-3 sm:px-6 py-3 transition-transform duration-300 will-change-transform ${
@@ -127,35 +173,82 @@ export function HomeHeader({ onShowLogin, onShowRegister }: HomeHeaderProps) {
           <LanguageToggle />
 
           {user ? (
-            /* User is logged in - Show greeting, username, go to dashboard, and logout button */
-            <>
-              <div className="hidden md:flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg shadow-sm">
-                <span className="font-medium text-gray-700 text-sm">{t("header.hello")},</span>
-                <span className="font-semibold text-gray-900 text-sm">{user.name}</span>
-              </div>
-              <Button
-                onClick={handleGoToDashboard}
-                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 text-xs sm:text-sm px-2 sm:px-4"
+            /* User is logged in - Show avatar with dropdown menu */
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-full transition-all duration-200 hover:opacity-80"
+                aria-label="User menu"
               >
-                <span className="hidden sm:inline">{t("header.goToDashboard")}</span>
-                <span className="sm:hidden">Dashboard</span>
-                <ArrowRight className="ml-1 sm:ml-2 h-3 w-3 sm:h-4 sm:w-4" />
-              </Button>
-              <Button
-                onClick={handleLogout}
-                disabled={logoutLoading}
-                className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed text-xs sm:text-sm px-2 sm:px-4"
-              >
-                {logoutLoading ? (
-                  <span className="hidden sm:inline">{t("header.loggingOut")}</span>
-                ) : (
-                  <>
-                    <span className="hidden sm:inline">{t("header.logout")}</span>
-                    <LogOut className="h-3 w-3 sm:h-4 sm:w-4 sm:ml-2" />
-                  </>
-                )}
-              </Button>
-            </>
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden border-2 border-blue-200 shadow-md hover:border-blue-400 transition-colors">
+                  <img
+                    src={userAvatar || "https://github.com/shadcn.png"}
+                    alt={user.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = "https://github.com/shadcn.png";
+                    }}
+                  />
+                </div>
+                <ChevronDown 
+                  className={`h-4 w-4 text-gray-600 transition-transform duration-200 ${
+                    isDropdownOpen ? 'transform rotate-180' : ''
+                  }`} 
+                />
+              </button>
+
+              {/* Dropdown Menu */}
+              {isDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-56 sm:w-64 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50 animate-in fade-in transform transition-all duration-200">
+                  {/* User Info Section */}
+                  <div className="px-4 py-3 border-b border-gray-100">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full overflow-hidden border border-gray-200">
+                        <img
+                          src={userAvatar || "https://github.com/shadcn.png"}
+                          alt={user.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = "https://github.com/shadcn.png";
+                          }}
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-gray-900 text-sm truncate">{user.name}</p>
+                        <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Menu Items */}
+                  <div className="py-1">
+                    <button
+                      onClick={() => {
+                        handleGoToDashboard();
+                        setIsDropdownOpen(false);
+                      }}
+                      className="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors flex items-center gap-2"
+                    >
+                      <ArrowRight className="h-4 w-4" />
+                      <span>{t("header.goToDashboard")}</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setIsDropdownOpen(false);
+                      }}
+                      disabled={logoutLoading}
+                      className="w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span>
+                        {logoutLoading ? t("header.loggingOut") : t("header.logout")}
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           ) : (
             /* User is not logged in - Show register and login buttons */
             <>

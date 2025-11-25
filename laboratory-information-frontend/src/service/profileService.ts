@@ -40,6 +40,23 @@ export class ProfileService {
   }
 
   /**
+   * Get current authenticated user profile
+   * Uses the /user/profile/me endpoint to get the current user's profile including avatar
+   */
+  async getCurrentUserProfile(): Promise<UserProfileData> {
+    try {
+      const response = await apiService.get<{ user: UserProfileData }>("/user/profile/me");
+      if (response && response.user) {
+        return response.user;
+      }
+      throw new Error('Invalid response format');
+    } catch (error) {
+      console.error("Failed to fetch current user profile:", error);
+      throw error;
+    }
+  }
+
+  /**
    * Update user profile
    * Prepares and validates data before sending to API
    */
@@ -138,6 +155,8 @@ export class ProfileService {
       throw error;
     }
   }
+
+  
 }
 
 export const profileService = new ProfileService();
