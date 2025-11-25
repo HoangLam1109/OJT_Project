@@ -311,6 +311,89 @@
     "chat": "Chat"
 
   },
+  "chat": {
+    "userRequestsTitle": "User Requests",
+    "refresh": "Refresh",
+    "closeSidebarAria": "Close sidebar",
+    "sidebarDescription": "Only chat rooms created by users are shown here. Select a room to start responding.",
+    "searchPlaceholder": "Search by room name...",
+    "emptyRequests": "No requests from users yet.",
+    "noMatch": "No chat rooms match your search.",
+    "defaultRoomName": "Chat room",
+    "newBadge": "New",
+    "creatorLabel": "Creator: {{name}}",
+    "membersLabel": "Members: {{count}}",
+    "backToListAria": "Back to list",
+    "roomIdLabel": "Room ID: {{id}}",
+    "loadingMessages": "Loading messages...",
+    "noMessages": "No messages yet",
+    "inputPlaceholder": "Enter a reply...",
+    "noRoomSelectedTitle": "No room selected",
+    "noRoomSelectedDescription": "Choose a request from the list to start replying.",
+    "showRequestList": "View requests",
+    "openMenuAria": "Open menu",
+    "loadRoomsError": "Unable to load chat rooms",
+    "loadMessagesError": "Unable to load messages",
+    "sendError": "Unable to send message",
+    "sendSuccess": "Message sent",
+    "regularUserLabel": "User",
+    "labStaffLabel": "Lab staff"
+  },
+  "userChat": {
+    "defaultRoomName": "Chat room",
+    "time": {
+      "justNow": "Just now",
+      "minutesAgo": "{{count}} minute ago",
+      "minutesAgo_plural": "{{count}} minutes ago",
+      "hoursAgo": "{{count}} hour ago",
+      "hoursAgo_plural": "{{count}} hours ago",
+      "daysAgo": "{{count}} day ago",
+      "daysAgo_plural": "{{count}} days ago"
+    },
+    "toast": {
+      "loadRoomsError": "Unable to load chat rooms",
+      "loadLabUsersError": "Unable to load lab technicians",
+      "loginRequired": "Please log in to create a chat room",
+      "selectLabStaff": "Please select a lab technician",
+      "createSuccess": "Chat room created. A lab technician will reply soon.",
+      "createError": "Unable to create chat room"
+    },
+    "requestForm": {
+      "title": "Request a chat with the laboratory",
+      "description": "Create a room to ask questions; lab technicians will see and respond inside the system.",
+      "toggleExpand": "Expand",
+      "toggleCollapse": "Collapse",
+      "roomNameLabel": "Room name (optional)",
+      "roomNamePlaceholder": "Example: Question about test result #2",
+      "labStaffLabel": "Select a lab technician",
+      "loadingLabUsers": "Loading technicians...",
+      "noLabUsers": "No lab technicians are available.",
+      "searchLabUsersPlaceholder": "Search technicians...",
+      "selectLabStaffPlaceholder": "Choose a lab technician",
+      "noSearchResults": "No technicians found",
+      "creatingButton": "Creating room...",
+      "createButton": "Create chat room",
+      "selectPrompt": "Please select a lab technician to create a chat room."
+    },
+    "notes": {
+      "title": "Notes:",
+      "item1": "As soon as you create a room, lab technicians will see your request in their interface.",
+      "item2": "You will be notified when the technician replies via your registered channels.",
+      "item3": "To add more information, create a new room or continue the conversation in the existing one."
+    },
+    "list": {
+      "title": "Your chat rooms",
+      "refreshTooltip": "Refresh chat room list",
+      "searchPlaceholder": "Search chat rooms...",
+      "emptyNoRoom": "You have no chat rooms yet. Create one to start the conversation.",
+      "emptyNoMatch": "No chat rooms match your search.",
+      "memberCount": "Members: {{count}}",
+      "openButton": "Open"
+    },
+    "infoPanel": {
+      "description": "Select a chat room from the list or create a new one. The conversation will open in a dedicated view so you can easily communicate with lab technicians."
+    }
+  },
   "topHeader": {
     "appName": "Laboratory Management System"
   },

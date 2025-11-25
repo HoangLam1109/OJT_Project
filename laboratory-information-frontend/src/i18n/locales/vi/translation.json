@@ -310,6 +310,86 @@
     "eventLogs": "Nhật ký sự kiện",
     "chat": "Tin nhắn"
   },
+  "chat": {
+    "userRequestsTitle": "Yêu cầu từ người dùng",
+    "refresh": "Làm mới",
+    "closeSidebarAria": "Đóng danh sách",
+    "sidebarDescription": "Danh sách dưới đây chỉ hiển thị các phòng chat do người dùng tạo (creator = user). Chọn một phòng để phản hồi.",
+    "searchPlaceholder": "Tìm theo tên phòng...",
+    "emptyRequests": "Chưa có yêu cầu nào từ người dùng.",
+    "noMatch": "Không tìm thấy phòng chat phù hợp.",
+    "defaultRoomName": "Phòng chat",
+    "newBadge": "Tin mới",
+    "creatorLabel": "Người tạo: {{name}}",
+    "membersLabel": "Thành viên: {{count}}",
+    "backToListAria": "Quay lại danh sách",
+    "roomIdLabel": "ID phòng: {{id}}",
+    "loadingMessages": "Đang tải tin nhắn...",
+    "noMessages": "Chưa có tin nhắn nào",
+    "inputPlaceholder": "Nhập phản hồi...",
+    "noRoomSelectedTitle": "Chưa có phòng nào được chọn",
+    "noRoomSelectedDescription": "Hãy chọn một yêu cầu từ danh sách bên trái để bắt đầu phản hồi.",
+    "showRequestList": "Xem danh sách yêu cầu",
+    "openMenuAria": "Mở menu",
+    "loadRoomsError": "Không thể tải danh sách phòng chat",
+    "loadMessagesError": "Không thể tải tin nhắn",
+    "sendError": "Không thể gửi tin nhắn",
+    "sendSuccess": "Đã gửi tin nhắn",
+    "regularUserLabel": "Người dùng",
+    "labStaffLabel": "Nhân viên phòng thí nghiệm"
+  },
+  "userChat": {
+    "defaultRoomName": "Phòng chat",
+    "time": {
+      "justNow": "Vừa xong",
+      "minutesAgo": "{{count}} phút trước",
+      "hoursAgo": "{{count}} giờ trước",
+      "daysAgo": "{{count}} ngày trước"
+    },
+    "toast": {
+      "loadRoomsError": "Không thể tải danh sách phòng chat",
+      "loadLabUsersError": "Không thể tải danh sách nhân viên phòng thí nghiệm",
+      "loginRequired": "Vui lòng đăng nhập để tạo phòng chat",
+      "selectLabStaff": "Vui lòng chọn nhân viên phòng thí nghiệm",
+      "createSuccess": "Đã tạo phòng chat. Nhân viên phòng thí nghiệm sẽ phản hồi sớm nhất.",
+      "createError": "Không thể tạo phòng chat"
+    },
+    "requestForm": {
+      "title": "Yêu cầu phòng chat với phòng thí nghiệm",
+      "description": "Tạo phòng để đặt câu hỏi; nhân viên phòng thí nghiệm sẽ thấy và phản hồi trong hệ thống.",
+      "toggleExpand": "Mở rộng",
+      "toggleCollapse": "Thu gọn",
+      "roomNameLabel": "Tên phòng (tuỳ chọn)",
+      "roomNamePlaceholder": "Ví dụ: Thắc mắc kết quả xét nghiệm lần 2",
+      "labStaffLabel": "Chọn nhân viên phòng thí nghiệm",
+      "loadingLabUsers": "Đang tải danh sách nhân viên...",
+      "noLabUsers": "Không có nhân viên phòng thí nghiệm nào trong hệ thống.",
+      "searchLabUsersPlaceholder": "Tìm kiếm nhân viên...",
+      "selectLabStaffPlaceholder": "Chọn nhân viên phòng thí nghiệm",
+      "noSearchResults": "Không tìm thấy nhân viên nào",
+      "creatingButton": "Đang tạo phòng...",
+      "createButton": "Tạo phòng chat",
+      "selectPrompt": "Vui lòng chọn nhân viên phòng thí nghiệm để tạo phòng chat."
+    },
+    "notes": {
+      "title": "Lưu ý:",
+      "item1": "Ngay khi tạo phòng, nhân viên phòng thí nghiệm sẽ thấy yêu cầu trong giao diện của họ.",
+      "item2": "Bạn sẽ được thông báo khi nhân viên phản hồi qua các kênh liên lạc đã đăng ký.",
+      "item3": "Nếu cần cập nhật thêm thông tin, bạn có thể tạo phòng mới hoặc tiếp tục trong phòng hiện tại."
+    },
+    "list": {
+      "title": "Phòng chat của bạn",
+      "refreshTooltip": "Làm mới danh sách phòng chat",
+      "searchPlaceholder": "Tìm kiếm phòng chat...",
+      "emptyNoRoom": "Bạn chưa có phòng chat nào. Tạo phòng mới để bắt đầu trao đổi.",
+      "emptyNoMatch": "Không tìm thấy phòng chat phù hợp.",
+      "memberCount": "Thành viên: {{count}}",
+      "openButton": "Mở"
+    },
+    "infoPanel": {
+      "description": "Chọn một phòng chat từ danh sách hoặc tạo phòng mới. Nội dung trò chuyện sẽ mở ra trong trang riêng để bạn trao đổi dễ dàng với nhân viên phòng thí nghiệm."
+    }
+  },
   "topHeader": {
     "appName": "Hệ thống Quản lý Phòng thí nghiệm"
   },
