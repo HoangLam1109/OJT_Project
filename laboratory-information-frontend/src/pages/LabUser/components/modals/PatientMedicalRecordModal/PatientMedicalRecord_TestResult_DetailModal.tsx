@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/common/dialog';
-import type { TestResult } from '@/pages/LabUser/types/TestResultTypes';
+import type { TestResult } from '@/pages/labuser/types/TestResultTypes';
 import { Label } from '@/components/common/label';
 
 interface TestResultDetailModalProps {

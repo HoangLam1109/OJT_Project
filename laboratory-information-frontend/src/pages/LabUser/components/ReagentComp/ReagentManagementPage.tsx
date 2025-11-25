@@ -11,6 +11,7 @@ import ReagentEditModal from '../modals/ReagentModal/ReagentEditModal';
 import ReagentDetailModal from '../modals/ReagentModal/ReagentDetailModal';
 import ReagentDeleteConfirmModal from '../modals/ReagentModal/ReagentDeleteModal';
 import { filterReagents } from '../../utils/reagentUtils';
+import { useTranslation } from 'react-i18next';
 
 const ReagentManagementPage: React.FC = () => {
   const { user } = useAuthContext();
@@ -262,10 +263,10 @@ const ReagentManagementPage: React.FC = () => {
     <div className="p-4 sm:p-6">
       <div className="mb-4 sm:mb-6">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
-          Quản lý Thuốc thử
+          {useTranslation().t('reagent.title')}
         </h1>
         <p className="text-sm sm:text-base text-gray-600">
-          Quản lý và theo dõi thuốc thử trong phòng xét nghiệm
+          {useTranslation().t('reagent.subtitle')}
         </p>
       </div>
 

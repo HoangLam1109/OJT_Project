@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { AxiosInstance } from 'axios';
 import { apiUtils } from './apiClient';
-import type { TestOrder } from '../pages/LabUser/types/TestOrderTypes';
+import type { TestOrder } from '../pages/labuser/types/TestOrderTypes';
 
 // Create a dedicated axios instance for TestOrder service (port 5002)
 const TEST_ORDER_SERVICE_URL = import.meta.env.VITE_TEST_ORDER_SERVICE_URL || 'http://localhost:5002';

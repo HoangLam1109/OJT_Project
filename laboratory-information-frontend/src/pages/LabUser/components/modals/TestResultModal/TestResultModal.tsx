@@ -1,6 +1,6 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/common/dialog';
-import type { TestResult } from '@/pages/LabUser/types/TestResultTypes';
+import type { TestResult } from '@/pages/labuser/types/TestResultTypes';
 import Badge from '@/components/common/badge';
 import { FileText, User, TestTube, Activity } from 'lucide-react';
 import { useTranslation } from 'react-i18next';

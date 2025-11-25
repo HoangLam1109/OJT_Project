@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { TestResultApiResponse, TestResultGroup, TestResult, TestResultDetail } from '../pages/LabUser/types/TestResultTypes';
+import type { TestResultApiResponse, TestResultGroup, TestResult, TestResultDetail } from '../pages/labuser/types/TestResultTypes';
 
 const TEST_RESULT_API_BASE = 'http://localhost:5002/api';
 

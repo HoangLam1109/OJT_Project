@@ -776,6 +776,8 @@
     }
   },
   "reagent": {
+    "title": "Quản lý Thuốc Thử",
+    "subtitle": "Quản lý và theo dõi thuốc thử trong phòng xét nghiệm",
     "searchPlaceholder": "Tìm kiếm theo mã, tên, số lô hoặc nhà sản xuất...",
     "addNew": "Thêm thuốc thử mới",
     "cancel": "Hủy",
