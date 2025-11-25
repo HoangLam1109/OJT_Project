@@ -49,7 +49,7 @@ const mockDashboardData = {
 const SummaryCard = ({ title, value, icon: Icon, color, trend, trendValue }: {
   title: string;
   value: string | number;
-  icon: React.ComponentType<any>;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   color: string;
   trend?: 'up' | 'down';
   trendValue?: string;

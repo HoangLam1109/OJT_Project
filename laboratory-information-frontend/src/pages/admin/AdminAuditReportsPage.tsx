@@ -18,7 +18,6 @@ export function AdminAuditReportsPage() {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name?: string } | null>(null);
-  // removed modal-based viewing; now navigate to detail page
   const [serviceFilter, setServiceFilter] = useState<'all' | 'IAM_SERVICE' | 'PATIENT_SERVICE' | 'TEST_ORDER_SERVICE' | 'WAREHOUSE_SERVICE' | 'MONITORING_SERVICE' | 'CHAT_SERVICE'>('all');
   const [actionFilter, setActionFilter] = useState<'all' | 'CREATE' | 'DELETE' | 'UPDATE'>('all');
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
@@ -111,23 +110,6 @@ export function AdminAuditReportsPage() {
       {error && (
         <div className="text-sm text-red-600">{error}</div>
       )}
-
-      {/* Statistics Cards */}
-      {/* <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Tổng hoạt động</p>
-                <p className="text-2xl font-bold text-gray-900">{eventLogs.length}</p>
-              </div>
-              <div className="p-3 bg-blue-100 rounded-lg">
-                <FileText className="h-6 w-6 text-blue-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div> */}
 
       {/* Filters */}
       <Card>
@@ -245,7 +227,7 @@ export function AdminAuditReportsPage() {
                 </div>
               </div>
             </td>
-            <td className="py-3 px-4 text-sm truncate" title={log.service_name}>{getServiceDisplayName(log.service_name)}</td>
+            <td className="py-3 px-4 text-sm truncate" title={log.service_name}>{getServiceDisplayName(log.service_name || "")}</td>
             <td className="py-3 px-4">
               <div className="flex items-start gap-2">
                 {getActionIcon(String(log.action))}
@@ -347,8 +329,6 @@ export function AdminAuditReportsPage() {
           }
         }}
       />
-
-      {/* Modal removed: view navigates to detail page */}
     </div>
   );
 }

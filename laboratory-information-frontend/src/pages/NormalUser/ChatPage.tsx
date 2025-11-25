@@ -8,7 +8,6 @@ import {
   PlusCircle,
   RefreshCw,
   Search,
-  ShieldCheck,
   User,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -16,45 +15,11 @@ import { toast } from 'sonner';
 import { useAuthContext } from '../../hooks/useAuthContext';
 import { Input } from '../../components/common/input';
 import Button from '../../components/common/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/common/select';
 import { apiUtils } from '../../service/apiClient';
 import { roomApi, type RoomSummary } from '../../service/messageRoomService';
-
-const parseDefaultLabUsers = (): string[] => {
-  const raw = import.meta.env.VITE_DEFAULT_LAB_USER_IDS || '';
-  return raw
-    .split(',')
-    .map((id: string) => id.trim())
-    .filter(Boolean);
-};
-
-interface LabUserOption {
-  id: string;
-  label: string;
-}
-
-const parseLabUserOptions = (defaultIds: string[]): LabUserOption[] => {
-  const raw = import.meta.env.VITE_LAB_USER_OPTIONS || '';
-  const envOptions = raw
-    .split(',')
-    .map((entry) => {
-      const [id, label] = entry.split('|').map((part) => part?.trim());
-      if (!id) return null;
-      return {
-        id,
-        label: label || id,
-      } as LabUserOption;
-    })
-    .filter((opt): opt is LabUserOption => Boolean(opt));
-
-  if (envOptions.length > 0) {
-    return envOptions;
-  }
-
-  return defaultIds.map((id, index) => ({
-    id,
-    label: `Nhân viên phòng thí nghiệm #${index + 1}`,
-  }));
-};
+import { userService } from '../../service/userService';
+import type { ManagerUser } from '../manager/types/ManagerTypes';
 
 const formatTime = (timestamp?: string): string => {
   if (!timestamp) return '';
@@ -85,14 +50,25 @@ const ChatPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [formCollapsed, setFormCollapsed] = useState(false);
   const [selectedLabUserId, setSelectedLabUserId] = useState('');
-
-  const defaultLabUsers = useMemo(parseDefaultLabUsers, []);
+  const [labUsers, setLabUsers] = useState<ManagerUser[]>([]);
+  const [loadingLabUsers, setLoadingLabUsers] = useState(false);
+  const [searchLabUser, setSearchLabUser] = useState('');
 
   const filteredRooms = useMemo(() => {
     return rooms.filter((room) =>
       (room.name || 'Phòng chat').toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [rooms, searchTerm]);
+
+  const filteredLabUsers = useMemo(() => {
+    if (!searchLabUser.trim()) return labUsers;
+    const search = searchLabUser.toLowerCase();
+    return labUsers.filter(
+      (user) =>
+        user.name.toLowerCase().includes(search) ||
+        user.email.toLowerCase().includes(search)
+    );
+  }, [labUsers, searchLabUser]);
 
   const refreshRooms = useCallback(async () => {
     if (!user) return;
@@ -115,22 +91,34 @@ const ChatPage: React.FC = () => {
     void refreshRooms();
   }, [refreshRooms]);
 
+  useEffect(() => {
+    const loadLabUsers = async () => {
+      setLoadingLabUsers(true);
+      try {
+        const users = await userService.getAllLabUsers();
+        setLabUsers(users.filter(user => user.active));
+      } catch (error) {
+        console.error('Error loading lab users:', error);
+        toast.error('Không thể tải danh sách nhân viên phòng thí nghiệm');
+      } finally {
+        setLoadingLabUsers(false);
+      }
+    };
+    void loadLabUsers();
+  }, []);
+
   const handleCreateRoom = async () => {
     if (!user) {
       toast.error('Bạn cần đăng nhập để tạo phòng chat');
       return;
     }
-    const labTargets =
-      selectedLabUserId !== ''
-        ? [selectedLabUserId]
-        : defaultLabUsers;
-
-    if (labTargets.length === 0) {
-      toast.error('Hệ thống chưa cấu hình nhóm nhân viên phòng thí nghiệm mặc định');
+    
+    if (!selectedLabUserId) {
+      toast.error('Vui lòng chọn nhân viên phòng thí nghiệm');
       return;
     }
 
-    const participants = Array.from(new Set([user.id, ...labTargets]));
+    const participants = Array.from(new Set([user.id, selectedLabUserId]));
     setCreating(true);
     try {
       const { data: newRoom } = await roomApi.createRoom({
@@ -141,6 +129,7 @@ const ChatPage: React.FC = () => {
       setRooms((prev) => [newRoom, ...prev]);
       toast.success('Đã tạo phòng chat. Nhân viên phòng thí nghiệm sẽ phản hồi sớm nhất.');
       setRoomName('');
+      setSelectedLabUserId('');
 
       navigate(`/user/chat/${newRoom._id}`, {
         state: { room: newRoom },
@@ -151,9 +140,6 @@ const ChatPage: React.FC = () => {
       setCreating(false);
     }
   };
-
-  const hasLabTarget = selectedLabUserId !== '' || defaultLabUsers.length > 0;
-  const labUserOptions = useMemo(() => parseLabUserOptions(defaultLabUsers), [defaultLabUsers]);
 
   return (
     <div className="h-full flex flex-col gap-4">
@@ -194,42 +180,114 @@ const ChatPage: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Chọn nhân viên phòng thí nghiệm
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Chọn nhân viên phòng thí nghiệm <span className="text-red-500">*</span>
               </label>
-              <select
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={selectedLabUserId}
-                onChange={(e) => setSelectedLabUserId(e.target.value)}
-                disabled={labUserOptions.length === 0}
-              >
-                <option value="">
-                  {labUserOptions.length === 0
-                    ? 'Chưa cấu hình danh sách nhân viên'
-                    : 'Tự động gửi đến nhóm mặc định'}
-                </option>
-                {labUserOptions.map((option) => (
-                  <option key={option.id} value={option.id}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-              <p className="text-xs text-gray-500 mt-1">
-                Nếu không chọn, phòng chat sẽ gửi tới nhóm lab mặc định ({defaultLabUsers.length} người).
-              </p>
+              {loadingLabUsers ? (
+                <div className="flex items-center gap-2 text-sm text-black py-3 px-4 bg-white rounded-lg border border-gray-300">
+                  <Loader2 className="w-4 h-4 animate-spin text-black" />
+                  <span className="text-black">Đang tải danh sách nhân viên...</span>
+                </div>
+              ) : labUsers.length === 0 ? (
+                <div className="py-3 px-4 bg-white rounded-lg border border-gray-300 text-sm text-black">
+                  Không có nhân viên phòng thí nghiệm nào trong hệ thống.
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {labUsers.length > 5 && (
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-black" />
+                      <Input
+                        type="text"
+                        placeholder="Tìm kiếm nhân viên..."
+                        value={searchLabUser}
+                        onChange={(e) => setSearchLabUser(e.target.value)}
+                        className="pl-9 h-10 bg-white border-2 border-black text-black placeholder:text-black placeholder:opacity-50"
+                      />
+                    </div>
+                  )}
+                  <Select
+                    value={selectedLabUserId}
+                    onValueChange={setSelectedLabUserId}
+                  >
+                    <SelectTrigger className="w-full h-11 bg-white border-2 border-black hover:border-black focus:border-black focus:ring-0">
+                      <SelectValue placeholder="Chọn nhân viên phòng thí nghiệm">
+                        {selectedLabUserId && (
+                          <div className="flex items-center gap-2">
+                            <User className="w-4 h-4 text-black" />
+                            <span className="text-black">
+                              {labUsers.find((u) => u.id === selectedLabUserId)?.name || ''}
+                            </span>
+                          </div>
+                        )}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent className="max-h-[300px] bg-white">
+                      <div className="max-h-[280px] overflow-y-auto">
+                        {filteredLabUsers.length === 0 ? (
+                          <div className="px-3 py-6 text-center text-sm text-black">
+                            {searchLabUser ? 'Không tìm thấy nhân viên nào' : 'Không có nhân viên nào'}
+                          </div>
+                        ) : (
+                          filteredLabUsers.map((labUser) => (
+                            <SelectItem
+                              key={labUser.id}
+                              value={labUser.id}
+                              className="cursor-pointer py-3 px-3 hover:bg-gray-100 focus:bg-gray-100 data-[highlighted]:bg-gray-100"
+                            >
+                              <div className="flex items-center gap-3 w-full pr-6">
+                                <div className="w-9 h-9 rounded-full bg-white border-2 border-black flex items-center justify-center flex-shrink-0">
+                                  <User className="w-4 h-4 text-black" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="font-medium text-black truncate">
+                                    {labUser.name}
+                                  </div>
+                                  {labUser.email && (
+                                    <div className="text-xs text-black truncate mt-0.5 opacity-70">
+                                      {labUser.email}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </SelectItem>
+                          ))
+                        )}
+                      </div>
+                    </SelectContent>
+                  </Select>
+                  {selectedLabUserId && (
+                    <div className="flex items-center gap-3 p-3 bg-white border-2 border-black rounded-lg">
+                      <div className="w-10 h-10 rounded-full bg-white border-2 border-black flex items-center justify-center flex-shrink-0">
+                        <User className="w-5 h-5 text-black" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-black">
+                          {labUsers.find((u) => u.id === selectedLabUserId)?.name}
+                        </p>
+                        {labUsers.find((u) => u.id === selectedLabUserId)?.email && (
+                          <p className="text-xs text-black mt-0.5 opacity-70">
+                            {labUsers.find((u) => u.id === selectedLabUserId)?.email}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
             <div className="flex items-center gap-3 flex-wrap">
               <Button
                 onClick={handleCreateRoom}
-                disabled={creating || !hasLabTarget}
+                disabled={creating || !selectedLabUserId || loadingLabUsers}
                 className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
               >
                 <PlusCircle className="w-4 h-4" />
                 {creating ? 'Đang tạo phòng...' : 'Tạo phòng chat'}
               </Button>
-              {!hasLabTarget && (
-                <span className="text-sm text-red-600">
-                  Cần cấu hình `VITE_DEFAULT_LAB_USER_IDS` để gửi tới nhóm hỗ trợ.
+              {!selectedLabUserId && !loadingLabUsers && (
+                <span className="text-sm text-gray-500">
+                  Vui lòng chọn nhân viên phòng thí nghiệm để tạo phòng chat.
                 </span>
               )}
             </div>
@@ -240,12 +298,6 @@ const ChatPage: React.FC = () => {
                 <li>Bạn sẽ được thông báo khi nhân viên phản hồi qua các kênh liên lạc đã đăng ký.</li>
                 <li>Nếu cần cập nhật thêm thông tin, bạn có thể tạo phòng mới hoặc tiếp tục trò chuyện trong phòng hiện tại.</li>
               </ul>
-              {defaultLabUsers.length > 0 && (
-                <p className="flex items-center gap-2 text-xs text-blue-700 pt-2">
-                  <ShieldCheck className="w-4 h-4" />
-                  Phòng chat sẽ tự động gửi đến nhóm lab mặc định trên hệ thống.
-                </p>
-              )}
             </div>
           </div>
         )}

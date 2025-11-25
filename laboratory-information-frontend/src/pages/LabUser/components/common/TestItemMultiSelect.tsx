@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Search, ChevronDown, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface TestItemOption {
   _id: string;
@@ -22,11 +23,15 @@ export const TestItemMultiSelect: React.FC<TestItemMultiSelectProps> = ({
   options,
   value,
   onChange,
-  placeholder = 'Chọn test items...',
-  searchPlaceholder = 'Tìm kiếm test items...',
+  placeholder,
+  searchPlaceholder,
   disabled = false,
   error,
 }) => {
+  const { t } = useTranslation();
+  const finalPlaceholder = placeholder || t('common.selectTestItems');
+  const finalSearchPlaceholder = searchPlaceholder || t('common.searchTestItems');
+
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -82,8 +87,8 @@ export const TestItemMultiSelect: React.FC<TestItemMultiSelectProps> = ({
         >
           <span className="text-gray-500">
             {selectedOptions.length > 0
-              ? `Đã chọn ${selectedOptions.length} test item${selectedOptions.length > 1 ? 's' : ''}`
-              : placeholder}
+              ? t('common.selectedTestItems', { count: selectedOptions.length })
+              : finalPlaceholder}
           </span>
           <ChevronDown
             className={`w-4 h-4 text-gray-400 transition-transform ${
@@ -103,7 +108,7 @@ export const TestItemMultiSelect: React.FC<TestItemMultiSelectProps> = ({
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder={searchPlaceholder}
+                  placeholder={finalSearchPlaceholder}
                   className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   onClick={(e) => e.stopPropagation()}
                 />
@@ -114,7 +119,7 @@ export const TestItemMultiSelect: React.FC<TestItemMultiSelectProps> = ({
             <div className="max-h-48 overflow-y-auto">
               {filteredOptions.length === 0 ? (
                 <div className="px-3 py-2 text-sm text-gray-500 text-center">
-                  {searchTerm ? 'Không tìm thấy kết quả' : 'Tất cả đã được chọn'}
+                  {searchTerm ? t('common.noResultsFound') : t('common.allSelected')}
                 </div>
               ) : (
                 filteredOptions.map((option) => (
@@ -127,7 +132,7 @@ export const TestItemMultiSelect: React.FC<TestItemMultiSelectProps> = ({
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="font-medium">{option.name}</div>
-                        <div className="text-xs text-gray-500">Mã: {option.code}</div>
+                        <div className="text-xs text-gray-500">{t('common.code')}: {option.code}</div>
                       </div>
                       {option.unit && (
                         <div className="text-xs text-gray-400">
@@ -155,7 +160,7 @@ export const TestItemMultiSelect: React.FC<TestItemMultiSelectProps> = ({
                 <div className="text-sm font-medium text-gray-900 truncate">
                   {option.name}
                 </div>
-                <div className="text-xs text-gray-500">Mã: {option.code}</div>
+                <div className="text-xs text-gray-500">{t('common.code')}: {option.code}</div>
               </div>
               <button
                 type="button"

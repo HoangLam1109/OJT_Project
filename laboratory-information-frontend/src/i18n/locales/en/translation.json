@@ -298,14 +298,18 @@
   "sidebar": {
     "title": "Laboratory Management System",
     "dashboard": "Dashboard",
-    "patients": "Patients",
-    "test-orders": "Test Orders",
-    "test-results": "Test Results",
-    "instruments": "Instruments",
-    "reagents": "Reagents",
-    "chat": "Chat",
+    "userManagement": "User",
+    "patientManagement": "Patient",
+    "testOrders": "Test Order",
+    "auditReports": "Audit Logs",
+    "testResults": "Test Results",
+    "instruments": "Instrument",
+    "reagents": "Reagent",
     "profile": "Profile",
-    "role": "Laboratory Staff"
+    "role": "Administrator",
+    "eventLogs": "Event Logs",
+    "chat": "Chat"
+
   },
   "topHeader": {
     "appName": "Laboratory Management System"
@@ -392,10 +396,57 @@
     "medicalRecord":"Medical Record",
     "noMedicalRecord":"No medical record",
     "testResult":"Test Result",
+    "testTypeName":"Test Type Name",
     "instrumentName":"Instrument Name",
     "reagentName":"Reagent Name",
     "createdAt":"Created At",
-    "clickToViewTestResult":"Click to view test result"
+    "clickToViewTestResult":"Click to view test result",
+    "deleteConfirm": {
+      "title": "Confirm Delete",
+      "description": "Are you sure you want to delete {{itemName}}? This action cannot be undone.",
+      "defaultItemName": "patient",
+      "cancel": "Cancel",
+      "delete": "Delete"
+    },
+    "medicalRecordDetail": {
+      "title": "Medical Record Details",
+      "patientInfo": "Patient Information",
+      "recordCode": "Record Code",
+      "fullName": "Full Name",
+      "dateOfBirth": "Date of Birth",
+      "phoneNumber": "Phone Number",
+      "medicalInfo": "Medical Information",
+      "bloodType": "Blood Type",
+      "allergies": "Allergies",
+      "chronicConditions": "Chronic Conditions",
+      "currentMedications": "Current Medications",
+      "medicalHistory": "Medical History",
+      "clinicalNotes": "Clinical Notes",
+      "recentTestSummary": "Recent Test Summary",
+      "systemInfo": "System Information",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At",
+      "notFound": "Medical record not found",
+      "close": "Close"
+    },
+    "medicalRecordEdit": {
+      "title": "Update Medical Record",
+      "description": "Update medical record details for patient",
+      "patient": "Patient",
+      "bloodType": "Blood Type",
+      "bloodTypePlaceholder": "Enter blood type (e.g. A+, O-)",
+      "allergies": "Allergies",
+      "chronicConditions": "Chronic Conditions",
+      "currentMedications": "Current Medications",
+      "medicalHistory": "Medical History",
+      "clinicalNotes": "Clinical Notes",
+      "recentTestSummary": "Recent Test Summary",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving...",
+      "success": "Medical record updated successfully",
+      "error": "Failed to update medical record"
+    }
   },
   "testOrder":{
     "progress": "Progress...",
@@ -427,6 +478,13 @@
       "cannotLoadTestItems": "Failed to load test items list",
       "enterPatientName": "Enter patient name",
       "selectTestType": "Select test type",
+    "testItems": "Test Items",
+    "selectTestItems": "Select test items",
+    "searchTestItems": "Search test items...",
+    "loading": "Loading...",
+    "dueDate": "Due Date",
+    "notes": "Notes",
+    "notesPlaceholder": "Additional notes (optional)",
       "selectDueDate": "Select due date",
       "pleaseFillRequiredFields": "Please fill in all required fields",
       "newTestOrder": "new test",
@@ -517,6 +575,15 @@
         "noNotes": "No notes",
         "update": "Update",
       "delete": "Delete"
+    },
+    "delete": "Delete",
+    "deleteModal": {
+      "title": "Confirm Delete",
+      "description": "This action cannot be undone",
+      "testOrder": "Test Order",
+      "patient": "Patient",
+      "cancel": "Cancel",
+      "delete": "Delete"
     }
   },
   "service": {
@@ -593,6 +660,8 @@
         "description": "Detailed information about the test instrument",
         "loading": "Loading information...",
         "notFound": "Instrument information not found",
+        "basicInfo": "Basic Information",
+        "locationInfo": "Location Information",
         "instrumentCode": "Instrument Code",
         "active": "Active",
         "paused": "Paused",
@@ -624,6 +693,7 @@
     "resultsCount": "{{current}} / {{total}} test results",
     "foundResults": "(found {{found}} / {{total}})",
     "search": "Search",
+    "close" :"Close",
     "searchPlaceholder": "Search by test code or patient name...",
     "refresh": "Refresh",
     "resultsList": "Test Results List",
@@ -648,6 +718,8 @@
     "deleting": "Deleting...",
     "status": {
       "normal": "Normal",
+      "high": "High",
+      "low": "Low",
       "abnormal": "Abnormal",
       "critical": "Critical"
     },
@@ -667,9 +739,46 @@
     "deleteConfirm": {
       "title": "Confirm Delete",
       "description": "Are you sure you want to delete test result {{testName}} for patient {{patientName}}?"
+    },
+    "resultModal": {
+      "title": "Test Result Details",
+      "description": "View details of completed tests",
+      "patientInfo": "Patient Information",
+      "patientName": "Patient Name",
+      "totalTests": "Total Tests",
+      "testDate": "Test Date",
+      "resultDetails": "Result Details",
+      "stt": "No.",
+      "testName": "Test Name",
+      "code": "Code",
+      "result": "Result",
+      "unit": "Unit",
+      "status": "Status",
+      "note": "Note",
+      "noteContent": "Test results are for reference only. Please consult a doctor for proper advice and treatment."
+    },
+    "detailModal": {
+      "title": "Test Result Details",
+      "patientName": "Patient Name",
+      "totalResults": "Total Results",
+      "resultsList": "Test Results List",
+      "table": {
+        "no": "No.",
+        "testName": "Test Name",
+        "testCode": "Test Code",
+        "result": "Result",
+        "status": "Status"
+      },
+      "status": {
+        "normal": "Normal",
+        "abnormal": "Abnormal",
+        "critical": "Critical"
+      }
     }
   },
   "reagent": {
+    "title": "Reagent Management",
+    "subtitle": "Manage reagents, view details, add new reagents",
     "searchPlaceholder": "Search by code, name, lot number or manufacturer...",
     "addNew": "Add New Reagent",
     "cancel": "Cancel",
@@ -704,6 +813,7 @@
     },
     "detailModal": {
       "title": "Reagent Details",
+      "viewDescription": "Detailed information about the reagent",
       "basicInfo": "Basic Information",
       "lotNumber": "Lot Number",
       "name": "Reagent Name",
@@ -724,16 +834,83 @@
     "formModal": {
       "editTitle": "Edit Reagent",
       "addTitle": "Add New Reagent",
+      "addDescription": "Enter details to add a new reagent to inventory",
+      "editDescription": "Update reagent details",
       "name": "Reagent Name",
+      "namePlaceholder": "Enter reagent name",
+      "type": "Reagent Type",
+      "typePlaceholder": "Enter reagent type",
+      "unit": "Unit of Measure",
+      "unitPlaceholder": "ml, mg, kit...",
       "lotNumber": "Lot Number",
       "manufacturer": "Manufacturer",
       "receivedDate": "Received Date",
       "expiryDate": "Expiry Date",
       "quantity": "Quantity",
+      "lowStockThreshold": "Low Stock Threshold",
       "storageLocation": "Storage Location",
+      "locationPlaceholder": "Enter storage location",
       "status": "Status",
-      "notes": "Notes"
+      "notes": "Notes",
+      "updating": "Updating...",
+      "adding": "Adding..."
+    },
+    "validation": {
+      "nameRequired": "Reagent name is required",
+      "typeRequired": "Reagent type is required",
+      "quantityInvalid": "Invalid quantity",
+      "unitRequired": "Unit of measure is required",
+      "receivedDateRequired": "Received date is required",
+      "receivedDatePast": "Received date must be in the past or today",
+      "expiryDateRequired": "Expiry date is required",
+      "expiryDateFuture": "Expiry date must be in the future",
+      "expiryDateAfterReceived": "Expiry date must be after received date",
+      "thresholdInvalid": "Low stock threshold must be a positive number (> 0)",
+      "locationRequired": "Storage location is required",
+      "checkFields": "Please check the information"
     }
+  },
+  "common": {
+    "selectedTestItems": "Selected {{count}} test item(s)",
+    "noResultsFound": "No results found",
+    "allSelected": "All items selected",
+    "code": "Code",
+    "selectTestItems": "Select test items...",
+    "searchTestItems": "Search test items..."
+  },
+  "role": {
+    "normalUser": "Normal User",
+    "service": "Service"
+  },
+  "userProfile": {
+    "updateAvatarSuccess": "Avatar updated successfully!",
+    "uploadAvatarError": "Error uploading avatar.",
+    "avatarFileTypeError": "File must be an image",
+    "avatarFileSizeError": "File size must be less than 5MB",
+    "updateProfileSuccess": "Profile updated successfully!",
+    "updateProfileError": "Update failed. Please try again.",
+    "notUpdated": "Not updated",
+    "loadProfileError": "Unable to load profile information.",
+    "editProfile": "Edit Profile",
+    "cancel": "Cancel",
+    "saveChanges": "Save Changes",
+    "statusAndContact": "Status & Contact",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "joinedFrom": "Joined from",
+    "personalInfo": "Personal Information",
+    "personalInfoDesc": "Manage your personal information and security",
+    "fullName": "Full Name",
+    "phone": "Phone Number",
+    "dob": "Date of Birth",
+    "gender": "Gender",
+    "male": "Male",
+    "female": "Female",
+    "other": "Other",
+    "age": "Age",
+    "identityNumber": "ID Number",
+    "address": "Address"
   }
 }
 

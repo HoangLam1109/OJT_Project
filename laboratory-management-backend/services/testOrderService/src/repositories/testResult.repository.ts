@@ -28,21 +28,39 @@ export const TestResultRepository = {
     return TestOrderResult.findOne({ _id: id, is_deleted: false });
   },
 
-   findByPatientId: async (patient_id: string, page: number, limit: number) => {
-        const skip = (page - 1) * limit;
+  findByPatientId: async (patient_id: string, page: number, limit: number) => {
+    const skip = (page - 1) * limit;
 
-        const filter = {
-            patient_id,
-            is_deleted: false
-        };
+    const filter = {
+      patient_id,
+      is_deleted: false
+    };
 
-        const total = await TestOrderResult.countDocuments(filter);
+    const total = await TestOrderResult.countDocuments(filter);
 
-        const results = await TestOrderResult.find(filter)
-            .skip(skip)
-            .limit(limit)
-            .sort({ createdAt: -1 });
+    const results = await TestOrderResult.find(filter)
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
 
-        return { results, total };
-    }
+    return { results, total };
+  },
+
+  findByUserId: async (user_id: string, page: number, limit: number) => {
+    const skip = (page - 1) * limit;
+
+    const filter = {
+      user_id,
+      is_deleted: false
+    };
+
+    const total = await TestOrderResult.countDocuments(filter);
+
+    const results = await TestOrderResult.find(filter)
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+
+    return { results, total };
+  }
 };

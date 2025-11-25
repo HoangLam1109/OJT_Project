@@ -1,10 +1,12 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Sidebar } from '../components/common/Sidebar';
 import { TopHeader } from '../components/common/TopHeader';
 import type { NavigationItem } from '../types/Layout.types';
 import type { User } from '../types/User';
 import { useTranslation } from 'react-i18next';
 import { MessageNotificationProvider, useMessageNotificationContext } from '../context/MessageNotificationContext';
+import { profileService } from '@/service/profileService';
+import type { UserProfileData } from './Profile';
 
 interface LabUserLayoutProps {
   currentUser: User;
@@ -26,6 +28,21 @@ const LabUserLayoutContent: React.FC<LabUserLayoutProps & { sidebarCollapsed: bo
   const { t } = useTranslation();
   const { unreadCount } = useMessageNotificationContext();
 
+  const [profile, setProfile] = useState<UserProfileData | null>(null);
+  
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  const loadProfile = async () => {
+    try {
+      const data = await profileService.getProfile();
+      setProfile(data);
+    } catch (e) {
+      console.error("Failed to load profile", e);
+    }
+  };
+
   const navigationItems: NavigationItem[] = useMemo(() => {
     const baseItems: NavigationItem[] = [
       {
@@ -42,7 +59,7 @@ const LabUserLayoutContent: React.FC<LabUserLayoutProps & { sidebarCollapsed: bo
       },
       {
         id: 'patients',
-        label: t('sidebar.patients'),
+        label: t('sidebar.patientManagement'),
         icon: (props) => (
           <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
@@ -54,7 +71,7 @@ const LabUserLayoutContent: React.FC<LabUserLayoutProps & { sidebarCollapsed: bo
       },
       {
         id: 'test-orders',
-        label: t('sidebar.test-orders'),
+        label: t('sidebar.testOrders'),
         icon: (props) => (
           <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -67,7 +84,7 @@ const LabUserLayoutContent: React.FC<LabUserLayoutProps & { sidebarCollapsed: bo
       },
       {
         id: 'test-results',
-        label: t('sidebar.test-results'),
+        label: t('sidebar.testResults'),
         icon: (props) => (
           <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
@@ -104,7 +121,7 @@ const LabUserLayoutContent: React.FC<LabUserLayoutProps & { sidebarCollapsed: bo
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
           </svg>
         ),
-        badgeCount: unreadCount,
+        badgeCount: unreadCount > 0 ? unreadCount : undefined,
       },
       {
         id: 'profile',
@@ -124,6 +141,7 @@ const LabUserLayoutContent: React.FC<LabUserLayoutProps & { sidebarCollapsed: bo
       <Sidebar
         navigationItems={navigationItems}
         currentUserName={currentUser.name}
+        currentUserAvatar={profile?.avatar}
         currentUserRole={t('sidebar.role')}
         currentPage={currentPage}
         sidebarCollapsed={sidebarCollapsed}

@@ -103,22 +103,22 @@ export function ManagerUserManagementPage() {
   };
 
   return (
-  <div className="space-y-6">
-    {isLoadingAll ? (
+    <div className="space-y-4 sm:space-y-6">
+      {isLoadingAll ? (
       // 🔹 Hiển thị Skeleton cho toàn trang
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {/* Header Skeleton */}
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="space-y-2">
-            <Skeleton className="h-8 w-48" />
-            <Skeleton className="h-4 w-64" />
+            <Skeleton className="h-7 sm:h-8 w-48" />
+            <Skeleton className="h-3 sm:h-4 w-64" />
           </div>
-          <Skeleton className="h-10 w-32 rounded-md" />
+          <Skeleton className="h-10 w-full sm:w-32 rounded-md" />
         </div>
 
         {/* Statistics Skeleton */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {[...Array(4)].map((_, i) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[...Array(3)].map((_, i) => (
             <Skeleton key={i} className="h-24 w-full rounded-xl" />
           ))}
         </div>
@@ -195,8 +195,8 @@ export function ManagerUserManagementPage() {
         )}
       </>
     )}
-  </div>
-);
+    </div>
+  );
 }
 
 // Subcomponents for better organization
@@ -207,17 +207,17 @@ interface PageHeaderProps {
 function PageHeader({ onCreate }: PageHeaderProps) {
   const { t } = useTranslation();
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
           {t('manager.userManagement')}
         </h1>
-        <p className="text-gray-600 mt-1">
+        <p className="text-sm sm:text-base text-gray-600 mt-1">
           {t('manager.userManagementDescription')}
         </p>
       </div>
-      <div className="flex items-center gap-3">
-        <Button onClick={onCreate}>
+      <div className="flex items-center gap-3 w-full sm:w-auto">
+        <Button onClick={onCreate} className="w-full sm:w-auto">
           <Plus className="w-4 h-4 mr-2" />
           {t('manager.createUser')}
         </Button>
@@ -262,13 +262,13 @@ function UsersTableCard({
   const { t } = useTranslation();
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>{t('manager.userList')}</CardTitle>
-        <CardDescription>
+      <CardHeader className="p-4 sm:p-6">
+        <CardTitle className="text-lg sm:text-xl">{t('manager.userList')}</CardTitle>
+        <CardDescription className="text-xs sm:text-sm">
           {t('manager.display')} {users.length} / {totalUsers} {t('manager.users')} ({t('manager.page')} {currentPage}/{totalPages})
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4 sm:p-6">
         <UserTable
           users={users}
           onView={onView}

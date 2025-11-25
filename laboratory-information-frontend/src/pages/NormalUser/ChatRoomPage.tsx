@@ -196,7 +196,7 @@ const ChatRoomPage: React.FC = () => {
             <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
             {room && (
               <p className="text-xs text-gray-500 mt-1">
-                Thành viên: {room.participants.length} • ID: {room._id}
+                Thành viên: {room.participants.length}
               </p>
             )}
           </div>

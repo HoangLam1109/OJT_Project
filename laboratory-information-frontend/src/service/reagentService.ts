@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { AxiosInstance } from 'axios';
 import { apiUtils } from './apiClient';
-import type { Reagent } from '../pages/LabUser/data/mockReagentsData';
+import type { Reagent } from '../pages/labuser/types/Reagent';
 
 // Create a dedicated axios instance for Warehouse service
 const WAREHOUSE_SERVICE_URL = import.meta.env.VITE_WAREHOUSE_SERVICE_URL || 'http://localhost:5003';
@@ -107,6 +107,9 @@ const transformBackendReagent = (backendReagent: BackendReagent): Reagent => {
     name: backendReagent.reagent_name,
     lotNumber: backendReagent.reagent_code,
     manufacturer: backendReagent.reagent_type, // Using reagent_type as manufacturer placeholder
+    reagentType: backendReagent.reagent_type,
+    unitOfMeasure: backendReagent.unit_of_measure,
+    lowStockThreshold: backendReagent.low_stock_threshold,
     receivedDate: formatDate(backendReagent.received_date),
     expiryDate: formatDate(backendReagent.expiration_date),
     quantity: backendReagent.quantity_current,
@@ -296,13 +299,14 @@ export const reagentService = {
 
     const backendData: Partial<BackendReagent> = {
       reagent_name: reagent.name || '',
-      reagent_type: reagent.manufacturer || 'Unknown',
-      unit_of_measure: 'unit', // Default, can be updated if frontend provides
+      reagent_type: reagent.reagentType || reagent.manufacturer || 'Unknown',
+      unit_of_measure: reagent.unitOfMeasure || 'unit', // Default, can be updated if frontend provides
       usage_per_run: 1, // Default, can be updated if frontend provides
       expiration_date: parseDate(reagent.expiryDate) || new Date(),
       received_date: parseDate(reagent.receivedDate) || new Date(),
       status: mapStatusToBackend(reagent.status),
       storage_location: reagent.storageLocation || '',
+      low_stock_threshold: reagent.lowStockThreshold,
     };
 
     backendData.quantity_current = quantity;
