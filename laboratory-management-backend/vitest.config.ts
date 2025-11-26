@@ -8,7 +8,8 @@ export default defineConfig({
       if (
         log.includes("[NotifServiceClient]") ||
         log.includes("OAuth status check error:") ||
-        log.includes("Error calling notification service createNotification")
+        log.includes("Error calling notification service createNotification") ||
+        log.includes("Error:")
       ) {
         return false;
       }
