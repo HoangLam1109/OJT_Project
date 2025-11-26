@@ -31,8 +31,8 @@ export class UserRepository implements IUserRepository {
 
   async getUserBasicInfo(
     id: string
-  ): Promise<{ email: string; fullName: string } | null> {
-    return this.userModel.findById(id, "email fullName");
+  ): Promise<{ email: string; fullName: string; avatar?: string } | null> {
+    return this.userModel.findById(id, "email fullName avatar");
   }
 
   async findByEmail(email: string): Promise<any> {

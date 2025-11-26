@@ -180,6 +180,34 @@ const buildReagentSnapshot = (reagent: IReagent | null | undefined): Record<stri
   };
 };
 
+const fetchUserAvatar = async (userId: string | null | undefined): Promise<string | null> => {
+  if (!userId || typeof userId !== "string") {
+    return null;
+  }
+  try {
+    const user = await iamServiceClient.getUserById(userId);
+    if (user?.avatar) {
+      return user.avatar;
+    }
+  } catch (error) {
+    console.warn(`[ReagentController] Unable to resolve avatar for user ${userId}`, error);
+  }
+  return null;
+};
+
+const resolveOperatorAvatar = async (
+  req: Request,
+  operatorId: string | undefined
+): Promise<string | null> => {
+  if (operatorId) {
+    const resolved = await fetchUserAvatar(operatorId);
+    if (resolved) {
+      return resolved;
+    }
+  }
+  return null;
+};
+
 export class ReagentController {
   async getAllReagents(req: Request, res: Response) {
     try {
@@ -221,6 +249,7 @@ export class ReagentController {
         operatorId,
         operatorEmail === "system" ? undefined : operatorEmail
       );
+      const operatorAvatar = await resolveOperatorAvatar(req, operatorId);
 
       const createInput = {
         ...(req.body as Partial<IReagent>),
@@ -243,6 +272,7 @@ export class ReagentController {
         operatorId: operatorId ?? operatorEmail ?? "system",
         operatorEmail,
         operatorName,
+        operatorAvatar,
         oldValues: null,
         newValues,
       });
@@ -278,6 +308,7 @@ export class ReagentController {
         operatorId,
         operatorEmail === "system" ? undefined : operatorEmail
       );
+      const operatorAvatar = await resolveOperatorAvatar(req, operatorId);
 
       const updatedReagent = await service.update(id, data, operatorEmail);
       if (!updatedReagent) {
@@ -302,16 +333,8 @@ export class ReagentController {
       });
 
       if (changedFields.length > 0) {
-        const oldValues = pickReagentFields(existingReagent, changedFields);
-        const newValues = pickReagentFields(updatedReagent, changedFields);
-        const oldSnapshot = buildReagentSnapshot(existingReagent);
-        const newSnapshot = buildReagentSnapshot(updatedReagent);
-        if (oldSnapshot) {
-          oldValues.snapshot = oldSnapshot;
-        }
-        if (newSnapshot) {
-          newValues.snapshot = newSnapshot;
-        }
+        const oldValues = { ...(existingReagent as unknown as Record<string, unknown>) };
+        const newValues = { ...(updatedReagent as unknown as Record<string, unknown>) };
 
         const messageSuffix = changedFields.join(", ");
         const eventMessage = messageSuffix.length > 0
@@ -325,6 +348,7 @@ export class ReagentController {
           operatorId: operatorId ?? operatorEmail ?? "system",
           operatorEmail,
           operatorName,
+          operatorAvatar,
           oldValues,
           newValues,
         });
@@ -365,6 +389,7 @@ export class ReagentController {
         operatorId,
         operatorEmail === "system" ? undefined : operatorEmail
       );
+      const operatorAvatar = await resolveOperatorAvatar(req, operatorId);
 
       const deletedReagent = await service.delete(id, operatorEmail);
       if (!deletedReagent) {
@@ -372,17 +397,8 @@ export class ReagentController {
         return;
       }
 
-      const trackedFields = ["is_deleted", "deleted_at", "deleted_by", "status"];
-      const oldValues = pickReagentFields(existingReagent, trackedFields);
-      const newValues = pickReagentFields(deletedReagent, trackedFields);
       const oldSnapshot = buildReagentSnapshot(existingReagent);
-      const newSnapshot = buildReagentSnapshot(deletedReagent);
-      if (oldSnapshot) {
-        oldValues.snapshot = oldSnapshot;
-      }
-      if (newSnapshot) {
-        newValues.snapshot = newSnapshot;
-      }
+      const oldValues = oldSnapshot ? { snapshot: oldSnapshot } : null;
 
       await reagentMonitoringService.recordDeleted({
         reagentId: `${deletedReagent._id}`,
@@ -391,8 +407,9 @@ export class ReagentController {
         operatorId: operatorId ?? operatorEmail ?? "system",
         operatorEmail,
         operatorName,
+        operatorAvatar,
         oldValues,
-        newValues,
+        newValues: null,
       });
 
       res.status(200).json({

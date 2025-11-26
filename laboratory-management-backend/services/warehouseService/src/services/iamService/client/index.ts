@@ -5,6 +5,7 @@ export interface IamUser {
   email: string;
   fullName: string;
   role: string;
+  avatar?: string;
 }
 
 class IamServiceClient {
