@@ -309,7 +309,7 @@
     "role": "Administrator",
     "eventLogs": "Event Logs",
     "chat": "Chat"
-
+    
   },
   "chat": {
     "userRequestsTitle": "User Requests",
