@@ -127,10 +127,15 @@ export const TestOrderService = {
       await TestOrder.findByIdAndDelete(createdOrder._id);
       throw new Error("Không thể cập nhật trạng thái thiết bị. Vui lòng thử lại.");
     }
+    const reagentNamesMap = new Map<string, string>();
+
     //  Cập nhật tồn kho tương ứng cho từng reagent
     for (const usage of reagentUsages) {
       const reagent = await reagentServiceClient.getReagentById(usage.reagent_id);
       if (!reagent) continue;
+      
+      reagentNamesMap.set(usage.reagent_id, reagent.reagent_name);
+
       // quantity_current mới = quantity_current  - quantity_used
       const newQuantityCurrent = (reagent.quantity_current ?? 0) - (usage.quantity_used ?? 0);
       await reagentServiceClient.updateReagent(usage.reagent_id, {
@@ -151,10 +156,27 @@ export const TestOrderService = {
         }
       }
 
+      // Use JSON parse/stringify to ensure we have a clean plain object
+      const logPayload = JSON.parse(JSON.stringify(createdOrder));
+      
+      if (instrumentName) {
+        logPayload.instrument_name = instrumentName;
+      }
+
+      if (logPayload.reagent_usages && Array.isArray(logPayload.reagent_usages)) {
+        logPayload.reagent_usages = logPayload.reagent_usages.map((u: any) => {
+          const rId = u.reagent_id;
+          return {
+            ...u,
+            reagent_name: reagentNamesMap.get(rId) || null
+          };
+        });
+      }
+
       await testOrderMonitoringService.recordTestOrderCreated({
         testOrderId: createdOrder._id as unknown as string,
         eventMessage: "Test order created",
-        newValues: createdOrder.toObject(),
+        newValues: logPayload,
         operatorId: userIdToFetch || data.created_by,
         operatorEmail: user?.email ?? null,
         operatorName: user?.fullName || (data.created_by !== 'system' ? data.created_by : null),
@@ -212,11 +234,21 @@ export const TestOrderService = {
     //  Cập nhật order
     const updatedOrder = await TestOrderRepository.update(id, orderUpdate);
 
+    const reagentNamesMap = new Map<string, string>();
+    let newInstrumentName: string | undefined;
+
+    if (data.instrument_id) {
+      const instr = await instrumentServiceClient.getInstrumentById(data.instrument_id);
+      if (instr) newInstrumentName = instr.instrument_name;
+    }
+
     //  Nếu có reagent_usages mới thì trừ tồn kho theo lượng mới
     if (reagentUsages.length > 0) {
       for (const newUsage of reagentUsages) {
         const reagent = await reagentServiceClient.getReagentById(newUsage.reagent_id);
         if (!reagent) continue;
+
+        reagentNamesMap.set(newUsage.reagent_id, reagent.reagent_name);
 
         const newQuantityCurrent =
           (reagent.quantity_current ?? 0) - (newUsage.quantity_used ?? 0);
@@ -240,11 +272,43 @@ export const TestOrderService = {
         }
       }
 
+      const logPayload = updatedOrder ? JSON.parse(JSON.stringify(updatedOrder)) : null;
+      if (logPayload) {
+        // 1. Instrument Name
+        if (newInstrumentName) {
+          logPayload.instrument_name = newInstrumentName;
+        } else if (logPayload.instrument_id) {
+           // Fetch instrument name if not changed but present
+           const instr = await instrumentServiceClient.getInstrumentById(logPayload.instrument_id);
+           if (instr) logPayload.instrument_name = instr.instrument_name;
+        }
+
+        // 2. Reagent Names
+        if (logPayload.reagent_usages && Array.isArray(logPayload.reagent_usages)) {
+          // Identify missing reagent names (those not in the update payload)
+          const missingIds = logPayload.reagent_usages
+            .map((u: any) => u.reagent_id)
+            .filter((id: string) => !reagentNamesMap.has(id));
+          
+          if (missingIds.length > 0) {
+            const extraReagentsMap = await reagentServiceClient.getReagentsByIds(missingIds);
+            extraReagentsMap.forEach((r, id) => {
+              reagentNamesMap.set(id, r.reagent_name);
+            });
+          }
+
+          logPayload.reagent_usages = logPayload.reagent_usages.map((u: any) => ({
+            ...u,
+            reagent_name: reagentNamesMap.get(u.reagent_id) || null
+          }));
+        }
+      }
+
       await testOrderMonitoringService.recordTestOrderUpdated({
         testOrderId: id,
         eventMessage: "Test order updated",
         oldValues: existingOrder.toObject(),
-        newValues: updatedOrder?.toObject(),
+        newValues: logPayload,
         operatorId: userIdToFetch || updated_by,
         operatorEmail: user?.email ?? null,
         operatorName: user?.fullName || (updated_by !== 'system' ? updated_by : undefined),
@@ -301,11 +365,29 @@ export const TestOrderService = {
         }
       }
 
+      const logPayload = updatedOrder ? JSON.parse(JSON.stringify(updatedOrder)) : null;
+      if (logPayload) {
+        if (logPayload.instrument_id) {
+           const instr = await instrumentServiceClient.getInstrumentById(logPayload.instrument_id);
+           if (instr) logPayload.instrument_name = instr.instrument_name;
+        }
+        if (logPayload.reagent_usages && Array.isArray(logPayload.reagent_usages)) {
+           const rIds = logPayload.reagent_usages.map((u: any) => u.reagent_id);
+           if (rIds.length > 0) {
+               const rMap = await reagentServiceClient.getReagentsByIds(rIds);
+               logPayload.reagent_usages = logPayload.reagent_usages.map((u: any) => ({
+                   ...u,
+                   reagent_name: rMap.get(u.reagent_id)?.reagent_name
+               }));
+           }
+        }
+      }
+
       await testOrderMonitoringService.recordTestOrderUpdated({
         testOrderId: id,
         eventMessage: `Test order status updated to ${status}`,
         oldValues: order.toObject(),
-        newValues: updatedOrder?.toObject(),
+        newValues: logPayload,
         operatorId: userIdToFetch || updated_by,
         operatorEmail: user?.email ?? null,
         operatorName: user?.fullName || (updated_by !== 'system' ? updated_by : null),
