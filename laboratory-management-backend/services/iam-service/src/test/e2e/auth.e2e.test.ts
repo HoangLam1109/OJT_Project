@@ -34,6 +34,146 @@ describe("Auth E2E - POST /api/login", () => {
     vi.clearAllMocks();
   });
 
+  it("401 when no lastPasswordChange and no password history", async () => {
+    const userNoHistory = {
+      _id: "U-NH",
+      email: "nohistory@example.com",
+      passwordHash: "hashed",
+      role: ["USER"],
+      // lastPasswordChange intentionally undefined
+    } as any;
+    vi.spyOn(UserService.prototype, "getUserByEmail").mockResolvedValue(userNoHistory);
+    vi.spyOn(UserService.prototype, "getLatestPasswordHistory").mockResolvedValue(null as any);
+
+    const res = await request(app).post("/api/login").send({
+      identifier: userNoHistory.email,
+      password: "any",
+    });
+
+    expect(res.status).toBe(401);
+    expect(res.body?.error?.message).toBe("Password expired");
+  });
+
+  it("429 when account is locked (lockedUntil in future)", async () => {
+    const lockedUser = {
+      _id: "U-2",
+      email: "locked@example.com",
+      passwordHash: "hashed",
+      role: ["USER"],
+      lockedUntil: new Date(Date.now() + 5 * 60_000),
+      lastPasswordChange: new Date(),
+    } as any;
+    vi.spyOn(UserService.prototype, "getUserByEmail").mockResolvedValue(
+      lockedUser
+    );
+
+    const res = await request(app).post("/api/login").send({
+      identifier: lockedUser.email,
+      password: "anything",
+    });
+
+    expect(res.status).toBe(429);
+    expect(res.body?.error?.message).toBe("Try again later");
+  });
+
+  it("401 when password expired (90+ days)", async () => {
+    const expiredUser = {
+      _id: "U-3",
+      email: "expired@example.com",
+      passwordHash: "hashed",
+      role: ["USER"],
+      lastPasswordChange: new Date(Date.now() - 91 * 86_400_000),
+    } as any;
+
+    vi.spyOn(UserService.prototype, "getUserByEmail").mockResolvedValue(
+      expiredUser
+    );
+
+    vi.spyOn(
+      UserService.prototype,
+      "getLatestPasswordHistory"
+    ).mockResolvedValue(null as any);
+    const res = await request(app).post("/api/login").send({
+      identifier: expiredUser.email,
+      password: "anything",
+    });
+
+    expect(res.status).toBe(401);
+    expect(res.body?.error?.message).toBe("Password expired");
+  });
+
+  it("400 invalid password increments attempts and may set lock", async () => {
+    const user = {
+      _id: "U-4",
+      email: "inc@example.com",
+      passwordHash: "hashed",
+      role: ["USER"],
+      lastPasswordChange: new Date(),
+      failedLoginAttempts: 4, // nextAttempts -> 5 (triggers 5 min lock)
+    } as any;
+    vi.spyOn(UserService.prototype, "getUserByEmail").mockResolvedValue(user);
+    vi.spyOn(
+      UserService.prototype,
+      "getLatestPasswordHistory"
+    ).mockResolvedValue(null as any);
+    vi.spyOn(bcrypt, "compare").mockResolvedValue(false as any);
+    const updateSpy = vi
+      .spyOn(UserService.prototype, "updateUserInternal")
+      .mockResolvedValue({} as any);
+
+    const res = await request(app).post("/api/login").send({
+      identifier: user.email,
+      password: "wrong",
+    });
+
+    expect(res.status).toBe(400);
+    expect(res.body?.error?.message).toBe("Invalid password!");
+    expect(updateSpy).toHaveBeenCalled();
+    const first = updateSpy.mock.calls[0]!;
+    const [_id, payload] = first;
+    expect(_id).toBe(user._id);
+    expect((payload as any).failedLoginAttempts).toBe(5);
+    expect((payload as any).lockedUntil).toBeInstanceOf(Date);
+  });
+
+  it("200 success resets failed attempts and lock fields", async () => {
+    const user = {
+      _id: "U-5",
+      email: "ok@example.com",
+      passwordHash: "hashed",
+      role: ["USER"],
+      lastPasswordChange: new Date(),
+      failedLoginAttempts: 3,
+      lockedUntil: new Date(Date.now() - 60_000),
+      lastFailedAt: new Date(Date.now() - 120_000),
+    } as any;
+    vi.spyOn(UserService.prototype, "getUserByEmail").mockResolvedValue(user);
+    vi.spyOn(
+      UserService.prototype,
+      "getLatestPasswordHistory"
+    ).mockResolvedValue(null as any);
+    vi.spyOn(bcrypt, "compare").mockResolvedValue(true as any);
+    const updateSpy = vi
+      .spyOn(UserService.prototype, "updateUserInternal")
+      .mockResolvedValue({} as any);
+
+    const res = await request(app).post("/api/login").send({
+      identifier: user.email,
+      password: "correct",
+    });
+
+    expect(res.status).toBe(200);
+    // Ensure reset was attempted
+    expect(updateSpy).toHaveBeenCalled();
+    const payloads = updateSpy.mock.calls.map((c) => c[1]);
+    expect(
+      payloads.some(
+        (p: any) =>
+          p && p.failedLoginAttempts === 0 && p.lockedUntil === undefined
+      )
+    ).toBe(true);
+  });
+
   afterEach(() => {
     vi.restoreAllMocks();
   });
@@ -48,6 +188,10 @@ describe("Auth E2E - POST /api/login", () => {
     vi.spyOn(UserService.prototype, "getUserByEmail").mockResolvedValue(
       null as any
     );
+    vi.spyOn(
+      UserService.prototype,
+      "getLatestPasswordHistory"
+    ).mockResolvedValue(null as any);
     const res = await request(app).post("/api/login").send({
       identifier: "nope@example.com",
       password: "x",
@@ -62,11 +206,14 @@ describe("Auth E2E - POST /api/login", () => {
       email: "u@example.com",
       passwordHash: "hashed",
       role: ["USER"],
+      lastPasswordChange: new Date(),
     } as any;
     vi.spyOn(UserService.prototype, "getUserByEmail").mockResolvedValue(
       fakeUser
     );
+    vi.spyOn(UserService.prototype, "getLatestPasswordHistory").mockResolvedValue({} as any);
     vi.spyOn(bcrypt, "compare").mockResolvedValue(false as any);
+    vi.spyOn(UserService.prototype, "updateUserInternal").mockResolvedValue({} as any);
 
     const res = await request(app).post("/api/login").send({
       identifier: "u@example.com",
@@ -85,17 +232,23 @@ describe("Auth E2E - POST /api/login", () => {
       fullName: "User",
       passwordHash: "hashed",
       role: ["USER"],
+      lastPasswordChange: new Date(),
     } as any;
 
     vi.spyOn(UserService.prototype, "getUserByEmail").mockResolvedValue(
       fakeUser
     );
+    vi.spyOn(
+      UserService.prototype,
+      "getLatestPasswordHistory"
+    ).mockResolvedValue(null as any);
     vi.spyOn(bcrypt, "compare").mockResolvedValue(true as any);
 
     vi.spyOn(JwtUtil, "generateJWT").mockImplementation((res: any) => {
       res.cookie("accessToken", "fake", { httpOnly: true });
       res.cookie("refreshToken", "fake", { httpOnly: true });
     });
+    vi.spyOn(UserService.prototype, "updateUserInternal").mockResolvedValue({} as any);
 
     const res = await request(app).post("/api/login").send({
       identifier: "u@example.com",
@@ -152,7 +305,7 @@ describe("Auth E2E - POST /api/register", () => {
     const registerData = {
       email: "u@example.com",
       fullName: "User1",
-      password: "x12234",
+      password: "Xa1223456789",
       identityNumber: "1234958687",
       dateOfBirth: "2002-02-13",
       gender: "Male",
@@ -160,8 +313,12 @@ describe("Auth E2E - POST /api/register", () => {
       phoneNumber: "1002939394",
       address: "123 Street",
     } as any;
-    vi.spyOn(UserService.prototype, "getUserByEmail").mockResolvedValue(fakeUser);
-    vi.spyOn(UserService.prototype, "getUserByPhoneNumber").mockResolvedValue(null as any);
+    vi.spyOn(UserService.prototype, "getUserByEmail").mockResolvedValue(
+      fakeUser
+    );
+    vi.spyOn(UserService.prototype, "getUserByPhoneNumber").mockResolvedValue(
+      null as any
+    );
     const res = await request(app).post("/api/register").send(registerData);
     expect(res.status).toBe(400);
     expect(res.body?.error?.message).toBe("Email already exists!");
@@ -171,7 +328,7 @@ describe("Auth E2E - POST /api/register", () => {
     const registerData = {
       email: "new@example.com",
       fullName: "New User",
-      password: "x12234",
+      password: "Xa122345678",
       identityNumber: "1234958687",
       dateOfBirth: "2002-02-13",
       gender: "Male",
@@ -180,8 +337,12 @@ describe("Auth E2E - POST /api/register", () => {
       address: "123 Street",
     } as any;
 
-    vi.spyOn(UserService.prototype, "getUserByEmail").mockResolvedValue(null as any);
-    vi.spyOn(UserService.prototype, "getUserByPhoneNumber").mockResolvedValue(null as any);
+    vi.spyOn(UserService.prototype, "getUserByEmail").mockResolvedValue(
+      null as any
+    );
+    vi.spyOn(UserService.prototype, "getUserByPhoneNumber").mockResolvedValue(
+      null as any
+    );
     vi.spyOn(UserService.prototype, "createUser").mockResolvedValue({
       _id: "U-2",
       email: registerData.email,
@@ -189,7 +350,9 @@ describe("Auth E2E - POST /api/register", () => {
       phoneNumber: registerData.phoneNumber,
       role: ["USER"],
     } as any);
-    vi.spyOn(patientServiceClient, "createPatientForUser").mockResolvedValue(undefined as any);
+    vi.spyOn(patientServiceClient, "createPatientForUser").mockResolvedValue(
+      undefined as any
+    );
 
     const res = await request(app).post("/api/register").send(registerData);
 
