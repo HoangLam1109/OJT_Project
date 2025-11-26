@@ -20,6 +20,7 @@ export interface MonitoringEventLogPayload {
   operator_name?: string | undefined;
   operator_gmail?: string | undefined;
   operator_role?: string | undefined;
+  operator_avatar?: string | undefined;
   occurred_at?: Date;
   error_message?: string;
 }

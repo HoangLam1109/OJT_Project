@@ -18,7 +18,7 @@ import {
 import { useTranslation } from 'react-i18next';
 
 // Import types
-import type { TestResult, TestResultDetail } from './types/TestResultTypes.ts';
+import type { TestResult, TestResultDetail } from './types/TestResultTypes';
 
 // Import API
 import { testResultService } from '../../service/testResultService';

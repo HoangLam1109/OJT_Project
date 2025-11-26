@@ -92,6 +92,10 @@ export class UserService {
         address: createdUser.address,
         role: createdUser.role,
         isActive: createdUser.isActive,
+        gender: createdUser.gender,
+        age: createdUser.age,
+        dateOfBirth: createdUser.dateOfBirth,
+        identityNumber: createdUser.identityNumber,
       },
     });
     return createdUser;
@@ -120,6 +124,10 @@ export class UserService {
       "address",
       "isActive",
       "avatar",
+      "gender",
+      "age",
+      "dateOfBirth",
+      "identityNumber",
     ];
 
     if (typeof userData.role !== "undefined") {
@@ -201,6 +209,10 @@ export class UserService {
       "address",
       "role",
       "isActive",
+      "gender",
+      "age",
+      "dateOfBirth",
+      "identityNumber",
     ];
     const deleteDiffs = computeChanges<IUser>(
       before ?? undefined,

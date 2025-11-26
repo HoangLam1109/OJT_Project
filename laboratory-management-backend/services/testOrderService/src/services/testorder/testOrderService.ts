@@ -4,12 +4,90 @@ import instrumentServiceClient from "../warehouse/instrumentServiceClient.js";
 import { CreateOrderInput, ReagentUsage, UpdateOrderInput } from "../../db/models/TestOrder.model.js";
 import { ITestOrder } from "../../db/models/TestOrder.model.js";
 import TestOrder from "../../db/models/TestOrder.model.js";
+import { TestItem } from "../../db/models/TestItem.model.js";
 import mongoose from "mongoose";
 import testOrderMonitoringService from "../monitoring/testOrderMonitoring.service.js";
 import iamServiceClient from "../iam/iamServiceClient.js";
 import { unknown } from "zod";
 
 export const TestOrderService = {
+
+  getDifferences(oldData: any, newData: any) {
+    const oldDiff: any = {};
+    const newDiff: any = {};
+
+    const allKeys = new Set([...Object.keys(oldData || {}), ...Object.keys(newData || {})]);
+
+    for (const key of allKeys) {
+      // Bỏ qua các trường metadata thường xuyên thay đổi hoặc không quan trọng
+      if (['updated_at', 'updated_by', '__v'].includes(key)) continue;
+
+      const oldVal = oldData?.[key];
+      const newVal = newData?.[key];
+
+      // So sánh deep bằng JSON.stringify
+      if (JSON.stringify(oldVal) !== JSON.stringify(newVal)) {
+        oldDiff[key] = oldVal;
+        newDiff[key] = newVal;
+      }
+    }
+    return { oldDiff, newDiff };
+  },
+
+  async enrichOrderForLog(order: any) {
+    if (!order) return null;
+    let enriched = JSON.parse(JSON.stringify(order));
+
+    try {
+      // 1. Instrument
+      if (enriched.instrument_id) {
+        // Always try to fetch/refresh instrument name to ensure accuracy
+        const instr = await instrumentServiceClient.getInstrumentById(enriched.instrument_id);
+        if (instr) {
+          // Reorder: put instrument_name after instrument_id for better readability
+          const entries = Object.entries(enriched);
+          const idx = entries.findIndex(([k]) => k === 'instrument_id');
+          if (idx !== -1) {
+            entries.splice(idx + 1, 0, ['instrument_name', instr.instrument_name]);
+            enriched = Object.fromEntries(entries);
+          } else {
+            enriched.instrument_name = instr.instrument_name;
+          }
+        }
+      }
+
+      // 2. Reagents
+      if (enriched.reagent_usages && Array.isArray(enriched.reagent_usages) && enriched.reagent_usages.length > 0) {
+        const rIds = enriched.reagent_usages.map((u: any) => u.reagent_id);
+        const rMap = await reagentServiceClient.getReagentsByIds(rIds);
+        enriched.reagent_usages = enriched.reagent_usages.map((u: any) => ({
+          ...u,
+          reagent_name: rMap.get(u.reagent_id)?.reagent_name || u.reagent_name
+        }));
+      }
+
+      // 3. Test Items
+      if (enriched.test_item_ids && Array.isArray(enriched.test_item_ids) && enriched.test_item_ids.length > 0) {
+        const testItems = await TestItem.find({ _id: { $in: enriched.test_item_ids } }).select('name');
+        const nameMap = new Map(testItems.map(t => [t._id.toString(), t.name]));
+        const names = enriched.test_item_ids.map((id: any) => nameMap.get(id.toString()));
+        
+        // Reorder: put test_item_names after test_item_ids for better readability
+        const entries = Object.entries(enriched);
+        const idx = entries.findIndex(([k]) => k === 'test_item_ids');
+        if (idx !== -1) {
+          entries.splice(idx + 1, 0, ['test_item_names', names]);
+          enriched = Object.fromEntries(entries);
+        } else {
+          enriched.test_item_names = names;
+        }
+      }
+    } catch (error) {
+      console.warn("[TestOrderService] Error enriching log data:", error);
+    }
+    
+    return enriched;
+  },
 
   // Lấy tất cả Test Orders
   async getAllOrders(filter = {}, skip = 0, limit = 10, sort: any = { created_at: -1 }) {
@@ -127,10 +205,15 @@ export const TestOrderService = {
       await TestOrder.findByIdAndDelete(createdOrder._id);
       throw new Error("Không thể cập nhật trạng thái thiết bị. Vui lòng thử lại.");
     }
+    const reagentNamesMap = new Map<string, string>();
+
     //  Cập nhật tồn kho tương ứng cho từng reagent
     for (const usage of reagentUsages) {
       const reagent = await reagentServiceClient.getReagentById(usage.reagent_id);
       if (!reagent) continue;
+      
+      reagentNamesMap.set(usage.reagent_id, reagent.reagent_name);
+
       // quantity_current mới = quantity_current  - quantity_used
       const newQuantityCurrent = (reagent.quantity_current ?? 0) - (usage.quantity_used ?? 0);
       await reagentServiceClient.updateReagent(usage.reagent_id, {
@@ -151,14 +234,17 @@ export const TestOrderService = {
         }
       }
 
+      const logPayload = await this.enrichOrderForLog(createdOrder.toObject());
+
       await testOrderMonitoringService.recordTestOrderCreated({
         testOrderId: createdOrder._id as unknown as string,
         eventMessage: "Test order created",
-        newValues: createdOrder.toObject(),
+        newValues: logPayload,
         operatorId: userIdToFetch || data.created_by,
         operatorEmail: user?.email ?? null,
         operatorName: user?.fullName || (data.created_by !== 'system' ? data.created_by : null),
-        operatorRole: user?.role ?? null
+        operatorRole: user?.role ?? null,
+        operatorAvatar: user?.avatar ?? null
       });
     } catch (error) {
       console.error("[TestOrderService] Failed to log create event", error);
@@ -212,11 +298,21 @@ export const TestOrderService = {
     //  Cập nhật order
     const updatedOrder = await TestOrderRepository.update(id, orderUpdate);
 
+    const reagentNamesMap = new Map<string, string>();
+    let newInstrumentName: string | undefined;
+
+    if (data.instrument_id) {
+      const instr = await instrumentServiceClient.getInstrumentById(data.instrument_id);
+      if (instr) newInstrumentName = instr.instrument_name;
+    }
+
     //  Nếu có reagent_usages mới thì trừ tồn kho theo lượng mới
     if (reagentUsages.length > 0) {
       for (const newUsage of reagentUsages) {
         const reagent = await reagentServiceClient.getReagentById(newUsage.reagent_id);
         if (!reagent) continue;
+
+        reagentNamesMap.set(newUsage.reagent_id, reagent.reagent_name);
 
         const newQuantityCurrent =
           (reagent.quantity_current ?? 0) - (newUsage.quantity_used ?? 0);
@@ -240,15 +336,21 @@ export const TestOrderService = {
         }
       }
 
+      const oldValues = await this.enrichOrderForLog(existingOrder.toObject());
+      const newValues = await this.enrichOrderForLog(updatedOrder?.toObject());
+
+      const { oldDiff, newDiff } = this.getDifferences(oldValues, newValues);
+
       await testOrderMonitoringService.recordTestOrderUpdated({
         testOrderId: id,
         eventMessage: "Test order updated",
-        oldValues: existingOrder.toObject(),
-        newValues: updatedOrder?.toObject(),
+        oldValues: oldDiff,
+        newValues: newDiff,
         operatorId: userIdToFetch || updated_by,
         operatorEmail: user?.email ?? null,
         operatorName: user?.fullName || (updated_by !== 'system' ? updated_by : undefined),
-        operatorRole: user?.role ?? null
+        operatorRole: user?.role ?? null,
+        operatorAvatar: user?.avatar ?? null
       });
     } catch (error) {
       console.error("[TestOrderService] Failed to log update event", error);
@@ -301,15 +403,21 @@ export const TestOrderService = {
         }
       }
 
+      const oldValues = await this.enrichOrderForLog(order.toObject());
+      const newValues = await this.enrichOrderForLog(updatedOrder?.toObject());
+
+      const { oldDiff, newDiff } = this.getDifferences(oldValues, newValues);
+
       await testOrderMonitoringService.recordTestOrderUpdated({
         testOrderId: id,
         eventMessage: `Test order status updated to ${status}`,
-        oldValues: order.toObject(),
-        newValues: updatedOrder?.toObject(),
+        oldValues: oldDiff,
+        newValues: newDiff,
         operatorId: userIdToFetch || updated_by,
         operatorEmail: user?.email ?? null,
         operatorName: user?.fullName || (updated_by !== 'system' ? updated_by : null),
-        operatorRole: user?.role ?? null
+        operatorRole: user?.role ?? null,
+        operatorAvatar: user?.avatar ?? null
       });
     } catch (error) {
       console.error("[TestOrderService] Failed to log status update event", error);
@@ -361,15 +469,18 @@ export const TestOrderService = {
         }
       }
 
+      const oldValues = await this.enrichOrderForLog(order.toObject());
+
       await testOrderMonitoringService.recordTestOrderDeleted({
         testOrderId: _id,
         eventMessage: "Test order soft deleted",
-        oldValues: order.toObject(),
-        newValues: softDeleteTestOrder?.toObject(),
+        oldValues: oldValues,
+        newValues: null,
         operatorId: userIdToFetch || deleted_by,
         operatorEmail: user?.email ?? null,
         operatorName: user?.fullName || (deleted_by !== 'system' ? deleted_by : null),
-        operatorRole: user?.role ?? null
+        operatorRole: user?.role ?? null,
+        operatorAvatar: user?.avatar ?? null
       });
     } catch (error) {
       console.error("[TestOrderService] Failed to log delete event", error);

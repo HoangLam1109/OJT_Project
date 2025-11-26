@@ -20,27 +20,12 @@ import { apiUtils } from '../../service/apiClient';
 import { roomApi, type RoomSummary } from '../../service/messageRoomService';
 import { userService } from '../../service/userService';
 import type { ManagerUser } from '../manager/types/ManagerTypes';
-
-const formatTime = (timestamp?: string): string => {
-  if (!timestamp) return '';
-  const date = new Date(timestamp);
-  const now = new Date();
-  const diff = now.getTime() - date.getTime();
-
-  const minutes = Math.floor(diff / 60000);
-  const hours = Math.floor(diff / 3600000);
-  const days = Math.floor(diff / 86400000);
-
-  if (minutes < 1) return 'Vừa xong';
-  if (minutes < 60) return `${minutes} phút trước`;
-  if (hours < 24) return `${hours} giờ trước`;
-  if (days < 7) return `${days} ngày trước`;
-  return date.toLocaleDateString('vi-VN');
-};
+import { useTranslation } from 'react-i18next';
 
 const ChatPage: React.FC = () => {
   const { user } = useAuthContext();
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
 
   const [roomName, setRoomName] = useState('');
   const [creating, setCreating] = useState(false);
@@ -54,11 +39,35 @@ const ChatPage: React.FC = () => {
   const [loadingLabUsers, setLoadingLabUsers] = useState(false);
   const [searchLabUser, setSearchLabUser] = useState('');
 
+  const locale = i18n.language === 'vi' ? 'vi-VN' : 'en-US';
+
+  const formatTime = useCallback(
+    (timestamp?: string): string => {
+      if (!timestamp) return '';
+      const date = new Date(timestamp);
+      const now = new Date();
+      const diff = now.getTime() - date.getTime();
+
+      const minutes = Math.floor(diff / 60000);
+      const hours = Math.floor(diff / 3600000);
+      const days = Math.floor(diff / 86400000);
+
+      if (minutes < 1) return t('userChat.time.justNow');
+      if (minutes < 60) return t('userChat.time.minutesAgo', { count: minutes });
+      if (hours < 24) return t('userChat.time.hoursAgo', { count: hours });
+      if (days < 7) return t('userChat.time.daysAgo', { count: days });
+
+      return date.toLocaleDateString(locale);
+    },
+    [locale, t]
+  );
+
   const filteredRooms = useMemo(() => {
+    const fallbackName = t('userChat.defaultRoomName');
     return rooms.filter((room) =>
-      (room.name || 'Phòng chat').toLowerCase().includes(searchTerm.toLowerCase())
+      (room.name || fallbackName).toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [rooms, searchTerm]);
+  }, [rooms, searchTerm, t]);
 
   const filteredLabUsers = useMemo(() => {
     if (!searchLabUser.trim()) return labUsers;
@@ -81,7 +90,7 @@ const ChatPage: React.FC = () => {
       });
       setRooms(data.data);
     } catch (error) {
-      toast.error(apiUtils.getErrorMessage(error) || 'Không thể tải danh sách phòng chat');
+      toast.error(apiUtils.getErrorMessage(error) || t('userChat.toast.loadRoomsError'));
     } finally {
       setLoadingRooms(false);
     }
@@ -99,7 +108,7 @@ const ChatPage: React.FC = () => {
         setLabUsers(users.filter(user => user.active));
       } catch (error) {
         console.error('Error loading lab users:', error);
-        toast.error('Không thể tải danh sách nhân viên phòng thí nghiệm');
+        toast.error(t('userChat.toast.loadLabUsersError'));
       } finally {
         setLoadingLabUsers(false);
       }
@@ -109,12 +118,12 @@ const ChatPage: React.FC = () => {
 
   const handleCreateRoom = async () => {
     if (!user) {
-      toast.error('Bạn cần đăng nhập để tạo phòng chat');
+      toast.error(t('userChat.toast.loginRequired'));
       return;
     }
     
     if (!selectedLabUserId) {
-      toast.error('Vui lòng chọn nhân viên phòng thí nghiệm');
+      toast.error(t('userChat.toast.selectLabStaff'));
       return;
     }
 
@@ -127,7 +136,7 @@ const ChatPage: React.FC = () => {
       });
 
       setRooms((prev) => [newRoom, ...prev]);
-      toast.success('Đã tạo phòng chat. Nhân viên phòng thí nghiệm sẽ phản hồi sớm nhất.');
+      toast.success(t('userChat.toast.createSuccess'));
       setRoomName('');
       setSelectedLabUserId('');
 
@@ -135,7 +144,7 @@ const ChatPage: React.FC = () => {
         state: { room: newRoom },
       });
     } catch (error) {
-      toast.error(apiUtils.getErrorMessage(error) || 'Không thể tạo phòng chat');
+      toast.error(apiUtils.getErrorMessage(error) || t('userChat.toast.createError'));
     } finally {
       setCreating(false);
     }
@@ -148,9 +157,9 @@ const ChatPage: React.FC = () => {
           <div className="flex items-center gap-3">
             <MessageCircle className="w-6 h-6 text-blue-600" />
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">Yêu cầu phòng chat với phòng thí nghiệm</h2>
+              <h2 className="text-xl font-semibold text-gray-900">{t('userChat.requestForm.title')}</h2>
               <p className="text-sm text-gray-500">
-                Tạo phòng để đặt câu hỏi; nhân viên phòng thí nghiệm sẽ thấy và phản hồi trong hệ thống.
+                {t('userChat.requestForm.description')}
               </p>
             </div>
           </div>
@@ -160,11 +169,11 @@ const ChatPage: React.FC = () => {
           >
             {formCollapsed ? (
               <>
-                <ChevronDown className="w-4 h-4" /> Mở rộng
+                <ChevronDown className="w-4 h-4" /> {t('userChat.requestForm.toggleExpand')}
               </>
             ) : (
               <>
-                <ChevronUp className="w-4 h-4" /> Thu gọn
+                <ChevronUp className="w-4 h-4" /> {t('userChat.requestForm.toggleCollapse')}
               </>
             )}
           </button>
@@ -172,25 +181,25 @@ const ChatPage: React.FC = () => {
         {!formCollapsed && (
           <div className="p-6 space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Tên phòng (tuỳ chọn)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('userChat.requestForm.roomNameLabel')}</label>
               <Input
-                placeholder="Ví dụ: Thắc mắc kết quả xét nghiệm lần 2"
+                placeholder={t('userChat.requestForm.roomNamePlaceholder')}
                 value={roomName}
                 onChange={(e) => setRoomName(e.target.value)}
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Chọn nhân viên phòng thí nghiệm <span className="text-red-500">*</span>
+                {t('userChat.requestForm.labStaffLabel')} <span className="text-red-500">*</span>
               </label>
               {loadingLabUsers ? (
                 <div className="flex items-center gap-2 text-sm text-black py-3 px-4 bg-white rounded-lg border border-gray-300">
                   <Loader2 className="w-4 h-4 animate-spin text-black" />
-                  <span className="text-black">Đang tải danh sách nhân viên...</span>
+                  <span className="text-black">{t('userChat.requestForm.loadingLabUsers')}</span>
                 </div>
               ) : labUsers.length === 0 ? (
                 <div className="py-3 px-4 bg-white rounded-lg border border-gray-300 text-sm text-black">
-                  Không có nhân viên phòng thí nghiệm nào trong hệ thống.
+                  {t('userChat.requestForm.noLabUsers')}
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -199,7 +208,7 @@ const ChatPage: React.FC = () => {
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-black" />
                       <Input
                         type="text"
-                        placeholder="Tìm kiếm nhân viên..."
+                        placeholder={t('userChat.requestForm.searchLabUsersPlaceholder')}
                         value={searchLabUser}
                         onChange={(e) => setSearchLabUser(e.target.value)}
                         className="pl-9 h-10 bg-white border-2 border-black text-black placeholder:text-black placeholder:opacity-50"
@@ -211,7 +220,7 @@ const ChatPage: React.FC = () => {
                     onValueChange={setSelectedLabUserId}
                   >
                     <SelectTrigger className="w-full h-11 bg-white border-2 border-black hover:border-black focus:border-black focus:ring-0">
-                      <SelectValue placeholder="Chọn nhân viên phòng thí nghiệm">
+                      <SelectValue placeholder={t('userChat.requestForm.selectLabStaffPlaceholder')}>
                         {selectedLabUserId && (
                           <div className="flex items-center gap-2">
                             <User className="w-4 h-4 text-black" />
@@ -226,7 +235,9 @@ const ChatPage: React.FC = () => {
                       <div className="max-h-[280px] overflow-y-auto">
                         {filteredLabUsers.length === 0 ? (
                           <div className="px-3 py-6 text-center text-sm text-black">
-                            {searchLabUser ? 'Không tìm thấy nhân viên nào' : 'Không có nhân viên nào'}
+                            {searchLabUser
+                              ? t('userChat.requestForm.noSearchResults')
+                              : t('userChat.requestForm.noLabUsers')}
                           </div>
                         ) : (
                           filteredLabUsers.map((labUser) => (
@@ -283,20 +294,20 @@ const ChatPage: React.FC = () => {
                 className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
               >
                 <PlusCircle className="w-4 h-4" />
-                {creating ? 'Đang tạo phòng...' : 'Tạo phòng chat'}
+                    {creating ? t('userChat.requestForm.creatingButton') : t('userChat.requestForm.createButton')}
               </Button>
               {!selectedLabUserId && !loadingLabUsers && (
                 <span className="text-sm text-gray-500">
-                  Vui lòng chọn nhân viên phòng thí nghiệm để tạo phòng chat.
+                      {t('userChat.requestForm.selectPrompt')}
                 </span>
               )}
             </div>
             <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 text-sm text-blue-800 space-y-2">
-              <p className="font-semibold">Lưu ý:</p>
+                  <p className="font-semibold">{t('userChat.notes.title')}</p>
               <ul className="list-disc list-inside space-y-1">
-                <li>Ngay khi tạo phòng, nhân viên phòng thí nghiệm sẽ thấy yêu cầu trong giao diện của họ.</li>
-                <li>Bạn sẽ được thông báo khi nhân viên phản hồi qua các kênh liên lạc đã đăng ký.</li>
-                <li>Nếu cần cập nhật thêm thông tin, bạn có thể tạo phòng mới hoặc tiếp tục trò chuyện trong phòng hiện tại.</li>
+                    <li>{t('userChat.notes.item1')}</li>
+                    <li>{t('userChat.notes.item2')}</li>
+                    <li>{t('userChat.notes.item3')}</li>
               </ul>
             </div>
           </div>
@@ -308,12 +319,12 @@ const ChatPage: React.FC = () => {
           <div className="p-4 border-b border-gray-200">
             <div className="flex items-center gap-2.5 mb-4 justify-between">
               <MessageCircle className="w-5 h-5 text-blue-600" />
-              <h3 className="text-lg font-semibold text-gray-900 flex-1">Phòng chat của bạn</h3>
+              <h3 className="text-lg font-semibold text-gray-900 flex-1">{t('userChat.list.title')}</h3>
               <button
                 type="button"
                 className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
                 onClick={refreshRooms}
-                title="Làm mới danh sách phòng chat"
+                title={t('userChat.list.refreshTooltip')}
               >
                 {loadingRooms ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
               </button>
@@ -322,7 +333,7 @@ const ChatPage: React.FC = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 z-10" />
               <Input
                 type="text"
-                placeholder="Tìm kiếm phòng chat..."
+                placeholder={t('userChat.list.searchPlaceholder')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 bg-gray-50 border-gray-200 rounded-lg focus:bg-white focus:border-blue-500"
@@ -335,8 +346,8 @@ const ChatPage: React.FC = () => {
                 <MessageCircle className="w-12 h-12 mx-auto mb-3 opacity-50" />
                 <p className="text-sm">
                   {rooms.length === 0
-                    ? 'Bạn chưa có phòng chat nào. Tạo phòng mới để bắt đầu trao đổi.'
-                    : 'Không tìm thấy phòng chat phù hợp'}
+                    ? t('userChat.list.emptyNoRoom')
+                    : t('userChat.list.emptyNoMatch')}
                 </p>
               </div>
             ) : (
@@ -353,15 +364,15 @@ const ChatPage: React.FC = () => {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1">
                         <h4 className="font-medium text-sm text-gray-900 truncate">
-                          {room.name || 'Phòng chat'}
+                          {room.name || t('userChat.defaultRoomName')}
                         </h4>
                         <span className="text-xs text-gray-400">{formatTime(room.updatedAt)}</span>
                       </div>
                       <p className="text-xs text-gray-500">
-                        Thành viên: {room.participants.length}
+                        {t('userChat.list.memberCount', { count: room.participants.length })}
                       </p>
                     </div>
-                    <span className="text-xs text-blue-600 font-medium">Mở</span>
+                    <span className="text-xs text-blue-600 font-medium">{t('userChat.list.openButton')}</span>
                   </div>
                 </button>
               ))
@@ -372,8 +383,7 @@ const ChatPage: React.FC = () => {
         <div className="flex-1 flex flex-col items-center justify-center bg-gray-50 text-sm text-gray-500 px-8">
           <MessageCircle className="w-14 h-14 text-gray-300 mb-4" />
           <p className="max-w-sm text-center">
-            Chọn một phòng chat từ danh sách hoặc tạo phòng mới. Nội dung trò chuyện sẽ mở ra trong trang toàn màn
-            hình để bạn trao đổi dễ dàng với nhân viên phòng thí nghiệm.
+            {t('userChat.infoPanel.description')}
           </p>
         </div>
       </div>
