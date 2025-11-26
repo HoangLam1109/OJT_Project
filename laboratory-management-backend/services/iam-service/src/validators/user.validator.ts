@@ -82,7 +82,7 @@ export const updateUserSchema = Joi.object({
   address: Joi.string().min(1).messages({
     'string.min': 'Address must be at least 1 character long',
   }),
-  password: Joi.string().min(6).allow('').messages({
+  password: Joi.string().min(6).messages({
     'string.min': 'Password must be at least 6 characters long'
   }),
   isActive: Joi.boolean().default(true),

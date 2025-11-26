@@ -34,18 +34,24 @@ export class RoomService {
     participants: string[],
     createdBy: string
   ): Promise<IRoom> {
+    const baseName = name;
+    let candidate = baseName;
     let suffix = 2;
-    while ((await roomRepository.findByName(name)).length > 0) {
-      name = `${name}'s Room (${suffix})`;
+    const MAX_SUFFIX = 10;
+    while (suffix <= MAX_SUFFIX) {
+      const exists = (await roomRepository.findByName(candidate)).length > 0;
+      if (!exists) {
+        break;
+      }
+      candidate = `${baseName}'s Room (${suffix})`;
       suffix++;
     }
-
-    if ((await roomRepository.findByName(name)).length > 0) {
+    if (suffix > MAX_SUFFIX && (await roomRepository.findByName(candidate)).length > 0) {
       throw new Error("Room with current name already exists");
     }
 
     return roomRepository.create({
-      name,
+      name: candidate,
       participants,
       createdBy,
     });
@@ -102,7 +108,6 @@ export class RoomService {
     fullName: string
   ): Promise<IRoom | null> {
     const room = await this.getRoomById(roomId);
-    console.log(room);
 
     if (!room) {
       throw new Error("Room not found");

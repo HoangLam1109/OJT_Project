@@ -65,7 +65,7 @@ const registerUser = async (
 
     const existingEmail = await userService.getUserByEmail(email);
     const existingPhoneNumber = await userService.getUserByPhoneNumber(
-      identityNumber
+      phoneNumber
     );
     if (existingEmail || existingPhoneNumber) {
       throw new AppError(
