@@ -34,22 +34,22 @@ export function UserStatistics({ statistics }: UserStatisticsProps) {
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
       {stats.map((stat) => (
         <Card key={stat.title} className="hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border-0 shadow-md">
-          <CardContent className="p-4 sm:p-6 lg:p-8">
-            <div className="flex items-center justify-between">
+          <CardContent className="p-3 sm:p-4 md:p-6 lg:p-8">
+            <div className="flex items-center justify-between gap-2 sm:gap-3">
               <div className="flex-1 min-w-0">
-                <p className="text-xs sm:text-sm font-semibold text-gray-600 mb-1 sm:mb-2 tracking-wide">
+                <p className="text-xs sm:text-sm md:text-base font-semibold text-gray-600 mb-1 sm:mb-1.5 md:mb-2 tracking-wide">
                   {stat.title}
                 </p>
-                <p className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-1">
+                <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-1">
                   {stat.value}
                 </p>
-                <div className="w-8 sm:w-10 lg:w-12 h-0.5 sm:h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
+                <div className="w-6 sm:w-8 md:w-10 lg:w-12 h-0.5 sm:h-0.5 md:h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
               </div>
-              <div className={`p-2.5 sm:p-3 lg:p-4 rounded-xl lg:rounded-2xl ${stat.bgColor} ml-3 sm:ml-4 lg:ml-6 shadow-lg flex-shrink-0`}>
-                <stat.icon className={`w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 ${stat.color}`} />
+              <div className={`p-2 sm:p-2.5 md:p-3 lg:p-4 rounded-lg sm:rounded-xl lg:rounded-2xl ${stat.bgColor} ml-2 sm:ml-3 md:ml-4 lg:ml-6 shadow-lg flex-shrink-0`}>
+                <stat.icon className={`w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 ${stat.color}`} />
               </div>
             </div>
           </CardContent>

@@ -7,6 +7,14 @@ export default {
     './src/**/*.{ts,tsx}',
   ],
   theme: {
+    screens: {
+      'sm': '640px',
+      'md': '768px',   // Tablet: 768px+
+      'lg': '1024px',  // Laptop/Desktop: 1024px+
+      'xl': '1280px',  // Desktop: 1280px+
+      '2xl': '1440px', // Large Desktop: 1440px+
+      '3xl': '1920px', // Large Desktop: 1920px+
+    },
     extend: {
       colors: {
         destructive: {

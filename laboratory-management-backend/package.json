@@ -24,7 +24,7 @@
     "swagger:notification": "tsx services/notification-service/src/swagger.ts",
     "start:warehouse": "nodemon --watch services/warehouseService/src --ext ts,json --exec \"node --loader ts-node/esm services/warehouseService/src/index.ts\"",
     "seed:event-codes": "node --loader ts-node/esm services/monitoringService/src/db/seeds/001_event_codes.seed.ts",
-    "dev:all": "npm-run-all --parallel dev:patient dev:testOrder dev:warehouse dev:monitoring dev dev:message dev:notification"
+    "dev:all": "npm-run-all --parallel dev:patient dev:testOrder dev:warehouse dev:monitoring dev dev:message dev:notification dev:chat"
   },
   "keywords": [],
   "author": "",
