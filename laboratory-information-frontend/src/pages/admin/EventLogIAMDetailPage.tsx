@@ -18,10 +18,28 @@ interface IAMUserSnapshot {
   address?: string;
   role?: string[];
   isActive?: boolean;
+  gender?: string;
+  dateOfBirth?: string;
+  identityNumber?: string;
 }
 
 export const EventLogIAMDetailPage: React.FC<EventLogIAMDetailPageProps> = ({ log }) => {
   const { t } = useTranslation();
+
+  const formatDateOnly = (iso?: string) => {
+    if (!iso) return '-';
+    try {
+      const date = new Date(iso);
+      if (isNaN(date.getTime())) return '-';
+      return date.toLocaleDateString('vi-VN', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      });
+    } catch {
+      return '-';
+    }
+  };
 
   const getRoleLabel = (role: string) => {
     const labels: Record<string, string> = {
@@ -34,7 +52,7 @@ export const EventLogIAMDetailPage: React.FC<EventLogIAMDetailPageProps> = ({ lo
     return labels[role] || role;
   };
 
-  const renderUserInfo = (snapshot: IAMUserSnapshot | null, title: string) => {
+  const renderUserInfo = (snapshot: IAMUserSnapshot | null, title: string, options: { hideRole?: boolean } = {}) => {
     if (!snapshot) return null;
 
     return (
@@ -43,31 +61,49 @@ export const EventLogIAMDetailPage: React.FC<EventLogIAMDetailPageProps> = ({ lo
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
           {snapshot.fullName && (
             <div>
-              <p className="text-gray-500">Họ và tên</p>
+              <p className="text-gray-500">{t('eventLog.iam.fullName')}</p>
               <p className="font-medium">{snapshot.fullName}</p>
             </div>
           )}
           {snapshot.email && (
             <div>
-              <p className="text-gray-500">Email</p>
+              <p className="text-gray-500">{t('eventLog.iam.email')}</p>
               <p className="font-medium">{snapshot.email}</p>
             </div>
           )}
           {snapshot.phoneNumber && (
             <div>
-              <p className="text-gray-500">Số điện thoại</p>
+              <p className="text-gray-500">{t('eventLog.iam.phone')}</p>
               <p className="font-medium">{snapshot.phoneNumber}</p>
             </div>
           )}
           {snapshot.address && (
             <div>
-              <p className="text-gray-500">Địa chỉ</p>
+              <p className="text-gray-500">{t('eventLog.iam.address')}</p>
               <p className="font-medium">{snapshot.address}</p>
             </div>
           )}
-          {snapshot.role && snapshot.role.length > 0 && (
+          {snapshot.gender && (
             <div>
-              <p className="text-gray-500">Vai trò</p>
+              <p className="text-gray-500">{t('eventLog.iam.gender')}</p>
+              <p className="font-medium">{snapshot.gender === 'male' ? t('eventLog.iam.male') : snapshot.gender === 'female' ? t('eventLog.iam.female') : snapshot.gender}</p>
+            </div>
+          )}
+          {snapshot.dateOfBirth && (
+            <div>
+              <p className="text-gray-500">{t('eventLog.iam.dob')}</p>
+              <p className="font-medium">{formatDateOnly(snapshot.dateOfBirth)}</p>
+            </div>
+          )}
+          {snapshot.identityNumber && (
+            <div>
+              <p className="text-gray-500">{t('eventLog.iam.identityNumber')}</p>
+              <p className="font-medium">{snapshot.identityNumber}</p>
+            </div>
+          )}
+          {!options.hideRole && snapshot.role && snapshot.role.length > 0 && (
+            <div>
+              <p className="text-gray-500">{t('eventLog.iam.role')}</p>
               <p className="font-medium">
                 {snapshot.role.map((r) => getRoleLabel(r)).join(', ')}
               </p>
@@ -83,11 +119,11 @@ export const EventLogIAMDetailPage: React.FC<EventLogIAMDetailPageProps> = ({ lo
     
     if (action === 'CREATE') {
       const snapshot = log.new_values as IAMUserSnapshot;
-      return renderUserInfo(snapshot, 'Thông tin người dùng được tạo');
+      return renderUserInfo(snapshot, t('eventLog.iam.createdUser'));
     } else if (action === 'DELETE') {
       // For DELETE, usually old_values contains the deleted data
       const snapshot = (log.old_values || log.new_values) as IAMUserSnapshot;
-      return renderUserInfo(snapshot, 'Thông tin người dùng bị xóa');
+      return renderUserInfo(snapshot, t('eventLog.iam.deletedUser'));
     } else if (action === 'UPDATE') {
       const oldSnapshot = log.old_values as IAMUserSnapshot;
       const newSnapshot = log.new_values as IAMUserSnapshot;
@@ -95,12 +131,12 @@ export const EventLogIAMDetailPage: React.FC<EventLogIAMDetailPageProps> = ({ lo
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="border-r pr-4">
-              <h3 className="font-semibold text-lg text-gray-900 border-b pb-2 mb-4">Dữ liệu cũ</h3>
-              {renderUserInfo(oldSnapshot, '')}
+              <h3 className="font-semibold text-lg text-gray-900 border-b pb-2 mb-4">{t('eventLog.iam.oldData')}</h3>
+              {renderUserInfo(oldSnapshot, '', { hideRole: true })}
             </div>
             <div className="pl-4">
-              <h3 className="font-semibold text-lg text-gray-900 border-b pb-2 mb-4">Dữ liệu mới</h3>
-              {renderUserInfo(newSnapshot, '')}
+              <h3 className="font-semibold text-lg text-gray-900 border-b pb-2 mb-4">{t('eventLog.iam.newData')}</h3>
+              {renderUserInfo(newSnapshot, '', { hideRole: true })}
             </div>
           </div>
         </div>
@@ -110,15 +146,15 @@ export const EventLogIAMDetailPage: React.FC<EventLogIAMDetailPageProps> = ({ lo
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <Label className="text-sm text-gray-600">Giá trị cũ</Label>
+          <Label className="text-sm text-gray-600">{t('eventLog.oldValue')}</Label>
           <pre className="text-xs bg-gray-100 p-2 rounded overflow-x-auto max-h-64 mt-1">
-            {log.old_values ? JSON.stringify(log.old_values, null, 2) : '(trống)'}
+            {log.old_values ? JSON.stringify(log.old_values, null, 2) : t('eventLog.empty')}
           </pre>
         </div>
         <div>
-          <Label className="text-sm text-gray-600">Giá trị mới</Label>
+          <Label className="text-sm text-gray-600">{t('eventLog.newValue')}</Label>
           <pre className="text-xs bg-gray-100 p-2 rounded overflow-x-auto max-h-64 mt-1">
-            {log.new_values ? JSON.stringify(log.new_values, null, 2) : '(trống)'}
+            {log.new_values ? JSON.stringify(log.new_values, null, 2) : t('eventLog.empty')}
           </pre>
         </div>
       </div>
@@ -134,7 +170,7 @@ export const EventLogIAMDetailPage: React.FC<EventLogIAMDetailPageProps> = ({ lo
         <CardHeader>
           <CardTitle className="flex items-center">
             <Clock className="w-5 h-5 mr-2" />
-            Dữ liệu thay đổi
+            {t('eventLog.changedData')}
           </CardTitle>
         </CardHeader>
         <CardContent>

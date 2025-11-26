@@ -39,7 +39,7 @@ interface TestResultItem {
   updatedAt: string;
 }
 
-const PatientDetailPage: React.FC = () => {
+const PatientDetail: React.FC = () => {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -413,4 +413,4 @@ const PatientDetailPage: React.FC = () => {
   );
 };
 
-export default PatientDetailPage;
+export default PatientDetail;

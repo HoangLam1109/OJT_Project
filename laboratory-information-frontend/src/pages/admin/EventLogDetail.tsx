@@ -6,8 +6,11 @@ import { eventLogService, type EventLog } from '@/service/eventLogService';
 import EventLogPatientDetailPage from './EventLogPatientDetailPage';
 import { EventLogIAMDetailPage } from './EventLogIAMDetailPage';
 import { EventLogWarehouseDetailPage } from './EventLogWarehouseDetailPage';
+import { EventLogTestOrderDetailPage } from './EventLogTestOrderDetailPage';
+import { useTranslation } from 'react-i18next';
 
 const EventLogDetailPage: React.FC = () => {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [log, setLog] = useState<EventLog | null>(null);
@@ -61,6 +64,8 @@ const EventLogDetailPage: React.FC = () => {
         return <EventLogWarehouseDetailPage log={log} />;
       case 'PATIENT_SERVICE':
         return <EventLogPatientDetailPage log={log} />;
+      case 'TEST_ORDER_SERVICE':
+        return <EventLogTestOrderDetailPage log={log} />;  
       default:
         return <EventLogPatientDetailPage log={log} />;
     }
@@ -74,8 +79,8 @@ const EventLogDetailPage: React.FC = () => {
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900">Chi tiết nhật ký sự kiện</h1>
-            <p className="text-gray-600">Xem thông tin và dữ liệu thay đổi</p>
+            <h1 className="text-2xl font-semibold text-gray-900">{t('eventLog.eventLogDetailTitle')}</h1>
+            <p className="text-gray-600">{t('eventLog.eventLogDetailSubtitle')}</p>
           </div>
         </div>
       </div>
