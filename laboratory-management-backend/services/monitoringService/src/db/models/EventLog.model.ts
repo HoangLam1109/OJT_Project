@@ -14,6 +14,7 @@ export interface IEventLog extends Document {
   operator_name?: string;
   operator_gmail?: string;
   operator_role?: string;
+  operator_avatar?: string;
   occurred_at: Date;
   received_at: Date;
   error_message?: string;
@@ -87,6 +88,10 @@ const EventLogSchema = new Schema<IEventLog>(
       type: String,
       trim: true,
       uppercase: true,
+    },
+    operator_avatar: {
+      type: String,
+      trim: true,
     },
     occurred_at: {
       type: Date,

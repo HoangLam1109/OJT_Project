@@ -243,7 +243,8 @@ export const TestOrderService = {
         operatorId: userIdToFetch || data.created_by,
         operatorEmail: user?.email ?? null,
         operatorName: user?.fullName || (data.created_by !== 'system' ? data.created_by : null),
-        operatorRole: user?.role ?? null
+        operatorRole: user?.role ?? null,
+        operatorAvatar: user?.avatar ?? null
       });
     } catch (error) {
       console.error("[TestOrderService] Failed to log create event", error);
@@ -348,7 +349,8 @@ export const TestOrderService = {
         operatorId: userIdToFetch || updated_by,
         operatorEmail: user?.email ?? null,
         operatorName: user?.fullName || (updated_by !== 'system' ? updated_by : undefined),
-        operatorRole: user?.role ?? null
+        operatorRole: user?.role ?? null,
+        operatorAvatar: user?.avatar ?? null
       });
     } catch (error) {
       console.error("[TestOrderService] Failed to log update event", error);
@@ -414,7 +416,8 @@ export const TestOrderService = {
         operatorId: userIdToFetch || updated_by,
         operatorEmail: user?.email ?? null,
         operatorName: user?.fullName || (updated_by !== 'system' ? updated_by : null),
-        operatorRole: user?.role ?? null
+        operatorRole: user?.role ?? null,
+        operatorAvatar: user?.avatar ?? null
       });
     } catch (error) {
       console.error("[TestOrderService] Failed to log status update event", error);
@@ -476,7 +479,8 @@ export const TestOrderService = {
         operatorId: userIdToFetch || deleted_by,
         operatorEmail: user?.email ?? null,
         operatorName: user?.fullName || (deleted_by !== 'system' ? deleted_by : null),
-        operatorRole: user?.role ?? null
+        operatorRole: user?.role ?? null,
+        operatorAvatar: user?.avatar ?? null
       });
     } catch (error) {
       console.error("[TestOrderService] Failed to log delete event", error);

@@ -12,6 +12,7 @@ interface BaseMonitoringPayload {
   operatorEmail?: string | null;
   operatorName?: string | null;
   operatorRole?: string | null;
+  operatorAvatar?: string | null;
   oldValues?: Record<string, unknown> | null;
   newValues?: Record<string, unknown> | null;
 }
@@ -65,6 +66,7 @@ class PatientMonitoringService {
 
     const operatorName = this.normalizeValue(payload.operatorName);
     const operatorEmail = this.normalizeValue(payload.operatorEmail);
+    const operatorAvatar = this.normalizeValue(payload.operatorAvatar);
 
     if (operatorName) {
       monitoringPayload.operator_name = operatorName;
@@ -72,6 +74,10 @@ class PatientMonitoringService {
 
     if (operatorEmail) {
       monitoringPayload.operator_gmail = operatorEmail.includes("@") ? operatorEmail : undefined;
+    }
+
+    if (operatorAvatar) {
+      monitoringPayload.operator_avatar = operatorAvatar;
     }
 
     if (typeof payload.operatorRole === "string" && payload.operatorRole.trim().length > 0) {

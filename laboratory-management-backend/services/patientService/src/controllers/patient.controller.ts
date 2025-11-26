@@ -222,6 +222,28 @@ const buildPatientSnapshot = (
   return Object.keys(snapshot).length > 0 ? snapshot : null;
 };
 
+const getDifferences = (oldData: any, newData: any) => {
+  const oldDiff: any = {};
+  const newDiff: any = {};
+
+  const allKeys = new Set([...Object.keys(oldData || {}), ...Object.keys(newData || {})]);
+
+  for (const key of allKeys) {
+    // Bỏ qua các trường metadata thường xuyên thay đổi hoặc không quan trọng
+    if (['updated_at', 'updated_by', '__v'].includes(key)) continue;
+
+    const oldVal = oldData?.[key];
+    const newVal = newData?.[key];
+
+    // So sánh deep bằng JSON.stringify
+    if (JSON.stringify(oldVal) !== JSON.stringify(newVal)) {
+      oldDiff[key] = oldVal;
+      newDiff[key] = newVal;
+    }
+  }
+  return { oldDiff, newDiff };
+};
+
 const getAllPatients = async (req: Request, res: Response): Promise<void> => {
   /*
     #swagger.auto = false
@@ -408,6 +430,7 @@ const createPatient = async (req: Request, res: Response): Promise<void> => {
         operatorIdForMonitoring ?? undefined,
         iamUserSnapshot?.fullName ?? undefined
       ),
+      operatorAvatar: iamUserSnapshot?.avatar ?? null,
     });
 
     res.status(201).json({ message: "Patient created", patient });
@@ -515,33 +538,15 @@ const updatePatient = async (req: Request, res: Response): Promise<void> => {
 
     const existingRecord = existingPatient as unknown as Record<string, unknown>;
     const updatedRecord = updatedPatient as unknown as Record<string, unknown>;
-    const candidateFields = extractChangedFields(updateData as Record<string, unknown>);
-    const changedFields = candidateFields.filter((field) => {
-      const before = existingRecord[field];
-      const after = updatedRecord[field];
-      try {
-        return JSON.stringify(before) !== JSON.stringify(after);
-      } catch {
-        return before !== after;
-      }
-    });
 
-    if (changedFields.length > 0) {
-  const oldSnapshot = buildPatientSnapshot(iamUserSnapshot, existingRecord);
-  const newSnapshot = buildPatientSnapshot(iamUserSnapshot, updatedRecord);
-      const oldValues = pickFields(existingRecord, changedFields);
-      const newValues = pickFields(updatedRecord, changedFields);
-      if (oldSnapshot) {
-        oldValues.snapshot = oldSnapshot;
-      }
-      if (newSnapshot) {
-        newValues.snapshot = newSnapshot;
-      }
+    const { oldDiff, newDiff } = getDifferences(existingRecord, updatedRecord);
+
+    if (Object.keys(oldDiff).length > 0 || Object.keys(newDiff).length > 0) {
       await patientMonitoringService.recordPatientUpdated({
         patientId: `${updatedPatient._id}`,
-        eventMessage: `Patient record updated (${changedFields.join(", ")})`,
-        oldValues,
-        newValues,
+        eventMessage: `Patient record updated (${Object.keys(newDiff).join(", ")})`,
+        oldValues: oldDiff,
+        newValues: newDiff,
         operatorEmail: actorEmail,
         operatorId: operatorIdForMonitoring ?? fallbackOperatorId ?? null,
         operatorName: await resolveOperatorName(
@@ -549,6 +554,7 @@ const updatePatient = async (req: Request, res: Response): Promise<void> => {
           operatorIdForMonitoring ?? fallbackOperatorId,
           iamUserSnapshot?.fullName ?? undefined
         ),
+        operatorAvatar: iamUserSnapshot?.avatar ?? null,
       });
     }
 
@@ -631,6 +637,7 @@ const deletePatient = async (req: Request, res: Response): Promise<void> => {
           operatorIdForMonitoring ?? fallbackOperatorId,
           iamUserSnapshot?.fullName ?? undefined
         ),
+        operatorAvatar: iamUserSnapshot?.avatar ?? null,
       });
 
       console.log(`   ✅ Patient permanently deleted (hard delete): ${id}`);
@@ -659,7 +666,7 @@ const deletePatient = async (req: Request, res: Response): Promise<void> => {
       patientId: `${patient._id}`,
       eventMessage: "Patient record soft deleted",
       oldValues: softDeleteOldValues,
-      newValues: softDeleteNewValues,
+      newValues: null,
       operatorEmail: actorEmail,
       operatorId: operatorIdForMonitoring ?? fallbackOperatorId ?? null,
       operatorName: await resolveOperatorName(
@@ -667,6 +674,7 @@ const deletePatient = async (req: Request, res: Response): Promise<void> => {
         operatorIdForMonitoring ?? fallbackOperatorId,
         iamUserSnapshot?.fullName ?? undefined
       ),
+      operatorAvatar: iamUserSnapshot?.avatar ?? null,
     });
 
     console.log(`   ✅ Patient soft deleted: ${patient.patient_code}`);
@@ -741,7 +749,7 @@ const softDeletePatientByUserId = async (req: Request, res: Response): Promise<v
       patientId: `${patient._id}`,
       eventMessage: "Patient record soft deleted by user ID",
       oldValues: softDeleteOldValues,
-      newValues: softDeleteNewValues,
+      newValues: null,
       operatorEmail: actorEmail,
       operatorId: operatorIdForMonitoring ?? fallbackOperatorId ?? null,
       operatorName: await resolveOperatorName(
@@ -749,6 +757,7 @@ const softDeletePatientByUserId = async (req: Request, res: Response): Promise<v
         operatorIdForMonitoring ?? fallbackOperatorId,
         iamUserSnapshot?.fullName ?? undefined
       ),
+      operatorAvatar: iamUserSnapshot?.avatar ?? null,
     });
 
     console.log(`   ✅ Patient soft deleted: ${patient.patient_code} (User: ${userId})`);
