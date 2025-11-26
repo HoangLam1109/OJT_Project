@@ -4,12 +4,90 @@ import instrumentServiceClient from "../warehouse/instrumentServiceClient.js";
 import { CreateOrderInput, ReagentUsage, UpdateOrderInput } from "../../db/models/TestOrder.model.js";
 import { ITestOrder } from "../../db/models/TestOrder.model.js";
 import TestOrder from "../../db/models/TestOrder.model.js";
+import { TestItem } from "../../db/models/TestItem.model.js";
 import mongoose from "mongoose";
 import testOrderMonitoringService from "../monitoring/testOrderMonitoring.service.js";
 import iamServiceClient from "../iam/iamServiceClient.js";
 import { unknown } from "zod";
 
 export const TestOrderService = {
+
+  getDifferences(oldData: any, newData: any) {
+    const oldDiff: any = {};
+    const newDiff: any = {};
+
+    const allKeys = new Set([...Object.keys(oldData || {}), ...Object.keys(newData || {})]);
+
+    for (const key of allKeys) {
+      // Bỏ qua các trường metadata thường xuyên thay đổi hoặc không quan trọng
+      if (['updated_at', 'updated_by', '__v'].includes(key)) continue;
+
+      const oldVal = oldData?.[key];
+      const newVal = newData?.[key];
+
+      // So sánh deep bằng JSON.stringify
+      if (JSON.stringify(oldVal) !== JSON.stringify(newVal)) {
+        oldDiff[key] = oldVal;
+        newDiff[key] = newVal;
+      }
+    }
+    return { oldDiff, newDiff };
+  },
+
+  async enrichOrderForLog(order: any) {
+    if (!order) return null;
+    let enriched = JSON.parse(JSON.stringify(order));
+
+    try {
+      // 1. Instrument
+      if (enriched.instrument_id) {
+        // Always try to fetch/refresh instrument name to ensure accuracy
+        const instr = await instrumentServiceClient.getInstrumentById(enriched.instrument_id);
+        if (instr) {
+          // Reorder: put instrument_name after instrument_id for better readability
+          const entries = Object.entries(enriched);
+          const idx = entries.findIndex(([k]) => k === 'instrument_id');
+          if (idx !== -1) {
+            entries.splice(idx + 1, 0, ['instrument_name', instr.instrument_name]);
+            enriched = Object.fromEntries(entries);
+          } else {
+            enriched.instrument_name = instr.instrument_name;
+          }
+        }
+      }
+
+      // 2. Reagents
+      if (enriched.reagent_usages && Array.isArray(enriched.reagent_usages) && enriched.reagent_usages.length > 0) {
+        const rIds = enriched.reagent_usages.map((u: any) => u.reagent_id);
+        const rMap = await reagentServiceClient.getReagentsByIds(rIds);
+        enriched.reagent_usages = enriched.reagent_usages.map((u: any) => ({
+          ...u,
+          reagent_name: rMap.get(u.reagent_id)?.reagent_name || u.reagent_name
+        }));
+      }
+
+      // 3. Test Items
+      if (enriched.test_item_ids && Array.isArray(enriched.test_item_ids) && enriched.test_item_ids.length > 0) {
+        const testItems = await TestItem.find({ _id: { $in: enriched.test_item_ids } }).select('name');
+        const nameMap = new Map(testItems.map(t => [t._id.toString(), t.name]));
+        const names = enriched.test_item_ids.map((id: any) => nameMap.get(id.toString()));
+        
+        // Reorder: put test_item_names after test_item_ids for better readability
+        const entries = Object.entries(enriched);
+        const idx = entries.findIndex(([k]) => k === 'test_item_ids');
+        if (idx !== -1) {
+          entries.splice(idx + 1, 0, ['test_item_names', names]);
+          enriched = Object.fromEntries(entries);
+        } else {
+          enriched.test_item_names = names;
+        }
+      }
+    } catch (error) {
+      console.warn("[TestOrderService] Error enriching log data:", error);
+    }
+    
+    return enriched;
+  },
 
   // Lấy tất cả Test Orders
   async getAllOrders(filter = {}, skip = 0, limit = 10, sort: any = { created_at: -1 }) {
@@ -156,22 +234,7 @@ export const TestOrderService = {
         }
       }
 
-      // Use JSON parse/stringify to ensure we have a clean plain object
-      const logPayload = JSON.parse(JSON.stringify(createdOrder));
-      
-      if (instrumentName) {
-        logPayload.instrument_name = instrumentName;
-      }
-
-      if (logPayload.reagent_usages && Array.isArray(logPayload.reagent_usages)) {
-        logPayload.reagent_usages = logPayload.reagent_usages.map((u: any) => {
-          const rId = u.reagent_id;
-          return {
-            ...u,
-            reagent_name: reagentNamesMap.get(rId) || null
-          };
-        });
-      }
+      const logPayload = await this.enrichOrderForLog(createdOrder.toObject());
 
       await testOrderMonitoringService.recordTestOrderCreated({
         testOrderId: createdOrder._id as unknown as string,
@@ -272,43 +335,16 @@ export const TestOrderService = {
         }
       }
 
-      const logPayload = updatedOrder ? JSON.parse(JSON.stringify(updatedOrder)) : null;
-      if (logPayload) {
-        // 1. Instrument Name
-        if (newInstrumentName) {
-          logPayload.instrument_name = newInstrumentName;
-        } else if (logPayload.instrument_id) {
-           // Fetch instrument name if not changed but present
-           const instr = await instrumentServiceClient.getInstrumentById(logPayload.instrument_id);
-           if (instr) logPayload.instrument_name = instr.instrument_name;
-        }
+      const oldValues = await this.enrichOrderForLog(existingOrder.toObject());
+      const newValues = await this.enrichOrderForLog(updatedOrder?.toObject());
 
-        // 2. Reagent Names
-        if (logPayload.reagent_usages && Array.isArray(logPayload.reagent_usages)) {
-          // Identify missing reagent names (those not in the update payload)
-          const missingIds = logPayload.reagent_usages
-            .map((u: any) => u.reagent_id)
-            .filter((id: string) => !reagentNamesMap.has(id));
-          
-          if (missingIds.length > 0) {
-            const extraReagentsMap = await reagentServiceClient.getReagentsByIds(missingIds);
-            extraReagentsMap.forEach((r, id) => {
-              reagentNamesMap.set(id, r.reagent_name);
-            });
-          }
-
-          logPayload.reagent_usages = logPayload.reagent_usages.map((u: any) => ({
-            ...u,
-            reagent_name: reagentNamesMap.get(u.reagent_id) || null
-          }));
-        }
-      }
+      const { oldDiff, newDiff } = this.getDifferences(oldValues, newValues);
 
       await testOrderMonitoringService.recordTestOrderUpdated({
         testOrderId: id,
         eventMessage: "Test order updated",
-        oldValues: existingOrder.toObject(),
-        newValues: logPayload,
+        oldValues: oldDiff,
+        newValues: newDiff,
         operatorId: userIdToFetch || updated_by,
         operatorEmail: user?.email ?? null,
         operatorName: user?.fullName || (updated_by !== 'system' ? updated_by : undefined),
@@ -365,29 +401,16 @@ export const TestOrderService = {
         }
       }
 
-      const logPayload = updatedOrder ? JSON.parse(JSON.stringify(updatedOrder)) : null;
-      if (logPayload) {
-        if (logPayload.instrument_id) {
-           const instr = await instrumentServiceClient.getInstrumentById(logPayload.instrument_id);
-           if (instr) logPayload.instrument_name = instr.instrument_name;
-        }
-        if (logPayload.reagent_usages && Array.isArray(logPayload.reagent_usages)) {
-           const rIds = logPayload.reagent_usages.map((u: any) => u.reagent_id);
-           if (rIds.length > 0) {
-               const rMap = await reagentServiceClient.getReagentsByIds(rIds);
-               logPayload.reagent_usages = logPayload.reagent_usages.map((u: any) => ({
-                   ...u,
-                   reagent_name: rMap.get(u.reagent_id)?.reagent_name
-               }));
-           }
-        }
-      }
+      const oldValues = await this.enrichOrderForLog(order.toObject());
+      const newValues = await this.enrichOrderForLog(updatedOrder?.toObject());
+
+      const { oldDiff, newDiff } = this.getDifferences(oldValues, newValues);
 
       await testOrderMonitoringService.recordTestOrderUpdated({
         testOrderId: id,
         eventMessage: `Test order status updated to ${status}`,
-        oldValues: order.toObject(),
-        newValues: logPayload,
+        oldValues: oldDiff,
+        newValues: newDiff,
         operatorId: userIdToFetch || updated_by,
         operatorEmail: user?.email ?? null,
         operatorName: user?.fullName || (updated_by !== 'system' ? updated_by : null),
@@ -443,11 +466,13 @@ export const TestOrderService = {
         }
       }
 
+      const oldValues = await this.enrichOrderForLog(order.toObject());
+
       await testOrderMonitoringService.recordTestOrderDeleted({
         testOrderId: _id,
         eventMessage: "Test order soft deleted",
-        oldValues: order.toObject(),
-        newValues: softDeleteTestOrder?.toObject(),
+        oldValues: oldValues,
+        newValues: null,
         operatorId: userIdToFetch || deleted_by,
         operatorEmail: user?.email ?? null,
         operatorName: user?.fullName || (deleted_by !== 'system' ? deleted_by : null),
