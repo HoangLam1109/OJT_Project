@@ -21,6 +21,7 @@ export interface IamUser {
   role: string;
   phoneNumber?: string;
   address?: string;
+  avatar?: string;
 }
 
 export class IamServiceClient {

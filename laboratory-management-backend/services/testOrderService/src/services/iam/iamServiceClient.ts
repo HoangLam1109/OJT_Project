@@ -12,6 +12,7 @@ export interface IamUser {
   address: string;
   role: string;
   isActive: boolean;
+  avatar?: string;
 }
 
 class IamServiceClient {
