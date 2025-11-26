@@ -5,6 +5,7 @@ import { Clock } from 'lucide-react';
 import type { EventLog } from '@/service/eventLogService';
 import { OperatorInfoCard } from './components/EventLog/OperatorInfoCard';
 import { EventInfoCard } from './components/EventLog/EventInfoCard';
+import { useTranslation } from 'react-i18next';
 
 interface EventLogWarehouseDetailPageProps {
   log: EventLog;
@@ -27,6 +28,7 @@ interface WarehouseSnapshot {
 }
 
 export const EventLogWarehouseDetailPage: React.FC<EventLogWarehouseDetailPageProps> = ({ log }) => {
+  const { t } = useTranslation();
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const normalizeData = (data: any): WarehouseSnapshot | null => {
@@ -67,38 +69,38 @@ export const EventLogWarehouseDetailPage: React.FC<EventLogWarehouseDetailPagePr
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
           {snapshot.instrument_code && (
             <div>
-              <p className="text-gray-500">Mã thiết bị</p>
+              <p className="text-gray-500">{t('eventLog.warehouse.instrumentCode')}</p>
               <p className="font-medium">{snapshot.instrument_code}</p>
             </div>
           )}
           {snapshot.instrument_name && (
             <div>
-              <p className="text-gray-500">Tên thiết bị</p>
+              <p className="text-gray-500">{t('eventLog.warehouse.instrumentName')}</p>
               <p className="font-medium">{snapshot.instrument_name}</p>
             </div>
           )}
           {snapshot.instrument_type && (
             <div>
-              <p className="text-gray-500">Loại thiết bị</p>
+              <p className="text-gray-500">{t('eventLog.warehouse.instrumentType')}</p>
               <p className="font-medium">{snapshot.instrument_type}</p>
             </div>
           )}
           {snapshot.manufacturer && (
             <div>
-              <p className="text-gray-500">Nhà sản xuất</p>
+              <p className="text-gray-500">{t('eventLog.warehouse.manufacturer')}</p>
               <p className="font-medium">{snapshot.manufacturer}</p>
             </div>
           )}
           {snapshot.location && (
             <div>
-              <p className="text-gray-500">Vị trí</p>
+              <p className="text-gray-500">{t('eventLog.warehouse.location')}</p>
               <p className="font-medium">{snapshot.location}</p>
             </div>
           )}
           {snapshot.status && (
             <div>
-              <p className="text-gray-500">Trạng thái</p>
-              <p className="font-medium">{snapshot.status}</p>
+              <p className="text-gray-500">{t('eventLog.warehouse.status')}</p>
+              <p className="font-medium">{t(`status.${snapshot.status}`, { defaultValue: snapshot.status })}</p>
             </div>
           )}
         </div>
@@ -110,19 +112,19 @@ export const EventLogWarehouseDetailPage: React.FC<EventLogWarehouseDetailPagePr
     const action = String(log.action ?? '').toUpperCase();
     
     if (action === 'CREATE') {
-      return renderInstrumentInfo(log.new_values, 'Thông tin thiết bị được tạo');
+      return renderInstrumentInfo(log.new_values, t('eventLog.warehouse.createdInstrument'));
     } else if (action === 'DELETE') {
-      return renderInstrumentInfo(log.old_values, 'Thông tin thiết bị đã xóa');
+      return renderInstrumentInfo(log.old_values, t('eventLog.warehouse.deletedInstrument'));
     } else if (action === 'UPDATE') {
       return (
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="border-r pr-4">
-              <h3 className="font-semibold text-lg text-gray-900 border-b pb-2 mb-4">Dữ liệu cũ</h3>
+              <h3 className="font-semibold text-lg text-gray-900 border-b pb-2 mb-4">{t('eventLog.iam.oldData')}</h3>
               {renderInstrumentInfo(log.old_values, '')}
             </div>
             <div className="pl-4">
-              <h3 className="font-semibold text-lg text-gray-900 border-b pb-2 mb-4">Dữ liệu mới</h3>
+              <h3 className="font-semibold text-lg text-gray-900 border-b pb-2 mb-4">{t('eventLog.iam.newData')}</h3>
               {renderInstrumentInfo(log.new_values, '')}
             </div>
           </div>
@@ -133,15 +135,15 @@ export const EventLogWarehouseDetailPage: React.FC<EventLogWarehouseDetailPagePr
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <Label className="text-sm text-gray-600">Giá trị cũ</Label>
+          <Label className="text-sm text-gray-600">{t('eventLog.oldValue')}</Label>
           <pre className="text-xs bg-gray-100 p-2 rounded overflow-x-auto max-h-64 mt-1">
-            {log.old_values ? JSON.stringify(log.old_values, null, 2) : '(trống)'}
+            {log.old_values ? JSON.stringify(log.old_values, null, 2) : t('eventLog.empty')}
           </pre>
         </div>
         <div>
-          <Label className="text-sm text-gray-600">Giá trị mới</Label>
+          <Label className="text-sm text-gray-600">{t('eventLog.newValue')}</Label>
           <pre className="text-xs bg-gray-100 p-2 rounded overflow-x-auto max-h-64 mt-1">
-            {log.new_values ? JSON.stringify(log.new_values, null, 2) : '(trống)'}
+            {log.new_values ? JSON.stringify(log.new_values, null, 2) : t('eventLog.empty')}
           </pre>
         </div>
       </div>
@@ -157,7 +159,7 @@ export const EventLogWarehouseDetailPage: React.FC<EventLogWarehouseDetailPagePr
         <CardHeader>
           <CardTitle className="flex items-center">
             <Clock className="w-5 h-5 mr-2" />
-            Dữ liệu thay đổi
+            {t('eventLog.changedData')}
           </CardTitle>
         </CardHeader>
         <CardContent>

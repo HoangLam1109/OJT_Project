@@ -5,8 +5,8 @@ import { Clock } from 'lucide-react';
 import type { EventLog } from '@/service/eventLogService';
 import { OperatorInfoCard } from './components/EventLog/OperatorInfoCard';
 import { EventInfoCard } from './components/EventLog/EventInfoCard';
+import { useTranslation } from 'react-i18next';
 
-// Snapshot interfaces (copied from modal for consistency)
 interface UserSnapshot {
   id?: string;
   email?: string;
@@ -67,6 +67,7 @@ interface EventLogPatientDetailPageProps {
 }
 
 const EventLogPatientDetailPage: React.FC<EventLogPatientDetailPageProps> = ({ log }) => {
+  const { t } = useTranslation();
   const formatDateOnly = (iso?: string) => {
     if (!iso) return '-';
     try {
@@ -107,7 +108,7 @@ const EventLogPatientDetailPage: React.FC<EventLogPatientDetailPageProps> = ({ l
     return null;
   }, [log]);
 
-  const renderPatientInfo = (snapshot: SnapshotData | null, title = 'Thông tin bệnh nhân') => {
+  const renderPatientInfo = (snapshot: SnapshotData | null, title = t('eventLog.patient.createdPatient')) => {
     if (!snapshot) return null;
     const user = snapshot.user;
     const patient = snapshot.patient;
@@ -119,66 +120,66 @@ const EventLogPatientDetailPage: React.FC<EventLogPatientDetailPageProps> = ({ l
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
           {patient?.code && (
             <div>
-              <p className="text-gray-500">Mã bệnh nhân</p>
+              <p className="text-gray-500">{t('eventLog.patient.patientCode')}</p>
               <p className="font-medium">{patient.code}</p>
             </div>
           )}
           {user?.fullName && (
             <div>
-              <p className="text-gray-500">Họ và tên</p>
+              <p className="text-gray-500">{t('eventLog.iam.fullName')}</p>
               <p className="font-medium">{user.fullName}</p>
             </div>
           )}
           {user?.email && (
             <div>
-              <p className="text-gray-500">Email</p>
+              <p className="text-gray-500">{t('eventLog.iam.email')}</p>
               <p className="font-medium">{user.email}</p>
             </div>
           )}
           {user?.identityNumber && (
             <div>
-              <p className="text-gray-500">CMND/CCCD</p>
+              <p className="text-gray-500">{t('eventLog.iam.identityNumber')}</p>
               <p className="font-medium">{user.identityNumber}</p>
             </div>
           )}
           {user?.phoneNumber && (
             <div>
-              <p className="text-gray-500">Số điện thoại</p>
+              <p className="text-gray-500">{t('eventLog.iam.phone')}</p>
               <p className="font-medium">{user.phoneNumber}</p>
             </div>
           )}
           {user?.gender && (
             <div>
-              <p className="text-gray-500">Giới tính</p>
-              <p className="font-medium">{user.gender === 'male' ? 'Nam' : user.gender === 'female' ? 'Nữ' : user.gender}</p>
+              <p className="text-gray-500">{t('eventLog.iam.gender')}</p>
+              <p className="font-medium">{user.gender === 'male' ? t('eventLog.iam.male') : user.gender === 'female' ? t('eventLog.iam.female') : user.gender}</p>
             </div>
           )}
           {user?.dateOfBirth && (
             <div>
-              <p className="text-gray-500">Ngày sinh</p>
+              <p className="text-gray-500">{t('eventLog.iam.dob')}</p>
               <p className="font-medium">{formatDateOnly(user.dateOfBirth)}</p>
             </div>
           )}
           {user?.age !== undefined && (
             <div>
-              <p className="text-gray-500">Tuổi</p>
+              <p className="text-gray-500">{t('eventLog.patient.age')}</p>
               <p className="font-medium">{user.age}</p>
             </div>
           )}
           {user?.address && (
             <div className="md:col-span-2">
-              <p className="text-gray-500">Địa chỉ</p>
+              <p className="text-gray-500">{t('eventLog.iam.address')}</p>
               <p className="font-medium">{user.address}</p>
             </div>
           )}
           {patient?.emergencyContact && (patient.emergencyContact.name || patient.emergencyContact.phone) && (
             <>
               <div>
-                <p className="text-gray-500">Tên người thân</p>
+                <p className="text-gray-500">{t('eventLog.patient.emergencyContactName')}</p>
                 <p className="font-medium">{patient.emergencyContact.name || '-'}</p>
               </div>
               <div>
-                <p className="text-gray-500">SĐT người thân</p>
+                <p className="text-gray-500">{t('eventLog.patient.emergencyContactPhone')}</p>
                 <p className="font-medium">{patient.emergencyContact.phone || '-'}</p>
               </div>
             </>
@@ -188,7 +189,7 @@ const EventLogPatientDetailPage: React.FC<EventLogPatientDetailPageProps> = ({ l
     );
   };
 
-  const renderMedicalRecordInfo = (snapshot: SnapshotData | null, title = 'Thông tin hồ sơ bệnh nhân') => {
+  const renderMedicalRecordInfo = (snapshot: SnapshotData | null, title = t('eventLog.patient.createdMedical')) => {
     if (!snapshot) return null;
     const medicalRecord = snapshot.medical_record;
     if (!medicalRecord) return null;
@@ -199,52 +200,74 @@ const EventLogPatientDetailPage: React.FC<EventLogPatientDetailPageProps> = ({ l
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
           {medicalRecord.record_code && (
             <div>
-              <p className="text-gray-500">Mã hồ sơ</p>
+              <p className="text-gray-500">{t('eventLog.patient.recordCode')}</p>
               <p className="font-medium">{medicalRecord.record_code}</p>
             </div>
           )}
           {medicalRecord.blood_type && (
             <div>
-              <p className="text-gray-500">Nhóm máu</p>
+              <p className="text-gray-500">{t('eventLog.patient.bloodType')}</p>
               <p className="font-medium">{medicalRecord.blood_type}</p>
             </div>
           )}
           {medicalRecord.allergies !== undefined && (
             <div>
-              <p className="text-gray-500">Dị ứng</p>
+              <p className="text-gray-500">{t('eventLog.patient.allergies')}</p>
               <p className="font-medium">{medicalRecord.allergies || '-'}</p>
             </div>
           )}
           {medicalRecord.chronic_conditions !== undefined && (
             <div>
-              <p className="text-gray-500">Bệnh mạn tính</p>
+              <p className="text-gray-500">{t('eventLog.patient.chronicConditions')}</p>
               <p className="font-medium">{medicalRecord.chronic_conditions || '-'}</p>
             </div>
           )}
           {medicalRecord.current_medications !== undefined && (
             <div>
-              <p className="text-gray-500">Thuốc đang dùng</p>
+              <p className="text-gray-500">{t('eventLog.patient.currentMedications')}</p>
               <p className="font-medium">{medicalRecord.current_medications || '-'}</p>
             </div>
           )}
           {medicalRecord.medical_history !== undefined && (
             <div>
-              <p className="text-gray-500">Tiền sử y khoa</p>
+              <p className="text-gray-500">{t('eventLog.patient.medicalHistory')}</p>
               <p className="font-medium">{medicalRecord.medical_history || '-'}</p>
             </div>
           )}
           {medicalRecord.clinical_notes !== undefined && (
             <div>
-              <p className="text-gray-500">Ghi chú lâm sàng</p>
+              <p className="text-gray-500">{t('eventLog.patient.clinicalNotes')}</p>
               <p className="font-medium">{medicalRecord.clinical_notes || '-'}</p>
             </div>
           )}
           {medicalRecord.recent_test_summary !== undefined && (
             <div>
-              <p className="text-gray-500">Tóm tắt xét nghiệm gần đây</p>
+              <p className="text-gray-500">{t('eventLog.patient.recentTestSummary')}</p>
               <p className="font-medium">{medicalRecord.recent_test_summary || '-'}</p>
             </div>
           )}
+        </div>
+      </div>
+    );
+  };
+
+  const renderEmergencyContactInfo = (values: unknown) => {
+    if (!values || typeof values !== 'object') return <p className="text-gray-500 italic">{t('eventLog.empty')}</p>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const obj = values as Record<string, any>;
+    const contact = obj.emergency_contact;
+    
+    if (!contact) return <p className="text-gray-500 italic">{t('eventLog.empty')}</p>;
+
+    return (
+      <div className="space-y-4 text-sm">
+        <div>
+          <p className="text-gray-500">{t('eventLog.patient.emergencyContactName')}</p>
+          <p className="font-medium">{contact.name || '-'}</p>
+        </div>
+        <div>
+          <p className="text-gray-500">{t('eventLog.patient.emergencyContactPhone')}</p>
+          <p className="font-medium">{contact.phone || '-'}</p>
         </div>
       </div>
     );
@@ -255,33 +278,31 @@ const EventLogPatientDetailPage: React.FC<EventLogPatientDetailPageProps> = ({ l
     switch (eventType) {
       case 'CREATE_PATIENT': {
         const snapshot = getSnapshot(log.new_values);
-        return renderPatientInfo(snapshot, 'Thông tin bệnh nhân được tạo');
+        return renderPatientInfo(snapshot, t('eventLog.patient.createdPatient'));
       }
       case 'CREATE_MEDICAL': {
         const snapshot = getSnapshot(log.new_values);
-        return renderMedicalRecordInfo(snapshot, 'Thông tin hồ sơ bệnh nhân được tạo');
+        return renderMedicalRecordInfo(snapshot, t('eventLog.patient.createdMedical'));
       }
       case 'DELETE_PATIENT': {
         const snapshot = getSnapshot(log.old_values) || getSnapshot(log.new_values);
-        return renderPatientInfo(snapshot, 'Thông tin bệnh nhân bị xóa');
+        return renderPatientInfo(snapshot, t('eventLog.patient.deletedPatient'));
       }
       case 'DELETE_MEDICAL': {
         const snapshot = getSnapshot(log.old_values) || getSnapshot(log.new_values);
-        return renderMedicalRecordInfo(snapshot, 'Thông tin hồ sơ bệnh nhân bị xóa');
+        return renderMedicalRecordInfo(snapshot, t('eventLog.patient.deletedMedical'));
       }
       case 'UPDATE_PATIENT_EMERGENCY': {
-        const oldSnapshot = getSnapshot(log.old_values);
-        const newSnapshot = getSnapshot(log.new_values);
         return (
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="border-r pr-4">
-                <h3 className="font-semibold text-lg text-gray-900 border-b pb-2 mb-4">Dữ liệu cũ</h3>
-                {renderPatientInfo(oldSnapshot, '')}
+                <h3 className="font-semibold text-lg text-gray-900 border-b pb-2 mb-4">{t('eventLog.iam.oldData')}</h3>
+                {renderEmergencyContactInfo(log.old_values)}
               </div>
               <div className="pl-4">
-                <h3 className="font-semibold text-lg text-gray-900 border-b pb-2 mb-4">Dữ liệu mới</h3>
-                {renderPatientInfo(newSnapshot, '')}
+                <h3 className="font-semibold text-lg text-gray-900 border-b pb-2 mb-4">{t('eventLog.iam.newData')}</h3>
+                {renderEmergencyContactInfo(log.new_values)}
               </div>
             </div>
           </div>
@@ -294,11 +315,11 @@ const EventLogPatientDetailPage: React.FC<EventLogPatientDetailPageProps> = ({ l
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="border-r pr-4">
-                <h3 className="font-semibold text-lg text-gray-900 border-b pb-2 mb-4">Dữ liệu cũ</h3>
+                <h3 className="font-semibold text-lg text-gray-900 border-b pb-2 mb-4">{t('eventLog.iam.oldData')}</h3>
                 {renderMedicalRecordInfo(oldSnapshot, '')}
               </div>
               <div className="pl-4">
-                <h3 className="font-semibold text-lg text-gray-900 border-b pb-2 mb-4">Dữ liệu mới</h3>
+                <h3 className="font-semibold text-lg text-gray-900 border-b pb-2 mb-4">{t('eventLog.iam.newData')}</h3>
                 {renderMedicalRecordInfo(newSnapshot, '')}
               </div>
             </div>
@@ -310,15 +331,15 @@ const EventLogPatientDetailPage: React.FC<EventLogPatientDetailPageProps> = ({ l
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <p className="text-gray-500 mb-1">Giá trị cũ</p>
+                <p className="text-gray-500 mb-1">{t('eventLog.oldValue')}</p>
                 <pre className="text-xs bg-gray-100 p-2 rounded overflow-x-auto max-h-64">
-                  {log.old_values ? JSON.stringify(log.old_values, null, 2) : '(trống)'}
+                  {log.old_values ? JSON.stringify(log.old_values, null, 2) : t('eventLog.empty')}
                 </pre>
               </div>
               <div>
-                <p className="text-gray-500 mb-1">Giá trị mới</p>
+                <p className="text-gray-500 mb-1">{t('eventLog.newValue')}</p>
                 <pre className="text-xs bg-gray-100 p-2 rounded overflow-x-auto max-h-64">
-                  {log.new_values ? JSON.stringify(log.new_values, null, 2) : '(trống)'}
+                  {log.new_values ? JSON.stringify(log.new_values, null, 2) : t('eventLog.empty')}
                 </pre>
               </div>
             </div>
@@ -336,22 +357,22 @@ const EventLogPatientDetailPage: React.FC<EventLogPatientDetailPageProps> = ({ l
         <CardHeader>
           <CardTitle className="flex items-center">
             <Clock className="w-5 h-5 mr-2" />
-            Dữ liệu thay đổi
+            {t('eventLog.changedData')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           {renderEventContent() || (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label className="text-sm text-gray-600">Giá trị cũ</Label>
+                <Label className="text-sm text-gray-600">{t('eventLog.oldValue')}</Label>
                 <pre className="text-xs bg-gray-100 p-2 rounded overflow-x-auto max-h-64 mt-1">
-                  {log.old_values ? JSON.stringify(log.old_values, null, 2) : '(trống)'}
+                  {log.old_values ? JSON.stringify(log.old_values, null, 2) : t('eventLog.empty')}
                 </pre>
               </div>
               <div>
-                <Label className="text-sm text-gray-600">Giá trị mới</Label>
+                <Label className="text-sm text-gray-600">{t('eventLog.newValue')}</Label>
                 <pre className="text-xs bg-gray-100 p-2 rounded overflow-x-auto max-h-64 mt-1">
-                  {log.new_values ? JSON.stringify(log.new_values, null, 2) : '(trống)'}
+                  {log.new_values ? JSON.stringify(log.new_values, null, 2) : t('eventLog.empty')}
                 </pre>
               </div>
             </div>

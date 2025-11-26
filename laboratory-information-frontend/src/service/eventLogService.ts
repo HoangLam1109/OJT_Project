@@ -42,6 +42,7 @@ export interface EventLog {
   operator_id?: string; // id column as per spec
   operator_name?: string; // Người dùng
   operator_gmail?: string; // Người dùng email
+  operator_avatar?: string;
   occurred_at?: string; // thời gian
   received_at?: string;
 }
@@ -72,15 +73,28 @@ function pickNumber(...vals: Array<unknown>): number | undefined {
 }
 
 export const eventLogService = {
-  async getAll(params?: { page?: number; limit?: number; search?: string }): Promise<EventLogsResponse> {
+  async getAll(params?: { 
+    page?: number; 
+    limit?: number; 
+    search?: string;
+    service_name?: string;
+    action?: string;
+    sort?: 'newest' | 'oldest';
+  }): Promise<EventLogsResponse> {
     const page = params?.page ?? 1;
     const limit = params?.limit ?? 10;
     const search = params?.search ?? '';
+    const service_name = params?.service_name;
+    const action = params?.action;
+    const sort = params?.sort;
 
     const qs = new URLSearchParams();
     qs.set('page', String(page));
     qs.set('limit', String(limit));
     if (search) qs.set('search', search);
+    if (service_name && service_name !== 'all') qs.set('service_name', service_name);
+    if (action && action !== 'all') qs.set('action', action);
+    if (sort) qs.set('sort', sort);
 
     // Use only /event-logs without trailing slash to avoid 404 on some backends
     const endpointCandidates = [
