@@ -43,6 +43,7 @@ export async function logEvent({
     operator_id: performedBy,
     operator_gmail: performer?.email as string,
     operator_name: performer?.fullName as string,
+    operator_avatar: performer?.avatar as string,
     occurred_at: new Date(),
     ...(entityId && { entity_id: entityId }),
     ...(oldValues && { old_values: oldValues }),

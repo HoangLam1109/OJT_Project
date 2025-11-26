@@ -186,6 +186,34 @@ const buildInstrumentSnapshot = (instrument: IInstrument | null | undefined): Re
   };
 };
 
+const fetchUserAvatar = async (userId: string | null | undefined): Promise<string | null> => {
+  if (!userId || typeof userId !== "string") {
+    return null;
+  }
+  try {
+    const user = await iamServiceClient.getUserById(userId);
+    if (user?.avatar) {
+      return user.avatar;
+    }
+  } catch (error) {
+    console.warn(`[InstrumentController] Unable to resolve avatar for user ${userId}`, error);
+  }
+  return null;
+};
+
+const resolveOperatorAvatar = async (
+  req: Request,
+  operatorId: string | undefined
+): Promise<string | null> => {
+  if (operatorId) {
+    const resolved = await fetchUserAvatar(operatorId);
+    if (resolved) {
+      return resolved;
+    }
+  }
+  return null;
+};
+
 export const addInstrumentController = async (req: Request, res: Response<InstrumentResponse>, next: NextFunction): Promise<void> => {
   try {
     const { value, error } = createInstrumentSchema.validate(req.body, { abortEarly: false, stripUnknown: true });
@@ -201,6 +229,7 @@ export const addInstrumentController = async (req: Request, res: Response<Instru
       operatorId,
       operatorEmail === "system" ? undefined : operatorEmail
     );
+    const operatorAvatar = await resolveOperatorAvatar(req, operatorId);
 
     const instrument = await createInstrumentService({
       ...value,
@@ -209,11 +238,8 @@ export const addInstrumentController = async (req: Request, res: Response<Instru
 
     const snapshot = buildInstrumentSnapshot(instrument);
     let newValues: Record<string, unknown> | null = null;
-    if (instrument) {
-      newValues = { ...(instrument as unknown as Record<string, unknown>) };
-      if (snapshot) {
-        newValues.snapshot = snapshot;
-      }
+    if (snapshot) {
+      newValues = { snapshot };
     }
 
     await instrumentMonitoringService.recordCreated({
@@ -223,6 +249,7 @@ export const addInstrumentController = async (req: Request, res: Response<Instru
       operatorId: operatorId ?? operatorEmail ?? "system",
       operatorEmail,
       operatorName,
+      operatorAvatar,
       oldValues: null,
       newValues,
     });
@@ -318,6 +345,7 @@ export const updateInstrumentController = async (
       operatorId,
       operatorEmail === "system" ? undefined : operatorEmail
     );
+    const operatorAvatar = await resolveOperatorAvatar(req, operatorId);
 
     const instrument = await updateInstrumentService(id, {
       ...value,
@@ -339,16 +367,9 @@ export const updateInstrumentController = async (
       });
 
       if (changedFields.length > 0) {
-        const oldValues = pickInstrumentFields(existingInstrument, changedFields);
-        const newValues = pickInstrumentFields(instrument, changedFields);
-        const oldSnapshot = buildInstrumentSnapshot(existingInstrument);
-        const newSnapshot = buildInstrumentSnapshot(instrument);
-        if (oldSnapshot) {
-          oldValues.snapshot = oldSnapshot;
-        }
-        if (newSnapshot) {
-          newValues.snapshot = newSnapshot;
-        }
+        const oldValues = { ...(existingInstrument as unknown as Record<string, unknown>) };
+        const newValues = { ...(instrument as unknown as Record<string, unknown>) };
+        
         const messageSuffix = changedFields.join(", ");
         const eventMessage = messageSuffix.length > 0
           ? `Instrument updated (${messageSuffix})`
@@ -361,6 +382,7 @@ export const updateInstrumentController = async (
           operatorId: operatorId ?? operatorEmail ?? "system",
           operatorEmail,
           operatorName,
+          operatorAvatar,
           oldValues,
           newValues,
         });
@@ -399,6 +421,7 @@ export const deleteInstrumentController = async (
       operatorId,
       operatorEmail === "system" ? undefined : operatorEmail
     );
+    const operatorAvatar = await resolveOperatorAvatar(req, operatorId);
 
     const instrument = await deleteInstrumentService(id, operatorEmail);
     if (!instrument) {
@@ -406,17 +429,8 @@ export const deleteInstrumentController = async (
       return;
     }
 
-    const trackedFields = ["is_deleted", "is_active", "deleted_at", "deleted_by"];
-    const oldValues = pickInstrumentFields(existingInstrument, trackedFields);
-    const newValues = pickInstrumentFields(instrument, trackedFields);
     const oldSnapshot = buildInstrumentSnapshot(existingInstrument);
-    const newSnapshot = buildInstrumentSnapshot(instrument);
-    if (oldSnapshot) {
-      oldValues.snapshot = oldSnapshot;
-    }
-    if (newSnapshot) {
-      newValues.snapshot = newSnapshot;
-    }
+    const oldValues = oldSnapshot ? { snapshot: oldSnapshot } : null;
 
     await instrumentMonitoringService.recordDeleted({
       instrumentId: `${instrument._id}`,
@@ -425,8 +439,9 @@ export const deleteInstrumentController = async (
       operatorId: operatorId ?? operatorEmail ?? "system",
       operatorEmail,
       operatorName,
+      operatorAvatar,
       oldValues,
-      newValues,
+      newValues: null,
     });
 
     res.status(200).json({ message: "Instrument deleted", data: instrument });

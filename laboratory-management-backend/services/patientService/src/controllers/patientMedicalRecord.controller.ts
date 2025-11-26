@@ -7,45 +7,9 @@ import Patient, { type IPatient } from "../db/models/Patient.model.js";
 
 const patientMedicalRecordService = new PatientMedicalRecordService();
 
-const fetchActorEmail = async (actorId: string | undefined): Promise<string | null> => {
-  if (!actorId) {
-    return null;
-  }
-  try {
-    const user = await iamServiceClient.getUserById(actorId);
-    if (user?.email) {
-      return user.email;
-    }
-  } catch (error) {
-    console.warn(`[PatientMedicalRecordController] Unable to resolve email for user ${actorId}`, error);
-  }
-  return actorId.includes("@") ? actorId : null;
-};
-
-const fetchActorName = async (actorId: string | undefined): Promise<string | null> => {
-  if (!actorId) {
-    return null;
-  }
-  try {
-    const user = await iamServiceClient.getUserById(actorId);
-    if (user?.fullName && user.fullName.trim().length > 0) {
-      return user.fullName.trim();
-    }
-    if (user?.email && user.email.trim().length > 0) {
-      return user.email.trim();
-    }
-  } catch (error) {
-    console.warn(`[PatientMedicalRecordController] Unable to resolve name for user ${actorId}`, error);
-  }
-  if (actorId.includes("@")) {
-    return actorId;
-  }
-  return null;
-};
-
 const resolveAccessActor = async (
   req: Request
-): Promise<{ actorId: string; actorEmail: string | null; actorName: string | null }> => {
+): Promise<{ actorId: string; actorEmail: string | null; actorName: string | null; actorAvatar: string | null }> => {
   const headerNameRaw =
     req.headers["x-user-name"] ??
     req.headers["x-operator-name"] ??
@@ -54,14 +18,6 @@ const resolveAccessActor = async (
 
   const headerEmailRaw = req.headers["x-user-email"];
   const headerEmail = Array.isArray(headerEmailRaw) ? headerEmailRaw[0] : headerEmailRaw;
-  if (typeof headerEmail === "string" && headerEmail.length > 0) {
-    const normalizedEmail = headerEmail.trim();
-    const normalizedName =
-      typeof headerName === "string" && headerName.trim().length > 0
-        ? headerName.trim()
-        : normalizedEmail;
-    return { actorId: normalizedEmail, actorEmail: normalizedEmail, actorName: normalizedName };
-  }
 
   const headerUserIdRaw =
     req.headers["x-user-id"] ?? req.headers["x-operator-id"] ?? req.headers["x-actor-id"];
@@ -74,23 +30,48 @@ const resolveAccessActor = async (
       ? headerUserId.trim()
       : undefined;
 
+  let email: string | null = null;
+  let name: string | null = null;
+  let avatar: string | null = null;
+
+  // 1. Try to fetch full user details from IAM if we have a User ID
   if (typeof resolvedUserId === "string" && resolvedUserId.length > 0) {
-    const email = await fetchActorEmail(resolvedUserId);
-    const nameCandidate =
-      typeof headerName === "string" && headerName.trim().length > 0
-        ? headerName.trim()
-        : await fetchActorName(resolvedUserId);
-    return {
-      actorId: resolvedUserId,
-      actorEmail: email,
-      actorName: nameCandidate ?? email ?? resolvedUserId,
-    };
+    try {
+      const user = await iamServiceClient.getUserById(resolvedUserId);
+      if (user) {
+        email = user.email;
+        name = user.fullName;
+        avatar = user.avatar ?? null;
+      }
+    } catch (error) {
+      console.warn(`[PatientMedicalRecordController] Unable to resolve user ${resolvedUserId}`, error);
+    }
+
+    if (!email && resolvedUserId.includes("@")) {
+      email = resolvedUserId;
+    }
   }
 
-  const fallbackName =
-    typeof headerName === "string" && headerName.trim().length > 0 ? headerName.trim() : null;
+  // 2. Fallback to headers if IAM didn't provide data (or we didn't have an ID)
+  if (!email && typeof headerEmail === "string" && headerEmail.length > 0) {
+    email = headerEmail.trim();
+  }
 
-  return { actorId: "system", actorEmail: null, actorName: fallbackName };
+  if (!name && typeof headerName === "string" && headerName.trim().length > 0) {
+    name = headerName.trim();
+  } else if (!name && email) {
+    name = email;
+  }
+
+  // 3. Determine Actor ID
+  const actorId = resolvedUserId ?? email ?? "system";
+
+  return {
+    actorId,
+    actorEmail: email,
+    actorName: name ?? actorId,
+    actorAvatar: avatar,
+  };
 };
 
 const toPlainRecord = (value: unknown): Record<string, unknown> => {
@@ -391,6 +372,7 @@ const createPatientRecord = async (req: Request, res: Response): Promise<void> =
       operatorId: actorContext.actorId,
       operatorEmail: actorContext.actorEmail,
       operatorName: actorContext.actorName,
+      operatorAvatar: actorContext.actorAvatar,
       oldValues: null,
       newValues: accessLogValues,
     });
@@ -602,22 +584,7 @@ const updatePatientRecord = async (req: Request, res: Response): Promise<void> =
     const recordId = toIdString(record._id);
     const patientIdValue = toIdString(record.patient_id);
 
-    const { user: patientUser } = await fetchPatientContext(record.patient_id);
-    const oldSnapshot = buildAccessLogSnapshot(existingPlain, patientUser);
-    const newSnapshot = buildAccessLogSnapshot(updatedPlain, patientUser);
-
     if (diff.fields.length > 0) {
-      const accessOldValues = { ...diff.previousValues };
-      const accessNewValues = { ...diff.currentValues };
-      if (oldSnapshot) {
-        accessOldValues.snapshot = oldSnapshot;
-      }
-      if (newSnapshot) {
-        accessNewValues.snapshot = newSnapshot;
-      }
-
-      const auditOldValues = { ...accessOldValues, changed_fields: diff.fields };
-      const auditNewValues = { ...accessNewValues, changed_fields: diff.fields };
       const messageSuffix = diff.fields.join(", ");
       const eventMessage = messageSuffix.length > 0
         ? `Medical record updated: ${messageSuffix}`
@@ -630,8 +597,9 @@ const updatePatientRecord = async (req: Request, res: Response): Promise<void> =
         operatorId: actorContext.actorId,
         operatorEmail: actorContext.actorEmail,
         operatorName: actorContext.actorName,
-        oldValues: auditOldValues,
-        newValues: auditNewValues,
+        operatorAvatar: actorContext.actorAvatar,
+        oldValues: existingPlain,
+        newValues: updatedPlain,
       });
     }
 
@@ -691,23 +659,14 @@ const deletePatientRecord = async (req: Request, res: Response): Promise<void> =
     console.log(`   ✅ Record deleted (soft): ${record.record_code}`);
 
     const existingPlain = toPlainRecord(existingRecord);
-    const deletedPlain = toPlainRecord(record);
     const { user: patientUser } = await fetchPatientContext(record.patient_id);
     const deleteOldSnapshot = buildAccessLogSnapshot(existingPlain, patientUser);
-    const deleteNewSnapshot = buildAccessLogSnapshot(deletedPlain, patientUser);
-    const accessOldValues = { ...existingPlain };
-    const accessNewValues = { ...deletedPlain };
-    if (deleteOldSnapshot) {
-      accessOldValues.snapshot = deleteOldSnapshot;
-    }
-    if (deleteNewSnapshot) {
-      accessNewValues.snapshot = deleteNewSnapshot;
-    }
+    
+    const auditOldValues = deleteOldSnapshot ? { snapshot: deleteOldSnapshot } : null;
 
     const recordId = toIdString(record._id);
     const patientIdValue = toIdString(record.patient_id);
-    const auditOldValues = { ...accessOldValues };
-    const auditNewValues = { ...accessNewValues };
+
     await medicalRecordMonitoringService.recordDeleted({
       medicalRecordId: recordId,
       patientId: patientIdValue,
@@ -715,8 +674,9 @@ const deletePatientRecord = async (req: Request, res: Response): Promise<void> =
       operatorId: actorContext.actorId,
       operatorEmail: actorContext.actorEmail,
       operatorName: actorContext.actorName,
+      operatorAvatar: actorContext.actorAvatar,
       oldValues: auditOldValues,
-      newValues: auditNewValues,
+      newValues: null,
     });
 
     res.status(200).json({

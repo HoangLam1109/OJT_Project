@@ -23,6 +23,7 @@ export interface MonitoringEvent {
   operator_name?: string;
   operator_gmail?: string;
   operator_role?: string;
+  operator_avatar?: string;
   occurred_at?: Date;
   error_message?: string;
 }
