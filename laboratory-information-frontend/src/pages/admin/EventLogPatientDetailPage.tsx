@@ -273,6 +273,42 @@ const EventLogPatientDetailPage: React.FC<EventLogPatientDetailPageProps> = ({ l
     );
   };
 
+  const renderMedicalRecordUpdate = (values: unknown) => {
+    if (!values || typeof values !== 'object') return <p className="text-gray-500 italic">{t('eventLog.empty')}</p>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const data = values as Record<string, any>;
+
+    const fields = [
+      { key: 'record_code', label: t('eventLog.patient.recordCode') },
+      { key: 'blood_type', label: t('eventLog.patient.bloodType') },
+      { key: 'allergies', label: t('eventLog.patient.allergies') },
+      { key: 'chronic_conditions', label: t('eventLog.patient.chronicConditions') },
+      { key: 'current_medications', label: t('eventLog.patient.currentMedications') },
+      { key: 'medical_history', label: t('eventLog.patient.medicalHistory') },
+      { key: 'clinical_notes', label: t('eventLog.patient.clinicalNotes') },
+      { key: 'recent_test_summary', label: t('eventLog.patient.recentTestSummary') },
+    ];
+
+    const hasData = fields.some(f => data[f.key] !== undefined);
+    if (!hasData) return <p className="text-gray-500 italic">{t('eventLog.empty')}</p>;
+
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+        {fields.map(({ key, label }) => {
+          if (data[key] !== undefined) {
+            return (
+              <div key={key}>
+                <p className="text-gray-500">{label}</p>
+                <p className="font-medium">{data[key] || '-'}</p>
+              </div>
+            );
+          }
+          return null;
+        })}
+      </div>
+    );
+  };
+
   const renderEventContent = () => {
     if (!log || !eventType) return null;
     switch (eventType) {
@@ -309,18 +345,16 @@ const EventLogPatientDetailPage: React.FC<EventLogPatientDetailPageProps> = ({ l
         );
       }
       case 'UPDATE_MEDICAL': {
-        const oldSnapshot = getSnapshot(log.old_values);
-        const newSnapshot = getSnapshot(log.new_values);
         return (
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="border-r pr-4">
                 <h3 className="font-semibold text-lg text-gray-900 border-b pb-2 mb-4">{t('eventLog.iam.oldData')}</h3>
-                {renderMedicalRecordInfo(oldSnapshot, '')}
+                {renderMedicalRecordUpdate(log.old_values)}
               </div>
               <div className="pl-4">
                 <h3 className="font-semibold text-lg text-gray-900 border-b pb-2 mb-4">{t('eventLog.iam.newData')}</h3>
-                {renderMedicalRecordInfo(newSnapshot, '')}
+                {renderMedicalRecordUpdate(log.new_values)}
               </div>
             </div>
           </div>

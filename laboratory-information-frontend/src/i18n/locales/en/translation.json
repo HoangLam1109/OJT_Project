@@ -884,6 +884,7 @@
       "depleted": "Depleted"
     },
     "table": {
+      "code": "Reagent Code",
       "name": "Reagent Name",
       "expiryDate": "Expiry Date",
       "quantity": "Quantity",
@@ -1086,7 +1087,11 @@
       "instrumentDeleted": "Instrument deleted",
       "userUpdated": "User updated successfully!",
       "patientRecordUpdated": "Patient record updated {{details}}",
-      "patientRecordSoftDeletedByUser": "Patient record soft deleted by user ID"
+      "patientRecordSoftDeletedByUser": "Patient record soft deleted by user ID",
+      "reagentUpdated": "Reagent updated {{details}}",
+      "reagentCreated": "Reagent created",
+      "reagentDeleted": "Reagent deleted",
+      "medicalRecordUpdated": "Medical record updated: {{details}}"
     },
     "iam": {
       "createdUser": "Created User Information",
@@ -1132,7 +1137,8 @@
       "testItemName": "Test Item Name",
       "status": "Status",
       "dueDate": "Due Date",
-      "notes": "Notes"
+      "notes": "Notes",
+      "quantity": "Quantity"
     },
     "warehouse": {
       "createdInstrument": "Created Instrument Information",

@@ -25,8 +25,6 @@ interface TestOrderSnapshot {
   status?: string;
   due_date?: string;
   notes?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  snapshot?: any; 
 }
 
 export const EventLogTestOrderDetailPage: React.FC<EventLogTestOrderDetailPageProps> = ({ log }) => {
@@ -50,25 +48,16 @@ export const EventLogTestOrderDetailPage: React.FC<EventLogTestOrderDetailPagePr
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const normalizeData = (data: any): TestOrderSnapshot | null => {
     if (!data) return null;
-    
-    let source = data;
-    if (data.snapshot && !data.patient_name) {
-        if (data.snapshot.test_order) {
-             source = data.snapshot.test_order;
-        } else {
-             source = data.snapshot;
-        }
-    }
 
     return {
-      patient_name: source.patient_name,
-      test_type: source.test_type,
-      instrument_name: source.instrument_name,
-      reagent_usages: source.reagent_usages,
-      test_item_names: source.test_item_names,
-      status: source.status,
-      due_date: source.due_date,
-      notes: source.notes,
+      patient_name: data.patient_name,
+      test_type: data.test_type,
+      instrument_name: data.instrument_name,
+      reagent_usages: data.reagent_usages,
+      test_item_names: data.test_item_names,
+      status: data.status,
+      due_date: data.due_date,
+      notes: data.notes,
     };
   };
 
@@ -102,11 +91,11 @@ export const EventLogTestOrderDetailPage: React.FC<EventLogTestOrderDetailPagePr
            {snapshot.reagent_usages && snapshot.reagent_usages.length > 0 && (
             <div>
               <p className="text-gray-500">{t('eventLog.testOrder.reagentName')}</p>
-              <div className="flex flex-wrap gap-1">
+              <div className="flex flex-col gap-1">
                 {snapshot.reagent_usages.map((r, idx) => (
-                    <span key={idx} className="font-medium">
-                        {r.reagent_name}{idx < (snapshot.reagent_usages?.length || 0) - 1 ? ', ' : ''}
-                    </span>
+                    <div key={idx} className="font-medium">
+                        {r.reagent_name} <span className="text-gray-500 text-xs">({t('eventLog.testOrder.quantity')}: {r.quantity_used})</span>
+                    </div>
                 ))}
               </div>
             </div>
