@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import Button from '../../components/common/button';
-import { Alert, AlertDescription } from '../../components/common/alert';
 import { RegisterHeader } from './RegisterHeader';
 import { PersonalInfoFields } from './PersonalInfoFields';
 import { AdditionalInfoFields } from './AdditionalInfoFields';
@@ -9,6 +8,7 @@ import type { RegisterFormProps } from './types/register';
 import { isValidEmail, isValidPhone, validatePassword } from './types/validators';
 import { registerUser } from '../../service/authService/registerAPI';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 export function RegisterForm({ onBackToLogin, onBackToHome }: RegisterFormProps) {
   const { t } = useTranslation();
   const [fullName, setFullName] = useState('');
@@ -20,10 +20,8 @@ export function RegisterForm({ onBackToLogin, onBackToHome }: RegisterFormProps)
   const [dob, setDob] = useState('');
   const [idNumber, setIdNumber] = useState('');
   const [address, setAddress] = useState('');
-  const [error, setError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newPassword = e.target.value;
@@ -33,33 +31,31 @@ export function RegisterForm({ onBackToLogin, onBackToHome }: RegisterFormProps)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setSuccessMessage('');
     setIsLoading(true);
 
     // Validation
     if (!fullName || !email || !password || !confirmPassword || !idNumber || !gender || !dob) {
-      setError(t('register.requiredFields'));
+      toast.error(t('register.requiredFields'));
       setIsLoading(false);
       return;
     }
     if (!isValidEmail(email)) {
-      setError(t('register.invalidEmail'));
+      toast.error(t('register.invalidEmail'));
       setIsLoading(false);
       return;
     }
     if (passwordError) {
-      setError(passwordError);
+      toast.error(passwordError);
       setIsLoading(false);
       return;
     }
     if (password !== confirmPassword) {
-      setError(t('register.passwordMismatch'));
+      toast.error(t('register.passwordMismatch'));
       setIsLoading(false);
       return;
     }
     if (phone && !isValidPhone(phone)) {
-      setError(t('register.invalidPhone'));
+      toast.error(t('register.invalidPhone'));
       setIsLoading(false);
       return;
     }
@@ -74,25 +70,22 @@ export function RegisterForm({ onBackToLogin, onBackToHome }: RegisterFormProps)
       : age;
 
     try {
-      // Normalize gender to Title Case (Male, Female, Other) as required by backend
-      const normalizedGender: 'Male' | 'Female' | 'Other' = gender 
-        ? (gender.charAt(0).toUpperCase() + gender.slice(1).toLowerCase()) as 'Male' | 'Female' | 'Other'
-        : 'Male'; // fallback, but should not happen due to validation
-
       const registerData = {
         email,
         fullName,
         identityNumber: idNumber,
-        gender: normalizedGender,
+        gender: gender as 'Male' | 'Female' | 'Other' || '',
         age: calculatedAge,
         dateOfBirth: dob,
         password,
+        phoneNumber: phone || '',
+        address: address || '',
       };
 
       const result = await registerUser(registerData);
 
       if (result.success) {
-        setSuccessMessage(result.message);
+        toast.success(result.message);
         // Clear form
         setFullName('');
         setEmail('');
@@ -110,11 +103,11 @@ export function RegisterForm({ onBackToLogin, onBackToHome }: RegisterFormProps)
           onBackToLogin();
         }, 2000);
       } else {
-        setError(result.message);
+        toast.error(result.message);
       }
     } catch (error) {
       console.error('Registration error:', error);
-      setError(t('register.registrationError'));
+      toast.error(t('register.registrationError'));
     } finally {
       setIsLoading(false);
     }
@@ -142,16 +135,6 @@ export function RegisterForm({ onBackToLogin, onBackToHome }: RegisterFormProps)
               idNumber={idNumber} setIdNumber={setIdNumber}
               address={address} setAddress={setAddress}
             />
-            {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-            {successMessage && (
-              <Alert className="border-green-200 bg-green-50">
-                <AlertDescription className="text-green-800">{successMessage}</AlertDescription>
-              </Alert>
-            )}
             <div className="pt-2">
               <Button
                 type="submit"

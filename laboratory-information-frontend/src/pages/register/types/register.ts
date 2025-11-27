@@ -64,6 +64,8 @@ export interface RegisterRequest {
   age: number;
   dateOfBirth: string;
   password: string;
+  phoneNumber: string;
+  address: string;
 }
 
 export interface RegisterResponse {
