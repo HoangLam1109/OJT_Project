@@ -74,11 +74,16 @@ export function RegisterForm({ onBackToLogin, onBackToHome }: RegisterFormProps)
       : age;
 
     try {
+      // Normalize gender to Title Case (Male, Female, Other) as required by backend
+      const normalizedGender: 'Male' | 'Female' | 'Other' = gender 
+        ? (gender.charAt(0).toUpperCase() + gender.slice(1).toLowerCase()) as 'Male' | 'Female' | 'Other'
+        : 'Male'; // fallback, but should not happen due to validation
+
       const registerData = {
         email,
         fullName,
         identityNumber: idNumber,
-        gender,
+        gender: normalizedGender,
         age: calculatedAge,
         dateOfBirth: dob,
         password,
@@ -132,7 +137,7 @@ export function RegisterForm({ onBackToLogin, onBackToHome }: RegisterFormProps)
             />
             <AdditionalInfoFields
               phone={phone} setPhone={setPhone}
-              gender={gender} setGender={setGender}
+              gender={gender as 'Male' | 'Female' | 'Other'} setGender={setGender}
               dob={dob} setDob={setDob}
               idNumber={idNumber} setIdNumber={setIdNumber}
               address={address} setAddress={setAddress}

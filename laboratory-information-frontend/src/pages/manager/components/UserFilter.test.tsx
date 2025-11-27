@@ -34,7 +34,7 @@ describe('UserFilters', () => {
   it('displays current filter values', () => {
     const filters: UserFiltersType = {
       searchTerm: 'test search',
-      role: ['ADMIN'],
+      role: 'ADMIN',
       status: 'active',
     };
     render(<UserFilters filters={filters} onFiltersChange={mockOnFiltersChange} />);
@@ -115,7 +115,7 @@ describe('UserFilters', () => {
   it('preserves other filter values when changing one', () => {
     const filters: UserFiltersType = {
       searchTerm: 'existing search',
-      role: ['LAB_USER'],
+      role: 'LAB_USER',
       status: 'active',
     };
     render(<UserFilters filters={filters} onFiltersChange={mockOnFiltersChange} />);

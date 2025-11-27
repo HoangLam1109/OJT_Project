@@ -27,7 +27,7 @@ export interface UserFormData {
 // User filter options
 export interface UserFilters {
   searchTerm: string;
-  role: User['role'] | 'all';
+  role: ('ADMIN' | 'MANAGER' | 'SERVICE' | 'LAB_USER' | 'USER') | 'all';
   status: 'all' | 'active' | 'inactive';
 }
 

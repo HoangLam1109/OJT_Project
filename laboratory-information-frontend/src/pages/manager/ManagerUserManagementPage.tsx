@@ -18,7 +18,7 @@ import { useTranslation } from 'react-i18next';
 
 export function ManagerUserManagementPage() {
   // Fetch all users for filtering
-  const { allUsers, isLoadingAll } = useAllUsers();
+  const { allUsers, isLoadingAll, refreshAllUsers } = useAllUsers();
   
   // Custom hooks
   const { 
@@ -58,8 +58,8 @@ export function ManagerUserManagementPage() {
     
     if (success) {
       closeModal();
-      // Reload the page to refresh all users
-      window.location.reload();
+      // Refresh users data without reloading the page
+      await refreshAllUsers();
     }
   };
 
@@ -68,8 +68,8 @@ export function ManagerUserManagementPage() {
       const success = await deleteUser(deleteUserState.id);
       if (success) {
         setDeleteUserState(null);
-        // Reload the page to refresh all users
-        window.location.reload();
+        // Refresh users data without reloading the page
+        await refreshAllUsers();
       }
     }
   };
@@ -77,8 +77,8 @@ export function ManagerUserManagementPage() {
   const handleToggleLock = async (user: ManagerUser) => {
     const success = await toggleUserLock(user.id, user.active);
     if (success) {
-      // Reload the page to refresh all users
-      window.location.reload();
+      // Refresh users data without reloading the page
+      await refreshAllUsers();
     }
   };
 

@@ -41,10 +41,7 @@ export function useUserManagement() {
         total: paginationData.total || 0,
       });
       
-      if (!hasLoadedRef.current) {
-        toast.success('Tải danh sách người dùng thành công');
-        hasLoadedRef.current = true;
-      }
+      hasLoadedRef.current = true;
     } catch (error) {
       console.error('Error loading users:', error);
       toast.error('Không thể tải danh sách người dùng');
@@ -111,7 +108,6 @@ export function useUserManagement() {
   const createUser = useCallback(async (data: UserFormData): Promise<boolean> => {
     try {
       await userService.createUser(data);
-      await refreshUsers();
       toast.success('Tạo người dùng thành công');
       return true;
     } catch (error) {
@@ -120,12 +116,11 @@ export function useUserManagement() {
       toast.error(errorMessage);
       return false;
     }
-  }, [refreshUsers]);
+  }, []);
 
   const updateUser = useCallback(async (userId: string, data: UserFormData): Promise<boolean> => {
     try {
       await userService.updateUser(userId, data);
-      await refreshUsers();
       toast.success('Cập nhật người dùng thành công');
       return true;
     } catch (error) {
@@ -134,12 +129,11 @@ export function useUserManagement() {
       toast.error(errorMessage);
       return false;
     }
-  }, [refreshUsers]);
+  }, []);
 
   const deleteUser = useCallback(async (userId: string): Promise<boolean> => {
     try {
       await userService.deleteUser(userId);
-      await refreshUsers();
       toast.success('Xóa người dùng thành công');
       return true;
     } catch (error) {
@@ -148,12 +142,11 @@ export function useUserManagement() {
       toast.error(errorMessage);
       return false;
     }
-  }, [refreshUsers]);
+  }, []);
 
   const toggleUserLock = useCallback(async (userId: string, currentStatus: boolean): Promise<boolean> => {
     try {
       await userService.toggleUserStatus(userId, !currentStatus);
-      await refreshUsers();
       toast.success(currentStatus ? 'Khóa tài khoản thành công' : 'Mở khóa tài khoản thành công');
       return true;
     } catch (error) {
@@ -162,10 +155,11 @@ export function useUserManagement() {
       toast.error(errorMessage);
       return false;
     }
-  }, [refreshUsers]);
+  }, []);
 
   useEffect(() => {
     loadFirstPage();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return {

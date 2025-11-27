@@ -40,8 +40,8 @@ export interface PersonalInfoFieldsProps {
 export interface AdditionalInfoFieldsProps {
   phone: string;
   setPhone: (value: string) => void;
-  gender: string;
-  setGender: (value: string) => void;
+  gender: 'Male' | 'Female' | 'Other';
+  setGender: (value: 'Male' | 'Female' | 'Other') => void;
   dob: string;
   setDob: (value: string) => void;
   idNumber: string;
@@ -60,7 +60,7 @@ export interface RegisterRequest {
   email: string;
   fullName: string;
   identityNumber: string;
-  gender: string;
+  gender: 'Male' | 'Female' | 'Other';
   age: number;
   dateOfBirth: string;
   password: string;
