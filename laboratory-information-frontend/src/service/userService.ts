@@ -17,6 +17,7 @@ interface BackendUser {
   createdAt: string;
   updatedAt: string;
   avatar?: string;
+  lastLogin?: string;
 }
 
 interface PaginationParams {
@@ -58,7 +59,7 @@ const transformBackendUser = (backendUser: BackendUser): ManagerUser => {
       ? (backendUser.role as ManagerUser['role'])
       : ['USER'],
     active: backendUser.isActive ?? true,
-    lastLogin: new Date().toISOString(), 
+    lastLogin: backendUser.lastLogin || '', 
     permissions: [], 
     phone_number: backendUser.phoneNumber || '',
     identify_number: backendUser.identityNumber || '',
@@ -101,7 +102,6 @@ const transformFrontendUser = (frontendUser: UserFormData) => {
     phoneNumber: frontendUser.phone_number,
     address: frontendUser.address,
     avatar: frontendUser.avatar,
-    // isActive: frontendUser.active,
     role: Array.isArray(frontendUser.role) && frontendUser.role.length > 0 
       ? frontendUser.role 
       : ['USER'],
@@ -277,19 +277,10 @@ export class UserService {
 
   async toggleUserStatus(userId: string, isActive: boolean): Promise<ManagerUser> {
     try {
-      const userData: UserFormData = {
-        fullName: '',
-        email: '', 
-        role: ['USER'], 
-        phone_number: '',
-        identify_number: '',
-        gender: 'Male' as 'Male' | 'Female' | 'Other',
-        date_of_birth: '',
-        address: '',
-        active: isActive,
+      const backendData = {
+        isActive: isActive,
       };
       
-      const backendData = transformFrontendUser(userData);
       const response = await apiService.put<BackendUser>(`/user/update/${userId}`, backendData);
       return transformBackendUser(response);
     } catch (error) {

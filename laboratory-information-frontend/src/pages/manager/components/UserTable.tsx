@@ -42,16 +42,6 @@ export function UserTable({ users, onView, onEdit, onDelete, onToggleLock, onFir
     return labels[role as keyof typeof labels] || role;
   };
 
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return 'Chưa có';
-    return new Date(dateString).toLocaleString('vi-VN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
 
   if (users.length === 0) {
     return (
@@ -66,8 +56,6 @@ export function UserTable({ users, onView, onEdit, onDelete, onToggleLock, onFir
       </div>
     );
   }
-
-  // Mobile Card View
   const MobileCardView = () => (
     <div className="space-y-3 sm:hidden">
       {users.map((user) => (
@@ -208,10 +196,7 @@ export function UserTable({ users, onView, onEdit, onDelete, onToggleLock, onFir
                   <th className="text-left py-2.5 sm:py-3 px-3 sm:px-4 font-semibold text-xs sm:text-sm text-gray-700 whitespace-nowrap">
                     {t('manager.status')}
                   </th>
-                  <th className="text-left py-2.5 sm:py-3 px-3 sm:px-4 font-semibold text-xs sm:text-sm text-gray-700 whitespace-nowrap hidden lg:table-cell">
-                    {t('manager.lastLogin')}
-                  </th>
-                  <th className="text-right py-2.5 sm:py-3 px-3 sm:px-4 font-semibold text-xs sm:text-sm text-gray-700 whitespace-nowrap">
+                  <th className="text-center py-2.5 sm:py-3 px-3 sm:px-4 font-semibold text-xs sm:text-sm text-gray-700 whitespace-nowrap">
                     {t('manager.actions')}
                   </th>
                 </tr>
@@ -290,9 +275,6 @@ export function UserTable({ users, onView, onEdit, onDelete, onToggleLock, onFir
                         />
                         <span className="whitespace-nowrap">{user.active ? t('manager.active') : t('manager.inactive')}</span>
                       </span>
-                    </td>
-                    <td className="py-2.5 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm text-gray-600 hidden lg:table-cell">
-                      <div className="whitespace-nowrap">{formatDate(user.lastLogin)}</div>
                     </td>
                     <td className="py-2.5 sm:py-3 px-3 sm:px-4">
                       <div className="flex items-center justify-end gap-1">

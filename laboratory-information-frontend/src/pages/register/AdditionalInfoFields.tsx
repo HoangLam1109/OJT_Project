@@ -24,12 +24,12 @@ export function AdditionalInfoFields({ phone, setPhone, gender, setGender, dob, 
 					<select
 						className={`h-11 w-full border border-gray-200 rounded-lg px-3 pl-10 focus:outline-none focus:border-blue-400 bg-white transition-colors ${gender ? 'text-gray-900' : 'text-gray-400'}`}
 						value={gender}
-						onChange={e => setGender(e.target.value)}
+						onChange={e => setGender(e.target.value as 'Male' | 'Female' | 'Other')}
 					>
 						<option value="" disabled>{t('register.selectGender')}</option>
-						<option value="male">{t('register.male')}</option>
-						<option value="female">{t('register.female')}</option>
-						<option value="other">{t('register.other')}</option>
+						<option value="Male">{t('register.male')}</option>
+						<option value="Female">{t('register.female')}</option>
+						<option value="Other">{t('register.other')}</option>
 					</select>
 				</div>
 			</div>
