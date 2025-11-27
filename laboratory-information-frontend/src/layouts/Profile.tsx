@@ -165,7 +165,7 @@ export default function Profile({ onUpdateProfile }: ProfileProps) {
       {/* Header Section with Cover-like feel */}
       <div className="relative mb-8">
         <div className="h-48 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-t-3xl shadow-lg"></div>
-        <div className="absolute -bottom-16 left-10 flex items-end">
+        <div className="absolute -bottom-23 left-10 flex items-end">
           <div className="relative">
             <input
               type="file"

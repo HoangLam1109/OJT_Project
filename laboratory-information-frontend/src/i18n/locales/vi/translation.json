@@ -880,6 +880,7 @@
       "depleted": "Hết hàng"
     },
     "table": {
+      "code": "Mã thuốc thử",
       "name": "Tên Thuốc Thử",
       "expiryDate": "Hạn Dùng",
       "quantity": "Số Lượng",
@@ -1082,7 +1083,11 @@
       "instrumentDeleted": "Xóa thiết bị",
       "userUpdated": "Cập nhật người dùng thành công!",
       "patientRecordUpdated": "Cập nhật hồ sơ bệnh nhân {{details}}",
-      "patientRecordSoftDeletedByUser": "Hồ sơ bệnh nhân bị xóa mềm bởi ID người dùng"
+      "patientRecordSoftDeletedByUser": "Hồ sơ bệnh nhân bị xóa mềm bởi ID người dùng",
+      "reagentUpdated": "Cập nhật thuốc thử {{details}}",
+      "reagentCreated": "Tạo thuốc thử",
+      "reagentDeleted": "Xóa thuốc thử",
+      "medicalRecordUpdated": "Cập nhật hồ sơ bệnh án: {{details}}"
     },
     "iam": {
       "createdUser": "Thông tin người dùng được tạo",
@@ -1128,7 +1133,8 @@
       "testItemName": "Tên chỉ số xét nghiệm",
       "status": "Trạng thái",
       "dueDate": "Hạn hoàn thành",
-      "notes": "Ghi chú"
+      "notes": "Ghi chú",
+      "quantity": "Số lượng"
     },
     "warehouse": {
       "createdInstrument": "Thông tin thiết bị được tạo",

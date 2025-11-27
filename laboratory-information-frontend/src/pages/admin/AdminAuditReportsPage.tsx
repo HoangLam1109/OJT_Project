@@ -142,6 +142,16 @@ export function AdminAuditReportsPage() {
       const details = message.replace('Patient record updated', '').trim();
       return t('eventLog.messages.patientRecordUpdated', { details });
     }
+    if (message.includes('Reagent updated')) {
+      const details = message.replace('Reagent updated', '').trim();
+      return t('eventLog.messages.reagentUpdated', { details });
+    }
+    if (message.includes('Reagent created')) return t('eventLog.messages.reagentCreated');
+    if (message.includes('Reagent deleted')) return t('eventLog.messages.reagentDeleted');
+    if (message.includes('Medical record updated')) {
+      const details = message.replace('Medical record updated', '').replace(/^:/, '').trim();
+      return t('eventLog.messages.medicalRecordUpdated', { details });
+    }
 
     return message;
   };
