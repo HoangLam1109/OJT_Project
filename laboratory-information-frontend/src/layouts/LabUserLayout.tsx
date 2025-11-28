@@ -1,6 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Sidebar } from '../components/common/Sidebar';
 import { TopHeader } from '../components/common/TopHeader';
+import { MobileHeader } from '../components/common/MobileHeader';
 import type { NavigationItem } from '../types/Layout.types';
 import type { User } from '../types/User';
 import { useTranslation } from 'react-i18next';
@@ -29,19 +30,19 @@ const LabUserLayoutContent: React.FC<LabUserLayoutProps & { sidebarCollapsed: bo
   const { unreadCount } = useMessageNotificationContext();
 
   const [profile, setProfile] = useState<UserProfileData | null>(null);
-  
-  useEffect(() => {
-    loadProfile();
-  }, []);
-
-  const loadProfile = async () => {
+  const loadProfile = useCallback(async () => {
     try {
-      const data = await profileService.getProfile();
+      const data = await profileService.getProfile(currentUser.id);
       setProfile(data);
     } catch (e) {
       console.error("Failed to load profile", e);
     }
-  };
+  }, [currentUser.id]);
+  useEffect(() => {
+    loadProfile();
+  }, [loadProfile]);
+
+  
 
   const navigationItems: NavigationItem[] = useMemo(() => {
     const baseItems: NavigationItem[] = [
@@ -150,6 +151,10 @@ const LabUserLayoutContent: React.FC<LabUserLayoutProps & { sidebarCollapsed: bo
         onLogout={onLogout}
       />
       <div className={`flex-1 flex flex-col overflow-hidden ${sidebarCollapsed ? 'ml-0 md:ml-16 lg:ml-16' : 'ml-0 md:ml-64 lg:ml-64'}`}>
+        <MobileHeader 
+          onMenuClick={() => setSidebarCollapsed(false)} 
+          navigationItems={navigationItems}
+        />
         <TopHeader />
         <main className="flex-1 overflow-y-auto bg-gray-50 p-3 xs:p-4 sm:p-5 md:p-6">{children}</main>
       </div>
