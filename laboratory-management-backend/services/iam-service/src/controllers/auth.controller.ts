@@ -166,8 +166,8 @@ const loginUser = async (
     }
 
     const latestPwEntry = await userService.getLatestPasswordHistory(user._id);
-    const expired = user.lastPasswordChange
-      ? Date.now() - user.lastPasswordChange.getTime() > 90 * 86400000
+    const expired = user.lastPasswordChange || user.lastResetPassword
+      ? Date.now() - (user.lastPasswordChange?.getTime() ?? user.lastResetPassword?.getTime() ?? 0) > 90 * 86400000
       : !latestPwEntry;
     if (expired) throw new AppError(401, "Password expired");
 

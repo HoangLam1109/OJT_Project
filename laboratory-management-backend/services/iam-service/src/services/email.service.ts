@@ -19,13 +19,12 @@ export class EmailService {
       if (!user) throw new AppError(400, "User with given email doesn't exist");
 
       const dedicatedToken = jwt.sign(
-        { userId: user._id, changedDate: user.lastPasswordChange?.getTime() ?? 0 },
+        { userId: user._id, changedDate: user.lastResetPassword?.getTime() ?? 0 },
         process.env.JWT_SECRET_KEY as string,
         { expiresIn: process.env.JWT_EXPIRY } as SignOptions
       );
 
       await transporter.verify();
-      console.log("Email service is ready.");
 
       const link = `${process.env.WEB_URL}/reset-password?token=${dedicatedToken}`;
       await transporter.sendMail({
@@ -80,7 +79,7 @@ export class EmailService {
       if (!userFound) throw new AppError(400, "User ID doesn't exist");
 
       if (
-        (userFound.lastPasswordChange?.getTime() ?? 0) !== decoded.changedDate
+        (userFound.lastResetPassword?.getTime() ?? 0) !== decoded.changedDate
       ) {
         throw new AppError(400, "Password already changed with current link");
       }
