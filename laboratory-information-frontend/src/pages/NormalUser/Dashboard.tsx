@@ -2,11 +2,10 @@ import React from 'react';
 import { useAuthContext } from '../../hooks/useAuthContext';
 import { Card, CardContent } from '../../components/common/card';
 import { ClipboardList, Clock, CheckCircle } from 'lucide-react';
-import { mockTestResults } from './type/TestResult';
+import { mockTestResults } from '@/pages/normaluser/type/TestResult';
 const Dashboard: React.FC = () => {
   const { user } = useAuthContext();
 
-  // 🧮 Tính toán dữ liệu thống kê từ mock data
   const total = mockTestResults.length;
   const completed = mockTestResults.filter(t => t.status === 'hoàn thành').length;
   const pending = mockTestResults.filter(t => t.status === 'đang xử lý').length;

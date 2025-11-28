@@ -10,7 +10,7 @@ import {
   Footer,
   HomeHeader,
 } from '../pages/home';
-import ChatBox from '../pages/home/ChatBox';
+
 
 
 export function HomeLayout({ onShowLogin, onShowRegister }: LoginAndRegisterType) {
@@ -78,7 +78,7 @@ export function HomeLayout({ onShowLogin, onShowRegister }: LoginAndRegisterType
           <Footer />
         </div>
       </div>
-      <ChatBox />
+
     </div>
   );
 }

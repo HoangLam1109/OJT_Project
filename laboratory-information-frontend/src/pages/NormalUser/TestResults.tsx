@@ -142,7 +142,6 @@ const TestResults: React.FC = () => {
       setTotalPages(response.pagination.totalPages);
       
     } catch (error) {
-      toast.error(t('testResult.cannotLoadResults'));
       console.error('Error loading test results:', error);
     } finally {
       setLoading(false);
