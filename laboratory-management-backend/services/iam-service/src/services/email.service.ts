@@ -7,6 +7,9 @@ import { logEvent } from "../utils/logging.util.js";
 
 const userSerivce = new UserService();
 
+const recentResetRequests = new Map<string, number>();
+const RESET_REQUEST_COOLDOWN = 5000;
+
 export class EmailService {
   async requestPasswordReset(email: string): Promise<void> {
     try {
@@ -16,13 +19,12 @@ export class EmailService {
       if (!user) throw new AppError(400, "User with given email doesn't exist");
 
       const dedicatedToken = jwt.sign(
-        { userId: user._id, changedDate: user.lastPasswordChange?.getTime() ?? 0 },
+        { userId: user._id, changedDate: user.lastResetPassword?.getTime() ?? 0 },
         process.env.JWT_SECRET_KEY as string,
         { expiresIn: process.env.JWT_EXPIRY } as SignOptions
       );
 
       await transporter.verify();
-      console.log("Email service is ready.");
 
       const link = `${process.env.WEB_URL}/reset-password?token=${dedicatedToken}`;
       await transporter.sendMail({
@@ -57,6 +59,14 @@ export class EmailService {
     try {
       if (!token) throw new AppError(400, "Dedicated token is required");
 
+      const now = Date.now();
+      const lastRequestTime = recentResetRequests.get(token);
+      if (lastRequestTime && (now - lastRequestTime) < RESET_REQUEST_COOLDOWN) {
+        console.log("Duplicate password reset request detected, ignoring");
+        return;
+      }
+      recentResetRequests.set(token, now);
+
       const decoded = jwt.verify(
         token,
         process.env.JWT_SECRET_KEY as string
@@ -69,7 +79,7 @@ export class EmailService {
       if (!userFound) throw new AppError(400, "User ID doesn't exist");
 
       if (
-        (userFound.lastPasswordChange?.getTime() ?? 0) !== decoded.changedDate
+        (userFound.lastResetPassword?.getTime() ?? 0) !== decoded.changedDate
       ) {
         throw new AppError(400, "Password already changed with current link");
       }
@@ -78,6 +88,8 @@ export class EmailService {
         password: password,
         lastPasswordChange: new Date(),
       });
+
+      recentResetRequests.delete(token);
 
       await logEvent({
         eventCode: "E_00024",

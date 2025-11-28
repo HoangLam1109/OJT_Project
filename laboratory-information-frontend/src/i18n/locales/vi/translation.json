@@ -82,7 +82,8 @@
     "confirmPassword": "Xác nhận mật khẩu",
     "confirmPasswordPlaceholder": "Nhập lại mật khẩu mới",
     "passwordRequired": "Vui lòng nhập mật khẩu",
-    "passwordTooShort": "Mật khẩu phải có ít nhất 6 ký tự",
+    "passwordTooShort": "Mật khẩu phải có ít nhất 8 ký tự",
+    "passwordPattern": "Mật khẩu phải chứa ít nhất một chữ hoa, một chữ thường và một số",
     "passwordMismatch": "Mật khẩu không khớp",
     "noToken": "Link đặt lại mật khẩu không hợp lệ hoặc đã hết hạn",
     "passwordSameAsOld": "Mật khẩu mới phải khác với mật khẩu hiện tại",
@@ -91,7 +92,7 @@
     "resetPassword": "Đặt lại mật khẩu",
     "success": "Đổi mật khẩu thành công!",
     "backToLogin": "Quay lại Đăng nhập",
-    "requirement1": "Ít nhất 6 ký tự",
+    "requirement1": "Ít nhất 8 ký tự",
     "requirement2": "Hai mật khẩu phải trùng khớp",
     "requirement3": "Sử dụng mật khẩu mạnh"
   },

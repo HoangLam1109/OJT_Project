@@ -26,6 +26,7 @@ export interface IUser extends Document {
 
   lastLogin?: Date
   lastPasswordChange?: Date
+  lastResetPassword?:Date
   failedLoginAttempts?: number
   lastFailedAt?: Date
   lockedUntil?: Date
@@ -165,7 +166,9 @@ const userSchema = new mongoose.Schema<IUser>(
     lockedUntil: {
       type: Date,
     },
-
+    lastResetPassword: {
+      type: Date,
+    },
   },
   {
     _id: false,
