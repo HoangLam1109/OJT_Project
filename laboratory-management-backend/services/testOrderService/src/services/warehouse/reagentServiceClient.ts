@@ -65,14 +65,26 @@ class ReagentServiceClient {
    // 🔹 Cập nhật reagent (ví dụ: quantity_current, status, ...)
   async updateReagent(
     reagentId: string,
-    updateData: Partial<Reagent>
+    updateData: Partial<Reagent>,
+    operatorInfo?: {
+      userId?: string;
+      email?: string;
+      name?: string;
+      avatar?: string;
+    }
   ): Promise<Reagent | null> {
     try {
       const url = `${this.baseUrl}/api/warehouse/reagents/${reagentId}`;
-      const headers = {
+      const headers: Record<string, string> = {
         "Content-Type": "application/json",
         "X-Internal-API-Key": this.internalApiKey,
       };
+      if (operatorInfo) {
+        if (operatorInfo.userId) headers["x-user-id"] = operatorInfo.userId;
+        if (operatorInfo.email) headers["x-user-email"] = operatorInfo.email;
+        if (operatorInfo.name) headers["x-user-name"] = operatorInfo.name;
+        if (operatorInfo.avatar) headers["x-user-avatar"] = operatorInfo.avatar;
+      }
 
       const res = await HttpClient.put<{ success: boolean; data: Reagent }>(
         url,
