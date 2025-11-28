@@ -28,7 +28,7 @@ export class ProfileService {
    */
   async getProfile(userId: string): Promise<UserProfileData> {
     try {
-      const response = await apiService.get<{ user: UserProfileData }>(`/user/${userId}`);
+      const response = await apiService.get<{ user: UserProfileData }>(`/user/profile/${userId}`);
       if (response && response.user) {
         return response.user;
       }
