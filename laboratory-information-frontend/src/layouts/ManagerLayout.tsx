@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Users, User as UserIcon, Wrench } from 'lucide-react';
 import { Sidebar } from '../components/common/Sidebar';
 import { TopHeader } from '../components/common/TopHeader';
+import { MobileHeader } from '../components/common/MobileHeader';
 import type { NavigationItem } from '../types/Layout.types';
 import type { User } from '../types/User';
 import { useTranslation } from 'react-i18next';
@@ -32,19 +33,19 @@ export function ManagerLayout({
   ];
 
   const [profile, setProfile] = useState<UserProfileData | null>(null);
-    
+  const loadProfile = useCallback(async () => {
+    try {
+      const data = await profileService.getProfile(currentUser.id);
+      setProfile(data);
+    } catch (e) {
+      console.error("Failed to load profile", e);
+    }
+  }, [currentUser.id]);
     useEffect(() => {
       loadProfile();
-    }, []);
+    }, [loadProfile]);
   
-    const loadProfile = async () => {
-      try {
-        const data = await profileService.getProfile();
-        setProfile(data);
-      } catch (e) {
-        console.error("Failed to load profile", e);
-      }
-    };
+    
   return (
     <div className="min-h-screen bg-gray-50 flex">
       <Sidebar
@@ -60,9 +61,13 @@ export function ManagerLayout({
       />
       <div className={`flex-1 flex flex-col transition-all duration-300 ${
         sidebarCollapsed 
-          ? 'ml-0 md:ml-16 lg:ml-16' 
-          : 'ml-0 md:ml-64 lg:ml-64'
+          ? ' md:ml-16 lg:ml-16' 
+          : ' md:ml-64 lg:ml-64'
       }`}>
+        <MobileHeader 
+          onMenuClick={() => setSidebarCollapsed(false)} 
+          navigationItems={navigationItems}
+        />
         <TopHeader/>
         <main className="flex-1 p-2 xs:p-3 sm:p-4 md:p-5 lg:p-6 bg-gray-50 overflow-y-auto">{children}</main>
       </div>

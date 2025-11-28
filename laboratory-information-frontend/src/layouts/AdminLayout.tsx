@@ -1,9 +1,10 @@
 
 import type { AdminLayoutProps } from '../pages/admin/types/AdminTypes';
 import { Sidebar } from '../components/common/Sidebar';
-import { useEffect, useState } from 'react';
-import { Users, FileText, Settings , UserCheck } from 'lucide-react';
+import { useEffect, useState,useCallback   } from 'react';
+import {  Users, FileText, Settings , UserCheck } from 'lucide-react';
 import { TopHeader } from '../components/common/TopHeader';
+import { MobileHeader } from '../components/common/MobileHeader';
 import type { NavigationItem } from '../types/Layout.types';
 import { useTranslation } from 'react-i18next';
 import { profileService } from '@/service/profileService';
@@ -14,19 +15,19 @@ export function AdminLayout({ children, currentUser, onLogout, currentPage, onNa
   const { t } = useTranslation();
   
     const [profile, setProfile] = useState<UserProfileData | null>(null);
-    
-    useEffect(() => {
-      loadProfile();
-    }, []);
-  
-    const loadProfile = async () => {
+    const loadProfile = useCallback(async () => {
       try {
         const data = await profileService.getProfile(currentUser.id);
         setProfile(data);
       } catch (e) {
         console.error("Failed to load profile", e);
       }
-    };
+    }, [currentUser.id]);
+    useEffect(() => {
+      loadProfile();
+    }, [loadProfile]);
+  
+    
 
   const navigationItems: NavigationItem[] = [
     { id: 'user-management', label: t('sidebar.userManagement'), icon: Users },
@@ -89,6 +90,10 @@ export function AdminLayout({ children, currentUser, onLogout, currentPage, onNa
       <div className={`flex-1 flex flex-col transition-all duration-300 ${
         sidebarCollapsed ? 'ml-0 md:ml-16 lg:ml-16' : 'ml-0 md:ml-64 lg:ml-64'
       }`}>
+        <MobileHeader 
+          onMenuClick={() => setSidebarCollapsed(false)} 
+          navigationItems={navigationItems}
+        />
         <TopHeader />
         <main className="flex-1 p-3 xs:p-4 sm:p-5 md:p-6 bg-gray-50 overflow-auto">{children}</main>
       </div>
