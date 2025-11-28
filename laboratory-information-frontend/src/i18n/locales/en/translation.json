@@ -984,9 +984,9 @@
     "updateProfileError": "Update failed. Please try again.",
     "notUpdated": "Not updated",
     "loadProfileError": "Unable to load profile information.",
-    "editProfile": "Edit Profile",
+    "edit": "Edit Profile",
     "cancel": "Cancel",
-    "saveChanges": "Save Changes",
+    "save": "Save Changes",
     "statusAndContact": "Status & Contact",
     "status": "Status",
     "active": "Active",
@@ -1003,7 +1003,8 @@
     "other": "Other",
     "age": "Age",
     "identityNumber": "ID Number",
-    "address": "Address"
+    "address": "Address",
+    "email":"Email"
   },
   "eventLog": {
     "title": "Audit Logs",
