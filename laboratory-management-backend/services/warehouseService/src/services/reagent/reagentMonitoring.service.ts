@@ -13,6 +13,7 @@ interface ReagentMonitoringPayload {
   operatorEmail?: string | null;
   operatorName?: string | null;
   operatorRole?: string | null;
+  operatorAvatar?: string | null;
   oldValues?: Record<string, unknown> | null;
   newValues?: Record<string, unknown> | null;
 }
@@ -25,17 +26,43 @@ class ReagentMonitoringService {
     return undefined;
   }
 
+  private getDifferences(oldData: any, newData: any) {
+    const oldDiff: any = {};
+    const newDiff: any = {};
+
+    const allKeys = new Set([...Object.keys(oldData || {}), ...Object.keys(newData || {})]);
+
+    for (const key of allKeys) {
+      // Bỏ qua các trường metadata thường xuyên thay đổi hoặc không quan trọng
+      if (['updated_at', 'updated_by', '__v'].includes(key)) continue;
+
+      const oldVal = oldData?.[key];
+      const newVal = newData?.[key];
+
+      // So sánh deep bằng JSON.stringify
+      if (JSON.stringify(oldVal) !== JSON.stringify(newVal)) {
+        oldDiff[key] = oldVal;
+        newDiff[key] = newVal;
+      }
+    }
+    return { oldDiff, newDiff };
+  }
+
   async recordCreated(payload: ReagentMonitoringPayload): Promise<void> {
     await this.sendEvent({
       ...payload,
+      oldValues: null,
       eventCode: MonitoringEventCodes.REAGENT_CREATED,
       action: MonitoringEventActions.CREATE,
     });
   }
 
   async recordUpdated(payload: ReagentMonitoringPayload): Promise<void> {
+    const { oldDiff, newDiff } = this.getDifferences(payload.oldValues, payload.newValues);
     await this.sendEvent({
       ...payload,
+      oldValues: oldDiff,
+      newValues: newDiff,
       eventCode: MonitoringEventCodes.REAGENT_UPDATED,
       action: MonitoringEventActions.UPDATE,
     });
@@ -44,6 +71,7 @@ class ReagentMonitoringService {
   async recordDeleted(payload: ReagentMonitoringPayload): Promise<void> {
     await this.sendEvent({
       ...payload,
+      newValues: null,
       eventCode: MonitoringEventCodes.REAGENT_DELETED,
       action: MonitoringEventActions.DELETE,
     });
@@ -56,6 +84,7 @@ class ReagentMonitoringService {
     const operatorEmail = this.normalize(payload.operatorEmail);
     const operatorName = this.normalize(payload.operatorName);
     const operatorRole = this.normalize(payload.operatorRole);
+    const operatorAvatar = this.normalize(payload.operatorAvatar);
 
     const monitoringPayload: MonitoringEventLogPayload = {
       event_code: payload.eventCode,
@@ -79,6 +108,10 @@ class ReagentMonitoringService {
 
     if (operatorRole) {
       monitoringPayload.operator_role = operatorRole;
+    }
+
+    if (operatorAvatar) {
+      monitoringPayload.operator_avatar = operatorAvatar;
     }
 
     try {

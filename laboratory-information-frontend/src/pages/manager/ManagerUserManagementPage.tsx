@@ -18,7 +18,7 @@ import { useTranslation } from 'react-i18next';
 
 export function ManagerUserManagementPage() {
   // Fetch all users for filtering
-  const { allUsers, isLoadingAll } = useAllUsers();
+  const { allUsers, isLoadingAll, refreshAllUsers } = useAllUsers();
   
   // Custom hooks
   const { 
@@ -58,8 +58,8 @@ export function ManagerUserManagementPage() {
     
     if (success) {
       closeModal();
-      // Reload the page to refresh all users
-      window.location.reload();
+      // Refresh users data without reloading the page
+      await refreshAllUsers();
     }
   };
 
@@ -68,8 +68,8 @@ export function ManagerUserManagementPage() {
       const success = await deleteUser(deleteUserState.id);
       if (success) {
         setDeleteUserState(null);
-        // Reload the page to refresh all users
-        window.location.reload();
+        // Refresh users data without reloading the page
+        await refreshAllUsers();
       }
     }
   };
@@ -77,8 +77,8 @@ export function ManagerUserManagementPage() {
   const handleToggleLock = async (user: ManagerUser) => {
     const success = await toggleUserLock(user.id, user.active);
     if (success) {
-      // Reload the page to refresh all users
-      window.location.reload();
+      // Refresh users data without reloading the page
+      await refreshAllUsers();
     }
   };
 
@@ -103,49 +103,49 @@ export function ManagerUserManagementPage() {
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="space-y-3 sm:space-y-4 md:space-y-6">
       {isLoadingAll ? (
       // 🔹 Hiển thị Skeleton cho toàn trang
-      <div className="space-y-4 sm:space-y-6">
+      <div className="space-y-3 sm:space-y-4 md:space-y-6">
         {/* Header Skeleton */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
           <div className="space-y-2">
-            <Skeleton className="h-7 sm:h-8 w-48" />
-            <Skeleton className="h-3 sm:h-4 w-64" />
+            <Skeleton className="h-6 sm:h-7 md:h-8 w-40 sm:w-48" />
+            <Skeleton className="h-3 sm:h-4 w-56 sm:w-64" />
           </div>
-          <Skeleton className="h-10 w-full sm:w-32 rounded-md" />
+          <Skeleton className="h-9 sm:h-10 w-full sm:w-32 rounded-md" />
         </div>
 
         {/* Statistics Skeleton */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {[...Array(3)].map((_, i) => (
-            <Skeleton key={i} className="h-24 w-full rounded-xl" />
+            <Skeleton key={i} className="h-20 sm:h-24 w-full rounded-xl" />
           ))}
         </div>
 
         {/* Filters Skeleton */}
         <Card>
-          <CardContent className="p-4 space-y-3">
-            <Skeleton className="h-6 w-1/3" />
-            <Skeleton className="h-10 w-full" />
+          <CardContent className="p-3 sm:p-4 space-y-2 sm:space-y-3">
+            <Skeleton className="h-5 sm:h-6 w-1/3" />
+            <Skeleton className="h-9 sm:h-10 w-full" />
           </CardContent>
         </Card>
 
         {/* Table Skeleton */}
         <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-1/4" />
-            <Skeleton className="h-4 w-1/3" />
+          <CardHeader className="p-3 sm:p-4 md:p-6">
+            <Skeleton className="h-5 sm:h-6 w-1/4" />
+            <Skeleton className="h-3 sm:h-4 w-1/3 mt-2" />
           </CardHeader>
-          <CardContent>
-            <div className="flex flex-col items-start justify-start space-y-4 w-full">
+          <CardContent className="p-3 sm:p-4 md:p-6">
+            <div className="flex flex-col items-start justify-start space-y-3 sm:space-y-4 w-full">
               {[...Array(7)].map((_, i) => (
-                <div key={i} className="flex items-center w-full gap-6 px-4">
-                  <Skeleton className="h-10 w-10 rounded-full" />
-                  <Skeleton className="h-5 w-[30%]" />
-                  <Skeleton className="h-4 w-[20%]" />
+                <div key={i} className="flex items-center w-full gap-3 sm:gap-6 px-2 sm:px-4">
+                  <Skeleton className="h-8 w-8 sm:h-10 sm:w-10 rounded-full" />
+                  <Skeleton className="h-4 sm:h-5 w-[30%]" />
+                  <Skeleton className="h-4 w-[20%] hidden sm:block" />
                   <Skeleton className="h-4 w-[15%]" />
-                  <Skeleton className="h-4 w-[10%]" />
+                  <Skeleton className="h-4 w-[10%] hidden sm:block" />
                   <Skeleton className="h-4 w-[10%]" />
                 </div>
               ))}
@@ -207,18 +207,18 @@ interface PageHeaderProps {
 function PageHeader({ onCreate }: PageHeaderProps) {
   const { t } = useTranslation();
   return (
-    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+      <div className="min-w-0 flex-1">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 break-words">
           {t('manager.userManagement')}
         </h1>
-        <p className="text-sm sm:text-base text-gray-600 mt-1">
+        <p className="text-xs sm:text-sm md:text-base text-gray-600 mt-1 break-words">
           {t('manager.userManagementDescription')}
         </p>
       </div>
-      <div className="flex items-center gap-3 w-full sm:w-auto">
-        <Button onClick={onCreate} className="w-full sm:w-auto">
-          <Plus className="w-4 h-4 mr-2" />
+      <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
+        <Button onClick={onCreate} className="w-full sm:w-auto text-xs sm:text-sm md:text-base">
+          <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
           {t('manager.createUser')}
         </Button>
       </div>
@@ -262,13 +262,13 @@ function UsersTableCard({
   const { t } = useTranslation();
   return (
     <Card>
-      <CardHeader className="p-4 sm:p-6">
-        <CardTitle className="text-lg sm:text-xl">{t('manager.userList')}</CardTitle>
-        <CardDescription className="text-xs sm:text-sm">
+      <CardHeader className="p-3 sm:p-4 md:p-6">
+        <CardTitle className="text-base sm:text-lg md:text-xl">{t('manager.userList')}</CardTitle>
+        <CardDescription className="text-xs sm:text-sm mt-1">
           {t('manager.display')} {users.length} / {totalUsers} {t('manager.users')} ({t('manager.page')} {currentPage}/{totalPages})
         </CardDescription>
       </CardHeader>
-      <CardContent className="p-4 sm:p-6">
+      <CardContent className="p-2 sm:p-3 md:p-4 lg:p-6">
         <UserTable
           users={users}
           onView={onView}

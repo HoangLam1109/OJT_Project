@@ -148,6 +148,34 @@ const resolveOperatorName = async (
   return null;
 };
 
+const fetchUserAvatar = async (userId: string | null | undefined): Promise<string | null> => {
+  if (!userId || typeof userId !== "string") {
+    return null;
+  }
+  try {
+    const user = await iamServiceClient.getUserById(userId);
+    if (user?.avatar) {
+      return user.avatar;
+    }
+  } catch (error) {
+    console.warn(`[PatientController] Unable to resolve avatar for user ${userId}`, error);
+  }
+  return null;
+};
+
+const resolveOperatorAvatar = async (
+  req: Request,
+  operatorId: string | undefined
+): Promise<string | null> => {
+  if (operatorId) {
+    const resolved = await fetchUserAvatar(operatorId);
+    if (resolved) {
+      return resolved;
+    }
+  }
+  return null;
+};
+
 const extractChangedFields = (payload: Record<string, unknown> | null | undefined): string[] => {
   if (!payload) {
     return [];
@@ -401,6 +429,7 @@ const createPatient = async (req: Request, res: Response): Promise<void> => {
   const fallbackActor = typeof user_id === "string" && user_id.length > 0 ? user_id : undefined;
   const operatorIdForMonitoring = resolveOperatorId(req, fallbackActor);
   const actorEmail = await resolvePerformedBy(req, operatorIdForMonitoring ?? fallbackActor ?? "system");
+  const operatorAvatar = await resolveOperatorAvatar(req, operatorIdForMonitoring);
 
     const patient = await patientService.createPatient({
       user_id,
@@ -412,11 +441,8 @@ const createPatient = async (req: Request, res: Response): Promise<void> => {
 
     const iamUserSnapshot = typeof user_id === "string" ? await iamServiceClient.getUserById(user_id) : null;
     const patientRecord = patient as unknown as Record<string, unknown>;
-    const newValues: Record<string, unknown> = { ...patientRecord };
     const createSnapshot = buildPatientSnapshot(iamUserSnapshot, patientRecord);
-    if (createSnapshot) {
-      newValues.snapshot = createSnapshot;
-    }
+    const newValues: Record<string, unknown> | null = createSnapshot ? { snapshot: createSnapshot } : null;
 
     await patientMonitoringService.recordPatientCreated({
       patientId: `${patient._id}`,
@@ -430,7 +456,7 @@ const createPatient = async (req: Request, res: Response): Promise<void> => {
         operatorIdForMonitoring ?? undefined,
         iamUserSnapshot?.fullName ?? undefined
       ),
-      operatorAvatar: iamUserSnapshot?.avatar ?? null,
+      operatorAvatar,
     });
 
     res.status(201).json({ message: "Patient created", patient });
@@ -535,6 +561,7 @@ const updatePatient = async (req: Request, res: Response): Promise<void> => {
       req,
       operatorIdForMonitoring ?? fallbackActor ?? "system"
     );
+    const operatorAvatar = await resolveOperatorAvatar(req, operatorIdForMonitoring);
 
     const existingRecord = existingPatient as unknown as Record<string, unknown>;
     const updatedRecord = updatedPatient as unknown as Record<string, unknown>;
@@ -554,7 +581,7 @@ const updatePatient = async (req: Request, res: Response): Promise<void> => {
           operatorIdForMonitoring ?? fallbackOperatorId,
           iamUserSnapshot?.fullName ?? undefined
         ),
-        operatorAvatar: iamUserSnapshot?.avatar ?? null,
+        operatorAvatar,
       });
     }
 
@@ -610,6 +637,7 @@ const deletePatient = async (req: Request, res: Response): Promise<void> => {
 
     const operatorIdForMonitoring = resolveOperatorId(req, fallbackOperatorId);
     const actorEmail = await resolvePerformedBy(req, operatorIdForMonitoring ?? fallbackActor ?? "system");
+    const operatorAvatar = await resolveOperatorAvatar(req, operatorIdForMonitoring);
 
     const existingRecord = existingPatient as unknown as Record<string, unknown>;
   const existingSnapshot = buildPatientSnapshot(iamUserSnapshot, existingRecord);
@@ -621,10 +649,8 @@ const deletePatient = async (req: Request, res: Response): Promise<void> => {
         return;
       }
 
-      const hardDeleteOldValues: Record<string, unknown> = { ...existingRecord };
-      if (existingSnapshot) {
-        hardDeleteOldValues.snapshot = existingSnapshot;
-      }
+      const hardDeleteOldValues = existingSnapshot ? { snapshot: existingSnapshot } : null;
+
       await patientMonitoringService.recordPatientDeleted({
         patientId: `${existingPatient._id}`,
         eventMessage: "Patient record hard deleted",
@@ -637,7 +663,7 @@ const deletePatient = async (req: Request, res: Response): Promise<void> => {
           operatorIdForMonitoring ?? fallbackOperatorId,
           iamUserSnapshot?.fullName ?? undefined
         ),
-        operatorAvatar: iamUserSnapshot?.avatar ?? null,
+        operatorAvatar,
       });
 
       console.log(`   ✅ Patient permanently deleted (hard delete): ${id}`);
@@ -652,16 +678,8 @@ const deletePatient = async (req: Request, res: Response): Promise<void> => {
     }
 
     const updatedRecord = patient as unknown as Record<string, unknown>;
-    const softDeleteFields = ["is_deleted", "is_active", "deleted_at"];
-    const softDeleteOldValues = pickFields(existingRecord, softDeleteFields);
-  const newSnapshot = buildPatientSnapshot(iamUserSnapshot, updatedRecord);
-    if (existingSnapshot) {
-      softDeleteOldValues.snapshot = existingSnapshot;
-    }
-    const softDeleteNewValues = pickFields(updatedRecord, softDeleteFields);
-    if (newSnapshot) {
-      softDeleteNewValues.snapshot = newSnapshot;
-    }
+    const softDeleteOldValues = existingSnapshot ? { snapshot: existingSnapshot } : null;
+
     await patientMonitoringService.recordPatientDeleted({
       patientId: `${patient._id}`,
       eventMessage: "Patient record soft deleted",
@@ -674,7 +692,7 @@ const deletePatient = async (req: Request, res: Response): Promise<void> => {
         operatorIdForMonitoring ?? fallbackOperatorId,
         iamUserSnapshot?.fullName ?? undefined
       ),
-      operatorAvatar: iamUserSnapshot?.avatar ?? null,
+      operatorAvatar,
     });
 
     console.log(`   ✅ Patient soft deleted: ${patient.patient_code}`);
@@ -745,6 +763,8 @@ const softDeletePatientByUserId = async (req: Request, res: Response): Promise<v
 
     const operatorIdForMonitoring = resolveOperatorId(req, fallbackOperatorId);
     const actorEmail = await resolvePerformedBy(req, operatorIdForMonitoring ?? fallbackActor ?? "system");
+    const operatorAvatar = await resolveOperatorAvatar(req, operatorIdForMonitoring);
+
     await patientMonitoringService.recordPatientDeleted({
       patientId: `${patient._id}`,
       eventMessage: "Patient record soft deleted by user ID",
@@ -757,7 +777,7 @@ const softDeletePatientByUserId = async (req: Request, res: Response): Promise<v
         operatorIdForMonitoring ?? fallbackOperatorId,
         iamUserSnapshot?.fullName ?? undefined
       ),
-      operatorAvatar: iamUserSnapshot?.avatar ?? null,
+      operatorAvatar,
     });
 
     console.log(`   ✅ Patient soft deleted: ${patient.patient_code} (User: ${userId})`);

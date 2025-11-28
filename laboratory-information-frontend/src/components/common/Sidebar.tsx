@@ -45,11 +45,12 @@ export function Sidebar({
       )}
 
       <div className={`bg-white shadow-lg transition-all duration-300 ${
-        // Mobile: overlay drawer, hidden when collapsed
+        // Mobile (max-width: 767px): overlay drawer, hidden when collapsed
+        // Tablet (768px+): visible sidebar
         sidebarCollapsed 
-          ? 'w-0 -translate-x-full overflow-hidden pointer-events-none opacity-0 md:opacity-100 md:pointer-events-auto md:translate-x-0 md:w-16 md:overflow-visible' 
-          : 'w-64 md:w-64 opacity-100'
-      } flex flex-col h-screen fixed left-0 top-0 z-40 md:z-40`}>
+          ? 'w-0 -translate-x-full overflow-hidden pointer-events-none opacity-0 md:opacity-100 md:pointer-events-auto md:translate-x-0 md:w-16 md:overflow-visible lg:w-16' 
+          : 'w-64 md:w-64 lg:w-64 opacity-100'
+      } flex flex-col h-screen fixed left-0 top-0 z-40 md:z-40 lg:z-40`}>
         
         {/* Header */}
         <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-200 flex-shrink-0">

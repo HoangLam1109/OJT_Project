@@ -36,7 +36,7 @@ import { ForgotPasswordSuccessPage } from "../pages/login/ForgotPasswordSuccessP
 import { ResetPasswordPage } from "../pages/login/ResetPasswordPage";
 import SelectInstrumentsPage from "../pages/LabUser/components/CreateTestOrder/SelectInstrumentsPage";
 import PatientDetailPage from "@/pages/admin/components/PatientComp/PatientDetailPage";
-import EventLogDetailPage from "@/pages/admin/EventLogDetailPage";
+import EventLogDetail from "@/pages/admin/EventLogDetail";
 import type { User } from "../types/User";
 import LabUserChatPage from "../pages/LabUser/ChatPage";
 
@@ -133,7 +133,7 @@ const roleRoutes: Record<string, RoleRouteConfig> = {
       {path: "select-instruments", component: SelectInstrumentsPage},
       {path: "select-reagents", component: SelectReagentsPage},
       {path: "patient-management/:id", component: PatientDetailPage},
-      {path: "audit-reports/:id", component: EventLogDetailPage},
+      {path: "audit-reports/:id", component: EventLogDetail},
     ],
   },
   MANAGER: {
