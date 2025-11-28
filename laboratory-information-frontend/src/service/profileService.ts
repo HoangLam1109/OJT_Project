@@ -26,9 +26,9 @@ export class ProfileService {
   /**
    * Fetch user profile
    */
-  async getProfile(): Promise<UserProfileData> {
+  async getProfile(userId: string): Promise<UserProfileData> {
     try {
-      const response = await apiService.get<{ user: UserProfileData }>("/user/userProfile");
+      const response = await apiService.get<{ user: UserProfileData }>(`/user/${userId}`);
       if (response && response.user) {
         return response.user;
       }
