@@ -45,8 +45,9 @@ export function Sidebar({
       )}
 
       <div className={`bg-white shadow-lg transition-all duration-300 ${
-        // Mobile (max-width: 767px): overlay drawer, hidden when collapsed
-        // Tablet (768px+): visible sidebar
+        // Mobile (< 768px): overlay drawer, hidden when collapsed
+        // Tablet (768px-1023px): visible sidebar, can be collapsed to 64px
+        // Desktop (1024px+): visible sidebar, can be collapsed to 64px
         sidebarCollapsed 
           ? 'w-0 -translate-x-full overflow-hidden pointer-events-none opacity-0 md:opacity-100 md:pointer-events-auto md:translate-x-0 md:w-16 md:overflow-visible lg:w-16' 
           : 'w-64 md:w-64 lg:w-64 opacity-100'
@@ -122,7 +123,7 @@ export function Sidebar({
                         } rounded-md text-sm sm:text-base`}
                       onClick={() => {
                         onNavigate(item.id);
-                        // Close sidebar on mobile after navigation
+                        // Close sidebar on mobile (< 768px) after navigation
                         if (window.innerWidth < 768) {
                           setSidebarCollapsed(true);
                         }
@@ -176,7 +177,7 @@ export function Sidebar({
                             newSet.delete(item.id);
                             return newSet;
                           });
-                          // Close sidebar on mobile after navigation
+                          // Close sidebar on mobile (< 768px) after navigation
                           if (window.innerWidth < 768) {
                             setSidebarCollapsed(true);
                           }
