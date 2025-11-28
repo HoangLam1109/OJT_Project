@@ -8,7 +8,7 @@ import {
   softDeleteTestOrder,
   updateTestOrderStatus,
   searchTestOrders,
-  getAllOrdersGroupedByPatientId
+  getAllOrdersGroupedByUserId
 } from "../controllers/testorder.controller.js";
 import { validateCreateTestOrder } from "../middlewares/validate.middleware.js";
 import AuthenticateUser from "../middlewares/authenticate.middleware.js";
@@ -19,7 +19,7 @@ const router = express.Router();
 router.get("/testOrder/all", getAllTestOrders);
 router.get("/testOrder/search", searchTestOrders);
 // router.get("/testOrder/result", controller.getListResults);
-router.get("/testOrder/group-by-patient", getAllOrdersGroupedByPatientId);
+router.get("/testOrder/group-by-userId", getAllOrdersGroupedByUserId);
 
 
 //  Dynamic routes after static routes

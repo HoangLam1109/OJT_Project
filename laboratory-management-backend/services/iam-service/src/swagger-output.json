@@ -1562,7 +1562,7 @@
       }
     },
     "/user/profile": {
-      "post": {
+      "put": {
         "tags": [
           "User Profile"
         ],
