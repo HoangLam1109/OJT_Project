@@ -42,7 +42,12 @@ export const ResetPasswordPage = () => {
       return;
     }
 
-    if (password.length < 6) {
+    if (!password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,30}$/)) {
+      setError(t("resetPassword.passwordPattern"));
+      return;
+    }
+
+    if (password.length < 8) {
       setError(t("resetPassword.passwordTooShort"));
       return;
     }

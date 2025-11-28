@@ -82,7 +82,8 @@
     "confirmPassword": "Confirm Password",
     "confirmPasswordPlaceholder": "Re-enter new password",
     "passwordRequired": "Please enter your password",
-    "passwordTooShort": "Password must be at least 6 characters",
+    "passwordTooShort": "Password must be at least 8 characters",
+    "passwordPattern": "Password must contain at least one uppercase letter, one lowercase letter, and one number",
     "passwordMismatch": "Passwords do not match",
     "noToken": "Invalid or expired reset link",
     "passwordSameAsOld": "New password must be different from the current password",
@@ -91,7 +92,7 @@
     "resetPassword": "Reset Password",
     "success": "Password reset successful!",
     "backToLogin": "Back to Login",
-    "requirement1": "At least 6 characters",
+    "requirement1": "At least 8 characters",
     "requirement2": "Both passwords must match",
     "requirement3": "Use a strong password"
   },
