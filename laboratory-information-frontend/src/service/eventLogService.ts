@@ -80,6 +80,8 @@ export const eventLogService = {
     service_name?: string;
     action?: string;
     sort?: 'newest' | 'oldest';
+    startDate?: string;
+    endDate?: string;
   }): Promise<EventLogsResponse> {
     const page = params?.page ?? 1;
     const limit = params?.limit ?? 10;
@@ -87,6 +89,8 @@ export const eventLogService = {
     const service_name = params?.service_name;
     const action = params?.action;
     const sort = params?.sort;
+    const startDate = params?.startDate;
+    const endDate = params?.endDate;
 
     const qs = new URLSearchParams();
     qs.set('page', String(page));
@@ -95,6 +99,8 @@ export const eventLogService = {
     if (service_name && service_name !== 'all') qs.set('service_name', service_name);
     if (action && action !== 'all') qs.set('action', action);
     if (sort) qs.set('sort', sort);
+    if (startDate) qs.set('start_date', startDate);
+    if (endDate) qs.set('end_date', endDate);
 
     // Use only /event-logs without trailing slash to avoid 404 on some backends
     const endpointCandidates = [

@@ -16,16 +16,9 @@ import {
   Trash2
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-
-// Import types
 import type { TestResult, TestResultDetail } from './types/TestResultTypes';
-
-// Import API
 import { testResultService } from '../../service/testResultService';
-
-// Import components
 import { Skeleton } from '@/components/common/skeleton';
-
 
 // View Detail Modal Component
 const ViewDetailModal: React.FC<{
@@ -44,8 +37,6 @@ const ViewDetailModal: React.FC<{
   // Initialize form values when result changes
   useEffect(() => {
     if (result) {
-      console.log('Modal opened with result:', result);
-      console.log('Result ID:', result.id);
       setResultValue(result.resultValue);
       setReviewerComment(result.reviewerComment || '');
     }
@@ -67,8 +58,6 @@ const ViewDetailModal: React.FC<{
   const handleUpdate = async () => {
     try {
       setUpdating(true);
-      console.log('Updating test result with ID:', result.id);
-      console.log('Update data:', { result_value: resultValue, reviewer_comment: reviewerComment });
       await testResultService.updateTestResult(result.id, {
         result_value: resultValue,
         reviewer_comment: reviewerComment,
@@ -77,8 +66,7 @@ const ViewDetailModal: React.FC<{
       setIsEditMode(false);
       onUpdateSuccess();
       onClose();
-    } catch (error) {
-      console.error('Error updating test result:', error);
+    } catch {
       toast.error(t('testResult.updateFailed'));
     } finally {
       setUpdating(false);
@@ -237,9 +225,8 @@ const TestResultsPage: React.FC = () => {
       setLoading(true);
       const data = await testResultService.getAllTestResults();
       setAllResults(data);
-    } catch (error) {
+    } catch {
       toast.error(t('testResult.cannotLoadResults'));
-      console.error('Error loading test results:', error);
     } finally {
       setLoading(false);
     }
@@ -311,8 +298,7 @@ const TestResultsPage: React.FC = () => {
       toast.success(t('testResult.deleteSuccess'));
       setDeleteConfirm(null);
       await loadTestResults();
-    } catch (error) {
-      console.error('Error deleting test result:', error);
+    } catch {
       toast.error(t('testResult.deleteFailed'));
     } finally {
       setDeleting(false);
