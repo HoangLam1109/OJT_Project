@@ -32,6 +32,7 @@ interface PatientFormState {
 
 export const Patient_UpdateModal: React.FC<PatientModalProps> = ({ isOpen, mode, patient, onClose, onSubmit }) => {
   const [formState, setFormState] = useState<PatientFormState>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const isReadOnly = mode === 'view';
 
@@ -71,11 +72,43 @@ export const Patient_UpdateModal: React.FC<PatientModalProps> = ({ isOpen, mode,
 
   const handleChange = (field: keyof PatientFormState, value: string | number) => {
     setFormState((prev) => ({ ...prev, [field]: value }));
+    // Clear error when user types
+    if (errors[field]) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
+  };
+
+  const validate = () => {
+    const newErrors: Record<string, string> = {};
+
+    // Validate emergency_name
+    if (!formState.emergency_name?.trim()) {
+      newErrors.emergency_name = 'Tên người liên hệ là bắt buộc';
+    } else if (/\d/.test(formState.emergency_name)) {
+      newErrors.emergency_name = 'Tên người liên hệ không được chứa số';
+    }
+
+    // Validate emergency_phone
+    if (!formState.emergency_phone?.trim()) {
+      newErrors.emergency_phone = 'Số điện thoại là bắt buộc';
+    } else if (/[a-zA-Z]/.test(formState.emergency_phone)) {
+      newErrors.emergency_phone = 'Số điện thoại không được chứa chữ cái';
+    } else if (!/^[\d\s+\-()]+$/.test(formState.emergency_phone)) {
+      newErrors.emergency_phone = 'Số điện thoại chứa ký tự không hợp lệ';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isReadOnly) return;
+    if (!validate()) return;
     if (onSubmit) await onSubmit(formState);
   };
 
@@ -134,7 +167,9 @@ export const Patient_UpdateModal: React.FC<PatientModalProps> = ({ isOpen, mode,
             </div>
 
             <div>
-              <Label htmlFor="phoneNumber" className="text-sm sm:text-base">Số điện thoại</Label>
+              <Label htmlFor="phoneNumber" className="text-sm sm:text-base">
+                Số điện thoại <span className="text-red-500">*</span>
+              </Label>
               <Input
                 id="phoneNumber"
                 value={formState.phoneNumber ?? ''}
@@ -142,6 +177,7 @@ export const Patient_UpdateModal: React.FC<PatientModalProps> = ({ isOpen, mode,
                 disabled={isFieldDisabled('phoneNumber')}
                 className="text-sm sm:text-base"
               />
+              {errors.phoneNumber && <p className="text-red-500 text-sm mt-1">{errors.phoneNumber}</p>}
             </div>
 
             <div>
@@ -179,12 +215,16 @@ export const Patient_UpdateModal: React.FC<PatientModalProps> = ({ isOpen, mode,
               <h3 className="font-medium text-sm sm:text-base">Thông tin liên hệ khẩn cấp</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
                 <div>
-                  <Label htmlFor="emergency_name" className="text-sm sm:text-base">Tên liên hệ</Label>
+                  <Label htmlFor="emergency_name" className="text-sm sm:text-base">
+                    Tên liên hệ <span className="text-red-500">*</span>
+                  </Label>
                   <Input id="emergency_name" value={formState.emergency_name ?? ''} onChange={(e) => handleChange('emergency_name', e.target.value)} disabled={isFieldDisabled('emergency_name')} className="text-sm sm:text-base" />
+                  {errors.emergency_name && <p className="text-red-500 text-sm mt-1">{errors.emergency_name}</p>}
                 </div>
                 <div>
                   <Label htmlFor="emergency_phone" className="text-sm sm:text-base">Số điện thoại</Label>
                   <Input id="emergency_phone" value={formState.emergency_phone ?? ''} onChange={(e) => handleChange('emergency_phone', e.target.value)} disabled={isFieldDisabled('emergency_phone')} className="text-sm sm:text-base" />
+                  {errors.emergency_phone && <p className="text-red-500 text-sm mt-1">{errors.emergency_phone}</p>}
                 </div>
               </div>
             </div>

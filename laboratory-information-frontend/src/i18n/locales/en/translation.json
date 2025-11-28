@@ -1104,6 +1104,9 @@
       "gender": "Gender",
       "dob": "Date of Birth",
       "identityNumber": "ID Number",
+      "isActive": "Active status",
+      "active": "Active",
+      "inactive": "Inactive",
       "role": "Role",
       "male": "Male",
       "female": "Female"
