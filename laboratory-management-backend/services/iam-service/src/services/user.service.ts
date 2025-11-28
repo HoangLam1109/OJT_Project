@@ -70,7 +70,7 @@ export class UserService {
   ): Promise<IUser> {
     const { data: newUser } = await this._passwordCheck(
       "",
-      { ...userData, lastPasswordChange: new Date() },
+      userData,
       performedBy
     );
     if (!userData.role) {
@@ -107,7 +107,7 @@ export class UserService {
     performedBy?: string
   ): Promise<IUser | null> {
     const before = await userRepository.findById(userId);
-    if (!before) {
+    if(!before) {
       throw new Error("User not found");
     }
     const { data: newUser, passwordChanged } = await this._passwordCheck(
@@ -154,51 +154,12 @@ export class UserService {
     return updatedUser;
   }
 
-  async updateUserInternal(
-    userId: string,
-    userData: UpdateUserData,
-    performedBy?: string
-  ): Promise<IUser | null> {
-    const before = await userRepository.findById(userId);
-    if (!before) {
-      throw new Error("User not found");
-    }
-    const { data: newUser, passwordChanged } = await this._passwordCheck(
-      userId,
-      userData,
-      performedBy
-    );
-    const updatedUser = await userRepository.updateById(userId, newUser);
-
-    const fields: (keyof IUser)[] = [
-      "email",
-      "fullName",
-      "phoneNumber",
-      "address",
-      "isActive",
-      "avatar",
-    ];
-
-    if (typeof userData.role !== "undefined") {
-      fields.push("role");
-    }
-
-    const diffs = computeChanges<IUser>(
-      before ?? undefined,
-      updatedUser ?? undefined,
-      fields,
-      passwordChanged ? { passwordChanged: true } : undefined
-    );
-
-    return updatedUser;
-  }
-
   async deleteUser(
     userId: string,
     performedBy?: string
   ): Promise<IUser | null> {
     const before = await userRepository.findById(userId);
-    if (!before) {
+    if(!before) {
       throw new Error("User not found");
     }
     const deletedUser = await userRepository.deleteById(userId);
@@ -253,10 +214,6 @@ export class UserService {
     );
   }
 
-  async getLatestPasswordHistory(userId: string) {
-    return passwordHistoryRepository.findLatestByUserId(userId);
-  }
-
   async assignRoleToUser(
     userId: string,
     role: string[],
@@ -303,7 +260,7 @@ export class UserService {
     performedBy?: string
   ): Promise<IUser | null> {
     const before = await userRepository.findById(userId);
-    if (!before) {
+    if(!before) {
       throw new Error("User not found");
     }
     const updatedUser = await userRepository.updateById(userId, { isActive });
@@ -410,6 +367,10 @@ export class UserService {
 
       delete (newUser as any).password;
       return { data: newUser, passwordChanged: true };
-    } else return { data: userData, passwordChanged: false };
+    } else {
+      const cleanData = { ...userData };
+      delete (cleanData as any).password;
+      return { data: cleanData, passwordChanged: false };
+    }
   }
 }
