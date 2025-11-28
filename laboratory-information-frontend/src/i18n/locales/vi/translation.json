@@ -1111,6 +1111,7 @@
       "deletedPatient": "Thông tin bệnh nhân bị xóa",
       "deletedMedical": "Thông tin hồ sơ bệnh nhân bị xóa",
       "patientCode": "Mã bệnh nhân",
+      "patientName": "Tên bệnh nhân",
       "age": "Tuổi",
       "emergencyContactName": "Tên người thân",
       "emergencyContactPhone": "SĐT người thân",
