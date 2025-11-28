@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import {
-  LayoutDashboard,
   Beaker,
   Wrench,
   Activity,
@@ -33,7 +32,6 @@ export function ServiceLayout({
   const { t } = useTranslation();
 
   const navigationItems: NavigationItem[] = [
-    { id: 'dashboard', label: t('sidebar.dashboard'), icon: LayoutDashboard },
     { id: 'event-logs', label: t('sidebar.eventLogs'), icon: Activity },
     { id: 'reagents', label: t('sidebar.reagents'), icon: Beaker },
     { id: 'instruments', label: t('sidebar.instruments'), icon: Wrench },
@@ -54,7 +52,7 @@ export function ServiceLayout({
 
   const loadProfile = async () => {
     try {
-      const data = await profileService.getProfile();
+      const data = await profileService.getProfile(currentUser.id);
       setProfile(data);
     } catch (e) {
       console.error("Failed to load profile", e);
