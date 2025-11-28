@@ -134,7 +134,7 @@ const resolveOperatorName = async (
   }
 
   if (operatorId) {
-  const iamUser = await fetchIamUser(operatorId);
+    const iamUser = await fetchIamUser(operatorId);
     if (iamUser?.fullName) {
       (req as any).userFullName = iamUser.fullName;
       return iamUser.fullName;
@@ -379,8 +379,8 @@ const getPatientById = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-  const includeUser = typeof populateUser === "string" ? populateUser.toLowerCase() === "true" : true;
-  const patient = await patientService.getPatientById(id, includeUser);
+    const includeUser = typeof populateUser === "string" ? populateUser.toLowerCase() === "true" : true;
+    const patient = await patientService.getPatientById(id, includeUser);
 
     if (!patient) {
       res.status(404).json({ message: "Patient not found" });
@@ -391,6 +391,26 @@ const getPatientById = async (req: Request, res: Response): Promise<void> => {
       patient,
       ...(includeUser ? { user: (patient as any).user ?? null } : {}),
     });
+  } catch (error) {
+    errorHandler(res, error);
+  }
+};
+
+
+const getPatientByUserIdController = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const user_id = req.params.userId;
+    if (!user_id) {
+      res.status(400).json({ message: "user_id is required" });
+      return;
+    }
+
+    const patient = await patientService.getPatientByUserId(user_id);
+    if (!patient) {
+      res.status(404).json({ message: "Patient not found" });
+      return;
+    }
+    res.status(200).json({ patient });
   } catch (error) {
     errorHandler(res, error);
   }
@@ -449,10 +469,10 @@ const createPatient = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-  const fallbackActor = typeof user_id === "string" && user_id.length > 0 ? user_id : undefined;
-  const operatorIdForMonitoring = resolveOperatorId(req, fallbackActor);
-  const actorEmail = await resolvePerformedBy(req, operatorIdForMonitoring ?? fallbackActor ?? "system");
-  const operatorAvatar = await resolveOperatorAvatar(req, operatorIdForMonitoring);
+    const fallbackActor = typeof user_id === "string" && user_id.length > 0 ? user_id : undefined;
+    const operatorIdForMonitoring = resolveOperatorId(req, fallbackActor);
+    const actorEmail = await resolvePerformedBy(req, operatorIdForMonitoring ?? fallbackActor ?? "system");
+    const operatorAvatar = await resolveOperatorAvatar(req, operatorIdForMonitoring);
 
     const patient = await patientService.createPatient({
       user_id,
@@ -624,8 +644,8 @@ const deletePatient = async (req: Request, res: Response): Promise<void> => {
     #swagger.parameters['hard'] = { in: 'query', type: 'boolean', default: false }
   */
   try {
-  const { id } = req.params;
-  const { hard = "false" } = req.query;
+    const { id } = req.params;
+    const { hard = "false" } = req.query;
     if (!id) {
       res.status(400).json({ message: "Patient ID is required" });
       return;
@@ -750,8 +770,8 @@ const softDeletePatientByUserId = async (req: Request, res: Response): Promise<v
     const existingRecord = existingPatient as unknown as Record<string, unknown>;
     const updatedRecord = patient as unknown as Record<string, unknown>;
     const softDeleteFields = ["is_deleted", "is_active", "deleted_at"];
-  const existingSnapshot = buildPatientSnapshot(iamUserSnapshot, existingRecord);
-  const newSnapshot = buildPatientSnapshot(iamUserSnapshot, updatedRecord);
+    const existingSnapshot = buildPatientSnapshot(iamUserSnapshot, existingRecord);
+    const newSnapshot = buildPatientSnapshot(iamUserSnapshot, updatedRecord);
     const softDeleteOldValues = pickFields(existingRecord, softDeleteFields);
     if (existingSnapshot) {
       softDeleteOldValues.snapshot = existingSnapshot;
@@ -794,4 +814,4 @@ const softDeletePatientByUserId = async (req: Request, res: Response): Promise<v
   }
 };
 
-export { getAllPatients, getPatientById, createPatient, updatePatient, deletePatient, softDeletePatientByUserId };
+export { getAllPatients, getPatientById, createPatient, updatePatient, deletePatient, softDeletePatientByUserId , getPatientByUserIdController};

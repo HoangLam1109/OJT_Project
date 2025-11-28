@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
-  LayoutDashboard,
   Beaker,
   Wrench,
   Activity,
@@ -34,7 +33,6 @@ export function ServiceLayout({
   const { t } = useTranslation();
 
   const navigationItems: NavigationItem[] = [
-    { id: 'dashboard', label: t('sidebar.dashboard'), icon: LayoutDashboard },
     { id: 'event-logs', label: t('sidebar.eventLogs'), icon: Activity },
     { id: 'reagents', label: t('sidebar.reagents'), icon: Beaker },
     { id: 'instruments', label: t('sidebar.instruments'), icon: Wrench },
