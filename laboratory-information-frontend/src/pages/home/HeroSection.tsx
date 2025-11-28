@@ -1,5 +1,4 @@
-import Button from "@/components/common/button";
-import { ArrowRight, Play } from "lucide-react";
+
 import heroImage from "@/assets/lab-hero.jpg";
 import { useTranslation } from "react-i18next";
 const HeroSection = () => { 
@@ -33,18 +32,6 @@ const HeroSection = () => {
           <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-white/90 mb-6 sm:mb-8 animate-fade-up px-4" style={{ animationDelay: '0.2s' }}>
             {t("hero.description")}
           </p>
-          
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center animate-fade-up px-4" style={{ animationDelay: '0.4s' }}>
-            <Button size="lg" className="group w-full sm:w-auto">
-              {t("hero.button")}
-              <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
-            </Button>
-            
-            <Button variant="outline" size="lg" className="group bg-white/10 text-white border-white/30 hover:bg-white/20 w-full sm:w-auto">
-              <Play className="mr-2" />
-              {t("hero.demo")}
-            </Button>
-          </div>
           
           <div className="mt-8 sm:mt-10 md:mt-12 grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 md:gap-8 text-center animate-fade-up px-2" style={{ animationDelay: '0.6s' }}>
             <div className="p-2">

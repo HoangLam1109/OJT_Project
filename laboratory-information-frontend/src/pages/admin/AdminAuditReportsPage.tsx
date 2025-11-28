@@ -223,10 +223,6 @@ export function AdminAuditReportsPage() {
           <p className="text-gray-600 mt-1">{t('eventLog.subtitle')}</p>
         </div>
         <div className="flex space-x-3">
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-            <Download className="h-4 w-4 mr-2" />
-            {t('eventLog.exportReport')}
-          </Button>
           <Button variant="outline">
             <Filter className="h-4 w-4 mr-2" />
             {t('eventLog.advancedFilter')}
