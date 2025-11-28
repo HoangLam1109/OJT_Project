@@ -6,7 +6,6 @@ import {
   Mail,
   MapPin,
   Clock,
-  ArrowRight,
   ArrowUp,
   Facebook,
   Twitter,
@@ -114,21 +113,6 @@ export function Footer() {
                 <div className="flex items-center gap-2 sm:gap-3">
                   <Clock className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                   <span>{t("footer.time")}</span>
-                </div>
-              </div>
-
-              {/* Newsletter */}
-              <div className="space-y-2 sm:space-y-3">
-                <h5 className="text-white text-xs sm:text-sm font-medium">{t("footer.newsletter")}</h5>
-                <div className="flex gap-2">
-                  <input 
-                    type="email" 
-                    placeholder={t("footer.emailPlaceholder")} 
-                    className="flex-1 px-2 sm:px-3 py-1.5 sm:py-2 text-sm bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none"
-                  />
-                  <Button size="sm" className="bg-blue-600 hover:bg-blue-700 px-2 sm:px-3">
-                    <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4" />
-                  </Button>
                 </div>
               </div>
             </div>

@@ -94,7 +94,7 @@ const ChatPage: React.FC = () => {
     } finally {
       setLoadingRooms(false);
     }
-  }, [user]);
+  }, [user,t]);
 
   useEffect(() => {
     void refreshRooms();
@@ -114,7 +114,7 @@ const ChatPage: React.FC = () => {
       }
     };
     void loadLabUsers();
-  }, []);
+  }, [t]);
 
   const handleCreateRoom = async () => {
     if (!user) {

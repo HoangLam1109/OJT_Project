@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/common/card';
-import { FileText, Download, Filter, Eye, Trash2, Shield, Database } from 'lucide-react';
+import { FileText, Download, Eye, Trash2, Shield, Database } from 'lucide-react';
 import Button from '../../components/common/button';
 import { Input } from '../../components/common/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/common/select';
@@ -24,14 +24,16 @@ export function AdminAuditReportsPage() {
   const [serviceFilter, setServiceFilter] = useState<'all' | 'IAM_SERVICE' | 'PATIENT_SERVICE' | 'TEST_ORDER_SERVICE' | 'WAREHOUSE_SERVICE' | 'MONITORING_SERVICE' | 'CHAT_SERVICE'>('all');
   const [actionFilter, setActionFilter] = useState<'all' | 'CREATE' | 'DELETE' | 'UPDATE'>('all');
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
+  const [startDate, setStartDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
 
   useEffect(() => {
     let mounted = true;
     const load = async () => {
       setLoading(true);
       try {
-        // Use client-side logic if searching OR sorting by oldest (since backend only supports newest)
-        const useClientSideLogic = searchTerm.trim().length > 0 || sortOrder === 'oldest';
+        // Use client-side logic if searching OR sorting by oldest (since backend only supports newest) OR filtering by date
+        const useClientSideLogic = searchTerm.trim().length > 0 || sortOrder === 'oldest' || startDate || endDate;
         
         const limit = useClientSideLogic ? 1000 : 10;
         const apiPage = useClientSideLogic ? 1 : page;
@@ -42,7 +44,9 @@ export function AdminAuditReportsPage() {
           search: searchTerm,
           service_name: serviceFilter,
           action: actionFilter,
-          sort: sortOrder
+          sort: sortOrder,
+          startDate,
+          endDate
         });
         if (!mounted) return;
 
@@ -55,6 +59,24 @@ export function AdminAuditReportsPage() {
             logs = logs.filter(log => {
               const operator = `${log.operator_name ?? ''} ${log.operator_gmail ?? ''}`.toLowerCase();
               return operator.includes(term);
+            });
+          }
+
+          if (startDate) {
+            const start = new Date(startDate).getTime();
+            logs = logs.filter(log => {
+              if (!log.occurred_at) return false;
+              return new Date(log.occurred_at).getTime() >= start;
+            });
+          }
+
+          if (endDate) {
+            const end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
+            const endTime = end.getTime();
+            logs = logs.filter(log => {
+              if (!log.occurred_at) return false;
+              return new Date(log.occurred_at).getTime() <= endTime;
             });
           }
 
@@ -88,7 +110,7 @@ export function AdminAuditReportsPage() {
     };
     load();
     return () => { mounted = false; };
-  }, [page, searchTerm, serviceFilter, actionFilter, sortOrder, t]);
+  }, [page, searchTerm, serviceFilter, actionFilter, sortOrder, startDate, endDate, t]);
 
   const getActionIcon = (action: string) => {
     switch (String(action).toLowerCase()) {
@@ -215,22 +237,12 @@ export function AdminAuditReportsPage() {
 
   // Removed unused formatDate helper after table column restructure
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">{t('eventLog.title')}</h1>
           <p className="text-gray-600 mt-1">{t('eventLog.subtitle')}</p>
-        </div>
-        <div className="flex space-x-3">
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-            <Download className="h-4 w-4 mr-2" />
-            {t('eventLog.exportReport')}
-          </Button>
-          <Button variant="outline">
-            <Filter className="h-4 w-4 mr-2" />
-            {t('eventLog.advancedFilter')}
-          </Button>
         </div>
       </div>
       {loading && (
@@ -243,66 +255,94 @@ export function AdminAuditReportsPage() {
       {/* Filters */}
       <Card>
         <CardContent className="p-4">
-          <div className="flex flex-col lg:flex-row gap-4">
+          <div className="flex flex-col gap-3">
             {/* Search: only user name/email */}
-            <div className="flex-1">
+            <div className="w-full">
               <div className="relative">
                 <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   placeholder={t('eventLog.searchPlaceholder')}
                   value={searchTerm}
                   onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
-                  className="pl-10"
+                  className="pl-10 w-full"
                 />
               </div>
             </div>
 
-            {/* Service filter */}
-            <div className="min-w-[220px]">
-              <Select value={serviceFilter} onValueChange={(v) => { setServiceFilter(v as typeof serviceFilter); setPage(1); }}>
-                <SelectTrigger className="bg-white border border-gray-300 focus:ring-2 focus:ring-blue-500">
-                  <SelectValue placeholder={t('eventLog.service')} />
-                </SelectTrigger>
-                <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
-                  <SelectItem value="all">{t('eventLog.allServices')}</SelectItem>
-                  <SelectItem value="IAM_SERVICE">{t('eventLog.services.IAM_SERVICE')}</SelectItem>
-                  <SelectItem value="PATIENT_SERVICE">{t('eventLog.services.PATIENT_SERVICE')}</SelectItem>
-                  <SelectItem value="TEST_ORDER_SERVICE">{t('eventLog.services.TEST_ORDER_SERVICE')}</SelectItem>
-                  <SelectItem value="WAREHOUSE_SERVICE">{t('eventLog.services.WAREHOUSE_SERVICE')}</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-row gap-4">
+              {/* Service filter */}
+              <div className="w-full lg:min-w-[200px]">
+                <Select value={serviceFilter} onValueChange={(v) => { setServiceFilter(v as typeof serviceFilter); setPage(1); }}>
+                  <SelectTrigger className="bg-white border border-gray-300 focus:ring-2 focus:ring-blue-500 w-full">
+                    <SelectValue placeholder={t('eventLog.service')} />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
+                    <SelectItem value="all">{t('eventLog.allServices')}</SelectItem>
+                    <SelectItem value="IAM_SERVICE">{t('eventLog.services.IAM_SERVICE')}</SelectItem>
+                    <SelectItem value="PATIENT_SERVICE">{t('eventLog.services.PATIENT_SERVICE')}</SelectItem>
+                    <SelectItem value="TEST_ORDER_SERVICE">{t('eventLog.services.TEST_ORDER_SERVICE')}</SelectItem>
+                    <SelectItem value="WAREHOUSE_SERVICE">{t('eventLog.services.WAREHOUSE_SERVICE')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Action filter */}
+              <div className="w-full lg:min-w-[150px]">
+                <Select value={actionFilter} onValueChange={(v) => { setActionFilter(v as typeof actionFilter); setPage(1); }}>
+                  <SelectTrigger className="bg-white border border-gray-300 focus:ring-2 focus:ring-blue-500 w-full">
+                    <SelectValue placeholder={t('eventLog.action')} />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
+                    <SelectItem value="all">{t('eventLog.allActions')}</SelectItem>
+                    <SelectItem value="CREATE">{t('eventLog.actions.CREATE')}</SelectItem>
+                    <SelectItem value="DELETE">{t('eventLog.actions.DELETE')}</SelectItem>
+                    <SelectItem value="UPDATE">{t('eventLog.actions.UPDATE')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Sort by time */}
+              <div className="w-full lg:min-w-[150px]">
+                <Select value={sortOrder} onValueChange={(v) => { setSortOrder(v as typeof sortOrder); setPage(1); }}>
+                  <SelectTrigger className="bg-white border border-gray-300 focus:ring-2 focus:ring-blue-500 w-full">
+                    <SelectValue placeholder={t('eventLog.time')} />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
+                    <SelectItem value="newest">{t('eventLog.newest')}</SelectItem>
+                    <SelectItem value="oldest">{t('eventLog.oldest')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Start Date */}
+              <div className="w-full lg:min-w-[150px]">
+                <div className="relative">
+                  <Input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => { setStartDate(e.target.value); setPage(1); }}
+                    className="w-full"
+                    placeholder={t('eventLog.startDate')}
+                  />
+                </div>
+              </div>
+
+              {/* End Date */}
+              <div className="w-full lg:min-w-[150px]">
+                <div className="relative">
+                  <Input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => { setEndDate(e.target.value); setPage(1); }}
+                    className="w-full"
+                    placeholder={t('eventLog.endDate')}
+                  />
+                </div>
+              </div>
             </div>
 
-            {/* Action filter */}
-            <div className="min-w-[180px]">
-              <Select value={actionFilter} onValueChange={(v) => { setActionFilter(v as typeof actionFilter); setPage(1); }}>
-                <SelectTrigger className="bg-white border border-gray-300 focus:ring-2 focus:ring-blue-500">
-                  <SelectValue placeholder={t('eventLog.action')} />
-                </SelectTrigger>
-                <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
-                  <SelectItem value="all">{t('eventLog.allActions')}</SelectItem>
-                  <SelectItem value="CREATE">{t('eventLog.actions.CREATE')}</SelectItem>
-                  <SelectItem value="DELETE">{t('eventLog.actions.DELETE')}</SelectItem>
-                  <SelectItem value="UPDATE">{t('eventLog.actions.UPDATE')}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Sort by time */}
-            <div className="min-w-[180px]">
-              <Select value={sortOrder} onValueChange={(v) => { setSortOrder(v as typeof sortOrder); setPage(1); }}>
-                <SelectTrigger className="bg-white border border-gray-300 focus:ring-2 focus:ring-blue-500">
-                  <SelectValue placeholder={t('eventLog.time')} />
-                </SelectTrigger>
-                <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
-                  <SelectItem value="newest">{t('eventLog.newest')}</SelectItem>
-                  <SelectItem value="oldest">{t('eventLog.oldest')}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {(searchTerm || serviceFilter !== 'all' || actionFilter !== 'all' || sortOrder !== 'newest') && (
-              <div className="flex items-center">
+            {(searchTerm || serviceFilter !== 'all' || actionFilter !== 'all' || sortOrder !== 'newest' || startDate || endDate) && (
+              <div className="flex items-center justify-end lg:justify-start">
                 <Button
                   variant="outline"
                   onClick={() => {
@@ -310,8 +350,11 @@ export function AdminAuditReportsPage() {
                     setServiceFilter('all');
                     setActionFilter('all');
                     setSortOrder('newest');
+                    setStartDate('');
+                    setEndDate('');
                     setPage(1);
                   }}
+                  className="w-full sm:w-auto"
                 >
                   {t('eventLog.clearFilter')}
                 </Button>
@@ -323,91 +366,93 @@ export function AdminAuditReportsPage() {
 
       {/* Audit Logs Table */}
       <Card>
-        <CardHeader>
-          <CardTitle>{t('eventLog.title')} ({totalLogs})</CardTitle>
-          <CardDescription>{t('eventLog.subtitle')}</CardDescription>
+        <CardHeader className="p-4 sm:p-5 pb-2 sm:pb-2">
+          <CardTitle className="text-base sm:text-lg">{t('eventLog.title')} ({totalLogs})</CardTitle>
+          <CardDescription className="text-xs sm:text-sm">{t('eventLog.subtitle')}</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-  <table className="w-full border-collapse table-fixed">
-    <thead>
-      <tr className="border-b border-gray-200">
-        <th className="w-[22%] text-left py-3 px-4 font-semibold text-sm text-gray-700">{t('eventLog.table.user')}</th>
-        <th className="w-[18%] text-left py-3 px-4 font-semibold text-sm text-gray-700">{t('eventLog.table.service')}</th>
-        <th className="w-[34%] text-left py-3 px-4 font-semibold text-sm text-gray-700">{t('eventLog.table.actionAndMessage')}</th>
-        <th className="w-[16%] text-left py-3 px-4 font-semibold text-sm text-gray-700">{t('eventLog.table.time')}</th>
-        <th className="w-[10%] text-center py-3 px-4 font-semibold text-sm text-gray-700">{t('eventLog.table.actions')}</th>
-      </tr>
-    </thead>
-    <tbody>
-      {eventLogs.map((log) => {
-        const rowKey = (log.event_id || log._id || log.id || log.operator_id || Math.random().toString());
-        return (
-          <tr key={rowKey} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-            <td className="py-3 px-4">
-              <div className="flex items-center gap-3">
-                {log.operator_avatar ? (
-                  <img 
-                    src={log.operator_avatar} 
-                    alt={log.operator_name || 'User'} 
-                    className="w-8 h-8 rounded-full object-cover border border-gray-200"
-                  />
-                ) : (
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-sm font-semibold">
-                    {String(log.operator_name ?? log.operator_gmail ?? 'U').charAt(0).toUpperCase()}
-                  </div>
-                )}
-                <div className="truncate">
-                  <div className="font-medium text-gray-900 truncate">{log.operator_name || t('eventLog.unknown')}</div>
-                  {log.operator_gmail && <div className="text-xs text-gray-500 truncate">{log.operator_gmail}</div>}
-                </div>
-              </div>
-            </td>
-            <td className="py-3 px-4 text-sm truncate" title={log.service_name}>{getServiceDisplayName(log.service_name || "")}</td>
-            <td className="py-3 px-4">
-              <div className="flex items-start gap-2">
-                {getActionIcon(String(log.action))}
-                <div className="truncate max-w-[540px]">
-                  <div className="font-medium text-gray-900 truncate">
-                    {log.action ? t(`eventLog.actions.${String(log.action).toUpperCase()}`) : '—'}
-                  </div>
-                  {log.event_message && <div className="text-xs text-gray-500 truncate">{getEventMessage(log.event_message)}</div>}
-                </div>
-              </div>
-            </td>
-            <td className="py-3 px-4 text-sm" title={log.occurred_at ? new Date(log.occurred_at).toLocaleString('vi-VN') : ''}>
-              {log.occurred_at ? new Date(log.occurred_at).toLocaleString('vi-VN') : '—'}
-            </td>
-            <td className="py-3 px-4 text-center">
-              <div className="flex items-center justify-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  title={t('eventLog.viewDetail')}
-                  disabled={!log.event_id}
-                  onClick={() => navigate(`/admin/audit-reports/${log.event_id}`)}
-                >
-                  <Eye className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  title={t('eventLog.delete')}
-                  className="text-red-600 hover:text-red-700"
-                  disabled={!log.event_id}
-                  onClick={() => setDeleteTarget({ id: (log.event_id || ''), name: log.operator_name })}
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              </div>
-            </td>
-          </tr>
-        );
-      })}
-    </tbody>
-  </table>
-</div>
-
+        <CardContent className="p-4 sm:p-5 pt-0 sm:pt-0">
+          <div className="overflow-x-auto -mx-4 sm:mx-0">
+            <div className="inline-block min-w-full align-middle px-4 sm:px-0">
+              <table className="w-full border-collapse table-fixed min-w-[1000px]">
+                <thead>
+                  <tr className="border-b border-gray-200 bg-gray-50 sm:bg-transparent">
+                    <th className="w-[20%] text-left py-3 px-4 font-semibold text-xs sm:text-sm text-gray-700">{t('eventLog.table.user')}</th>
+                    <th className="w-[15%] text-left py-3 px-4 font-semibold text-xs sm:text-sm text-gray-700">{t('eventLog.table.service')}</th>
+                    <th className="w-[40%] text-left py-3 px-4 font-semibold text-xs sm:text-sm text-gray-700">{t('eventLog.table.actionAndMessage')}</th>
+                    <th className="w-[15%] text-left py-3 px-4 font-semibold text-xs sm:text-sm text-gray-700">{t('eventLog.table.time')}</th>
+                    <th className="w-[10%] text-center py-3 px-4 font-semibold text-xs sm:text-sm text-gray-700">{t('eventLog.table.actions')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {eventLogs.map((log) => {
+                    const rowKey = (log.event_id || log._id || log.id || log.operator_id || Math.random().toString());
+                    return (
+                      <tr key={rowKey} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                        <td className="py-3 px-4">
+                          <div className="flex items-center gap-3">
+                            {log.operator_avatar ? (
+                              <img 
+                                src={log.operator_avatar} 
+                                alt={log.operator_name || 'User'} 
+                                className="w-8 h-8 rounded-full object-cover border border-gray-200"
+                              />
+                            ) : (
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
+                                {String(log.operator_name ?? log.operator_gmail ?? 'U').charAt(0).toUpperCase()}
+                              </div>
+                            )}
+                            <div className="truncate">
+                              <div className="font-medium text-gray-900 truncate">{log.operator_name || t('eventLog.unknown')}</div>
+                              {log.operator_gmail && <div className="text-xs text-gray-500 truncate">{log.operator_gmail}</div>}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-3 px-4 text-sm truncate" title={log.service_name}>{getServiceDisplayName(log.service_name || "")}</td>
+                        <td className="py-3 px-4">
+                          <div className="flex items-start gap-2">
+                            <div className="mt-0.5 flex-shrink-0">{getActionIcon(String(log.action))}</div>
+                            <div className="min-w-0">
+                              <div className="font-medium text-gray-900 truncate">
+                                {log.action ? t(`eventLog.actions.${String(log.action).toUpperCase()}`) : '—'}
+                              </div>
+                              {log.event_message && <div className="text-xs text-gray-500 break-words whitespace-normal">{getEventMessage(log.event_message)}</div>}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-3 px-4 text-sm" title={log.occurred_at ? new Date(log.occurred_at).toLocaleString('vi-VN') : ''}>
+                          {log.occurred_at ? new Date(log.occurred_at).toLocaleString('vi-VN') : '—'}
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              title={t('eventLog.viewDetail')}
+                              disabled={!log.event_id}
+                              onClick={() => navigate(`/admin/audit-reports/${log.event_id}`)}
+                              className="h-8 w-8"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              title={t('eventLog.delete')}
+                              className="text-red-600 hover:text-red-700 h-8 w-8"
+                              disabled={!log.event_id}
+                              onClick={() => setDeleteTarget({ id: (log.event_id || ''), name: log.operator_name })}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </CardContent>
       </Card>
 

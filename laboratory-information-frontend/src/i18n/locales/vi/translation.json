@@ -140,7 +140,6 @@
     "subtitle": "Phòng thí nghiệm Tiên tiến",
     "description": "Tối ưu hóa hoạt động phòng thí nghiệm với máy phân tích huyết học hiện đại, quản lý bệnh nhân toàn diện và phân tích dữ liệu thời gian thực.",
     "button": "Dùng thử miễn phí",
-    "demo": "Xem Demo",
     "laboratory": "Phòng thí nghiệm",
     "test": "Xét nghiệm thực hiện",
     "time": "Thời gian hoạt động",
@@ -173,7 +172,6 @@
     "smartInterfaceDescription": "Giao diện thông minh, dễ sử dụng cho mọi người",
     "title": "Về chúng tôi",
     "description": "Về công ty",
-    "demo": "Xem Demo",
     "button": "Tìm hiểu thêm",
     "trustedPartner": "Đối tác tin cậy cho Phòng thí nghiệm của bạn",
     "trustedPartnerDescription": "Với hơn 10 năm kinh nghiệm trong lĩnh vực công nghệ y tế, chúng tôi hiểu thử thách mà phòng thí nghiệm đang gặp phải.",
@@ -241,7 +239,6 @@
     "address": "123 Đường ABC, Quận 1, TP.HCM",
     "time": "Thứ 2 - Chủ nhật: 8:00 - 22:00",
     "contact": "Liên hệ",
-    "newsletter": "Đăng ký nhận tin tức",
     "emailPlaceholder": "Email của bạn"
   },
   "admin": {
@@ -1112,6 +1109,7 @@
       "deletedPatient": "Thông tin bệnh nhân bị xóa",
       "deletedMedical": "Thông tin hồ sơ bệnh nhân bị xóa",
       "patientCode": "Mã bệnh nhân",
+      "patientName": "Tên bệnh nhân",
       "age": "Tuổi",
       "emergencyContactName": "Tên người thân",
       "emergencyContactPhone": "SĐT người thân",

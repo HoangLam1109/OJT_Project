@@ -140,7 +140,6 @@
     "subtitle": "Advanced Laboratory",
     "description": "Optimize laboratory operations with modern hematology analyzers, manage patients comprehensively, and analyze real-time data.",
     "button": "Free Trial",
-    "demo": "Watch Demo",
     "laboratory": "Laboratory",
     "test": "Test",
     "time": "Time",
@@ -173,7 +172,6 @@
     "smartInterfaceDescription": "Intuitive dashboard, easy to use for everyone",
     "title": "About Us",
     "description": "About the company",
-    "demo": "Watch Demo",
     "button": "Learn More",
     "trustedPartner": "Trusted Partner for Your Laboratory",
     "trustedPartnerDescription": "With over 10 years of experience in the field of medical technology, we understand the challenges that laboratories are facing.",
@@ -241,7 +239,6 @@
     "address": "123 ABC Street, Ward 1, Ho Chi Minh City",
     "time": "Monday - Sunday: 8:00 - 22:00",
     "contact": "Contact",
-    "newsletter": "Newsletter",
     "emailPlaceholder": "Your email"
   },
   "admin": {
@@ -988,9 +985,9 @@
     "updateProfileError": "Update failed. Please try again.",
     "notUpdated": "Not updated",
     "loadProfileError": "Unable to load profile information.",
-    "editProfile": "Edit Profile",
+    "edit": "Edit Profile",
     "cancel": "Cancel",
-    "saveChanges": "Save Changes",
+    "save": "Save Changes",
     "statusAndContact": "Status & Contact",
     "status": "Status",
     "active": "Active",
@@ -1007,7 +1004,8 @@
     "other": "Other",
     "age": "Age",
     "identityNumber": "ID Number",
-    "address": "Address"
+    "address": "Address",
+    "email":"Email"
   },
   "eventLog": {
     "title": "Audit Logs",
@@ -1116,6 +1114,7 @@
       "deletedPatient": "Deleted Patient Information",
       "deletedMedical": "Deleted Medical Record Information",
       "patientCode": "Patient Code",
+      "patientName" :"Patient Name",
       "age": "Age",
       "emergencyContactName": "Emergency Contact Name",
       "emergencyContactPhone": "Emergency Contact Phone",

@@ -8,13 +8,13 @@ import { patientService, type PatientOption, type PatientDetailResponse, viewPat
 import { patientMedicalRecordService, type PatientMedicalRecord } from '../../../../service/patientMedicalRecordService';
 // import { testOrderService } from '../../../../service/testOrderService';
 import { testResultService } from '../../../../service/testResultService';
-import type { TestResult } from '../../../labuser/types/TestResultTypes';
+import type { TestResult } from '@/pages/NormalUser/type/TestResult';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import EditPatientMedicalRecord from '../../../labuser/components/modals/PatientMedicalRecordModal/PatientMedicalRecordEditModal';
+import EditPatientMedicalRecord from '@/pages/LabUser/components/modals/PatientMedicalRecordModal/PatientMedicalRecordEditModal';
 import { DeleteConfirmDialog } from '../DeleteConfirmDialog';
-import MedicalRecordViewModal from '@/pages/labuser/components/modals/PatientMedicalRecordModal/PatientMedicalRecordViewModal';
-import TestResultModal from '@/pages/labuser/components/modals/TestResultModal/TestResultModal';
+import MedicalRecordViewModal from '@/pages/LabUser/components/modals/PatientMedicalRecordModal/PatientMedicalRecordViewModal';
+import TestResultModal from '@/pages/LabUser/components/modals/TestResultModal/TestResultModal';
 
 // Type for test result items from API
 interface TestResultItem {

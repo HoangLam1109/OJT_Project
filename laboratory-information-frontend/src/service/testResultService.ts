@@ -38,10 +38,7 @@ const testResultClient = axios.create({
 
 // Transform API response to UI format
 const transformTestResultGroup = (group: TestResultGroup): TestResult => {
-  console.log('Transforming group:', group);
   const results: TestResultDetail[] = group.resultsSample.map(item => {
-    console.log('Mapping item:', item);
-    console.log('Item _id:', item._id);
     return {
       id: item._id,
       testItemId: item.test_item_id,

@@ -87,10 +87,10 @@ export function AdminLayout({ children, currentUser, onLogout, currentPage, onNa
         onLogout={onLogout}
       />
       <div className={`flex-1 flex flex-col transition-all duration-300 ${
-        sidebarCollapsed ? 'md:ml-16 lg:ml-16' : 'md:ml-64 lg:ml-64'
+        sidebarCollapsed ? 'ml-0 md:ml-16 lg:ml-16' : 'ml-0 md:ml-64 lg:ml-64'
       }`}>
         <TopHeader />
-        <main className="flex-1 p-6 bg-gray-50 overflow-auto">{children}</main>
+        <main className="flex-1 p-3 xs:p-4 sm:p-5 md:p-6 bg-gray-50 overflow-auto">{children}</main>
       </div>
     </div>
   );

@@ -24,6 +24,8 @@ export function isValidIdentifyNumber(identify_number: string): boolean {
 export function validatePassword(password: string): string {
   if (!password || password.length === 0) return 'Mật khẩu là bắt buộc';
   if (password.length < 6) return 'Mật khẩu phải có ít nhất 6 ký tự';
+  if (!/[A-Z]/.test(password)) return 'Mật khẩu phải chứa ít nhất 1 chữ cái viết hoa';
+  if (!/\d/.test(password)) return 'Mật khẩu phải chứa ít nhất 1 chữ số';
   return '';
 }
 
@@ -86,6 +88,21 @@ export async function validateUserForm(formData: UserFormData, mode: 'create' | 
     const d = new Date(formData.date_of_birth);
     if (isNaN(d.getTime())) {
       errors.date_of_birth = 'Ngày sinh không hợp lệ';
+    } else {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const dateStr = formData.date_of_birth.includes('T') ? formData.date_of_birth.split('T')[0] : formData.date_of_birth;
+      const parts = dateStr.split('-');
+      
+      let inputDate = d;
+      if (parts.length === 3) {
+         inputDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+      }
+
+      if (inputDate > today) {
+        errors.date_of_birth = 'Ngày sinh không hợp lệ';
+      }
     }
   }
 

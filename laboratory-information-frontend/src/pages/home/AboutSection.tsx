@@ -80,9 +80,7 @@ export function AboutSection({ onShowLogin }: LoginType) {
                 {t("about.button")}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
-              <Button variant="outline" className="w-full sm:w-auto">
-                {t("about.demo")}
-              </Button>
+
             </div>
           </div>
 
