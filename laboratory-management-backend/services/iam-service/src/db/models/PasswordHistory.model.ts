@@ -47,7 +47,7 @@ const passwordHistorySchema = new mongoose.Schema<IPasswordHistory>(
   }
 )
 
-passwordHistorySchema.index({ userId: 1, changedAt: -1 });
+passwordHistorySchema.index({ userId: 1 })
 
 // Pre-save hook to set UUID if not present
 passwordHistorySchema.pre("save", function(next) {

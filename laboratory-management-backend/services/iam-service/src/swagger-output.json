@@ -965,6 +965,194 @@
         ]
       }
     },
+    "/user/userProfile": {
+      "get": {
+        "tags": [
+          "User Profile"
+        ],
+        "description": "Get profile information of the authenticated user",
+        "responses": {
+          "200": {
+            "description": "Authenticated user profile retrieved successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "user": {
+                  "type": "object",
+                  "properties": {
+                    "_id": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "email": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "fullName": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "identityNumber": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "gender": {
+                      "type": "string",
+                      "example": "Male"
+                    },
+                    "age": {
+                      "type": "number",
+                      "example": 22
+                    },
+                    "dateOfBirth": {
+                      "type": "string",
+                      "example": "2002-01-01"
+                    },
+                    "phoneNumber": {
+                      "type": "string",
+                      "example": "0123456789"
+                    },
+                    "address": {
+                      "type": "string",
+                      "example": "string"
+                    },
+                    "avatar": {
+                      "type": "string",
+                      "example": "https://example.com/avatar.png"
+                    },
+                    "role": {
+                      "type": "array",
+                      "example": [
+                        "USER"
+                      ],
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/user/UserProfile/Update": {
+      "put": {
+        "tags": [
+          "User Profile"
+        ],
+        "description": "Update current authenticated user profile",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Profile update data (uses updateUserSchema validator)",
+            "required": false,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "example": "user@example.com"
+                },
+                "fullName": {
+                  "type": "string",
+                  "example": "John Doe"
+                },
+                "identityNumber": {
+                  "type": "string",
+                  "example": "012345678901"
+                },
+                "gender": {
+                  "type": "string",
+                  "example": "Male"
+                },
+                "age": {
+                  "type": "number",
+                  "example": 22
+                },
+                "dateOfBirth": {
+                  "type": "string",
+                  "example": "2002-01-01"
+                },
+                "phoneNumber": {
+                  "type": "string",
+                  "example": "0123456789"
+                },
+                "address": {
+                  "type": "string",
+                  "example": "123 Main St"
+                },
+                "avatar": {
+                  "type": "string",
+                  "example": "https://jbagy.me/wp-content/uploads/2025/03/Hinh-anh-avatar-anime-nu-cute-2.jpg"
+                },
+                "password": {
+                  "type": "string",
+                  "example": "secret1"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Profile updated successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Profile updated successfully!"
+                },
+                "userId": {
+                  "type": "string",
+                  "example": "string"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ]
+      }
+    },
     "/user/me/roles": {
       "get": {
         "tags": [
@@ -1472,7 +1660,7 @@
         ]
       }
     },
-    "/user/profile/{userId}": {
+    "/user/profile/me": {
       "get": {
         "tags": [
           "User Profile"
@@ -1608,13 +1796,13 @@
                   "type": "string",
                   "example": "123 Main St"
                 },
+                "avatar": {
+                  "type": "string",
+                  "example": "https://jbagy.me/wp-content/uploads/2025/03/Hinh-anh-avatar-anime-nu-cute-2.jpg"
+                },
                 "password": {
                   "type": "string",
-                  "example": "secret123"
-                },
-                "isActive": {
-                  "type": "boolean",
-                  "example": true
+                  "example": "secret1"
                 }
               }
             }
@@ -1876,7 +2064,7 @@
                 },
                 "password": {
                   "type": "string",
-                  "example": "secret123"
+                  "example": ""
                 },
                 "isActive": {
                   "type": "boolean",
