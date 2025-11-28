@@ -448,7 +448,7 @@ const updateUser = async (
         phoneNumber: '0123456789',
         address: '123 Main St',
         avatar: 'https://example.com/avatar.png',
-        password: '',
+        password: 'secret123',
         isActive: true,
         role: ['USER']
       }
@@ -510,12 +510,12 @@ const updateProfile = async (
         fullName: 'John Doe',
         identityNumber: '012345678901',
         gender: 'Male',
-        age: 22 ,
+        age: 22,
         dateOfBirth: '2002-01-01',
         phoneNumber: '0123456789',
         address: '123 Main St',
-        avatar: 'https://jbagy.me/wp-content/uploads/2025/03/Hinh-anh-avatar-anime-nu-cute-2.jpg',
-        password: 'secret1',
+        password: 'secret123',
+        isActive: true,
       }
     }
     #swagger.responses[200] = {

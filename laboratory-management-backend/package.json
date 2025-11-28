@@ -87,9 +87,11 @@
     "@types/passport": "^1.0.17",
     "@types/passport-google-oauth20": "^2.0.16",
     "@types/passport-jwt": "^4.0.1",
+    "@types/supertest": "^6.0.3",
     "@types/swagger-ui-express": "^4.1.8",
     "nodemon": "^3.1.10",
     "npm-run-all": "^4.1.5",
+    "supertest": "^7.1.4",
     "ts-node": "^10.9.2",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3"

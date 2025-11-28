@@ -65,7 +65,7 @@ const registerUser = async (
 
     const existingEmail = await userService.getUserByEmail(email);
     const existingPhoneNumber = await userService.getUserByPhoneNumber(
-      identityNumber
+      phoneNumber
     );
     if (existingEmail || existingPhoneNumber) {
       throw new AppError(
@@ -152,10 +152,8 @@ const loginUser = async (
       throw new AppError(400, "Missing credentials");
     }
 
-    // ✅ Kiểm tra là email hay số điện thoại
     const isEmail = /\S+@\S+\.\S+/.test(identifier);
 
-    // ✅ Tìm user theo email hoặc phoneNumber
     const user: IUser | null = isEmail
       ? await userService.getUserByEmail(identifier)
       : await userService.getUserByPhoneNumber(identifier);
@@ -163,12 +161,73 @@ const loginUser = async (
       throw new AppError(400, "User not found!");
     }
 
+    if (user.lockedUntil && Date.now() < user.lockedUntil.getTime()) {
+      throw new AppError(429, "Try again later");
+    }
+
+    const latestPwEntry = await userService.getLatestPasswordHistory(user._id);
+    const expired = user.lastPasswordChange
+      ? Date.now() - user.lastPasswordChange.getTime() > 90 * 86400000
+      : !latestPwEntry;
+    if (expired) throw new AppError(401, "Password expired");
+
+    const lastSeen: Date | undefined =
+      user.lastLogin ?? (user as any).updatedAt ?? (user as any).createdAt;
+
+    const shouldCheckInactivity = !!lastSeen;
+    const inactive =
+      shouldCheckInactivity && Date.now() - lastSeen.getTime() > 30 * 86400000;
+
+    if (inactive) {
+      await userService.updateUserInternal(
+        user._id,
+        { isActive: false },
+        user._id
+      );
+      throw new AppError(401, "Your account has been locked due to inactivity");
+    }
+
     const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isMatch) {
+      const nextAttempts = (user.failedLoginAttempts ?? 0) + 1;
+
+      let lockMinutes = 0;
+      if (nextAttempts >= 5 && nextAttempts < 7) lockMinutes = 5;
+      else if (nextAttempts >= 7 && nextAttempts < 10) lockMinutes = 15;
+      else if (nextAttempts >= 10) lockMinutes = 60;
+
+      const update: Partial<IUser> = {
+        failedLoginAttempts: nextAttempts as any,
+        lastFailedAt: new Date() as any,
+        ...(lockMinutes > 0
+          ? { lockedUntil: new Date(Date.now() + lockMinutes * 60_000) as any }
+          : {}),
+      };
+      try {
+        await userService.updateUserInternal(user._id, update as any, user._id);
+      } catch (_) {}
       throw new AppError(400, "Invalid password!");
     }
 
-    generateJWT(res, user._id as string, user.email as string, user.role as string[]);
+    try {
+      await userService.updateUserInternal(
+        user._id,
+        {
+          failedLoginAttempts: 0 as any,
+          lastFailedAt: undefined as any,
+          lockedUntil: undefined as any,
+          lastLogin: Date.now(),
+        } as any,
+        user._id
+      );
+    } catch (_) {}
+
+    generateJWT(
+      res,
+      user._id as string,
+      user.email as string,
+      user.role as string[]
+    );
 
     res.status(200).json({
       message: "Login successful!",

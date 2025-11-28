@@ -56,7 +56,7 @@ export function HomeLayout({ onShowLogin, onShowRegister }: LoginAndRegisterType
           <HomeHeader onShowLogin={onShowLogin} onShowRegister={onShowRegister} />
         </div>
 
-        <div className="pt-0" data-aos="fade-down">
+        <div className="pt-0 xs:pt-0" data-aos="fade-down">
           <HeroSection />
         </div>
         <div  data-aos="fade-down" >
