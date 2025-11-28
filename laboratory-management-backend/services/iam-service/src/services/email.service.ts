@@ -7,6 +7,9 @@ import { logEvent } from "../utils/logging.util.js";
 
 const userSerivce = new UserService();
 
+const recentResetRequests = new Map<string, number>();
+const RESET_REQUEST_COOLDOWN = 5000;
+
 export class EmailService {
   async requestPasswordReset(email: string): Promise<void> {
     try {
@@ -57,6 +60,14 @@ export class EmailService {
     try {
       if (!token) throw new AppError(400, "Dedicated token is required");
 
+      const now = Date.now();
+      const lastRequestTime = recentResetRequests.get(token);
+      if (lastRequestTime && (now - lastRequestTime) < RESET_REQUEST_COOLDOWN) {
+        console.log("Duplicate password reset request detected, ignoring");
+        return;
+      }
+      recentResetRequests.set(token, now);
+
       const decoded = jwt.verify(
         token,
         process.env.JWT_SECRET_KEY as string
@@ -78,6 +89,8 @@ export class EmailService {
         password: password,
         lastPasswordChange: new Date(),
       });
+
+      recentResetRequests.delete(token);
 
       await logEvent({
         eventCode: "E_00024",
