@@ -12,11 +12,22 @@ export class PasswordHistoryRepository implements IPassRepository {
   constructor(private passwordHistoryModel: any) {}
 
   async findById(id: string, fields?: string): Promise<any> {
-    return await this.passwordHistoryModel.findById(id, fields || "_id eventCode action eventMessage userId userEmail performedAt serviceName");
+    return await this.passwordHistoryModel.findById(
+      id,
+      fields ||
+        "_id eventCode action eventMessage userId userEmail performedAt serviceName"
+    );
   }
 
   async findByUserId(userId: string): Promise<any> {
     return await this.passwordHistoryModel.findOne({ userId });
+  }
+
+  async findLatestByUserId(userId: string) {
+    return this.passwordHistoryModel
+      .findOne({ userId })
+      .sort({ changedAt: -1 })
+      .lean(); 
   }
 
   async findByChangedAt(changedAt: Date): Promise<any> {

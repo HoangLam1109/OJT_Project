@@ -41,18 +41,12 @@ const avatarUpload = multer({
 });
 
 router.get("/all", authorize(["read:user"]), getUsersWithPagination);
-
-
-router.get("/userProfile", getCurrentUser);
-router.put("/UserProfile/Update", validateUpdateUser, updateProfile);
-
-
 router.get("/me/roles", getCurrentUserRolesAndPrivileges);
 router.get("/staff", getStaff);
 router.get("/:id/roles", authorize(["read:user"]), getUserRolesAndPrivileges);
 router.get("/:id", authorize(["read:user"]), getUser);
 
-router.get("/profile/me", getCurrentUser);
+router.get("/profile/:userId", getCurrentUser);
 router.post("/profile", validateUpdateUser, updateProfile);
 router.post("/profile/avatar", avatarUpload.single("avatar"), uploadAvatar);
 
