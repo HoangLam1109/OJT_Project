@@ -15,7 +15,7 @@ export const createUserSchema = Joi.object({
     "string.max": "Identity number must be at most 12 characters long",
     "any.required": "Identity number is required",
   }),
-  gender: Joi.string().valid("Male", "Female", "Other").required().messages({
+  gender: Joi.string().valid("Male", "Female", "Other", "MALE", "FEMALE", "OTHER").required().messages({
     "string.valid": "Invalid gender",
     "any.required": "Gender is required",
   }),
@@ -77,7 +77,7 @@ export const updateUserSchema = Joi.object({
     "string.min": "Identity number must be at least 9 characters long",
     "string.max": "Identity number must be at most 12 characters long",
   }),
-  gender: Joi.string().valid("Male", "Female", "Other").messages({
+  gender: Joi.string().valid("Male", "Female", "Other", "MALE", "FEMALE", "OTHER").messages({
     "string.valid": "Invalid gender",
   }),
   age: Joi.number().integer().min(0).messages({
