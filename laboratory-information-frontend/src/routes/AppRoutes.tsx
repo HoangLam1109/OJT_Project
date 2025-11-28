@@ -165,6 +165,7 @@ const roleRoutes: Record<string, RoleRouteConfig> = {
       {path : "create-test-order", component: CreateTestOrderPage},
       {path: "select-instruments", component: SelectInstrumentsPage},
       {path: "select-reagents", component: SelectReagentsPage},
+      {path: "audit-reports/:id", component: EventLogDetail},
     ],
   },
   SERVICE: {
@@ -185,6 +186,7 @@ const roleRoutes: Record<string, RoleRouteConfig> = {
       { path: "create-test-order", component: CreateTestOrderPage },
       { path: "select-instruments", component: SelectInstrumentsPage },
       { path: "select-reagents", component: SelectReagentsPage },
+      {path: "audit-reports/:id", component: EventLogDetail},
     ],
   },
 };

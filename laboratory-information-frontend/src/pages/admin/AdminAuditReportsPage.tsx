@@ -178,6 +178,13 @@ export function AdminAuditReportsPage() {
     return message;
   };
 
+  const getBasePath = () => {
+    if (location.pathname.startsWith('/service')) {
+      return '/service';
+    }
+    return '/admin';
+  };
+
   const renderPaginationButtons = () => {
     const items: (number | string)[] = [];
     let rangeStart = page - 2;
@@ -429,7 +436,9 @@ export function AdminAuditReportsPage() {
                               size="icon"
                               title={t('eventLog.viewDetail')}
                               disabled={!log.event_id}
-                              onClick={() => navigate(`/admin/audit-reports/${log.event_id}`)}
+                              onClick={() => {
+                                const basePath = getBasePath();
+                                navigate(`${basePath}/audit-reports/${log.event_id}`);}}
                               className="h-8 w-8"
                             >
                               <Eye className="w-4 h-4" />

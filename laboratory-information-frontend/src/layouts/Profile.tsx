@@ -39,20 +39,6 @@ export default function Profile({ currentUser, onUpdateProfile }: ProfileProps) 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { t } = useTranslation();
 
-
-  // const normalizeGender = (gender?: string) => {
-  //   if (!gender) return '';
-  //   const g = gender.toLowerCase();
-  //   if (g === 'male') return 'Male';
-  //   if (g === 'female') return 'Female';
-  //   if (g === 'other') return 'Other';
-  //   return '';
-  // };
-
-  useEffect(() => {
-    fetchProfile();
-  }, [currentUser.id]);
-
   
   const fetchProfile = useCallback(async () => {
     try {
