@@ -21,6 +21,7 @@ interface IAMUserSnapshot {
   gender?: string;
   dateOfBirth?: string;
   identityNumber?: string;
+  avatar?: string;
 }
 
 export const EventLogIAMDetailPage: React.FC<EventLogIAMDetailPageProps> = ({ log }) => {
@@ -63,6 +64,17 @@ export const EventLogIAMDetailPage: React.FC<EventLogIAMDetailPageProps> = ({ lo
             <div>
               <p className="text-gray-500">{t('eventLog.iam.fullName')}</p>
               <p className="font-medium">{snapshot.fullName}</p>
+            </div>
+          )}
+          {snapshot.avatar && (
+            <div>
+              <p className="text-gray-500">{t('userProfile.personalInfo')}</p>
+              <p className="font-medium">Avatar</p>
+              <img 
+                src={snapshot.avatar} 
+                alt="Avatar" 
+                className="w-16 h-16 rounded-full object-cover border border-gray-200 mt-1"
+              />
             </div>
           )}
           {snapshot.email && (
@@ -132,11 +144,11 @@ export const EventLogIAMDetailPage: React.FC<EventLogIAMDetailPageProps> = ({ lo
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="border-r pr-4">
               <h3 className="font-semibold text-lg text-gray-900 border-b pb-2 mb-4">{t('eventLog.iam.oldData')}</h3>
-              {renderUserInfo(oldSnapshot, '', { hideRole: true })}
+              {renderUserInfo(oldSnapshot, '')}
             </div>
             <div className="pl-4">
               <h3 className="font-semibold text-lg text-gray-900 border-b pb-2 mb-4">{t('eventLog.iam.newData')}</h3>
-              {renderUserInfo(newSnapshot, '', { hideRole: true })}
+              {renderUserInfo(newSnapshot, '')}
             </div>
           </div>
         </div>

@@ -1115,6 +1115,7 @@
       "deletedPatient": "Deleted Patient Information",
       "deletedMedical": "Deleted Medical Record Information",
       "patientCode": "Patient Code",
+      "patientName" :"Patient Name",
       "age": "Age",
       "emergencyContactName": "Emergency Contact Name",
       "emergencyContactPhone": "Emergency Contact Phone",

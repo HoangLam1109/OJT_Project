@@ -192,12 +192,26 @@ const EventLogPatientDetailPage: React.FC<EventLogPatientDetailPageProps> = ({ l
   const renderMedicalRecordInfo = (snapshot: SnapshotData | null, title = t('eventLog.patient.createdMedical')) => {
     if (!snapshot) return null;
     const medicalRecord = snapshot.medical_record;
+    const user = snapshot.user;
     if (!medicalRecord) return null;
+    if (!user) return null;
 
     return (
       <div className="space-y-4">
         {title && <h3 className="font-semibold text-lg text-gray-900 border-b pb-2">{title}</h3>}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          {user.fullName && (
+            <div>
+              <p className="text-gray-500">{t('eventLog.patient.patientName')}</p>
+              <p className="font-medium">{user.fullName}</p>
+            </div>  
+          )}
+          {user.email && (
+             <div>
+              <p className="text-gray-500">Email</p>
+              <p className="font-medium">{user.email}</p>
+            </div>
+          )}
           {medicalRecord.record_code && (
             <div>
               <p className="text-gray-500">{t('eventLog.patient.recordCode')}</p>
