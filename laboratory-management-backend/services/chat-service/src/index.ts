@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import express, { Express, Request, Response } from "express";
 import cors from "cors";
+import cookieParser from 'cookie-parser';
 import { connectDB } from "./config/database.config.js";
 import routes from "./routes/index.js";
 import { errorHandler } from "./middlewares/error.middleware.js";
@@ -28,6 +29,7 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(express.json());
+app.use(cookieParser());
 
 // Start server
 async function startServer() {

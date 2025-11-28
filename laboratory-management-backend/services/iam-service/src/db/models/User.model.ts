@@ -19,17 +19,16 @@ export interface IUser extends Document {
   role?: string[];
   avatar?: string;
 
-  // OAuth fields
   provider?: "google" | "local";
   providerId?: string;
 
   // Additional fields (commented out for now)
 
-  // lastLogin?: Date
+  lastLogin?: Date
   lastPasswordChange?: Date
-  // failedLoginAttempts?: number
-  // isLocked?: boolean
-  // lockedUntil?: Date
+  failedLoginAttempts?: number
+  lastFailedAt?: Date
+  lockedUntil?: Date
   // lastActivity?: Date
   // createdBy?: string
   // updatedBy?: string
@@ -153,6 +152,20 @@ const userSchema = new mongoose.Schema<IUser>(
       type: Boolean,
       default: false,
     },
+    lastFailedAt: {
+      type: Date,
+    },
+    lastLogin: {
+      type: Date,
+    },
+    failedLoginAttempts: {
+      type: Number,
+      default: 0
+    },
+    lockedUntil: {
+      type: Date,
+    },
+
   },
   {
     _id: false,
