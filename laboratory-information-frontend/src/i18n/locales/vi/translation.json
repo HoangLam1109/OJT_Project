@@ -1099,6 +1099,9 @@
       "gender": "Giới tính",
       "dob": "Ngày sinh",
       "identityNumber": "CCCD",
+      "isActive":"Trạng thái hoạt động",
+      "active":"Hoạt động",
+      "inactive":"Không hoạt động",
       "role": "Vai trò",
       "male": "Nam",
       "female": "Nữ"
