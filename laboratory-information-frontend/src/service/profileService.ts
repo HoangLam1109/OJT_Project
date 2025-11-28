@@ -1,3 +1,4 @@
+
 import { apiService } from './apiClient';
 
 interface UserProfileData {
@@ -62,6 +63,7 @@ export class ProfileService {
    */
   async updateProfile(formData: Partial<UserProfileData>): Promise<void> {
     try {
+      
       // Prepare data for update (remove email as it's not updatable usually, or backend handles it)
       const updateData: UpdateProfileData = { ...formData };
       
@@ -102,8 +104,9 @@ export class ProfileService {
           updateData.identityNumber = '0' + cleanId;
         }
       }
+      console.log("Updating profile with data:", updateData);
 
-      await apiService.put("/user/UserProfile/Update", updateData);
+      await apiService.put("/user/profile", updateData);
     } catch (error: unknown) {
       console.error("Failed to update profile:", error);
       throw error;

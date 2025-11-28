@@ -82,7 +82,7 @@ const NormalUserLayoutContent: React.FC<LayoutContentProps> = ({
   
     const loadProfile = async () => {
       try {
-        const data = await profileService.getProfile();
+        const data = await profileService.getProfile(currentUser.id);
         setProfile(data);
       } catch (e) {
         console.error("Failed to load profile", e);
