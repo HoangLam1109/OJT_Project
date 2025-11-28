@@ -30,7 +30,7 @@ interface ProfileProps {
   onUpdateProfile?: (updated: Partial<UserProfileData>) => void;
 }
 
-export default function Profile({ onUpdateProfile }: ProfileProps) {
+export default function Profile({ currentUser, onUpdateProfile }: ProfileProps) {
   const [profile, setProfile] = useState<UserProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -46,7 +46,7 @@ export default function Profile({ onUpdateProfile }: ProfileProps) {
   const fetchProfile = async () => {
     try {
       setLoading(true);
-      const userData = await profileService.getProfile();
+      const userData = await profileService.getProfile(currentUser.id);
       setProfile(userData);
       setFormData(userData);
     } catch (error) {
