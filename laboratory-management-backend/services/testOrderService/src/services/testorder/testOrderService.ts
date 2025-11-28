@@ -71,7 +71,7 @@ export const TestOrderService = {
         const testItems = await TestItem.find({ _id: { $in: enriched.test_item_ids } }).select('name');
         const nameMap = new Map(testItems.map(t => [t._id.toString(), t.name]));
         const names = enriched.test_item_ids.map((id: any) => nameMap.get(id.toString()));
-        
+
         // Reorder: put test_item_names after test_item_ids for better readability
         const entries = Object.entries(enriched);
         const idx = entries.findIndex(([k]) => k === 'test_item_ids');
@@ -85,7 +85,7 @@ export const TestOrderService = {
     } catch (error) {
       console.warn("[TestOrderService] Error enriching log data:", error);
     }
-    
+
     return enriched;
   },
 
@@ -107,19 +107,22 @@ export const TestOrderService = {
 
 
   async getOrdersGroupedByOnePatient(
+    user_id: string,
     patient_id: string,
-    created_at: Date,
-    page = 1,
-    limit = 3
+    created_at?: Date
   ): Promise<any[]> {
-    const skip = (page - 1) * limit;
+
+    const match: any = { is_deleted: false, patient_id };
+    if (created_at) {
+      match.created_at = { $gte: created_at };
+    }
 
     return TestOrder.aggregate([
-      { $match: { is_deleted: false, patient_id: patient_id } },
+      { $match: match },
       { $sort: { created_at: -1 } },
       {
         $group: {
-          _id: "$patient_id",
+          _id: "$user_id",
           patient_name: { $first: "$patient_name" },
           orders: { $push: "$$ROOT" }
         }
@@ -130,11 +133,12 @@ export const TestOrderService = {
           patient_id: "$_id",
           patient_name: 1,
           totalOrders: { $size: "$orders" },
-          orders: { $slice: ["$orders", skip, limit] }
+          orders: 1 // trả về tất cả orders, không slice
         }
       }
     ]);
   },
+
 
 
 
@@ -146,7 +150,7 @@ export const TestOrderService = {
 
     // Tạo patient_id tạm thời nếu chỉ có patient_name
     const patientId = data.patient_id?.trim() || `temp_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
-    
+
     // Dùng reagent_usages từ request, ép quantity_used về number, default 1 nếu null
     const reagentUsages: ReagentUsage[] = (data.reagent_usages ?? []).map(r => ({
       reagent_id: r.reagent_id,
@@ -211,7 +215,7 @@ export const TestOrderService = {
     for (const usage of reagentUsages) {
       const reagent = await reagentServiceClient.getReagentById(usage.reagent_id);
       if (!reagent) continue;
-      
+
       reagentNamesMap.set(usage.reagent_id, reagent.reagent_name);
 
       // quantity_current mới = quantity_current  - quantity_used
@@ -225,7 +229,7 @@ export const TestOrderService = {
     try {
       let user = null;
       const userIdToFetch = operatorId;
-      
+
       if (userIdToFetch) {
         try {
           user = await iamServiceClient.getUserById(userIdToFetch);
@@ -327,7 +331,7 @@ export const TestOrderService = {
     try {
       let user = null;
       const userIdToFetch = operatorId;
-      
+
       if (userIdToFetch) {
         try {
           user = await iamServiceClient.getUserById(userIdToFetch);
@@ -394,7 +398,7 @@ export const TestOrderService = {
     try {
       let user = null;
       const userIdToFetch = operatorId;
-      
+
       if (userIdToFetch) {
         try {
           user = await iamServiceClient.getUserById(userIdToFetch);
@@ -460,7 +464,7 @@ export const TestOrderService = {
     try {
       let user = null;
       const userIdToFetch = operatorId || (deleted_by !== 'system' ? deleted_by : null);
-      
+
       if (userIdToFetch) {
         try {
           user = await iamServiceClient.getUserById(userIdToFetch);

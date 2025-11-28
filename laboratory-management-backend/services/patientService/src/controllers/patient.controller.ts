@@ -134,7 +134,7 @@ const resolveOperatorName = async (
   }
 
   if (operatorId) {
-  const iamUser = await fetchIamUser(operatorId);
+    const iamUser = await fetchIamUser(operatorId);
     if (iamUser?.fullName) {
       (req as any).userFullName = iamUser.fullName;
       return iamUser.fullName;
@@ -286,11 +286,11 @@ const getAllPatients = async (req: Request, res: Response): Promise<void> => {
   */
   try {
     const { page = "1", limit = "10", search, isActive, populateUser = "true" } = req.query;
-    const userId = (req as any).userId; 
+    const userId = (req as any).userId;
     if (search) console.log(`   └─ Search: ${search}`);
     if (isActive) console.log(`   └─ Filter Active: ${isActive}`);
     console.log(`   └─ Include User: ${populateUser}`);
-    
+
     const filters: Record<string, unknown> = {};
     if (typeof search === "string" && search.trim().length > 0) {
       const trimmedSearch = search.trim();
@@ -349,8 +349,8 @@ const getPatientById = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-  const includeUser = typeof populateUser === "string" ? populateUser.toLowerCase() === "true" : true;
-  const patient = await patientService.getPatientById(id, includeUser);
+    const includeUser = typeof populateUser === "string" ? populateUser.toLowerCase() === "true" : true;
+    const patient = await patientService.getPatientById(id, includeUser);
 
     if (!patient) {
       console.log(`   ❌ Patient not found: ${id}`);
@@ -366,6 +366,26 @@ const getPatientById = async (req: Request, res: Response): Promise<void> => {
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error);
     console.log(`   ⚠️  Error: ${errorMsg}`);
+    errorHandler(res, error);
+  }
+};
+
+
+const getPatientByUserIdController = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const user_id = req.params.userId;
+    if (!user_id) {
+      res.status(400).json({ message: "user_id is required" });
+      return;
+    }
+
+    const patient = await patientService.getPatientByUserId(user_id);
+    if (!patient) {
+      res.status(404).json({ message: "Patient not found" });
+      return;
+    }
+    res.status(200).json({ patient });
+  } catch (error) {
     errorHandler(res, error);
   }
 };
@@ -426,10 +446,10 @@ const createPatient = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-  const fallbackActor = typeof user_id === "string" && user_id.length > 0 ? user_id : undefined;
-  const operatorIdForMonitoring = resolveOperatorId(req, fallbackActor);
-  const actorEmail = await resolvePerformedBy(req, operatorIdForMonitoring ?? fallbackActor ?? "system");
-  const operatorAvatar = await resolveOperatorAvatar(req, operatorIdForMonitoring);
+    const fallbackActor = typeof user_id === "string" && user_id.length > 0 ? user_id : undefined;
+    const operatorIdForMonitoring = resolveOperatorId(req, fallbackActor);
+    const actorEmail = await resolvePerformedBy(req, operatorIdForMonitoring ?? fallbackActor ?? "system");
+    const operatorAvatar = await resolveOperatorAvatar(req, operatorIdForMonitoring);
 
     const patient = await patientService.createPatient({
       user_id,
@@ -606,8 +626,8 @@ const deletePatient = async (req: Request, res: Response): Promise<void> => {
     #swagger.parameters['hard'] = { in: 'query', type: 'boolean', default: false }
   */
   try {
-  const { id } = req.params;
-  const { hard = "false" } = req.query;
+    const { id } = req.params;
+    const { hard = "false" } = req.query;
     if (!id) {
       console.log(`   ❌ Missing patient ID`);
       res.status(400).json({ message: "Patient ID is required" });
@@ -640,7 +660,7 @@ const deletePatient = async (req: Request, res: Response): Promise<void> => {
     const operatorAvatar = await resolveOperatorAvatar(req, operatorIdForMonitoring);
 
     const existingRecord = existingPatient as unknown as Record<string, unknown>;
-  const existingSnapshot = buildPatientSnapshot(iamUserSnapshot, existingRecord);
+    const existingSnapshot = buildPatientSnapshot(iamUserSnapshot, existingRecord);
 
     if (shouldHardDelete) {
       const deleted = await patientService.hardDeletePatient(id);
@@ -742,8 +762,8 @@ const softDeletePatientByUserId = async (req: Request, res: Response): Promise<v
     const existingRecord = existingPatient as unknown as Record<string, unknown>;
     const updatedRecord = patient as unknown as Record<string, unknown>;
     const softDeleteFields = ["is_deleted", "is_active", "deleted_at"];
-  const existingSnapshot = buildPatientSnapshot(iamUserSnapshot, existingRecord);
-  const newSnapshot = buildPatientSnapshot(iamUserSnapshot, updatedRecord);
+    const existingSnapshot = buildPatientSnapshot(iamUserSnapshot, existingRecord);
+    const newSnapshot = buildPatientSnapshot(iamUserSnapshot, updatedRecord);
     const softDeleteOldValues = pickFields(existingRecord, softDeleteFields);
     if (existingSnapshot) {
       softDeleteOldValues.snapshot = existingSnapshot;
@@ -789,4 +809,4 @@ const softDeletePatientByUserId = async (req: Request, res: Response): Promise<v
   }
 };
 
-export { getAllPatients, getPatientById, createPatient, updatePatient, deletePatient, softDeletePatientByUserId };
+export { getAllPatients, getPatientById, createPatient, updatePatient, deletePatient, softDeletePatientByUserId , getPatientByUserIdController};
