@@ -13,7 +13,7 @@ import { toast } from "sonner";
 export interface UserProfileData {
   email: string;
   fullName: string;
-  identityNumber: string; 
+  identityNumber: string;
   role: string[];
   avatar: string;
   isActive: boolean;
@@ -39,6 +39,16 @@ export default function Profile({ currentUser, onUpdateProfile }: ProfileProps) 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { t } = useTranslation();
 
+
+  const normalizeGender = (gender?: string) => {
+    if (!gender) return '';
+    const g = gender.toLowerCase();
+    if (g === 'male') return 'Male';
+    if (g === 'female') return 'Female';
+    if (g === 'other') return 'Other';
+    return '';
+  };
+
   useEffect(() => {
     fetchProfile();
   }, []);
@@ -48,7 +58,11 @@ export default function Profile({ currentUser, onUpdateProfile }: ProfileProps) 
       setLoading(true);
       const userData = await profileService.getProfile(currentUser.id);
       setProfile(userData);
-      setFormData(userData);
+      setFormData({
+        ...userData,
+        gender: normalizeGender(userData.gender),
+      });
+
     } catch (error) {
       console.error("Failed to fetch profile:", error);
     } finally {
@@ -60,16 +74,16 @@ export default function Profile({ currentUser, onUpdateProfile }: ProfileProps) 
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
- 
+
 
   const handleSave = async () => {
     try {
       await profileService.updateProfile(formData);
-      
+
       toast.success(t('userProfile.updateProfileSuccess'));
       setIsEditing(false);
       fetchProfile(); // Refresh data
-      
+
       if (onUpdateProfile) {
         onUpdateProfile(formData);
       }
@@ -113,24 +127,24 @@ export default function Profile({ currentUser, onUpdateProfile }: ProfileProps) 
     try {
       setUploadingAvatar(true);
       const avatarUrl = await profileService.uploadAvatar(file);
-      
+
       // Update local state
       setProfile((prev) => prev ? { ...prev, avatar: avatarUrl } : null);
       setFormData((prev) => ({ ...prev, avatar: avatarUrl }));
-      
+
       toast.success(t('userProfile.updateAvatarSuccess'));
-      
+
       // Refresh profile to get latest data
       await fetchProfile();
-      
+
       if (onUpdateProfile) {
         onUpdateProfile({ avatar: avatarUrl });
       }
     } catch (error: unknown) {
       console.error("Failed to upload avatar:", error);
-      const message = (error as { response?: { data?: { message?: string } } })?.response?.data?.message || 
-                     (error as Error)?.message || 
-                     t('userProfile.uploadAvatarError');
+      const message = (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+        (error as Error)?.message ||
+        t('userProfile.uploadAvatarError');
       toast.error(message);
     } finally {
       setUploadingAvatar(false);
@@ -174,13 +188,13 @@ export default function Profile({ currentUser, onUpdateProfile }: ProfileProps) 
               accept="image/*"
               className="hidden"
             />
-            <div 
+            <div
               className={`relative ${isEditing ? 'cursor-pointer group' : ''}`}
               onClick={handleAvatarClick}
             >
-              <img 
-                src={profile.avatar || "https://github.com/shadcn.png"} 
-                alt="Avatar" 
+              <img
+                src={profile.avatar || "https://github.com/shadcn.png"}
+                alt="Avatar"
                 className={`w-20 h-20 xs:w-32 xs:h-32 rounded-full border-2 xs:border-4 border-white shadow-xl object-cover bg-white ${isEditing ? 'group-hover:opacity-80 transition-opacity' : ''}`}
                 onError={(e) => {
                   (e.target as HTMLImageElement).src = "https://github.com/shadcn.png";
@@ -209,35 +223,35 @@ export default function Profile({ currentUser, onUpdateProfile }: ProfileProps) 
           </div>
         </div>
         <div className="absolute top-2 xs:top-4 right-2 xs:right-6">
-           {!isEditing ? (
-              <Button 
-                onClick={() => setIsEditing(true)}
-                className="bg-white/20 hover:bg-white/30 text-white border-none backdrop-blur-sm text-xs xs:text-sm px-2 xs:px-4 py-1 xs:py-2"
+          {!isEditing ? (
+            <Button
+              onClick={() => setIsEditing(true)}
+              className="bg-white/20 hover:bg-white/30 text-white border-none backdrop-blur-sm text-xs xs:text-sm px-2 xs:px-4 py-1 xs:py-2"
+            >
+              <Edit3 className="w-3 h-3 xs:w-4 xs:h-4 mr-1 xs:mr-2" />
+              <span className="hidden xs:inline">{t('userProfile.editProfile')}</span>
+              <span className="xs:hidden">{t('userProfile.edit')}</span>
+            </Button>
+          ) : (
+            <div className="flex gap-1 xs:gap-2">
+              <Button
+                variant="outline"
+                onClick={handleCancel}
+                className="bg-white/90 hover:bg-white text-gray-700 border-none shadow-sm text-xs xs:text-sm px-2 xs:px-4 py-1 xs:py-2"
               >
-                <Edit3 className="w-3 h-3 xs:w-4 xs:h-4 mr-1 xs:mr-2" />
-                <span className="hidden xs:inline">{t('userProfile.editProfile')}</span>
-                <span className="xs:hidden">{t('userProfile.edit')}</span>
+                <X className="w-3 h-3 xs:w-4 xs:h-4 mr-1 xs:mr-2" />
+                <span className="hidden xs:inline">{t('userProfile.cancel')}</span>
               </Button>
-            ) : (
-              <div className="flex gap-1 xs:gap-2">
-                <Button
-                  variant="outline"
-                  onClick={handleCancel}
-                  className="bg-white/90 hover:bg-white text-gray-700 border-none shadow-sm text-xs xs:text-sm px-2 xs:px-4 py-1 xs:py-2"
-                >
-                  <X className="w-3 h-3 xs:w-4 xs:h-4 mr-1 xs:mr-2" />
-                  <span className="hidden xs:inline">{t('userProfile.cancel')}</span>
-                </Button>
-                <Button
-                  onClick={handleSave}
-                  className="bg-green-500 hover:bg-green-600 text-white border-none shadow-sm text-xs xs:text-sm px-2 xs:px-4 py-1 xs:py-2"
-                >
-                  <Save className="w-3 h-3 xs:w-4 xs:h-4 mr-1 xs:mr-2" />
-                  <span className="hidden xs:inline">{t('userProfile.saveChanges')}</span>
-                  <span className="xs:hidden">{t('userProfile.save')}</span>
-                </Button>
-              </div>
-            )}
+              <Button
+                onClick={handleSave}
+                className="bg-green-500 hover:bg-green-600 text-white border-none shadow-sm text-xs xs:text-sm px-2 xs:px-4 py-1 xs:py-2"
+              >
+                <Save className="w-3 h-3 xs:w-4 xs:h-4 mr-1 xs:mr-2" />
+                <span className="hidden xs:inline">{t('userProfile.saveChanges')}</span>
+                <span className="xs:hidden">{t('userProfile.save')}</span>
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -258,7 +272,7 @@ export default function Profile({ currentUser, onUpdateProfile }: ProfileProps) 
                   {profile.isActive ? t('userProfile.active') : t('userProfile.inactive')}
                 </span>
               </div>
-              
+
               <div className="space-y-2 xs:space-y-3">
                 <div className="flex items-center text-gray-700">
                   <Mail className="w-3.5 h-3.5 xs:w-4 xs:h-4 mr-2 xs:mr-3 text-gray-400" />
@@ -340,7 +354,7 @@ export default function Profile({ currentUser, onUpdateProfile }: ProfileProps) 
                 <div className="space-y-2">
                   <Label className="text-gray-600 text-xs xs:text-sm">{t('userProfile.gender')}</Label>
                   <select
-                    value={formData.gender || ''}
+                    value={normalizeGender(formData.gender)}
                     onChange={(e) => handleChange("gender", e.target.value)}
                     disabled={!isEditing}
                     className="w-full h-9 xs:h-10 px-2 xs:px-3 py-2 rounded-md border border-gray-200 bg-gray-50/50 text-xs xs:text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
