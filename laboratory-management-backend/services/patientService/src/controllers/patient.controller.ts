@@ -250,25 +250,61 @@ const buildPatientSnapshot = (
   return Object.keys(snapshot).length > 0 ? snapshot : null;
 };
 
-const getDifferences = (oldData: any, newData: any) => {
-  const oldDiff: any = {};
-  const newDiff: any = {};
+const isPlainObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
 
-  const allKeys = new Set([...Object.keys(oldData || {}), ...Object.keys(newData || {})]);
+const computeDifferences = (
+  oldData: Record<string, unknown> | null | undefined,
+  newData: Record<string, unknown> | null | undefined
+) => {
+  const oldDiff: Record<string, unknown> = {};
+  const newDiff: Record<string, unknown> = {};
+
+  const allKeys = new Set([
+    ...Object.keys(oldData || {}),
+    ...Object.keys(newData || {}),
+  ]);
 
   for (const key of allKeys) {
-    // Bỏ qua các trường metadata thường xuyên thay đổi hoặc không quan trọng
-    if (['updated_at', 'updated_by', '__v'].includes(key)) continue;
+    if (["updated_at", "updated_by", "__v"].includes(key)) {
+      continue;
+    }
 
     const oldVal = oldData?.[key];
     const newVal = newData?.[key];
 
-    // So sánh deep bằng JSON.stringify
+    if (isPlainObject(oldVal) && isPlainObject(newVal)) {
+      const nested = computeDifferences(oldVal, newVal);
+      if (
+        Object.keys(nested.oldDiff).length > 0 ||
+        Object.keys(nested.newDiff).length > 0
+      ) {
+        oldDiff[key] = nested.oldDiff;
+        newDiff[key] = nested.newDiff;
+      }
+      continue;
+    }
+
     if (JSON.stringify(oldVal) !== JSON.stringify(newVal)) {
       oldDiff[key] = oldVal;
       newDiff[key] = newVal;
     }
   }
+
+  return { oldDiff, newDiff };
+};
+
+const getDifferences = (
+  oldData: any,
+  newData: any,
+  snapshot?: Record<string, unknown> | null
+) => {
+  const { oldDiff, newDiff } = computeDifferences(oldData, newData);
+
+  if (snapshot) {
+    newDiff.snapshot = snapshot;
+  }
+
   return { oldDiff, newDiff };
 };
 
@@ -287,9 +323,6 @@ const getAllPatients = async (req: Request, res: Response): Promise<void> => {
   try {
     const { page = "1", limit = "10", search, isActive, populateUser = "true" } = req.query;
     const userId = (req as any).userId; 
-    if (search) console.log(`   └─ Search: ${search}`);
-    if (isActive) console.log(`   └─ Filter Active: ${isActive}`);
-    console.log(`   └─ Include User: ${populateUser}`);
     
     const filters: Record<string, unknown> = {};
     if (typeof search === "string" && search.trim().length > 0) {
@@ -324,8 +357,6 @@ const getAllPatients = async (req: Request, res: Response): Promise<void> => {
     );
     res.status(200).json(result);
   } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : String(error);
-    console.log(`   ⚠️  Error: ${errorMsg}`);
     errorHandler(res, error);
   }
 };
@@ -344,7 +375,6 @@ const getPatientById = async (req: Request, res: Response): Promise<void> => {
     const { populateUser = "true" } = req.query;
     const userId = (req as any).userId;
     if (!id) {
-      console.log(`   ❌ Missing patient ID`);
       res.status(400).json({ message: "Patient ID is required" });
       return;
     }
@@ -353,19 +383,15 @@ const getPatientById = async (req: Request, res: Response): Promise<void> => {
   const patient = await patientService.getPatientById(id, includeUser);
 
     if (!patient) {
-      console.log(`   ❌ Patient not found: ${id}`);
       res.status(404).json({ message: "Patient not found" });
       return;
     }
 
-    console.log(`   ✅ Found patient: ${patient.patient_code} (User: ${patient.user_id})`);
     res.status(200).json({
       patient,
       ...(includeUser ? { user: (patient as any).user ?? null } : {}),
     });
   } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : String(error);
-    console.log(`   ⚠️  Error: ${errorMsg}`);
     errorHandler(res, error);
   }
 };
@@ -396,9 +422,8 @@ const createPatient = async (req: Request, res: Response): Promise<void> => {
     if (typeof body === "string") {
       try {
         body = JSON.parse(body);
-        console.log("   [DEBUG] Parsed body from string:", body);
       } catch (err) {
-        console.log("   [ERROR] Cannot parse body string:", err);
+        // ignore invalid JSON body, handled as-is
       }
     }
     // Nếu body có thuộc tính example (gửi từ Swagger UI), lấy từ example
@@ -411,17 +436,15 @@ const createPatient = async (req: Request, res: Response): Promise<void> => {
     if (!user_id) {
       user_id = (typeof req.query.user_id === 'string' ? req.query.user_id : undefined) || userId;
       if (user_id) {
-        console.log(`   [DEBUG] Using fallback user_id: ${user_id}`);
+        // keep fallback silently
       }
     }
     if (!user_id) {
-      console.log(`   ❌ Missing user_id`);
       res.status(400).json({ message: "user_id is required" });
       return;
     }
     const existingPatient = await patientService.getPatientByUserId(user_id);
     if (existingPatient) {
-      console.log(`   ℹ️  Patient already exists: ${existingPatient.patient_code}`);
       res.status(200).json({ message: "Patient already exists", patient: existingPatient });
       return;
     }
@@ -437,7 +460,6 @@ const createPatient = async (req: Request, res: Response): Promise<void> => {
       is_active: true,
       created_by: actorEmail,
     });
-    console.log(`   ✅ Patient created: ${patient.patient_code} (ID: ${patient._id})`);
 
     const iamUserSnapshot = typeof user_id === "string" ? await iamServiceClient.getUserById(user_id) : null;
     const patientRecord = patient as unknown as Record<string, unknown>;
@@ -461,8 +483,6 @@ const createPatient = async (req: Request, res: Response): Promise<void> => {
 
     res.status(201).json({ message: "Patient created", patient });
   } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : String(error);
-    console.log(`   ⚠️  Error: ${errorMsg}`);
     errorHandler(res, error);
   }
 };
@@ -497,14 +517,12 @@ const updatePatient = async (req: Request, res: Response): Promise<void> => {
     const id = idFromParams || idFromBody;
     const userId = (req as any).userId;
     if (!id) {
-      console.log(`   ❌ Missing patient ID`);
       res.status(400).json({ message: "Patient ID is required" });
       return;
     }
 
     const existingPatient = await patientService.getPatientById(id);
     if (!existingPatient) {
-      console.log(`   ❌ Patient not found: ${id}`);
       res.status(404).json({ message: "Patient not found" });
       return;
     }
@@ -562,34 +580,34 @@ const updatePatient = async (req: Request, res: Response): Promise<void> => {
       operatorIdForMonitoring ?? fallbackActor ?? "system"
     );
     const operatorAvatar = await resolveOperatorAvatar(req, operatorIdForMonitoring);
+const existingRecord = existingPatient as unknown as Record<string, unknown>;
+const updatedRecord = updatedPatient as unknown as Record<string, unknown>;
+const patientSnapshot = buildPatientSnapshot(iamUserSnapshot, updatedRecord);
+const { oldDiff, newDiff } = getDifferences(existingRecord, updatedRecord, patientSnapshot);
+const changedFields = Object.keys(newDiff).filter((k) => k !== "snapshot");
 
-    const existingRecord = existingPatient as unknown as Record<string, unknown>;
-    const updatedRecord = updatedPatient as unknown as Record<string, unknown>;
+if (Object.keys(oldDiff).length > 0 || Object.keys(newDiff).length > 0) {
+  await patientMonitoringService.recordPatientUpdated({
+    patientId: `${updatedPatient._id}`,
+    eventMessage:
+      changedFields.length > 0
+        ? `Patient record updated (${changedFields.join(", ")})`
+        : "Patient record updated",
+    oldValues: oldDiff,
+    newValues: newDiff,
+    operatorEmail: actorEmail,
+    operatorId: operatorIdForMonitoring ?? fallbackOperatorId ?? null,
+    operatorName: await resolveOperatorName(
+      req,
+      operatorIdForMonitoring ?? fallbackOperatorId,
+      iamUserSnapshot?.fullName ?? undefined
+    ),
+    operatorAvatar,
+  });
+}
 
-    const { oldDiff, newDiff } = getDifferences(existingRecord, updatedRecord);
-
-    if (Object.keys(oldDiff).length > 0 || Object.keys(newDiff).length > 0) {
-      await patientMonitoringService.recordPatientUpdated({
-        patientId: `${updatedPatient._id}`,
-        eventMessage: `Patient record updated (${Object.keys(newDiff).join(", ")})`,
-        oldValues: oldDiff,
-        newValues: newDiff,
-        operatorEmail: actorEmail,
-        operatorId: operatorIdForMonitoring ?? fallbackOperatorId ?? null,
-        operatorName: await resolveOperatorName(
-          req,
-          operatorIdForMonitoring ?? fallbackOperatorId,
-          iamUserSnapshot?.fullName ?? undefined
-        ),
-        operatorAvatar,
-      });
-    }
-
-    console.log(`   ✅ Patient updated: ${updatedPatient.patient_code}`);
     res.status(200).json({ message: "Patient updated", patient: updatedPatient });
   } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : String(error);
-    console.log(`   ⚠️  Error: ${errorMsg}`);
     errorHandler(res, error);
   }
 };
@@ -609,7 +627,6 @@ const deletePatient = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
   const { hard = "false" } = req.query;
     if (!id) {
-      console.log(`   ❌ Missing patient ID`);
       res.status(400).json({ message: "Patient ID is required" });
       return;
     }
@@ -617,7 +634,6 @@ const deletePatient = async (req: Request, res: Response): Promise<void> => {
     const existingPatient = await patientService.getPatientById(id);
 
     if (!existingPatient) {
-      console.log(`   ❌ Patient not found: ${id}`);
       res.status(404).json({ message: "Patient not found" });
       return;
     }
@@ -640,7 +656,7 @@ const deletePatient = async (req: Request, res: Response): Promise<void> => {
     const operatorAvatar = await resolveOperatorAvatar(req, operatorIdForMonitoring);
 
     const existingRecord = existingPatient as unknown as Record<string, unknown>;
-  const existingSnapshot = buildPatientSnapshot(iamUserSnapshot, existingRecord);
+    const existingSnapshot = buildPatientSnapshot(iamUserSnapshot, existingRecord);
 
     if (shouldHardDelete) {
       const deleted = await patientService.hardDeletePatient(id);
@@ -666,13 +682,11 @@ const deletePatient = async (req: Request, res: Response): Promise<void> => {
         operatorAvatar,
       });
 
-      console.log(`   ✅ Patient permanently deleted (hard delete): ${id}`);
       res.status(200).json({ message: "Patient permanently deleted" });
       return;
     }
     const patient = await patientService.softDeletePatient(id);
     if (!patient) {
-      console.log(`   ❌ Patient not found: ${id}`);
       res.status(404).json({ message: "Patient not found" });
       return;
     }
@@ -695,11 +709,8 @@ const deletePatient = async (req: Request, res: Response): Promise<void> => {
       operatorAvatar,
     });
 
-    console.log(`   ✅ Patient soft deleted: ${patient.patient_code}`);
     res.status(200).json({ message: "Patient deleted", patient });
   } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : String(error);
-    console.log(`   ⚠️  Error: ${errorMsg}`);
     errorHandler(res, error);
   }
 };
@@ -715,7 +726,6 @@ const softDeletePatientByUserId = async (req: Request, res: Response): Promise<v
   try {
     const { userId } = req.params;
     if (!userId) {
-      console.log(`   ❌ Missing user ID`);
       res.status(400).json({ message: "User ID is required" });
       return;
     }
@@ -723,7 +733,6 @@ const softDeletePatientByUserId = async (req: Request, res: Response): Promise<v
     const existingPatient = await patientService.getPatientByUserId(userId);
 
     if (!existingPatient) {
-      console.log(`   ❌ Patient not found for user: ${userId}`);
       res.status(404).json({ message: "Patient not found for user" });
       return;
     }
@@ -734,7 +743,6 @@ const softDeletePatientByUserId = async (req: Request, res: Response): Promise<v
 
     const patient = await patientService.softDeletePatientByUserId(userId);
     if (!patient) {
-      console.log(`   ❌ Patient not found for user: ${userId}`);
       res.status(404).json({ message: "Patient not found for user" });
       return;
     }
@@ -780,11 +788,8 @@ const softDeletePatientByUserId = async (req: Request, res: Response): Promise<v
       operatorAvatar,
     });
 
-    console.log(`   ✅ Patient soft deleted: ${patient.patient_code} (User: ${userId})`);
     res.status(200).json({ message: "Patient deleted for user", patient });
   } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : String(error);
-    console.log(`   ⚠️  Error: ${errorMsg}`);
     errorHandler(res, error);
   }
 };
