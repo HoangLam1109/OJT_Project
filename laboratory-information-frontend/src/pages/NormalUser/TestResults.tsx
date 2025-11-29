@@ -4,7 +4,6 @@ import Button from '../../components/common/button';
 import { Input } from '../../components/common/input';
 import { Label } from '../../components/common/label';
 import Pagination from '../../components/common/pagination';
-import { toast } from 'sonner';
 import {
   Search,
   FlaskConical,
@@ -17,6 +16,8 @@ import { useAuthContext } from '../../hooks/useAuthContext';
 import { testResultService } from '../../service/testResultService';
 import { Skeleton } from '../../components/common/skeleton';
 import type { TestResult, TestResultDetail } from '../labuser/types/TestResultTypes';
+
+
 
 // Read-only View Detail Modal
 const ViewDetailModal: React.FC<{
@@ -39,6 +40,17 @@ const ViewDetailModal: React.FC<{
       year: 'numeric'
     });
   };
+  const getTranslatedTestType = (testType: string) => {
+  switch (testType) {
+    case 'Sinh hóa máu': return t('testOrder.biochemistry');
+    case 'Huyết học tổng quát': return t('testOrder.generalHematology');
+    case 'Vi sinh': return t('testOrder.microbiology');
+    case 'Miễn dịch': return t('testOrder.immunology');
+    case 'Nội tiết': return t('testOrder.endocrinology');
+    case 'Ung thư học': return t('testOrder.oncology');
+    default: return testType;
+  }
+};
 
   return (
     <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50 p-2 sm:p-4 animate-in fade-in duration-300">
@@ -62,7 +74,7 @@ const ViewDetailModal: React.FC<{
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">{t('testResult.modal.testType')}</p>
-                  <p className="font-medium">{result.test_type}</p>
+                  <p className="font-medium">{getTranslatedTestType(result.test_type)}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">{t('testResult.modal.testItem')}</p>
@@ -117,6 +129,19 @@ const ViewDetailModal: React.FC<{
 const TestResults: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useAuthContext();
+
+  const getTranslatedTestType = (testType: string) => {
+    switch (testType) {
+      case 'Sinh hóa máu': return t('testOrder.biochemistry');
+      case 'Huyết học tổng quát': return t('testOrder.generalHematology');
+      case 'Vi sinh': return t('testOrder.microbiology');
+      case 'Miễn dịch': return t('testOrder.immunology');
+      case 'Nội tiết': return t('testOrder.endocrinology');
+      case 'Ung thư học': return t('testOrder.oncology');
+      default: return testType;
+    }
+  };
+
   const [results, setResults] = useState<TestResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -130,7 +155,7 @@ const TestResults: React.FC = () => {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 3;
 
   const loadTestResults = useCallback(async () => {
     if (!user?.id) return;
@@ -283,7 +308,7 @@ const TestResults: React.FC = () => {
                           <div className="flex justify-between items-start sm:items-center gap-2">
                             <div className="flex-1 min-w-0">
                               <h3 className="text-sm sm:text-base font-semibold text-gray-900 truncate">
-                                {t('testResult.testType')}: {result.test_type}
+                                {t('testResult.testType')}: {getTranslatedTestType(result.test_type)}
                               </h3>
                               
                             </div>

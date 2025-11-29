@@ -365,33 +365,7 @@ export function AdminAuditReportsPage() {
               </div>
             </div>
 
-            {/* Action filter */}
-            <div className="min-w-[180px]">
-              <Select value={actionFilter} onValueChange={(v) => { setActionFilter(v as typeof actionFilter); setPage(1); }}>
-                <SelectTrigger className="bg-white border border-gray-300 focus:ring-2 focus:ring-blue-500">
-                  <SelectValue placeholder={t('eventLog.action')} />
-                </SelectTrigger>
-                <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
-                  <SelectItem value="all">{t('eventLog.allActions')}</SelectItem>
-                  <SelectItem value="CREATE">{t('eventLog.actions.CREATE')}</SelectItem>
-                  <SelectItem value="DELETE">{t('eventLog.actions.DELETE')}</SelectItem>
-                  <SelectItem value="UPDATE">{t('eventLog.actions.UPDATE')}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Sort by time */}
-            <div className="min-w-[180px]">
-              <Select value={sortOrder} onValueChange={(v) => { setSortOrder(v as typeof sortOrder); setPage(1); }}>
-                <SelectTrigger className="bg-white border border-gray-300 focus:ring-2 focus:ring-blue-500">
-                  <SelectValue placeholder={t('eventLog.time')} />
-                </SelectTrigger>
-                <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
-                  <SelectItem value="newest">{t('eventLog.newest')}</SelectItem>
-                  <SelectItem value="oldest">{t('eventLog.oldest')}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+           
 
             {(searchTerm || serviceFilter !== 'all' || actionFilter !== 'all' || sortOrder !== 'newest') && (
               <div className="flex items-center">

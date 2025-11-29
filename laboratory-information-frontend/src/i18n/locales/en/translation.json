@@ -1,4 +1,23 @@
 {
+  "dashboard": {
+    "welcomeBack": "Welcome back",
+    "welcomeBackUser": "Welcome back, {{name}}",
+    "overview": "Here is an overview of your recent activity",
+    "totalTests": "Total Tests",
+    "all": "All",
+    "pendingTests": "Pending Tests",
+    "pending": "Pending",
+    "processingTests": "Processing Tests",
+    "processing": "Processing",
+    "completedTests": "Completed Tests",
+    "completedSuccess": "Completed Successfully",
+    "recentResults": "Recent Test Results",
+    "recentResultsDesc": "Your latest test results",
+    "orderDate": "Order Date",
+    "completionDate": "Completion Date",
+    "noResults": "No test results yet.",
+    "loading": "Loading..."
+  },
   "header": {
     "appName": "LIMS Pro",
     "appDescription": "Laboratory Information Management System",

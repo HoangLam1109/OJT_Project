@@ -1,4 +1,23 @@
 {
+  "dashboard": {
+    "welcomeBack": "Chào mừng trở lại",
+    "welcomeBackUser": "Chào mừng trở lại, {{name}}",
+    "overview": "Đây là tổng quan về hoạt động gần đây của bạn",
+    "totalTests": "Tổng số xét nghiệm",
+    "all": "Tất cả",
+    "pendingTests": "Xét nghiệm đang chờ",
+    "pending": "Đang chờ",
+    "processingTests": "Xét nghiệm đang xử lý",
+    "processing": "Đang xử lý",
+    "completedTests": "Xét nghiệm hoàn thành",
+    "completedSuccess": "Hoàn thành thành công",
+    "recentResults": "Kết quả xét nghiệm gần đây",
+    "recentResultsDesc": "Kết quả xét nghiệm mới nhất của bạn",
+    "orderDate": "Ngày đặt",
+    "completionDate": "Ngày hoàn thành",
+    "noResults": "Chưa có kết quả xét nghiệm nào.",
+    "loading": "Đang tải..."
+  },
   "header": {
     "appName": "LIMS Pro",
     "appDescription": "Hệ thống Quản lý Thông tin Phòng thí nghiệm",
