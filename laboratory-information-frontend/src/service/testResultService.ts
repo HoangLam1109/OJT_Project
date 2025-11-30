@@ -177,6 +177,8 @@ export class TestResultService {
     };
   }> {
     try {
+      // Fetch all results to handle grouping and pagination on client side
+      // This is a workaround because backend paginates by items, not by orders
       const response = await testResultClient.get<{
         data: TestResultFlatItem[];
         pagination: {
@@ -186,12 +188,29 @@ export class TestResultService {
           totalPages: number;
         };
       }>(`/testResult/getResultsByUserId/${userId}`, {
-        params: { page, limit }
+        params: { page: 1, limit: 1000 }
       });
 
+      const allGroupedResults = groupTestResults(response.data.data);
+      
+      // Sort by createdAt descending
+      allGroupedResults.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+      const totalGroups = allGroupedResults.length;
+      const totalPages = Math.ceil(totalGroups / limit);
+      
+      const startIndex = (page - 1) * limit;
+      const endIndex = startIndex + limit;
+      const paginatedResults = allGroupedResults.slice(startIndex, endIndex);
+
       return {
-        data: groupTestResults(response.data.data),
-        pagination: response.data.pagination
+        data: paginatedResults,
+        pagination: {
+          page,
+          limit,
+          total: totalGroups,
+          totalPages
+        }
       };
     } catch (error) {
       console.error('Error fetching test results by user ID:', error);
