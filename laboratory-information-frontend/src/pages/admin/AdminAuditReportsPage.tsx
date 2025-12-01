@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/common/card';
-import { FileText, Download, Filter, Eye, Trash2, Shield, Database } from 'lucide-react';
+import { FileText, Download, Eye, Trash2, Shield, Database, Search } from 'lucide-react';
 import Button from '../../components/common/button';
 import { Input } from '../../components/common/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/common/select';
@@ -64,10 +64,27 @@ export function AdminAuditReportsPage() {
       setLoading(true);
       try {
         // Use client-side logic if searching OR sorting by oldest (since backend only supports newest)
-        const useClientSideLogic = searchTerm.trim().length > 0 || sortOrder === 'oldest';
+        const useClientSideLogic = searchTerm.trim().length > 0 || sortOrder === 'oldest' || !!startDate || !!endDate;
         
         const limit = useClientSideLogic ? 1000 : 10;
         const apiPage = useClientSideLogic ? 1 : page;
+
+        let apiStartDate = startDate;
+        let apiEndDate = endDate;
+
+        if (startDate && /^\d{4}-\d{2}-\d{2}$/.test(startDate)) {
+          const startLocal = new Date(`${startDate}T00:00:00`);
+          if (!isNaN(startLocal.getTime())) {
+            apiStartDate = startLocal.toISOString();
+          }
+        }
+
+        if (endDate && /^\d{4}-\d{2}-\d{2}$/.test(endDate)) {
+          const endLocal = new Date(`${endDate}T23:59:59.999`);
+          if (!isNaN(endLocal.getTime())) {
+            apiEndDate = endLocal.toISOString();
+          }
+        }
 
         const res = await eventLogService.getAll({
           page: apiPage,
@@ -75,7 +92,9 @@ export function AdminAuditReportsPage() {
           search: searchTerm,
           service_name: serviceFilter,
           action: actionFilter,
-          sort: sortOrder
+          sort: sortOrder,
+          startDate: apiStartDate,
+          endDate: apiEndDate
         });
         if (!mounted) return;
 
@@ -88,6 +107,26 @@ export function AdminAuditReportsPage() {
             logs = logs.filter(log => {
               const operator = `${log.operator_name ?? ''} ${log.operator_gmail ?? ''}`.toLowerCase();
               return operator.includes(term);
+            });
+          }
+
+          if (startDate) {
+            const start = new Date(startDate);
+            start.setHours(0, 0, 0, 0);
+            const startTime = start.getTime();
+            logs = logs.filter(log => {
+              const logDate = log.occurred_at ? new Date(log.occurred_at).getTime() : 0;
+              return logDate >= startTime;
+            });
+          }
+
+          if (endDate) {
+            const end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
+            const endTime = end.getTime();
+            logs = logs.filter(log => {
+              const logDate = log.occurred_at ? new Date(log.occurred_at).getTime() : 0;
+              return logDate <= endTime;
             });
           }
 
@@ -121,7 +160,7 @@ export function AdminAuditReportsPage() {
     };
     load();
     return () => { mounted = false; };
-  }, [page, searchTerm, serviceFilter, actionFilter, sortOrder, t]);
+  }, [page, searchTerm, serviceFilter, actionFilter, sortOrder, startDate, endDate, t]);
 
   const getActionIcon = (action: string) => {
     switch (String(action).toLowerCase()) {
@@ -253,21 +292,23 @@ export function AdminAuditReportsPage() {
     });
   };
 
-  // Removed unused formatDate helper after table column restructure
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 p-3 sm:p-4 lg:p-6">
       {/* Page Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 sm:gap-0">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">{t('eventLog.title')}</h1>
-          <p className="text-gray-600 mt-1">{t('eventLog.subtitle')}</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{t('eventLog.title')}</h1>
+          <p className="text-sm sm:text-base text-gray-600 mt-1">{t('eventLog.subtitle')}</p>
         </div>
-        <div className="flex space-x-3">
-          <Button variant="outline">
-            <Filter className="h-4 w-4 mr-2" />
-            {t('eventLog.advancedFilter')}
-          </Button>
-        </div>
+        <div className="relative w-full sm:w-auto">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input
+              placeholder={t('eventLog.searchPlaceholder')}
+              value={searchTerm}
+              onChange={(e) => updateFilters({ search: e.target.value, page: 1 })}
+              className="pl-10 w-full sm:w-64 md:w-80"
+            />
+          </div>
       </div>
       {loading && (
         <div className="text-sm text-gray-500">{t('eventLog.loading')}</div>
@@ -278,24 +319,10 @@ export function AdminAuditReportsPage() {
 
       {/* Filters */}
       <Card>
-        <CardContent className="p-4">
-          <div className="flex flex-col lg:flex-row gap-4">
-            {/* Search: only user name/email */}
-            <div className="flex-1">
-              <div className="relative">
-                <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder={t('eventLog.searchPlaceholder')}
-                  value={searchTerm}
-                  onChange={(e) => updateFilters({ search: e.target.value, page: 1 })}
-                  className="pl-10 w-full"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-row gap-4">
+        <CardContent className="p-4 sm:p-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-center">
               {/* Service filter */}
-              <div className="w-full lg:min-w-[200px]">
+              <div className="w-full">
                 <Select value={serviceFilter} onValueChange={(v) => updateFilters({ service: v, page: 1 })}>
                   <SelectTrigger className="bg-white border border-gray-300 focus:ring-2 focus:ring-blue-500 w-full">
                     <SelectValue placeholder={t('eventLog.service')} />
@@ -311,7 +338,7 @@ export function AdminAuditReportsPage() {
               </div>
 
               {/* Action filter */}
-              <div className="w-full lg:min-w-[150px]">
+              <div className="w-full">
                 <Select value={actionFilter} onValueChange={(v) => updateFilters({ action: v, page: 1 })}>
                   <SelectTrigger className="bg-white border border-gray-300 focus:ring-2 focus:ring-blue-500 w-full">
                     <SelectValue placeholder={t('eventLog.action')} />
@@ -326,7 +353,7 @@ export function AdminAuditReportsPage() {
               </div>
 
               {/* Sort by time */}
-              <div className="w-full lg:min-w-[150px]">
+              <div className="w-full">
                 <Select value={sortOrder} onValueChange={(v) => updateFilters({ sort: v, page: 1 })}>
                   <SelectTrigger className="bg-white border border-gray-300 focus:ring-2 focus:ring-blue-500 w-full">
                     <SelectValue placeholder={t('eventLog.time')} />
@@ -339,12 +366,19 @@ export function AdminAuditReportsPage() {
               </div>
 
               {/* Start Date */}
-              <div className="w-full lg:min-w-[150px]">
-                <div className="relative">
+              <div className="flex items-center gap-2 w-full">
+                <span className="text-sm font-medium whitespace-nowrap">{t('eventLog.startDate')}:</span>
+                <div className="flex-1">
                   <Input
-                    type="date"
+                    type={startDate ? "date" : "text"}
+                    onFocus={(e) => (e.target.type = "date")}
+                    onBlur={(e) => { 
+                      if (!e.target.value) e.target.type = "text"; 
+                    }}
                     value={startDate}
-                    onChange={(e) => updateFilters({ startDate: e.target.value, page: 1 })}
+                    onChange={(e) => {
+                      updateFilters({ startDate: e.target.value, page: 1 });
+                    }}
                     className="w-full"
                     placeholder={t('eventLog.startDate')}
                   />
@@ -352,52 +386,56 @@ export function AdminAuditReportsPage() {
               </div>
 
               {/* End Date */}
-              <div className="w-full lg:min-w-[150px]">
-                <div className="relative">
+              <div className="flex items-center gap-2 w-full">
+                <span className="text-sm font-medium whitespace-nowrap">{t('eventLog.endDate')}:</span>
+                <div className="flex-1">
                   <Input
-                    type="date"
+                    type={endDate ? "date" : "text"}
+                    onFocus={(e) => (e.target.type = "date")}
+                    onBlur={(e) => { 
+                      if (!e.target.value) e.target.type = "text"; 
+                    }}
                     value={endDate}
-                    onChange={(e) => updateFilters({ endDate: e.target.value, page: 1 })}
+                    onChange={(e) => {
+                      updateFilters({ endDate: e.target.value, page: 1 });
+                    }}
                     className="w-full"
                     placeholder={t('eventLog.endDate')}
                   />
                 </div>
               </div>
+
+              {(searchTerm || serviceFilter !== 'all' || actionFilter !== 'all' || sortOrder !== 'newest' || startDate || endDate) && (
+                <div className="col-span-1 sm:col-span-2 lg:col-span-5 flex justify-end">
+                  <Button
+                    variant="outline"
+                    onClick={() => updateFilters({
+                      search: '',
+                      service: 'all',
+                      action: 'all',
+                      sort: 'newest',
+                      startDate: '',
+                      endDate: '',
+                      page: 1
+                    })}
+                    className="w-full sm:w-auto"
+                  >
+                    {t('eventLog.clearFilter')}
+                  </Button>
+                </div>
+              )}
             </div>
-
-           
-
-            {(searchTerm || serviceFilter !== 'all' || actionFilter !== 'all' || sortOrder !== 'newest') && (
-              <div className="flex items-center">
-                <Button
-                  variant="outline"
-                  onClick={() => updateFilters({
-                    search: '',
-                    service: 'all',
-                    action: 'all',
-                    sort: 'newest',
-                    startDate: '',
-                    endDate: '',
-                    page: 1
-                  })}
-                  className="w-full sm:w-auto"
-                >
-                  {t('eventLog.clearFilter')}
-                </Button>
-              </div>
-            )}
-          </div>
         </CardContent>
       </Card>
 
       {/* Audit Logs Table */}
       <Card>
-        <CardHeader>
-          <CardTitle>{t('eventLog.title')} ({totalLogs})</CardTitle>
-          <CardDescription>{t('eventLog.subtitle')}</CardDescription>
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="text-lg sm:text-xl">{t('eventLog.title')} ({totalLogs})</CardTitle>
+          <CardDescription className="text-sm sm:text-base">{t('eventLog.subtitle')}</CardDescription>
         </CardHeader>
-        <CardContent className="p-4 sm:p-5 pt-0 sm:pt-0">
-          <div className="overflow-x-auto -mx-4 sm:mx-0">
+        <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
+          <div className="hidden lg:block overflow-x-auto -mx-4 sm:mx-0">
             <div className="inline-block min-w-full align-middle px-4 sm:px-0">
               <table className="w-full border-collapse table-fixed min-w-[1000px]">
                 <thead>
@@ -480,6 +518,75 @@ export function AdminAuditReportsPage() {
                 </tbody>
               </table>
             </div>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="lg:hidden space-y-4">
+            {eventLogs.map((log) => (
+              <div key={log.event_id || log._id || Math.random()} className="bg-white border rounded-lg p-4 shadow-sm flex flex-col gap-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    {log.operator_avatar ? (
+                      <img 
+                        src={log.operator_avatar} 
+                        alt={log.operator_name || 'User'} 
+                        className="w-10 h-10 rounded-full object-cover border border-gray-200"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
+                        {String(log.operator_name ?? log.operator_gmail ?? 'U').charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <div className="font-medium text-gray-900 truncate">{log.operator_name || t('eventLog.unknown')}</div>
+                      {log.operator_gmail && <div className="text-xs text-gray-500 truncate">{log.operator_gmail}</div>}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        const basePath = getBasePath();
+                        navigate(`${basePath}/audit-reports/${log.event_id}`);
+                      }}
+                      className="h-8 w-8 text-gray-500"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-red-600 hover:text-red-700 h-8 w-8"
+                      onClick={() => setDeleteTarget({ id: (log.event_id || ''), name: log.operator_name })}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div className="text-gray-500">{t('eventLog.table.service')}</div>
+                  <div className="font-medium text-right truncate">{getServiceDisplayName(log.service_name || "")}</div>
+                  
+                  <div className="text-gray-500">{t('eventLog.table.actionAndMessage')}</div>
+                  <div className="flex items-center justify-end gap-2">
+                    {getActionIcon(String(log.action))}
+                    <span className="font-medium">{log.action ? t(`eventLog.actions.${String(log.action).toUpperCase()}`) : '—'}</span>
+                  </div>
+                </div>
+
+                {log.event_message && (
+                  <div className="bg-gray-50 p-3 rounded-md text-sm text-gray-600 break-words">
+                    {getEventMessage(log.event_message)}
+                  </div>
+                )}
+
+                <div className="text-xs text-gray-400 text-right border-t pt-2 mt-1">
+                  {log.occurred_at ? new Date(log.occurred_at).toLocaleString('vi-VN') : '—'}
+                </div>
+              </div>
+            ))}
           </div>
         </CardContent>
       </Card>
