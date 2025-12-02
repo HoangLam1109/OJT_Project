@@ -309,5 +309,36 @@ async getInstrumentStats(): Promise<{ total: number; active: number; ready: numb
         console.error('Error fetching instrument stats:', error);
         throw new Error(apiUtils.getErrorMessage(error));
     }
+},
+
+async searchInstruments(keyword: string, page: number = 1, limit: number = 10): Promise<PaginatedResponse> {
+    try {
+        const response = await instrumentsApiClient.get(`${INSTRUMENTS_API_BASE_URL}/search`, {
+            params: { keyword, page, limit }
+        });
+        const payload = response.data as unknown;
+        
+        if (isRecord(payload)) {
+            const list = extractDataArray(payload);
+            const total = typeof payload.total === 'number' ? payload.total : list.length;
+            const currentPage = typeof payload.page === 'number' ? payload.page : page;
+            
+            return {
+                data: list.map(transformBackendInstrument),
+                total,
+                page: currentPage
+            };
+        }
+        
+        const list = extractDataArray(payload);
+        return {
+            data: list.map(transformBackendInstrument),
+            total: list.length,
+            page: 1
+        };
+    } catch (error) {
+        console.error('Error searching instruments:', error);
+        throw new Error(apiUtils.getErrorMessage(error));
+    }
 }
 };

@@ -4,7 +4,7 @@ import { Users, Search, Eye, Edit, Trash2, Phone, Mail, MapPin, Heart, ChevronLe
 import { useNavigate } from 'react-router-dom';
 import Button from '../../../../components/common/button';
 import { Input } from '../../../../components/common/input';
-import type { Patient } from '@/pages/labuser/types/Patient';
+import type { Patient } from '../../../labuser/types/Patient';
 import { deletePatient as deletePatientApi, updatePatient as updatePatientApi, fetchPatients } from '../../../../service/patientService';
 import { patientMedicalRecordService, type PatientMedicalRecord } from '../../../../service/patientMedicalRecordService';
 import { usePatientModal } from '../../hooks/usePatientModal';
@@ -575,7 +575,7 @@ export function AdminPatientManagementPage() {
           <AddPatientMedicalRecord
             open={mrCreateOpen}
             onOpenChange={setMrCreateOpen}
-            onCreated={(created) => {
+            onCreated={(created: PatientMedicalRecord | null | undefined) => {
               if (!created) return;
               setPatients(prev => prev.map(p => p.id === created.patient_id
                 ? { ...p, bloodType: created.blood_type || p.bloodType }
