@@ -12,9 +12,9 @@ import { Label } from '../../../../../components/common/label';
 import { Input } from '../../../../../components/common/input';
 import { toast } from 'sonner';
 import { FlaskConical, Tag, Factory, MapPin, Calendar, Scale, AlertTriangle } from 'lucide-react';
-import { validateReagentForm } from '../../../types/Reagent.ts';
-import type { ReagentFormData } from '../../../types/Reagent.ts';
-import type { Reagent } from '../../../types/Reagent.ts';
+import { validateReagentForm } from '@/pages/labuser/types/Reagent.ts';
+import type { ReagentFormData } from '@/pages/labuser/types/Reagent.ts';
+import type { Reagent } from '@/pages/labuser/types/Reagent.ts';
 import { useTranslation } from 'react-i18next';
 
 interface ReagentAddModalProps {

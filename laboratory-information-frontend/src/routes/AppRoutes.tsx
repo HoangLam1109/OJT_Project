@@ -21,12 +21,12 @@ import ChatPage from "../pages/normaluser/ChatPage";
 import ChatRoomPage from "../pages/normaluser/ChatRoomPage";
 import Profile from "../layouts/Profile";
 
-import TestOrdersPage from "../pages/labuser/components/testOrderComp/TestOrdersPage";
-import CreateTestOrderPage from "../pages/labuser/components/createTestOrder/CreateTestOrderPage";
-import SelectReagentsPage from "../pages/labuser/components/createTestOrder/SelectReagentsPage";
+import TestOrdersPage from "../pages/labuser/components/TestOrderComp/TestOrdersPage";
+import CreateTestOrderPage from "../pages/labuser/components/CreateTestOrder/CreateTestOrderPage";
+import SelectReagentsPage from "../pages/labuser/components/CreateTestOrder/SelectReagentsPage";
 import { LabUserLayout } from "../layouts/LabUserLayout";
 import TestResultsPage from "../pages/labuser/TestResultsPage";
-import ReagentManagementPage from "../pages/labuser/components/reagentComp/ReagentManagementPage";
+import ReagentManagementPage from "../pages/labuser/components/ReagentComp/ReagentManagementPage";
 import { ServiceLayout } from "../layouts/ServiceLayout";
 
 import ServiceInstrumentPage from "../pages/service/InstrumentManagementPage";
@@ -34,7 +34,7 @@ import { GoogleCallbackPage } from "../pages/login/GoogleCallbackPage";
 import { ForgotPasswordPage } from "../pages/login/ForgotPasswordPage";
 import { ForgotPasswordSuccessPage } from "../pages/login/ForgotPasswordSuccessPage";
 import { ResetPasswordPage } from "../pages/login/ResetPasswordPage";
-import SelectInstrumentsPage from "../pages/labuser/components/createTestOrder/SelectInstrumentsPage";
+import SelectInstrumentsPage from "../pages/labuser/components/CreateTestOrder/SelectInstrumentsPage";
 import PatientDetailPage from "@/pages/admin/components/PatientComp/PatientDetailPage";
 import EventLogDetail from "@/pages/admin/EventLogDetail";
 import type { User } from "../types/User";
