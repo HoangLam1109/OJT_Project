@@ -64,9 +64,9 @@ export const filterTestOrders = (
 
   if (searchTerm) {
     filtered = filtered.filter(order =>
-      order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.testType.toLowerCase().includes(searchTerm.toLowerCase()) 
+      order._id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.patient_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.test_type.toLowerCase().includes(searchTerm.toLowerCase()) 
     );
   }
 
