@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { TestResultApiResponse, TestResultGroup, TestResult, TestResultDetail } from '../pages/labuser/types/TestResultTypes';
+import type { TestResultApiResponse, TestResultGroup, TestResult, TestResultDetail, TestResultItem } from '../pages/labuser/types/TestResultTypes';
 
 const TEST_RESULT_API_BASE = 'http://localhost:5002/api';
 
@@ -38,7 +38,7 @@ const testResultClient = axios.create({
 
 // Transform API response to UI format
 const transformTestResultGroup = (group: TestResultGroup): TestResult => {
-  const results: TestResultDetail[] = group.resultsSample.map(item => {
+  const results: TestResultDetail[] = group.resultsSample.map((item: TestResultItem) => {
     return {
       id: item._id,
       testItemId: item.test_item_id,
@@ -123,7 +123,7 @@ export class TestResultService {
       const results = response.data.data.map(transformTestResultGroup);
       
       // Sắp xếp theo createdAt từ mới nhất đến cũ nhất
-      return results.sort((a, b) => {
+      return results.sort((a: TestResult, b: TestResult) => {
         const dateA = new Date(a.createdAt).getTime();
         const dateB = new Date(b.createdAt).getTime();
         return dateB - dateA; // Mới nhất trước
