@@ -423,7 +423,7 @@ const PatientDetail: React.FC = () => {
       </Card>
 
   {/* Create MR moved to list page */}
-      <EditPatientMedicalRecord id={editId} open={Boolean(editId)} onOpenChange={(o) => { if (!o) setEditId(null); }} onUpdated={() => setRefreshKey(k => k + 1)} />
+      <EditPatientMedicalRecord id={editId} open={Boolean(editId)} onOpenChange={(o: boolean) => { if (!o) setEditId(null); }} onUpdated={() => setRefreshKey(k => k + 1)} />
       <MedicalRecordViewModal recordId={viewId} isOpen={Boolean(viewId)} onClose={() => setViewId(null)} />
       <TestResultModal 
         isOpen={testResultModalOpen} 

@@ -15,30 +15,30 @@ import {
 import { ManagerUserManagementPage } from "../pages/manager";
 import { ManagerLayout } from "../layouts/ManagerLayout";
 import NormalUserLayout from "../layouts/NormalUserLayout";
-import Dashboard from "../pages/normaluser/Dashboard";
-import TestResults from "../pages/normaluser/TestResults";
-import ChatPage from "../pages/normaluser/ChatPage";
-import ChatRoomPage from "../pages/normaluser/ChatRoomPage";
+import Dashboard from "@/pages/normaluser/Dashboard";
+import TestResults from "@/pages/normaluser/TestResults";
+import ChatPage from "@/pages/normaluser/ChatPage";
+import ChatRoomPage from "@/pages/normaluser/ChatRoomPage";
 import Profile from "../layouts/Profile";
 
-import TestOrdersPage from "../pages/labuser/components/TestOrderComp/TestOrdersPage";
-import CreateTestOrderPage from "../pages/labuser/components/CreateTestOrder/CreateTestOrderPage";
-import SelectReagentsPage from "../pages/labuser/components/CreateTestOrder/SelectReagentsPage";
+import TestOrdersPage from "@/pages/labuser/components/TestOrderComp/TestOrdersPage";
+import CreateTestOrderPage from "@/pages/labuser/components/CreateTestOrder/CreateTestOrderPage";
+import SelectReagentsPage from "@/pages/labuser/components/CreateTestOrder/SelectReagentsPage";
 import { LabUserLayout } from "../layouts/LabUserLayout";
-import TestResultsPage from "../pages/labuser/TestResultsPage";
-import ReagentManagementPage from "../pages/labuser/components/ReagentComp/ReagentManagementPage";
+import TestResultsPage from "@/pages/labuser/TestResultsPage";
+import ReagentManagementPage from "@/pages/labuser/components/ReagentComp/ReagentManagementPage";
 import { ServiceLayout } from "../layouts/ServiceLayout";
 
-import ServiceInstrumentPage from "../pages/service/InstrumentManagementPage";
+import ServiceInstrumentPage from "@/pages/service/InstrumentManagementPage";
 import { GoogleCallbackPage } from "../pages/login/GoogleCallbackPage";
 import { ForgotPasswordPage } from "../pages/login/ForgotPasswordPage";
 import { ForgotPasswordSuccessPage } from "../pages/login/ForgotPasswordSuccessPage";
 import { ResetPasswordPage } from "../pages/login/ResetPasswordPage";
-import SelectInstrumentsPage from "../pages/labuser/components/CreateTestOrder/SelectInstrumentsPage";
+import SelectInstrumentsPage from "@/pages/labuser/components/CreateTestOrder/SelectInstrumentsPage";
 import PatientDetailPage from "@/pages/admin/components/PatientComp/PatientDetailPage";
 import EventLogDetail from "@/pages/admin/EventLogDetail";
 import type { User } from "../types/User";
-import LabUserChatPage from "../pages/labuser/ChatPage";
+import LabUserChatPage from "@/pages/labuser/ChatPage";
 
 // ============================================================================
 // Type Definitions
