@@ -3,7 +3,7 @@ import { useAuthContext } from '../../hooks/useAuthContext';
 import { Card, CardContent } from '../../components/common/card';
 import { ClipboardList, Clock, CheckCircle, PlayCircle } from 'lucide-react';
 import { testOrderService } from '../../service/testOrderService';
-import type { TestOrder } from '../../pages/labuser/types/TestOrderTypes';
+import type { TestOrder } from '../labuser/types/TestOrderTypes';
 import { useTranslation } from 'react-i18next';
 
 const Dashboard: React.FC = () => {
