@@ -2,7 +2,7 @@ import axios from 'axios';
 import type { AxiosInstance } from 'axios';
 import { apiService } from './apiClient';
 
-const EVENTLOG_SERVICE_URL = import.meta.env.VITE_EVENTLOG_SERVICE_URL || 'http://localhost:5004';
+const EVENTLOG_SERVICE_URL = import.meta.env.VITE_API_MONITORING_SERVICE_URL || 'http://localhost:5004';
 
 const eventLogApiClient: AxiosInstance = axios.create({
   baseURL: EVENTLOG_SERVICE_URL,

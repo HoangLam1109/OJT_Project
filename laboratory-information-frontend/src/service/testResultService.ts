@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { TestResultApiResponse, TestResultGroup, TestResult, TestResultDetail, TestResultItem } from '../pages/labuser/types/TestResultTypes';
 
-const TEST_RESULT_API_BASE = 'http://localhost:5002/api';
+const TEST_RESULT_API_BASE = import.meta.env.VITE_TEST_ORDER_SERVICE_URL || 'http://localhost:5002';
 
 // Interface for the flat response item from getResultsByUserId/PatientId
 export interface TestResultFlatItem {
@@ -116,7 +116,7 @@ export class TestResultService {
   async getAllTestResults(): Promise<TestResult[]> {
     try {
       // Tải tất cả dữ liệu và phân trang ở frontend
-      const response = await testResultClient.get<TestResultApiResponse>('/testResult/all', {
+      const response = await testResultClient.get<TestResultApiResponse>(`${TEST_RESULT_API_BASE}/api/testResult/all`, {
         params: { page: 1, limit: 1000 }
       });
 
@@ -139,7 +139,7 @@ export class TestResultService {
     updateData: { result_value?: number; reviewer_comment?: string; reviewed?: boolean }
   ): Promise<void> {
     try {
-      await testResultClient.put(`/testResult/update/${id}`, updateData);
+      await testResultClient.put(`${TEST_RESULT_API_BASE}/api/testResult/update/${id}`, updateData);
     } catch (error) {
       console.error('Error updating test result:', error);
       throw new Error('Không thể cập nhật kết quả xét nghiệm');
@@ -148,7 +148,7 @@ export class TestResultService {
 
   async reviewTestResult(id: string, comment: string): Promise<void> {
     try {
-      await testResultClient.put(`/testResult/update/${id}`, {
+      await testResultClient.put(`${TEST_RESULT_API_BASE}/api/testResult/update/${id}`, {
         reviewed: true,
         reviewer_comment: comment,
       });
@@ -160,7 +160,7 @@ export class TestResultService {
 
   async deleteTestResult(test_order_id: string): Promise<void> {
     try {
-      await testResultClient.delete(`/testResult/delete/${test_order_id}`);
+      await testResultClient.delete(`${TEST_RESULT_API_BASE}/api/testResult/delete/${test_order_id}`);
     } catch (error) {
       console.error('Error deleting test result:', error);
       throw new Error('Không thể xóa kết quả xét nghiệm');
@@ -187,7 +187,7 @@ export class TestResultService {
           total: number;
           totalPages: number;
         };
-      }>(`/testResult/getResultsByUserId/${userId}`, {
+      }>(`${TEST_RESULT_API_BASE}/api/testResult/getResultsByUserId/${userId}`, {
         params: { page: 1, limit: 1000 }
       });
 
@@ -229,7 +229,7 @@ export class TestResultService {
     };
   }> {
     try {
-      const response = await testResultClient.get(`/testResult/getResultsByPatientId/${patientId}`);
+      const response = await testResultClient.get(`${TEST_RESULT_API_BASE}/api/testResult/getResultsByPatientId/${patientId}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching test results by patient ID:', error);
