@@ -2,7 +2,7 @@ import axios from 'axios';
 import type { AxiosInstance } from 'axios';
 
 const MESSAGE_SERVICE_URL =
-  import.meta.env.VITE_MESSAGE_SERVICE_URL ?? 'http://localhost:4001/api';
+  import.meta.env.VITE_API__MESSAGE_SERVICE_URL ?? 'http://localhost:4001/api';
 
 const messageServiceClient: AxiosInstance = axios.create({
   baseURL: MESSAGE_SERVICE_URL,

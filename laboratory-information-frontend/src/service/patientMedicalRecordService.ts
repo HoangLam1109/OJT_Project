@@ -1,7 +1,7 @@
 import axios, { type AxiosInstance, isAxiosError } from 'axios';
 import { apiService } from './apiClient';
 
-const PATIENT_SERVICE_URL = import.meta.env.VITE_PATIENT_SERVICE_URL || 'http://localhost:5001';
+const PATIENT_SERVICE_URL = import.meta.env.VITE_API_PATIENT_SERVICE_URL || 'http://localhost:5001';
 
 const pmrApiClient: AxiosInstance = axios.create({
   baseURL: PATIENT_SERVICE_URL,

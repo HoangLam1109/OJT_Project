@@ -19,7 +19,7 @@ export interface GoogleOAuthResponse {
  * Redirect user đến Google OAuth page
  */
 export function initiateGoogleLogin(returnTo: string = '/'): void {
-  const baseUrl = import.meta.env.VITE_API_BASE_URL;
+  const baseUrl = import.meta.env.VITE_API_IAM_SERVICE_URL|| 'http://localhost:3000/api';
   // Kiểm tra xem baseUrl đã có /api chưa để tránh duplicate
   const googleLoginUrl = baseUrl.endsWith('/api') 
     ? `${baseUrl}/google?returnTo=${encodeURIComponent(returnTo)}`

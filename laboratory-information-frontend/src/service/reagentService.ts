@@ -4,7 +4,7 @@ import { apiUtils } from './apiClient';
 import type { Reagent } from '../pages/labuser/types/Reagent';
 
 // Create a dedicated axios instance for Warehouse service
-const WAREHOUSE_SERVICE_URL = import.meta.env.VITE_WAREHOUSE_SERVICE_URL || 'http://localhost:5003';
+const WAREHOUSE_SERVICE_URL = import.meta.env.VITE_API_WAREHOUSE_SERVICE_URL || 'http://localhost:5003';
 const reagentApiClient: AxiosInstance = axios.create({
   baseURL: WAREHOUSE_SERVICE_URL,
   timeout: 10000,
