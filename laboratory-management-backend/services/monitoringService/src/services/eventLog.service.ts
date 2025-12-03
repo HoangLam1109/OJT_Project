@@ -2,12 +2,19 @@ import EventLog, { type IEventLog } from "../db/models/EventLog.model.js";
 import { v4 as uuidv4 } from "uuid";
 import { normalizeServiceName, resolveServiceNameVariants, type ServiceName } from "../constants/event.constant.js";
 
+export interface EntityInfo {
+  entity_code?: string;
+  entity_name?: string;
+  entity_type?: string;
+}
+
 export interface CreateEventLogPayload {
   event_code: string;
   action: string;
   event_message: string;
   service_name: ServiceName;
   entity_id?: string;
+  entity_info?: EntityInfo | null;
   old_values?: Record<string, unknown> | null;
   new_values?: Record<string, unknown> | null;
   operator_id: string;

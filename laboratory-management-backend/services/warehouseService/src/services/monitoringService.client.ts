@@ -8,12 +8,19 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 dotenv.config({ path: resolve(__dirname, "../../.env") });
 
+export interface EntityInfo {
+  entity_code?: string | undefined;
+  entity_name?: string | undefined;
+  entity_type?: string | undefined;
+}
+
 export interface MonitoringEventLogPayload {
   event_code: string;
   action: string;
   event_message: string;
   service_name: MonitoringServiceNameType | string;
   entity_id?: string;
+  entity_info?: EntityInfo | null;
   old_values?: Record<string, unknown> | null;
   new_values?: Record<string, unknown> | null;
   operator_id: string;
