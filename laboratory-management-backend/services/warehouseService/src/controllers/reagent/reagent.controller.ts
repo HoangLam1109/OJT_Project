@@ -268,6 +268,8 @@ export class ReagentController {
       await reagentMonitoringService.recordCreated({
         reagentId: `${reagent._id}`,
         reagentCode: reagent.reagent_code,
+        reagentName: reagent.reagent_name,
+        reagentType: reagent.reagent_type,
         eventMessage: "Reagent created",
         operatorId: operatorId ?? operatorEmail ?? "system",
         operatorEmail,
@@ -344,6 +346,8 @@ export class ReagentController {
         await reagentMonitoringService.recordUpdated({
           reagentId: `${updatedReagent._id}`,
           reagentCode: updatedReagent.reagent_code,
+          reagentName: updatedReagent.reagent_name,
+          reagentType: updatedReagent.reagent_type,
           eventMessage,
           operatorId: operatorId ?? operatorEmail ?? "system",
           operatorEmail,
@@ -403,6 +407,8 @@ export class ReagentController {
       await reagentMonitoringService.recordDeleted({
         reagentId: `${deletedReagent._id}`,
         reagentCode: deletedReagent.reagent_code,
+        reagentName: deletedReagent.reagent_name,
+        reagentType: deletedReagent.reagent_type,
         eventMessage: "Reagent deleted",
         operatorId: operatorId ?? operatorEmail ?? "system",
         operatorEmail,

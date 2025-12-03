@@ -245,6 +245,8 @@ export const addInstrumentController = async (req: Request, res: Response<Instru
     await instrumentMonitoringService.recordCreated({
       instrumentId: `${instrument._id}`,
       instrumentCode: instrument.instrument_code,
+      instrumentName: instrument.instrument_name,
+      instrumentType: instrument.instrument_type,
       eventMessage: "Instrument created",
       operatorId: operatorId ?? operatorEmail ?? "system",
       operatorEmail,
@@ -378,6 +380,8 @@ export const updateInstrumentController = async (
         await instrumentMonitoringService.recordUpdated({
           instrumentId: `${instrument._id}`,
           instrumentCode: instrument.instrument_code,
+          instrumentName: instrument.instrument_name,
+          instrumentType: instrument.instrument_type,
           eventMessage,
           operatorId: operatorId ?? operatorEmail ?? "system",
           operatorEmail,
@@ -435,6 +439,8 @@ export const deleteInstrumentController = async (
     await instrumentMonitoringService.recordDeleted({
       instrumentId: `${instrument._id}`,
       instrumentCode: instrument.instrument_code,
+      instrumentName: instrument.instrument_name,
+      instrumentType: instrument.instrument_type,
       eventMessage: "Instrument deleted",
       operatorId: operatorId ?? operatorEmail ?? "system",
       operatorEmail,
