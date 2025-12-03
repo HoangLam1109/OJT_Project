@@ -1,13 +1,13 @@
 import axios from 'axios';
 import type { AxiosInstance } from 'axios';
 import { apiUtils } from './apiClient';
-import type { TestOrder } from '../pages/labuser/types/TestOrderTypes';
+import type { TestOrder } from '@/pages/labuser/types/TestOrderTypes.ts';
 
 // Create a dedicated axios instance for TestOrder service (port 5002)
 const TEST_ORDER_SERVICE_URL = import.meta.env.VITE_TEST_ORDER_SERVICE_URL || 'http://localhost:5002';
 const testOrderApiClient: AxiosInstance = axios.create({
   baseURL: TEST_ORDER_SERVICE_URL,
-  timeout: 10000,
+  timeout: 30000,
   withCredentials: true, // Enable cookies for JWT authentication
   headers: {
     'Content-Type': 'application/json',
