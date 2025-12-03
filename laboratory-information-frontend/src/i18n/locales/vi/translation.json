@@ -1177,7 +1177,11 @@
       "instrumentType": "Loại thiết bị",
       "manufacturer": "Nhà sản xuất",
       "location": "Vị trí",
-      "status": "Trạng thái"
+      "status": "Trạng thái",
+      "reagentInfo": "Thông tin thuốc thử",
+      "instrumentInfo": "Thông tin thiết bị",
+      "reagentCode": "Mã thuốc thử",
+      "reagentName": "Tên thuốc thử"
     }
   }
 }

@@ -36,6 +36,12 @@ export interface EventLog {
   action?: string;
   event_message?: string;
   entity_id?: string;
+  entity_info?: {
+    entity_code?: string;
+    entity_name?: string;
+    entity_type?: string;
+    _id?: string;
+  };
   changed_fields?: string[];
   old_values?: unknown;
   new_values?: unknown;

@@ -1182,7 +1182,11 @@
       "instrumentType": "Instrument Type",
       "manufacturer": "Manufacturer",
       "location": "Location",
-      "status": "Status"
+      "status": "Status",
+      "reagentInfo": "Reagent Information",
+      "instrumentInfo": "Instrument Information",
+      "reagentCode": "Reagent Code",
+      "reagentName": "Reagent Name"
     }
   }
 }
