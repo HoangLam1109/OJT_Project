@@ -10,7 +10,6 @@ import {
   searchTestOrders,
   getAllOrdersGroupedByUserId
 } from "../controllers/testorder.controller.js";
-import { validateCreateTestOrder } from "../middlewares/validate.middleware.js";
 import AuthenticateUser from "../middlewares/authenticate.middleware.js";
 
 const router = express.Router();
