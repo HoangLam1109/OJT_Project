@@ -8,13 +8,13 @@ import {
   Search,
   FlaskConical,
   X,
-  Activity,
   ChevronDown
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuthContext } from '../../hooks/useAuthContext';
 import { testResultService } from '../../service/testResultService';
 import { Skeleton } from '../../components/common/skeleton';
+import { FormattedText } from '../../components/common/FormattedText';
 import type { TestResult, TestResultDetail } from '../labuser/types/TestResultTypes';
 
 
@@ -104,7 +104,10 @@ const ViewDetailModal: React.FC<{
             <div className="p-3 sm:p-4 bg-blue-50 rounded-lg">
               <p className="text-sm text-gray-600 mb-2">{t('testResult.modal.reviewerComment')}</p>
               {result.reviewerComment ? (
-                <p className="text-gray-800">{result.reviewerComment}</p>
+                <FormattedText 
+                  text={result.reviewerComment} 
+                  className="text-gray-800 whitespace-pre-wrap" 
+                />
               ) : (
                 <p className="text-gray-400 italic">{t('testResult.modal.noComment')}</p>
               )}
@@ -171,7 +174,7 @@ const TestResults: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [user?.id, currentPage, t]);
+  }, [user?.id, currentPage]);
 
   useEffect(() => {
     loadTestResults();
@@ -259,12 +262,7 @@ const TestResults: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex sm:items-end">
-              <Button variant="outline" onClick={loadTestResults} className="flex items-center w-full sm:w-auto justify-center">
-                <Activity className="w-4 h-4 mr-2" />
-                {t('testResult.refresh')}
-              </Button>
-            </div>
+            
           </div>
         </CardContent>
       </Card>
