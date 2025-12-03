@@ -794,6 +794,10 @@
   "testResult": {
     "title": "Kết quả Xét nghiệm",
     "subtitle": "Nhập và quản lý kết quả xét nghiệm đã hoàn thành",
+    "aiReviewFailed": "Không thể tạo nhận xét từ AI",
+    "aiReviewSuccess": "AI đã tạo nhận xét thành công",
+    "aiReviewing": "Đang xử lý...",
+    "aiReview": "AI Review",
     "resultsCount": "{{current}} / {{total}} kết quả xét nghiệm",
     "foundResults": "(tìm thấy {{found}} / {{total}})",
     "search": "Tìm kiếm",
