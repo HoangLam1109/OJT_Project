@@ -4,7 +4,7 @@ import { apiUtils, apiService, apiClient } from './apiClient';
 
 // Create a dedicated axios instance for Patient service
 // Patient service runs on port 5001 independently
-const PATIENT_SERVICE_URL = import.meta.env.VITE_PATIENT_SERVICE_URL || 'http://localhost:5001';
+const PATIENT_SERVICE_URL = import.meta.env.VITE_API_PATIENT_SERVICE_URL || 'http://localhost:5001';
 const patientApiClient: AxiosInstance = axios.create({
   baseURL: PATIENT_SERVICE_URL,
   timeout: 10000,

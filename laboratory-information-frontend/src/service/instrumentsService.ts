@@ -3,7 +3,7 @@ import type { AxiosInstance } from 'axios';
 import { apiUtils } from './apiClient'
 import type { Instrument } from '../pages/service/types/Instrument';
 
-const INSTRUMENTS_SERVICE_URL = import.meta.env.VITE_WAREHOUSE_SERVICE_URL || 'http://localhost:5003';
+const INSTRUMENTS_SERVICE_URL = import.meta.env.VITE_API__WAREHOUSE_SERVICE_URL || 'http://localhost:5003';
 const INSTRUMENTS_API_BASE_URL = '/api/warehouse/instruments';
 
 const instrumentsApiClient: AxiosInstance = axios.create({

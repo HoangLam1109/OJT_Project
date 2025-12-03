@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { TestResultApiResponse, TestResultGroup, TestResult, TestResultDetail, TestResultItem } from '../pages/labuser/types/TestResultTypes';
 
-const TEST_RESULT_API_BASE = import.meta.env.VITE_TEST_ORDER_SERVICE_URL || 'http://localhost:5002';
+const TEST_RESULT_API_BASE = import.meta.env.VITE_API_TEST_ORDER_SERVICE_URL || 'http://localhost:5002';
 
 // Interface for the flat response item from getResultsByUserId/PatientId
 export interface TestResultFlatItem {
