@@ -270,6 +270,8 @@
     "instruments": "Thiết bị",
     "userManagementDescription": "Quản lý tài khoản người dùng trong hệ thống",
     "createUser": "Tạo người dùng",
+    "viewUser": "Thông tin người dùng",
+    "editUser": "Chỉnh sửa người dùng",
     "totalUsers": "Tổng người dùng",
     "activeUsers": "Người dùng hoạt động",
     "lockedUsers": "Người dùng bị khóa",

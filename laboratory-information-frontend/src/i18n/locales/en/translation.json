@@ -270,6 +270,8 @@
     "instruments": "Instruments",
     "userManagementDescription": "Manage user accounts in the system",
     "createUser": "Create User",
+    "viewUser": "View user",
+    "editUser": "Edit user",
     "totalUsers": "Total Users",
     "activeUsers": "Active Users",
     "lockedUsers": "Locked Users",
