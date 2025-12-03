@@ -3,8 +3,8 @@ import type { AxiosInstance } from 'axios';
 import { apiUtils } from './apiClient'
 import type { Instrument } from '../pages/service/types/Instrument';
 
-const INSTRUMENTS_SERVICE_URL = import.meta.env.VITE_API__WAREHOUSE_SERVICE_URL || 'http://localhost:5003';
-const INSTRUMENTS_API_BASE_URL = '/api/warehouse/instruments';
+const INSTRUMENTS_SERVICE_URL = import.meta.env.VITE_API_WAREHOUSE_SERVICE_URL || 'http://localhost:5003';
+// const INSTRUMENTS_API_BASE_URL = '/api/warehouse/instruments';
 
 const instrumentsApiClient: AxiosInstance = axios.create({
     baseURL: INSTRUMENTS_SERVICE_URL,
@@ -19,6 +19,7 @@ const instrumentsApiClient: AxiosInstance = axios.create({
 instrumentsApiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('authToken');
+    console.log('token', token);
     if (token) {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
@@ -115,7 +116,7 @@ export const instrumentsService = {
             if (status) {
                 params.status = status;
             }
-            const response = await instrumentsApiClient.get(`${INSTRUMENTS_API_BASE_URL}/`, {
+            const response = await instrumentsApiClient.get(`${INSTRUMENTS_SERVICE_URL}/api/warehouse/instruments/`, {
                 params
             });
             const payload = response.data as unknown;
@@ -153,7 +154,7 @@ export const instrumentsService = {
             let hasMore = true;
 
             while (hasMore) {
-                const response = await instrumentsApiClient.get(`${INSTRUMENTS_API_BASE_URL}/`, {
+                const response = await instrumentsApiClient.get(`${INSTRUMENTS_SERVICE_URL}/api/warehouse/instruments/`, {
                     params: { page, limit }
                 });
                 const payload = response.data as unknown;
@@ -195,7 +196,7 @@ export const instrumentsService = {
 
     async getInstrumentById(_id: string): Promise<Instrument> {
         try {
-            const response = await instrumentsApiClient.get(`${INSTRUMENTS_API_BASE_URL}/${_id}`);
+            const response = await instrumentsApiClient.get(`${INSTRUMENTS_SERVICE_URL}/api/warehouse/instruments/${_id}`);
             const payload = response.data as unknown;
             const item = extractDataItem(payload);
             return transformBackendInstrument(item);
@@ -225,7 +226,7 @@ export const instrumentsService = {
                 Payload.location = instrument.location;
             }
 
-            const response = await instrumentsApiClient.post(`${INSTRUMENTS_API_BASE_URL}/`, Payload);
+            const response = await instrumentsApiClient.post(`${INSTRUMENTS_SERVICE_URL}/api/warehouse/instruments/`, Payload);
             const payload = response.data as unknown;
             const item = extractDataItem(payload);
             return transformBackendInstrument(item);
@@ -271,7 +272,7 @@ export const instrumentsService = {
             backendPayload.is_active = instrument.is_active;
         }
 
-        const response = await instrumentsApiClient.put(`${INSTRUMENTS_API_BASE_URL}/${_id}`, backendPayload);
+        const response = await instrumentsApiClient.put(`${INSTRUMENTS_SERVICE_URL}/api/warehouse/instruments/${_id}`, backendPayload);
         const payload = response.data as unknown;
         const item = extractDataItem(payload);
         return transformBackendInstrument(item);
@@ -283,7 +284,7 @@ export const instrumentsService = {
 
 async deleteInstrument(_id: string): Promise<Instrument> {
     try {
-        const response = await instrumentsApiClient.delete(`${INSTRUMENTS_API_BASE_URL}/${_id}`);
+        const response = await instrumentsApiClient.delete(`${INSTRUMENTS_SERVICE_URL}/api/warehouse/instruments/${_id}`);
         const payload = response.data as unknown;
         const item = extractDataItem(payload);
         return transformBackendInstrument(item);
@@ -313,7 +314,7 @@ async getInstrumentStats(): Promise<{ total: number; active: number; ready: numb
 
 async searchInstruments(keyword: string, page: number = 1, limit: number = 10): Promise<PaginatedResponse> {
     try {
-        const response = await instrumentsApiClient.get(`${INSTRUMENTS_API_BASE_URL}/search`, {
+        const response = await instrumentsApiClient.get(`${INSTRUMENTS_SERVICE_URL}/api/warehouse/instruments/search`, {
             params: { keyword, page, limit }
         });
         const payload = response.data as unknown;
