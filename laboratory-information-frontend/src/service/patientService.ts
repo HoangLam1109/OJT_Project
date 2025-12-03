@@ -31,9 +31,7 @@ patientApiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-const PATIENT_API_BASE_URL = '/api/patients';
-// Patient API client for backend patient service (legacy support for develop branch)
-const PATIENT_API_BASE = 'http://localhost:5001/api';
+
 
 // Backend API response types
 interface BackendPatient {
@@ -153,8 +151,8 @@ export const patientService = {
 
       const queryString = queryParams.toString();
       const endpoint = queryString 
-        ? `${PATIENT_API_BASE_URL}/getAll/?${queryString}`
-        : `${PATIENT_API_BASE_URL}/getAll/`;
+        ? `${PATIENT_SERVICE_URL}/api/patients/getAll/?${queryString}`
+        : `${PATIENT_SERVICE_URL}/api/patients/getAll/`;
 
       // Try using patientApiClient first, fallback to apiService if needed
       let responseData: GetAllPatientsResponse;
@@ -197,7 +195,7 @@ export const patientService = {
   async getPatientById(id: string): Promise<PatientOption | null> {
     try {
       const endpoints = [
-        `${PATIENT_API_BASE_URL}/viewDetail/${id}?populateUser=true`,
+        `${PATIENT_SERVICE_URL}/api/patients/viewDetail/${id}?populateUser=true`,
         `/patients/viewDetail/${id}`,
       ];
 
@@ -241,7 +239,7 @@ export const patientService = {
 // Legacy functions for admin pages (from develop branch)
 export async function fetchPatients(page = 1, limit = 10): Promise<PatientsResponse> {
   try {
-    const url = `${PATIENT_API_BASE}/patients/getAll?page=${page}&limit=${limit}`;
+    const url = `${PATIENT_SERVICE_URL}/api/patients/getAll?page=${page}&limit=${limit}`;
     const res = await axios.get(url, { timeout: 5000 });
     // Expect backend to return { patients: [...], total, page, totalPages }
     const body = res.data ?? {};
@@ -273,7 +271,7 @@ export async function fetchPatients(page = 1, limit = 10): Promise<PatientsRespo
     if (e?.response) {
       console.error(`PatientService.fetchPatients error: HTTP ${e.response.status} - ${e.response.statusText}`, e.response.data ?? e.message);
       if (e.response.status === 404) {
-        console.error(`Requested URL ${PATIENT_API_BASE}/patients/getAll returned 404. Verify the patient service is running and that the endpoint path is correct (should be ${PATIENT_API_BASE}/patients/getAll).`);
+        console.error(`Requested URL ${PATIENT_SERVICE_URL}/getAll returned 404. Verify the patient service is running and that the endpoint path is correct (should be ${PATIENT_SERVICE_URL}/getAll).`);
       }
     } else {
       console.error('PatientService.fetchPatients error:', e?.message ?? e);
@@ -284,7 +282,7 @@ export async function fetchPatients(page = 1, limit = 10): Promise<PatientsRespo
 
 export async function viewPatientDetail(id: string): Promise<PatientDetailResponse | null> {
   try {
-    const url = `${PATIENT_API_BASE}/patients/viewDetail/${id}`;
+    const url = `${PATIENT_SERVICE_URL}/api/patients/viewDetail/${id}`;
     const res = await axios.get(url, { timeout: 5000 });
     // Normalize possible shapes: { data: {...} } or { patient: {...} } or direct object
     const raw = res.data;
@@ -317,7 +315,7 @@ export async function viewPatientDetail(id: string): Promise<PatientDetailRespon
 export async function deletePatient(id: string): Promise<boolean> {
   try {
     // Backend delete endpoint (per spec): /patients/delete/{id}
-    const url = `${PATIENT_API_BASE}/patients/delete/${id}`;
+    const url = `${PATIENT_SERVICE_URL}/api/patients/delete/${id}`;
     // Use apiClient so cookies/auth are correctly attached
     const res = await apiClient.delete(url, { timeout: 5000 });
     // consider success if 2xx
@@ -336,7 +334,7 @@ export async function deletePatient(id: string): Promise<boolean> {
 
 export async function updatePatient(id: string, payload: Partial<UpdatePatientPayload>): Promise<PatientDetailResponse | null> {
   try {
-    const url = `${PATIENT_API_BASE}/patients/update/${id}`;
+    const url = `${PATIENT_SERVICE_URL}/api/patients/update/${id}`;
     
     // Ensure id is included in payload as required by API
     const fullPayload: UpdatePatientPayload = {

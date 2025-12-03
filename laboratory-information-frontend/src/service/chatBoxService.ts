@@ -7,7 +7,7 @@ const CHAT_SERVICE_URL = import.meta.env.VITE_API_AI_CHAT_SERVICE_URL || 'http:/
 const chatApiClient: AxiosInstance = axios.create({
   baseURL: CHAT_SERVICE_URL,
   timeout: 10000,
-  withCredentials: true, // Enable cookies for JWT authentication
+  withCredentials: true, 
   headers: {
     'Content-Type': 'application/json',
   },
