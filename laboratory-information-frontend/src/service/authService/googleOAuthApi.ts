@@ -85,6 +85,62 @@ export async function handleGoogleCallback(): Promise<User | null> {
 }
 
 /**
+ * Xử lý Google OAuth callback từ hash fragment
+ * Backend trả về: #accessToken=...&refreshToken=...&user={...}
+ */
+export function handleGoogleCallbackFromHash(): User | null {
+  try {
+    const hash = window.location.hash.substring(1); // Remove '#'
+    if (!hash) return null;
+
+    const hashParams = new URLSearchParams(hash);
+    const accessToken = hashParams.get('accessToken');
+    const refreshToken = hashParams.get('refreshToken');
+    const userParam = hashParams.get('user');
+
+    if (!accessToken || !userParam) {
+      console.warn('[Google OAuth] Missing accessToken or user in hash fragment');
+      return null;
+    }
+
+    // Parse user JSON từ URL encoded string
+    const userData = JSON.parse(decodeURIComponent(userParam));
+
+    // Save tokens to localStorage
+    if (accessToken) {
+      localStorage.setItem('authToken', accessToken);
+      console.log('[Google OAuth] ✓ Access token saved from hash fragment');
+    }
+
+    if (refreshToken) {
+      localStorage.setItem('refreshToken', refreshToken);
+      console.log('[Google OAuth] ✓ Refresh token saved from hash fragment');
+    }
+
+    // Map user data to User type
+    const user: User = {
+      id: userData.id,
+      name: userData.fullName,
+      email: userData.email,
+      role: (Array.isArray(userData.role) ? userData.role : [userData.role]) as User['role'],
+      active: true,
+      permissions: [],
+    };
+
+    console.log('[Google OAuth] ✓ User processed from hash fragment:', {
+      id: user.id,
+      email: user.email,
+      roles: user.role
+    });
+
+    return user;
+  } catch (error: unknown) {
+    console.error('[Google OAuth] Hash fragment parsing error:', error);
+    return null;
+  }
+}
+
+/**
  * Xử lý Google OAuth callback từ response data có sẵn
  * Sử dụng khi backend đã xử lý và trả về data
  */
@@ -137,5 +193,6 @@ export function cleanGoogleCallbackUrl(): void {
   const url = new URL(window.location.href);
   url.searchParams.delete('code');
   url.searchParams.delete('state');
+  url.hash = ''; // Clear hash fragment
   window.history.replaceState({}, '', url.toString());
 }
