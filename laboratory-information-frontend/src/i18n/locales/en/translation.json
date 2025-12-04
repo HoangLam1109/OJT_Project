@@ -556,6 +556,40 @@
       "saving": "Saving...",
       "success": "Medical record updated successfully",
       "error": "Failed to update medical record"
+    },
+    "updateModal": {
+      "titleCreate": "Add New Patient",
+      "titleEdit": "Edit Patient",
+      "titleView": "Patient Details",
+      "fullName": "Full Name",
+      "patientCode": "Patient Code",
+      "email": "Email",
+      "identityNumber": "ID Number",
+      "phoneNumber": "Phone Number",
+      "phoneNumberRequired": "Phone Number",
+      "gender": "Gender",
+      "selectGender": "Select",
+      "male": "Male",
+      "female": "Female",
+      "other": "Other",
+      "age": "Age",
+      "dateOfBirth": "Date of Birth",
+      "address": "Address",
+      "emergencyContactInfo": "Emergency Contact Information",
+      "emergencyContactName": "Contact Name",
+      "emergencyContactNameRequired": "Contact Name",
+      "emergencyContactPhone": "Phone Number",
+      "close": "Close",
+      "cancel": "Cancel",
+      "create": "Add Patient",
+      "update": "Update",
+      "validation": {
+        "emergencyNameRequired": "Contact name is required",
+        "emergencyNameNoNumbers": "Contact name cannot contain numbers",
+        "emergencyPhoneRequired": "Phone number is required",
+        "emergencyPhoneNoLetters": "Phone number cannot contain letters",
+        "emergencyPhoneInvalid": "Phone number contains invalid characters"
+      }
     }
   },
   "testOrder":{
