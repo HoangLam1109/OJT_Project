@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 import { messageApi, roomApi, type RoomSummary } from '../service/messageRoomService';
 import { useAuthContext } from './useAuthContext';
@@ -26,6 +27,7 @@ export function useMessageNotifications({
   autoClear = false,
 }: UseMessageNotificationsOptions = {}) {
   const { user } = useAuthContext();
+  const { t } = useTranslation();
   const [unreadCount, setUnreadCount] = useState(0);
   const [unreadRooms, setUnreadRooms] = useState<string[]>([]);
 
@@ -129,9 +131,9 @@ export function useMessageNotifications({
         } else {
           unreadRoomsRef.current.add(room._id);
           if (hasStoredSnapshotRef.current && !suppressToasts) {
-            toast.info('Tin nhắn mới', {
-              description: `${room.name || 'Phòng chat'}: ${latest.text || 'Bạn có tin nhắn mới.'}`,
-              duration: 3500,
+            toast.info(t('notifications.message.newMessage'), {
+              description: `${room.name || t('notifications.message.defaultRoomName')}: ${latest.text || t('notifications.message.newMessageDescription')}`,
+              duration: 1500,
             });
           }
         }
@@ -144,7 +146,7 @@ export function useMessageNotifications({
         }
       }
     },
-    [suppressToasts, user?.id]
+    [suppressToasts, user?.id, t]
   );
 
   const pollRooms = useCallback(async () => {

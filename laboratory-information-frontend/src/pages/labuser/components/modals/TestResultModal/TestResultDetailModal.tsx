@@ -67,7 +67,7 @@ const TestResultDetailModal: React.FC<TestResultDetailModalProps> = ({
       const aiComment = chatResponse.data.response || '';
       
       if (!aiComment) {
-        toast.error(t('testResult.aiReviewFailed') || 'Không nhận được phản hồi từ AI');
+        toast.error(t('notifications.testResult.aiReviewFailed'));
         return;
       }
       
@@ -91,7 +91,7 @@ const TestResultDetailModal: React.FC<TestResultDetailModalProps> = ({
       }
     } catch (error) {
       console.error('Error in AI review:', error);
-      toast.error(t('testResult.aiReviewFailed') || 'Không thể tạo nhận xét từ AI');
+      toast.error(t('notifications.testResult.aiReviewFailed'));
     } finally {
       setAiReviewing(false);
     }

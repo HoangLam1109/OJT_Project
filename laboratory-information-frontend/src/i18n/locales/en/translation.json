@@ -1223,6 +1223,62 @@
       "reagentCode": "Reagent Code",
       "reagentName": "Reagent Name"
     }
+  },
+  "notifications": {
+    "message": {
+      "newMessage": "New message",
+      "newMessageDescription": "You have a new message.",
+      "defaultRoomName": "Chat room"
+    },
+    "chat": {
+      "roomNotFound": "Chat room not found",
+      "cannotLoadRoomInfo": "Cannot load chat room information",
+      "cannotLoadMessages": "Cannot load messages",
+      "cannotSendInitialNote": "Cannot send initial note",
+      "cannotSendMessage": "Cannot send message"
+    },
+    "testOrder": {
+      "deleteSuccess": "Test order \"{{patientName}}\" deleted successfully",
+      "deleteFailed": "Cannot delete test order",
+      "cannotLoadDetails": "Cannot load test order details",
+      "cannotLoadPatients": "Cannot load patients list",
+      "cannotLoadInstruments": "Cannot load instruments list",
+      "cannotLoadReagents": "Cannot load reagents list",
+      "cannotLoadTestItems": "Cannot load test items list",
+      "fillRequiredFields": "Please fill in all required fields",
+      "updateSuccess": "Update successful!",
+      "systemError": "System error"
+    },
+    "user": {
+      "cannotLoadUsers": "Cannot load users list",
+      "cannotGoToLastPage": "Cannot go to last page",
+      "createSuccess": "User created successfully",
+      "updateSuccess": "User updated successfully",
+      "deleteSuccess": "User deleted successfully",
+      "lockSuccess": "Account locked successfully",
+      "unlockSuccess": "Account unlocked successfully"
+    },
+    "reagent": {
+      "cannotConnectServer": "Cannot connect to server. Please check if backend service is running (port 5003)",
+      "reagentNotFound": "Reagent information not found",
+      "cannotLoadReagentInfo": "Cannot load reagent information",
+      "fillRequiredFields": "Please fill in all required fields (Name, Quantity, Expiry Date)",
+      "lotNumberExists": "Lot number already exists",
+      "expiryDateInvalid": "Expiry date must be after current date",
+      "quantityInvalid": "Quantity must be greater than or equal to 0",
+      "updateSuccess": "Reagent updated successfully",
+      "createSuccess": "Reagent created successfully",
+      "deleteSuccess": "Reagent deleted successfully",
+      "lotNumberDuplicate": "Reagent lot number already exists in the system",
+      "quantityExceedsReceived": "Current quantity cannot exceed received quantity",
+      "invalidData": "Invalid data. Please check the entered information.",
+      "reagentNotFoundForUpdate": "Reagent not found for update",
+      "saveError": "An error occurred while saving reagent",
+      "deleteError": "An error occurred while deleting reagent"
+    },
+    "testResult": {
+      "aiReviewFailed": "Failed to receive response from AI"
+    }
   }
 }
 
