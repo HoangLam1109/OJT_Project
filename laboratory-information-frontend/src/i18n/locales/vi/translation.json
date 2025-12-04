@@ -552,6 +552,40 @@
       "saving": "Đang lưu...",
       "success": "Cập nhật hồ sơ thành công",
       "error": "Cập nhật hồ sơ thất bại"
+    },
+    "updateModal": {
+      "titleCreate": "Thêm bệnh nhân mới",
+      "titleEdit": "Chỉnh sửa bệnh nhân",
+      "titleView": "Chi tiết bệnh nhân",
+      "fullName": "Họ và tên",
+      "patientCode": "Mã bệnh nhân",
+      "email": "Email",
+      "identityNumber": "CMND/CCCD",
+      "phoneNumber": "Số điện thoại",
+      "phoneNumberRequired": "Số điện thoại",
+      "gender": "Giới tính",
+      "selectGender": "Chọn",
+      "male": "Nam",
+      "female": "Nữ",
+      "other": "Khác",
+      "age": "Tuổi",
+      "dateOfBirth": "Ngày sinh",
+      "address": "Địa chỉ",
+      "emergencyContactInfo": "Thông tin liên hệ khẩn cấp",
+      "emergencyContactName": "Tên liên hệ",
+      "emergencyContactNameRequired": "Tên liên hệ",
+      "emergencyContactPhone": "Số điện thoại",
+      "close": "Đóng",
+      "cancel": "Hủy",
+      "create": "Thêm bệnh nhân",
+      "update": "Cập nhật",
+      "validation": {
+        "emergencyNameRequired": "Tên người liên hệ là bắt buộc",
+        "emergencyNameNoNumbers": "Tên người liên hệ không được chứa số",
+        "emergencyPhoneRequired": "Số điện thoại là bắt buộc",
+        "emergencyPhoneNoLetters": "Số điện thoại không được chứa chữ cái",
+        "emergencyPhoneInvalid": "Số điện thoại chứa ký tự không hợp lệ"
+      }
     }
   },
   "testOrder": {
