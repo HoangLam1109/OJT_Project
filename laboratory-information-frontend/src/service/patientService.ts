@@ -1,26 +1,37 @@
 import axios, { isAxiosError } from 'axios';
 
-// Patient service URL 
-const PATIENT_SERVICE_URL = import.meta.env.VITE_API_PATIENT_SERVICE_URL || 'http://localhost:5001';
+const PATIENT_SERVICE_URL =
+  import.meta.env.VITE_API_PATIENT_SERVICE_URL || 'http://localhost:5001';
 
-// Create axios instance for patient service
 const patientClient = axios.create({
   baseURL: PATIENT_SERVICE_URL,
   timeout: 10000,
-  withCredentials: true, // Enable cookies for authentication
+  withCredentials: false, // bỏ cookie nếu dùng token localStorage
   headers: {
     'Content-Type': 'application/json',
   },
-  // Don't treat 401/404 as errors to reduce console noise
   validateStatus: (status) => status >= 200 && status < 500,
 });
 
+// Lấy token từ localStorage
+const getTokenFromLocalStorage = (): string | null => {
+  return localStorage.getItem('authToken'); // key bạn lưu token
+};
+
+// Gắn token vào header Authorization
 patientClient.interceptors.request.use(
-  (config) => config,
+  (config) => {
+    const token = getTokenFromLocalStorage();
+    if (token) {
+      config.headers = config.headers || {};
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
   (error) => Promise.reject(error)
 );
 
-// Suppress errors in response interceptor
+// Response interceptor
 patientClient.interceptors.response.use(
   (response) => response,
   (error) => {
