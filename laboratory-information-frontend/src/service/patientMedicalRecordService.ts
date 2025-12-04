@@ -12,21 +12,15 @@ const pmrClient = axios.create({
   validateStatus: (status) => status >= 200 && status < 500,
 });
 
-const getTokenFromCookie = (): string | null => {
-  const cookies = document.cookie.split(';');
-  for (const cookie of cookies) {
-    const [name, value] = cookie.trim().split('=');
-    if (name === 'accessToken') {
-      return value;
-    }
-  }
-  return null;
+// Lấy token từ localStorage
+const getTokenFromLocalStorage = (): string | null => {
+  return localStorage.getItem('authToken'); // hoặc key bạn lưu token
 };
 
 // Attach Authorization header
 pmrClient.interceptors.request.use(
   (config) => {
-    const token = getTokenFromCookie();
+    const token = getTokenFromLocalStorage();
     if (token) {
       config.headers = config.headers || {};
       config.headers.Authorization = `Bearer ${token}`;
@@ -35,6 +29,7 @@ pmrClient.interceptors.request.use(
   },
   (error) => Promise.reject(error)
 );
+
 
 
 export interface PMRPatientEmbed {

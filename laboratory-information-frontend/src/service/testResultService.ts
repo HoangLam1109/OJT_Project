@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { isAxiosError } from 'axios';
 import type { TestResultApiResponse, TestResultGroup, TestResult, TestResultDetail, TestResultItem } from '../pages/labuser/types/TestResultTypes';
 
 const TEST_RESULT_API_BASE = import.meta.env.VITE_API_TEST_ORDER_SERVICE_URL || 'http://localhost:5002';
@@ -27,7 +27,6 @@ export interface TestResultFlatItem {
   updatedAt: string;
 }
 
-// Create axios instance for test result service
 const testResultClient = axios.create({
   baseURL: TEST_RESULT_API_BASE,
   timeout: 10000,
@@ -35,6 +34,39 @@ const testResultClient = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+// Lấy token từ localStorage
+const getTokenFromLocalStorage = (): string | null => {
+  return localStorage.getItem('authToken');
+};
+
+// Request interceptor: gắn token
+testResultClient.interceptors.request.use(
+  (config) => {
+    const token = getTokenFromLocalStorage();
+    if (token) {
+      config.headers = config.headers || {};
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Response interceptor: xử lý lỗi
+testResultClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (isAxiosError(error)) {
+      const status = error.response?.status;
+      if (status === 401 || status === 404) {
+        // Có thể thêm logic redirect login FE ở đây
+        return Promise.reject(error);
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 // Transform API response to UI format
 const transformTestResultGroup = (group: TestResultGroup): TestResult => {
@@ -121,7 +153,7 @@ export class TestResultService {
       });
 
       const results = response.data.data.map(transformTestResultGroup);
-      
+
       // Sắp xếp theo createdAt từ mới nhất đến cũ nhất
       return results.sort((a: TestResult, b: TestResult) => {
         const dateA = new Date(a.createdAt).getTime();
@@ -192,13 +224,13 @@ export class TestResultService {
       });
 
       const allGroupedResults = groupTestResults(response.data.data);
-      
+
       // Sort by createdAt descending
       allGroupedResults.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
       const totalGroups = allGroupedResults.length;
       const totalPages = Math.ceil(totalGroups / limit);
-      
+
       const startIndex = (page - 1) * limit;
       const endIndex = startIndex + limit;
       const paginatedResults = allGroupedResults.slice(startIndex, endIndex);
@@ -229,11 +261,23 @@ export class TestResultService {
     };
   }> {
     try {
-      const response = await testResultClient.get(`${TEST_RESULT_API_BASE}/api/testResult/getResultsByPatientId/${patientId}`);
+      const response = await testResultClient.get(
+        `${TEST_RESULT_API_BASE}/api/testResult/getResultsByPatientId/${patientId}`
+      );
       return response.data;
-    } catch (error) {
+    } catch (error: unknown) {
+      // Nếu là AxiosError và status = 404 thì không log lỗi
+      if (isAxiosError(error) && error.response?.status === 404) {
+        return {
+          success: true,
+          data: [],
+          pagination: { page: 1, limit: 5, total: 0, totalPages: 0 },
+        };
+      }
+
+      // Các lỗi khác thì log ra console
       console.error('Error fetching test results by patient ID:', error);
-      throw new Error('Không thể tải kết quả xét nghiệm của bệnh nhân');
+      throw error; // hoặc ném ra để FE handle tiếp
     }
   }
 }
