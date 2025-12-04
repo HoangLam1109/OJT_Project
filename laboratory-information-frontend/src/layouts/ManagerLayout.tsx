@@ -47,7 +47,7 @@ export function ManagerLayout({
   
     
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="flex h-screen bg-gray-100">
       <Sidebar
         currentUserName={currentUser.name}
         currentUserRole={t('manager.role')}
@@ -59,17 +59,13 @@ export function ManagerLayout({
         navigationItems={navigationItems}
         onLogout={onLogout}
       />
-      <div className={`flex-1 flex flex-col transition-all duration-300 ${
-        sidebarCollapsed 
-          ? ' md:ml-16 lg:ml-16' 
-          : ' md:ml-64 lg:ml-64'
-      }`}>
+      <div className={`flex-1 flex flex-col overflow-hidden ${sidebarCollapsed ? 'ml-0 md:ml-16 lg:ml-16' : 'ml-0 md:ml-64 lg:ml-64'}`}>
         <MobileHeader 
           onMenuClick={() => setSidebarCollapsed(false)} 
           navigationItems={navigationItems}
         />
-        <TopHeader/>
-        <main className="flex-1 p-2 xs:p-3 sm:p-4 md:p-5 lg:p-6 bg-gray-50 overflow-y-auto">{children}</main>
+        <TopHeader />
+        <main className="flex-1 overflow-y-auto bg-gray-50 p-3 xs:p-4 sm:p-5 md:p-6">{children}</main>
       </div>
     </div>
   );

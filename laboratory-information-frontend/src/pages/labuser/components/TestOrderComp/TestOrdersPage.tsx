@@ -152,7 +152,9 @@ const TestOrdersPage: React.FC = () => {
   ) => {
     try {
       await testOrderService.changeStatus(orderId, newStatus, user?.name ?? 'system');
-      toast.success(`Đã chuyển sang ${newStatus}`);
+      const statusKey = `testOrder.${newStatus.toLowerCase()}` as 'testOrder.pending' | 'testOrder.processing' | 'testOrder.completed';
+      const statusText = t(statusKey);
+      toast.success(t('testOrder.statusChanged', { status: statusText }));
 
       // Optimistic UI – cập nhật ngay, không cần reload
       const updateOrder = (o: TestOrder) =>
