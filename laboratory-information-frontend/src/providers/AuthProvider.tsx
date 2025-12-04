@@ -83,6 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       hasInitialized.current = true; // Đánh dấu đã bắt đầu initialize
       setLoading(true);
 
+      // Rehydrate user từ localStorage nếu chưa có trong state
       if (!user) {
         const storedUser = rehydrateStoredUser();
         if (storedUser) {
@@ -90,7 +91,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
 
-      // Google OAuth
+      // Google OAuth callback - chỉ xử lý nếu đang ở callback page
       if (isGoogleCallback()) {
         try {
           const googleUser = await handleGoogleCallback();
@@ -105,7 +106,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
 
-      // KIỂM TRA TOKEN
+      // Kiểm tra token và user trong localStorage
+      const authToken = localStorage.getItem('authToken');
+      const storedUser = rehydrateStoredUser();
+      
+      // Nếu không có token hoặc user, không cần verify
+      if (!authToken || !storedUser) {
+        setLoading(false);
+        return;
+      }
+
+      // Verify token với backend
       try {
         const res = await apiClient.get('/user/me/roles');
         const data = res.data;
@@ -117,40 +128,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           active: true,
           permissions: data.aggregatedPrivileges || [],
         };
-
         onLogin(authenticatedUser);
       } catch (error: unknown) {
         if (axios.isAxiosError(error)) {
-          // Xử lý lỗi 401 (Unauthorized) - token không hợp lệ
+          // Chỉ xóa user khi token thực sự không hợp lệ (401)
           if (error.response?.status === 401) {
+            console.warn('[AuthProvider] Token invalid (401), clearing user data');
             localStorage.removeItem("limsUser");
+            localStorage.removeItem("authToken");
             setUser(null);
           } 
-          // Bỏ qua lỗi network khi backend chưa chạy (development)
+          // Với lỗi network, giữ lại user từ localStorage
           else if (error.code === 'ERR_NETWORK' || error.code === 'ERR_CONNECTION_REFUSED') {
-            // Chỉ log ở development mode
             if (import.meta.env.DEV) {
-              console.warn('Backend không khả dụng. Vui lòng kiểm tra backend service đã chạy chưa.');
+              console.warn('[AuthProvider] Backend không khả dụng, giữ lại user từ localStorage');
             }
-            // Nếu có user trong localStorage, giữ lại để offline mode
-            const storedUser = rehydrateStoredUser();
+            // Giữ lại user từ localStorage để offline mode
             if (storedUser) {
               setUser(storedUser);
-            } else {
-              setUser(null);
             }
           } 
-          // Các lỗi khác
+          // Các lỗi khác (500, 404, etc.) - giữ lại user
           else {
-            console.error('Auth check failed:', error);
+            console.error('[AuthProvider] Auth check failed:', error.response?.status, error.message);
+            // Giữ lại user từ localStorage khi gặp lỗi không phải 401
+            if (storedUser) {
+              setUser(storedUser);
+            }
           }
         } else {
-          console.error('Unknown error:', error);
+          console.error('[AuthProvider] Unknown error:', error);
+          // Giữ lại user từ localStorage
+          if (storedUser) {
+            setUser(storedUser);
+          }
         }
       } finally {
         setLoading(false);
       }
-
     };
 
     initializeAuth();
