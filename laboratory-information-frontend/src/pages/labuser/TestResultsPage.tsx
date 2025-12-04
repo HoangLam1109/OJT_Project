@@ -17,6 +17,7 @@ import { testResultService } from '../../service/testResultService';
 import { Skeleton } from '@/components/common/skeleton';
 import TestResultDetailModal from './components/modals/TestResultModal/TestResultDetailModal';
 import TestResultEditModal from './components/modals/TestResultModal/TestResultEditModal';
+import { translateTestType } from './utils/testOrderUtils';
 
 
 // Main Component
@@ -291,7 +292,7 @@ const TestResultsPage: React.FC = () => {
                                 {t('testResult.patientName')}: {result.patientName}
                               </h3>
                               <h3 className="text-xs sm:text-sm font-medium text-gray-700 mt-1">
-                                {t('testResult.testType')}: {result.test_type}
+                                {t('testResult.testType')}: {translateTestType(result.test_type, t)}
                               </h3>
                             </div>
 
