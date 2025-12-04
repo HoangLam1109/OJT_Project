@@ -30,8 +30,15 @@ const createApiClient = (): AxiosInstance => {
     headers: { 'Content-Type': 'application/json' },
   });
 
-  // Không cần thêm header → cookie tự gửi
-  client.interceptors.request.use(config => config);
+  // Thêm token từ localStorage vào Authorization header nếu có
+  client.interceptors.request.use(config => {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      config.headers = config.headers || {};
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  });
 
   // Xử lý 401 + refresh token
   client.interceptors.response.use(
