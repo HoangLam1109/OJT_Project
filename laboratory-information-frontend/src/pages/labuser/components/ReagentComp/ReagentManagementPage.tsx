@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 
 const ReagentManagementPage: React.FC = () => {
   const { user } = useAuthContext();
+  const { t } = useTranslation();
   const [reagents, setReagents] = useState<Reagent[]>([]);
   const [filteredReagents, setFilteredReagents] = useState<Reagent[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -54,9 +55,7 @@ const ReagentManagementPage: React.FC = () => {
         }
 
         if (isNetworkError) {
-          toast.error(
-            'Không thể kết nối đến server. Vui lòng kiểm tra backend service đã chạy chưa (port 5003)'
-          );
+          toast.error(t('notifications.reagent.cannotConnectServer'));
         } else {
           toast.error(errorMessage);
         }
@@ -108,16 +107,16 @@ const ReagentManagementPage: React.FC = () => {
         setSelectedReagent(fullReagent);
         setIsDetailModalOpen(true);
       } else {
-        toast.error('Không tìm thấy thông tin thuốc thử');
+        toast.error(t('notifications.reagent.reagentNotFound'));
       }
     } catch (error: unknown) {
       // Ghi log lỗi an toàn
       if (error instanceof Error) {
         console.error('Lỗi khi lấy chi tiết thuốc thử:', error.message);
-        toast.error(error.message || 'Không thể tải thông tin thuốc thử');
+        toast.error(error.message || t('notifications.reagent.cannotLoadReagentInfo'));
       } else {
         console.error('Lỗi không xác định khi lấy chi tiết thuốc thử:', error);
-        toast.error('Không thể tải thông tin thuốc thử');
+        toast.error(t('notifications.reagent.cannotLoadReagentInfo'));
       }
 
       // Dùng fallback: hiển thị thuốc thử từ danh sách
@@ -137,7 +136,7 @@ const ReagentManagementPage: React.FC = () => {
 
     // Validate required fields
     if (!dataToSave.name || !dataToSave.quantity || !dataToSave.expiryDate) {
-      toast.error('Vui lòng điền đầy đủ thông tin bắt buộc (Tên, Số lượng, Ngày hết hạn)');
+      toast.error(t('notifications.reagent.fillRequiredFields'));
       return false;
     }
 
@@ -148,7 +147,7 @@ const ReagentManagementPage: React.FC = () => {
         reagent.lotNumber === dataToSave.lotNumber
       );
       if (existingReagent) {
-        toast.error('Số lô đã tồn tại');
+        toast.error(t('notifications.reagent.lotNumberExists'));
         return false;
       }
     }
@@ -159,14 +158,14 @@ const ReagentManagementPage: React.FC = () => {
       const currentDate = new Date();
       currentDate.setHours(0, 0, 0, 0); // Reset time to compare dates only
       if (expiryDate <= currentDate) {
-        toast.error('Ngày hết hạn phải sau ngày hiện tại');
+        toast.error(t('notifications.reagent.expiryDateInvalid'));
         return false;
       }
     }
 
     // Validate quantity
     if (dataToSave.quantity !== undefined && dataToSave.quantity < 0) {
-      toast.error('Số lượng phải lớn hơn hoặc bằng 0');
+      toast.error(t('notifications.reagent.quantityInvalid'));
       return false;
     }
 
@@ -179,7 +178,7 @@ const ReagentManagementPage: React.FC = () => {
           user?.id
         );
         setReagents(prev => prev.map(reagent => reagent.id === dataToSave.id ? updatedReagent : reagent));
-        toast.success('Cập nhật thuốc thử thành công');
+        toast.success(t('notifications.reagent.updateSuccess'));
         console.log(`[AUDIT] E_00027 | Reagent modified by ${user?.name}`);
 
         setIsEditModalOpen(false);
@@ -196,7 +195,7 @@ const ReagentManagementPage: React.FC = () => {
           user?.id
         );
         setReagents(prev => [...prev, newReagent]);
-        toast.success('Tạo thuốc thử thành công');
+        toast.success(t('notifications.reagent.createSuccess'));
         console.log(`[AUDIT] E_00026 | Reagent created by ${user?.name}`);
 
         setIsAddModalOpen(false);
@@ -217,13 +216,13 @@ const ReagentManagementPage: React.FC = () => {
 
       // Kiểm tra các lỗi cụ thể từ backend
       if (errorMessage.includes('duplicate') || errorMessage.includes('unique')) {
-        toast.error('Số lô thuốc thử đã tồn tại trong hệ thống');
+        toast.error(t('notifications.reagent.lotNumberDuplicate'));
       } else if (errorMessage.includes('quantity_current') && errorMessage.includes('lớn hơn')) {
-        toast.error('Số lượng hiện tại không được lớn hơn số lượng đã nhận');
+        toast.error(t('notifications.reagent.quantityExceedsReceived'));
       } else if (errorMessage.includes('validation') || errorMessage.includes('required')) {
-        toast.error('Dữ liệu không hợp lệ. Vui lòng kiểm tra lại thông tin nhập vào.');
+        toast.error(t('notifications.reagent.invalidData'));
       } else if (errorMessage.includes('not found') || errorMessage.includes('không tìm thấy')) {
-        toast.error('Không tìm thấy thuốc thử để cập nhật');
+        toast.error(t('notifications.reagent.reagentNotFoundForUpdate'));
       } else {
         toast.error(errorMessage);
       }
@@ -239,7 +238,7 @@ const ReagentManagementPage: React.FC = () => {
     try {
       await reagentService.deleteReagent(selectedReagent.id, user?.id);
       setReagents(prev => prev.filter(reagent => reagent.id !== selectedReagent.id));
-      toast.success('Xóa thuốc thử thành công');
+      toast.success(t('notifications.reagent.deleteSuccess'));
       console.log(`[AUDIT] E_00028 | Reagent deleted by ${user?.name}`);
       setIsDeleteModalOpen(false);
       setSelectedReagent(null);

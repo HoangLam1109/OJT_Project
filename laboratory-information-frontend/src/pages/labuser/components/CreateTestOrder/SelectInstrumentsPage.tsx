@@ -118,7 +118,7 @@ const SelectInstrumentsPage: React.FC = () => {
 
   const handleNext = () => {
     if (!state?.formData) {
-      toast.error('Thiếu thông tin form');
+      toast.error(t('notifications.testOrder.fillRequiredFields'));
       return;
     }
 

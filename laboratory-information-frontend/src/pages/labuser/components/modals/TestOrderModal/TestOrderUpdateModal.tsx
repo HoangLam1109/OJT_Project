@@ -16,6 +16,7 @@ import type { Reagent } from '@/pages/labuser/types/Reagent';
 import { SearchableDropdown } from '../../common/SearchableDropdown.tsx';
 import { SearchableMultiSelect } from '../../common/SearchableMultiSelect.tsx';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import { testOrderService } from '../../../../../service/testOrderService';
 import { testItemService, type TestItem } from '../../../../../service/testItemService';
 import { TestItemMultiSelect } from '../../common/TestItemMultiSelect.tsx';
@@ -50,6 +51,7 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
   isEdit,
 }) => {
   const { user } = useAuthContext();
+  const { t } = useTranslation();
   const testTypes = [
     "Sinh hóa máu",
     "Huyết học tổng quát",
@@ -199,7 +201,7 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
       const data = await patientService.getAllPatientsForDropdown();
       setPatients(data);
     } catch {
-      toast.error('Không thể tải danh sách bệnh nhân');
+      toast.error(t('notifications.testOrder.cannotLoadPatients'));
     } finally {
       setLoadingPatients(false);
     }
@@ -214,7 +216,7 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
       const activeInstruments = allInstruments.filter(inst => inst.is_active && !inst.is_deleted);
       setInstruments(activeInstruments);
     } catch (e) {
-      toast.error('Không thể tải danh sách thiết bị');
+      toast.error(t('notifications.testOrder.cannotLoadInstruments'));
       console.error('Error loading instruments:', e);
       setInstruments([]); // Set empty array on error
     } finally {
@@ -230,7 +232,7 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
       const availableReagents = data.filter(r => r.status !== 'Expired');
       setReagents(availableReagents);
     } catch {
-      toast.error('Không thể tải danh sách thuốc thử');
+      toast.error(t('notifications.testOrder.cannotLoadReagents'));
     } finally {
       setLoadingReagents(false);
     }
@@ -246,7 +248,7 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
         setSelectedTestItemIds([]);
       }
     } catch {
-      toast.error('Không thể tải danh sách test items');
+      toast.error(t('notifications.testOrder.cannotLoadTestItems'));
       setTestItems([]);
     } finally {
       setLoadingTestItems(false);
@@ -283,7 +285,7 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      toast.error('Vui lòng điền đầy đủ thông tin bắt buộc');
+      toast.error(t('notifications.testOrder.fillRequiredFields'));
       return;
     }
 
@@ -313,7 +315,7 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
       if (isEdit && order?._id) {
         // Gọi API updateTestOrder khi ở chế độ chỉnh sửa
         await testOrderService.updateTestOrder(order._id, submitData);
-        toast.success('Cập nhật thành công!');
+        toast.success(t('notifications.testOrder.updateSuccess'));
       }
       // Gọi callback onSubmit để parent component có thể refresh data
       await onSubmit(submitData);
@@ -324,7 +326,7 @@ const TestOrderFormModal: React.FC<TestOrderFormModalProps> = ({
       const msg =
         error.response?.data?.message ||
         error.message ||
-        'Lỗi hệ thống';
+        t('notifications.testOrder.systemError');
 
       toast.error(msg);
     }finally {
