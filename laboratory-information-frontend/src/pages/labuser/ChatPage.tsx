@@ -133,13 +133,13 @@ const LabUserChatPage: React.FC = () => {
     }
   };
 
+  // Chỉ load lại messages khi có tin nhắn mới trong room này
   useEffect(() => {
-    if (!selectedRoomId) return;
-    const interval = setInterval(() => {
-      void loadMessages(selectedRoomId, { background: true });
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [selectedRoomId, loadMessages]);
+    if (!selectedRoomId || !unreadRoomSet.has(selectedRoomId)) return;
+    
+    // Có tin nhắn mới, load lại messages
+    void loadMessages(selectedRoomId, { background: true });
+  }, [selectedRoomId, unreadRoomSet, loadMessages]);
 
   useEffect(() => {
     if (!loadingMessages) {
@@ -166,7 +166,8 @@ const LabUserChatPage: React.FC = () => {
     try {
       await messageApi.sendMessage(selectedRoomId, optimisticMessage.text);
       await loadMessages(selectedRoomId);
-      toast.success(t('chat.sendSuccess'));
+      // Xóa thông báo khi gửi tin nhắn thành công
+      markRoomAsRead(selectedRoomId);
     } catch (error) {
       toast.error(apiUtils.getErrorMessage(error) || t('chat.sendError'));
       setMessages((prev) =>

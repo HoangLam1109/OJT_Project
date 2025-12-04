@@ -56,7 +56,7 @@ export const LogoutButton: React.FC<LogoutButtonProps> = ({ collapsed = false })
             ? 'p-2 w-full flex items-center justify-center' 
             : 'px-4 py-2'
         }`}
-        title={collapsed ? (loading ? "Đang đăng xuất..." : "Đăng xuất") : undefined}
+        title={collapsed ? (loading ? t('logout.loading') : t('logout.logout')) : undefined}
       >
         {collapsed ? (
           <LogOut className="h-4 w-4" />

@@ -428,7 +428,12 @@
     "success": "Logout successfully",
     "error": "Logout failed",
     "loading": "Logging out...",
-    "logout": "Logout"
+    "logout": "Logout",
+    "confirmTitle": "Confirm Logout",
+    "confirmMessage": "Are you sure you want to log out of the system?",
+    "note": "Note:",
+    "noteMessage": "After logging out, you will need to log in again to continue using the system.",
+    "cancel": "Cancel"
   },
   "patient":{
     "title":"Patient Management",
@@ -658,7 +663,7 @@
       "statusProcessing": "Processing",
       "statusMaintenance": "Maintenance",
       "statusError": "Error",
-      "statusInactive": "Inactive",
+      "statusInactive": "Maintenance",
       "notUpdated": "Not updated",
       "selectedInstruments": "Selected Instruments",
       "noInstrumentsSelected": "No instruments selected",
@@ -756,7 +761,7 @@
       "statusProcessing": "Processing",
       "statusMaintenance": "Maintenance",
       "statusError": "Error",
-      "statusInactive": "Inactive",
+      "statusInactive": "Maintenance",
       "cannotLoadInstruments": "Cannot load instruments list",
       "cannotDeleteInstrument": "Cannot delete instrument",
       "cannotAddInstrument": "Cannot add instrument",

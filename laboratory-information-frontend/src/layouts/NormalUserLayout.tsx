@@ -131,7 +131,7 @@ export const NormalUserLayout: React.FC<NormalUserLayoutProps> = ({
         enabled: true,
         suppressToasts: Boolean(isChatPage),
         autoClear: false,
-        pollInterval: 15000, // Tăng lên 15 giây để giảm số lượng request
+        pollInterval: 5000, // 5 giây để kiểm tra tin nhắn mới
       }}
     >
       <NormalUserLayoutContent

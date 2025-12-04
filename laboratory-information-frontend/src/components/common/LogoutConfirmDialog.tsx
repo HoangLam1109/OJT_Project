@@ -1,5 +1,6 @@
 import React from "react";
 import { LogOut, AlertTriangle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import {
   Dialog,
   DialogContent,
@@ -23,6 +24,8 @@ export const LogoutConfirmDialog: React.FC<LogoutConfirmDialogProps> = ({
   onConfirm,
   loading = false,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -33,10 +36,10 @@ export const LogoutConfirmDialog: React.FC<LogoutConfirmDialogProps> = ({
             </div>
             <div>
               <DialogTitle className="text-lg font-semibold text-gray-900">
-                Xác nhận đăng xuất
+                {t('logout.confirmTitle')}
               </DialogTitle>
               <DialogDescription className="text-sm text-gray-600 mt-1">
-                Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?
+                {t('logout.confirmMessage')}
               </DialogDescription>
             </div>
           </div>
@@ -47,9 +50,9 @@ export const LogoutConfirmDialog: React.FC<LogoutConfirmDialogProps> = ({
             <div className="flex items-start gap-3">
               <LogOut className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
               <div className="text-sm text-amber-800">
-                <p className="font-medium">Lưu ý:</p>
+                <p className="font-medium">{t('logout.note')}</p>
                 <p className="mt-1">
-                  Sau khi đăng xuất, bạn sẽ cần đăng nhập lại để tiếp tục sử dụng hệ thống.
+                  {t('logout.noteMessage')}
                 </p>
               </div>
             </div>
@@ -63,7 +66,7 @@ export const LogoutConfirmDialog: React.FC<LogoutConfirmDialogProps> = ({
             disabled={loading}
             className="px-4 py-2"
           >
-            Hủy
+            {t('logout.cancel')}
           </Button>
           <Button
             onClick={onConfirm}
@@ -73,12 +76,12 @@ export const LogoutConfirmDialog: React.FC<LogoutConfirmDialogProps> = ({
             {loading ? (
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                Đang đăng xuất...
+                {t('logout.loading')}
               </div>
             ) : (
               <div className="flex items-center gap-2">
                 <LogOut className="w-4 h-4" />
-                Đăng xuất
+                {t('logout.logout')}
               </div>
             )}
           </Button>
