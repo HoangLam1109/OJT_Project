@@ -10,13 +10,14 @@ import testItemRoutes from "./routes/testItem.routes.js"
 import testResultRoutes from "./routes/testResult.routes.js"
 import { writeFileSync } from "fs";
 import yaml from 'js-yaml';
-// Load environment variables
+import { corsOptions } from "../../shared/src/utils/cors.util.js";
+
 dotenv.config({ path: "./services/testOrderService/.env" });
 
 const app = express();
 
 // Middleware
-app.use(cors({ origin: true, credentials: true }));
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());

@@ -13,7 +13,6 @@ export class HttpLoggerAdapter implements ILoggerPort {
   private readonly apiKey: string | undefined;
   private readonly timeout: number;
   private readonly maxRetries: number;
-  private readonly eventLogEndpoint: string;
   
   // Circuit breaker state
   private failureCount: number = 0;
@@ -32,7 +31,6 @@ export class HttpLoggerAdapter implements ILoggerPort {
     this.apiKey = config.apiKey;
     this.timeout = config.timeout ?? 5000; // 5 seconds default
     this.maxRetries = config.maxRetries ?? 3;
-    this.eventLogEndpoint = this.buildEventLogEndpoint();
   }
 
   async emitEvent(event: MonitoringEvent): Promise<void> {
@@ -87,7 +85,7 @@ export class HttpLoggerAdapter implements ILoggerPort {
         headers["X-Internal-API-Key"] = this.apiKey;
       }
 
-      const response = await fetch(this.eventLogEndpoint, {
+      const response = await fetch(`${this.baseUrl}/event-logs`, {
         method: "POST",
         headers,
         body: JSON.stringify({
@@ -150,12 +148,5 @@ export class HttpLoggerAdapter implements ILoggerPort {
 
   private sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
-  }
-
-  private buildEventLogEndpoint(): string {
-    if (this.baseUrl.endsWith("/api")) {
-      return `${this.baseUrl}/event-logs`;
-    }
-    return `${this.baseUrl}/api/event-logs`;
   }
 }

@@ -25,7 +25,7 @@ export class LoggerFactory {
 
   private static createHttpLogger(): ILoggerPort {
     const baseUrl =
-      process.env.MONITORING_SERVICE_URL || "http://localhost:5004";
+      process.env.MONITORING_SERVICE_URL || "http://localhost:5004/api";
 
     if (!baseUrl) {
       console.warn(

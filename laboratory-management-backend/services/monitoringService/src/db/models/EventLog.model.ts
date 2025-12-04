@@ -1,12 +1,6 @@
 import { Schema, model, type Document } from "mongoose";
 import { ALLOWED_SERVICE_NAMES } from "../../constants/event.constant.js";
 
-export interface IEntityInfo {
-  entity_code?: string;
-  entity_name?: string;
-  entity_type?: string;
-}
-
 export interface IEventLog extends Document {
   event_id: string;
   event_code: string;
@@ -14,7 +8,6 @@ export interface IEventLog extends Document {
   event_message: string;
   service_name: string;
   entity_id?: string;
-  entity_info?: IEntityInfo | null;
   old_values?: Record<string, unknown> | null;
   new_values?: Record<string, unknown> | null;
   operator_id: string;
@@ -67,14 +60,6 @@ const EventLogSchema = new Schema<IEventLog>(
       type: String,
       trim: true,
       index: true,
-    },
-    entity_info: {
-      type: {
-        entity_code: { type: String, trim: true },
-        entity_name: { type: String, trim: true },
-        entity_type: { type: String, trim: true },
-      },
-      default: null,
     },
     old_values: {
       type: Schema.Types.Mixed,

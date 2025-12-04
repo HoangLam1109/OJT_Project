@@ -13,12 +13,12 @@ import swaggerUi from "swagger-ui-express";
 import swaggerDocument from "./swagger-output.json" with { type: "json"};
 
 import { errorHandler, notFoundHandler } from "./middlewares/error.middleware.js";
+import { corsOptions } from "../../shared/src/utils/cors.util.js";
 
 // Import OAuth config to initialize Passport strategies
 import "./config/oauth.config.js";
 
 console.log('[IAM Service] Environment loaded:');
-console.log('[IAM Service] PORT:', process.env.PORT);
 console.log('[IAM Service] INTERNAL_API_KEY:', process.env.INTERNAL_API_KEY ? '***' + process.env.INTERNAL_API_KEY.slice(-4) : 'NOT SET');
 console.log('[IAM Service] PATIENT_SERVICE_URL:', process.env.PATIENT_SERVICE_URL);
 
@@ -33,13 +33,6 @@ process.on('uncaughtException', (error) => {
 });
 
 const app = express();
-const corsOptions = {
-  origin: process.env.WEB_URL,
-  credentials: true,
-  methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-};
-
 app.use(cors(corsOptions));
 
 
@@ -62,6 +55,7 @@ app.get("/", (req, res) => {
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-app.listen(process.env.PORT, () => {
-  console.log(`Server is running on http://localhost:${process.env.PORT}`);
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(`Server is running on http://localhost:${port}`);
 });

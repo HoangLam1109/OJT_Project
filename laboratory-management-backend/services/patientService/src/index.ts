@@ -16,11 +16,12 @@ import swaggerUi from "swagger-ui-express";
 import { readFileSync } from "fs";
 import connectDB from "./config/database.config.js";
 import apiRoutes from "./routes/index.js";
+import { corsOptions } from "../../shared/src/utils/cors.util.js";
 
 const app = express();
 
 // Middleware
-app.use(cors({ origin: true, credentials: true }));
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());

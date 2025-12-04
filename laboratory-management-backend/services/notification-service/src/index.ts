@@ -14,6 +14,7 @@ import { handleNotificationSocketConnection } from "./controllers/notification.s
 
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import { corsOptions } from "../../shared/src/utils/cors.util.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -23,20 +24,15 @@ import cookieParser from "cookie-parser";
 
 const app = express();
 
-const corsOptions = {
-  origin: process.env.WEB_URL || "http://localhost:5173",
-  credentials: true,
-  methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-};
-
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    // origin: process.env.WEB_URL || "http://localhost:5173",
-    // credentials: true,
-    origin: "*",
-    methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
+    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+      (corsOptions as any).origin(origin, callback);
+    },
+    credentials: corsOptions.credentials,
+    methods: corsOptions.methods,
+    allowedHeaders: corsOptions.allowedHeaders,
   },
 });
 

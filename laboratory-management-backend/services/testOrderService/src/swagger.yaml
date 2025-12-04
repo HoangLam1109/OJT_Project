@@ -5,7 +5,7 @@ info:
   version: 1.0.0
   description: API cho dịch vụ Test Order
 servers:
-  - url: http://localhost:5002/api
+  - url: https://test-order-service-4ddi.onrender.com/api
     description: Local server
 
 paths:
@@ -110,18 +110,18 @@ paths:
         '500':
           description: Lỗi server
   # ==================== GET: Lấy tất cả Test Order của mỗi patient====================
-  /testOrder/group-by-userId:
+  /testOrder/group-by-patient:
     get:
-      summary: Lấy test orders của 1 user
+      summary: Lấy test orders của 1 patient
       tags:
         - Test Order
       parameters:
         - in: query
-          name: user_id
+          name: patient_id
           required: true
           schema:
           type: string
-          description: ID của user
+          description: ID của patient
         - in: query
           name: page
           required: false

@@ -6,7 +6,6 @@ import {
 	getPatientById,
 	updatePatient,
 	softDeletePatientByUserId,
-	getPatientByUserIdController
 } from "../../controllers/patient.controller.js";
 import authenticateUser from "../../middlewares/authenticate.middleware.js";
 import { isInternalApiKeyValid } from "../../middlewares/internalApi.middleware.js";
@@ -76,9 +75,6 @@ router.get("/getAll/", getAllPatients);
 
 // [GET] View patient detail
 router.get("/viewDetail/:id", getPatientById);
-
-// [GET] View patient By userID
-router.get("/patientByUserId/:userId", getPatientByUserIdController);
 
 // [POST] Create patient (IAM internal use)
 router.post("/create/", authorizeWriteAccess, createPatient);

@@ -1,6 +1,5 @@
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
-import type { IUser } from '../db/models/User.model.js';
 import { OAuthService } from '../services/oauth.service.js';
 import { userRepository } from '../repositories/index.js';
 import dotenv from 'dotenv';
@@ -13,14 +12,15 @@ const oauthService = new OAuthService();
 const googleConfig = {
   clientID: process.env.GOOGLE_CLIENT_ID!,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-  callbackURL: `${process.env.BASE_URL || 'http://localhost:3000'}/api/google/callback`,
+  callbackURL: `${process.env.WEB_URL}/api/google/callback`,
+  proxy: true
 };
 
 // Initialize Google OAuth strategy
 passport.use(
   new GoogleStrategy(
     googleConfig,
-    async (accessToken, refreshToken, profile, done) => {
+    async (accessToken: string, refreshToken: string, profile: any, done: Function) => {
       try {
         const user = await oauthService.createOAuthUser({
           email: profile.emails?.[0]?.value || `google_${profile.id}@oauth.local`,

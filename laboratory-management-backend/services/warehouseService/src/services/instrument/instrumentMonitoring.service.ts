@@ -8,8 +8,6 @@ import {
 interface InstrumentMonitoringPayload {
   instrumentId: string;
   instrumentCode: string;
-  instrumentName?: string;
-  instrumentType?: string;
   eventMessage: string;
   operatorId?: string | null;
   operatorEmail?: string | null;
@@ -94,11 +92,6 @@ class InstrumentMonitoringService {
       event_message: payload.eventMessage,
       service_name: MonitoringServiceName,
       entity_id: payload.instrumentId,
-      entity_info: {
-        entity_code: payload.instrumentCode,
-        entity_name: payload.instrumentName,
-        entity_type: payload.instrumentType,
-      },
       old_values: payload.oldValues ?? null,
       new_values: payload.newValues ?? null,
       operator_id: operatorId,
