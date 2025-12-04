@@ -7,6 +7,7 @@ import {
   PlusCircle,
   RefreshCw,
   Search,
+  Trash2,
   User,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -35,7 +36,7 @@ const ChatPage: React.FC = () => {
   const [selectedLabUserId, setSelectedLabUserId] = useState('');
   const [labUsers, setLabUsers] = useState<ManagerUser[]>([]);
   const [loadingLabUsers, setLoadingLabUsers] = useState(false);
-  const [searchLabUser, setSearchLabUser] = useState('');
+  const [deletingRoomId, setDeletingRoomId] = useState<string | null>(null);
 
   const locale = i18n.language === 'vi' ? 'vi-VN' : 'en-US';
 
@@ -68,14 +69,8 @@ const ChatPage: React.FC = () => {
   }, [rooms, searchTerm, t]);
 
   const filteredLabUsers = useMemo(() => {
-    if (!searchLabUser.trim()) return labUsers;
-    const search = searchLabUser.toLowerCase();
-    return labUsers.filter(
-      (user) =>
-        user.name.toLowerCase().includes(search) ||
-        user.email.toLowerCase().includes(search)
-    );
-  }, [labUsers, searchLabUser]);
+    return labUsers;
+  }, [labUsers]);
 
   const refreshRooms = useCallback(async () => {
     if (!user) return;
@@ -155,6 +150,25 @@ const ChatPage: React.FC = () => {
     });
   };
 
+  const handleDeleteRoom = async (roomId: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Ngăn chặn sự kiện click lan ra button cha
+    
+    if (!window.confirm(t('userChat.toast.confirmDelete') || 'Bạn có chắc chắn muốn xóa phòng chat này?')) {
+      return;
+    }
+
+    setDeletingRoomId(roomId);
+    try {
+      await roomApi.deleteRoom(roomId);
+      setRooms((prev) => prev.filter((room) => room._id !== roomId));
+      toast.success(t('userChat.toast.deleteSuccess') || 'Xóa phòng chat thành công');
+    } catch (error) {
+      toast.error(apiUtils.getErrorMessage(error) || t('userChat.toast.deleteError') || 'Không thể xóa phòng chat');
+    } finally {
+      setDeletingRoomId(null);
+    }
+  };
+
   return (
     <div className="w-full flex flex-col gap-4 min-h-0">
       {/* Form tạo phòng chat - Thu gọn hơn */}
@@ -195,18 +209,6 @@ const ChatPage: React.FC = () => {
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {labUsers.length > 5 && (
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-black" />
-                      <Input
-                        type="text"
-                        placeholder={t('userChat.requestForm.searchLabUsersPlaceholder')}
-                        value={searchLabUser}
-                        onChange={(e) => setSearchLabUser(e.target.value)}
-                        className="pl-9 h-10 bg-white border-2 border-black text-black placeholder:text-black placeholder:opacity-50"
-                      />
-                    </div>
-                  )}
                   <Select
                     value={selectedLabUserId}
                     onValueChange={setSelectedLabUserId}
@@ -227,9 +229,7 @@ const ChatPage: React.FC = () => {
                       <div className="max-h-[280px] overflow-y-auto">
                         {filteredLabUsers.length === 0 ? (
                           <div className="px-3 py-6 text-center text-sm text-black">
-                            {searchLabUser
-                              ? t('userChat.requestForm.noSearchResults')
-                              : t('userChat.requestForm.noLabUsers')}
+                            {t('userChat.requestForm.noLabUsers')}
                           </div>
                         ) : (
                           filteredLabUsers.map((labUser) => (
@@ -344,29 +344,45 @@ const ChatPage: React.FC = () => {
               </div>
             ) : (
               filteredRooms.map((room) => (
-                <button
+                <div
                   key={room._id}
-                  onClick={() => navigate(`/user/chat/${room._id}`, { state: { room } })}
-                  className="w-full text-left px-4 py-3 border-b border-gray-200 hover:bg-white transition"
+                  className="w-full px-4 py-3 border-b border-gray-200 hover:bg-white transition group"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center ring-2 ring-white text-blue-600">
-                      <User className="w-4 h-4" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-1">
-                        <h4 className="font-medium text-sm text-gray-900 truncate">
-                          {room.name || t('userChat.defaultRoomName')}
-                        </h4>
-                        <span className="text-xs text-gray-400">{formatTime(room.updatedAt)}</span>
+                    <button
+                      onClick={() => navigate(`/user/chat/${room._id}`, { state: { room } })}
+                      className="flex-1 text-left flex items-center gap-3 min-w-0"
+                    >
+                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center ring-2 ring-white text-blue-600 flex-shrink-0">
+                        <User className="w-4 h-4" />
                       </div>
-                      <p className="text-xs text-gray-500">
-                        {t('userChat.list.memberCount', { count: room.participants.length })}
-                      </p>
-                    </div>
-                    <span className="text-xs text-blue-600 font-medium">{t('userChat.list.openButton')}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between mb-1">
+                          <h4 className="font-medium text-sm text-gray-900 truncate">
+                            {room.name || t('userChat.defaultRoomName')}
+                          </h4>
+                          <span className="text-xs text-gray-400">{formatTime(room.updatedAt)}</span>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          {t('userChat.list.memberCount', { count: room.participants.length })}
+                        </p>
+                      </div>
+                      <span className="text-xs text-blue-600 font-medium flex-shrink-0">{t('userChat.list.openButton')}</span>
+                    </button>
+                    <button
+                      onClick={(e) => handleDeleteRoom(room._id, e)}
+                      disabled={deletingRoomId === room._id}
+                      className="p-2 text-gray-400 hover:text-red-600 transition-colors flex-shrink-0 opacity-0 group-hover:opacity-100 disabled:opacity-50"
+                      title={t('userChat.list.deleteTooltip') || 'Xóa phòng chat'}
+                    >
+                      {deletingRoomId === room._id ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="w-4 h-4" />
+                      )}
+                    </button>
                   </div>
-                </button>
+                </div>
               ))
             )}
           </div>

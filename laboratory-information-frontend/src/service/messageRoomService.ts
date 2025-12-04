@@ -95,6 +95,11 @@ export const roomApi = {
       `/rooms/leave/${roomId}`
     );
   },
+  deleteRoom(roomId: string) {
+    return messageServiceClient.delete<{ message: string }>(
+      `/rooms/delete/${roomId}`
+    );
+  },
 };
 
 export const messageApi = {
