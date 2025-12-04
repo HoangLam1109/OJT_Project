@@ -38,8 +38,7 @@
     }
   ],
   "schemes": [
-    "http",
-    "https"
+    "http"
   ],
   "securityDefinitions": {
     "apiKeyAuth": {
@@ -498,6 +497,14 @@
                   "type": "string",
                   "example": "Google login successful!"
                 },
+                "accessToken": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "refreshToken": {
+                  "type": "string",
+                  "example": "string"
+                },
                 "user": {
                   "type": "object",
                   "properties": {
@@ -522,6 +529,10 @@
                       "example": "string"
                     }
                   }
+                },
+                "redirectTo": {
+                  "type": "string",
+                  "example": "string"
                 }
               },
               "xml": {
@@ -556,6 +567,13 @@
           "OAuth Authentication"
         ],
         "description": "Get current user OAuth status",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
         "responses": {
           "200": {
             "description": "OAuth status retrieved",
@@ -601,6 +619,11 @@
         ],
         "description": "Link OAuth account to existing local account",
         "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
           {
             "name": "body",
             "in": "body",
@@ -1562,7 +1585,7 @@
       }
     },
     "/user/profile": {
-      "post": {
+      "put": {
         "tags": [
           "User Profile"
         ],
