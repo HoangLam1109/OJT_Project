@@ -96,7 +96,6 @@ export default function AddPatientMedicalRecord({ open, onOpenChange, onCreated,
                     limit: 10,
                     page: 1,
                     isActive: true,
-                    populateUser: true,
                 });
                 if (!active) return;
                 setPatientSuggestions(list);
