@@ -15,7 +15,6 @@ import { useTranslation } from 'react-i18next';
 import type { TestResult, TestResultDetail } from './types/TestResultTypes';
 import { testResultService } from '../../service/testResultService';
 import { Skeleton } from '@/components/common/skeleton';
-import { FormattedText } from '@/components/common/FormattedText';
 import TestResultDetailModal from './components/modals/TestResultModal/TestResultDetailModal';
 import TestResultEditModal from './components/modals/TestResultModal/TestResultEditModal';
 
@@ -348,13 +347,7 @@ const TestResultsPage: React.FC = () => {
                                       {t('testResult.result')}: <span className="font-bold text-gray-900">{detail.resultValue} {detail.unit}</span>
                                     </p>
                                     {detail.reviewerComment && (
-                                      <div className="text-xs text-gray-500 mt-2 italic bg-blue-50 p-2 rounded break-words">
-                                        <span className="font-medium">{t('testResult.comment')}: </span>
-                                        <FormattedText 
-                                          text={detail.reviewerComment} 
-                                          className="inline" 
-                                        />
-                                      </div>
+                                      <p className="text-xs text-gray-500 mt-2 italic bg-blue-50 p-2 rounded break-words">{t('testResult.comment')}: {detail.reviewerComment}</p>
                                     )}
                                   </div>
                                   <div className="flex items-center gap-2 sm:ml-4">
