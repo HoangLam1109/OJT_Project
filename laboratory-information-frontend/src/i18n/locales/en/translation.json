@@ -834,10 +834,6 @@
   "testResult": {
     "title": "Test Results",
     "subtitle": "Enter and manage completed test results",
-    "aiReviewFailed": "Failed to generate AI review",
-    "aiReviewSuccess": "AI review generated successfully",
-    "aiReviewing": "Processing...",
-    "aiReview": "AI Review",
     "resultsCount": "{{current}} / {{total}} test results",
     "foundResults": "(found {{found}} / {{total}})",
     "search": "Search",
@@ -1216,11 +1212,7 @@
       "instrumentType": "Instrument Type",
       "manufacturer": "Manufacturer",
       "location": "Location",
-      "status": "Status",
-      "reagentInfo": "Reagent Information",
-      "instrumentInfo": "Instrument Information",
-      "reagentCode": "Reagent Code",
-      "reagentName": "Reagent Name"
+      "status": "Status"
     }
   }
 }
