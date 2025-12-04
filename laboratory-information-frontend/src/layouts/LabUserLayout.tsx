@@ -131,7 +131,7 @@ const LabUserLayoutContent: React.FC<LabUserLayoutProps & { sidebarCollapsed: bo
         navigationItems={navigationItems}
         currentUserName={currentUser.name}
         currentUserAvatar={profile?.avatar}
-        currentUserRole={t('sidebar.role')}
+        currentUserRole={t('mangager.labUser')}
         currentPage={currentPage}
         sidebarCollapsed={sidebarCollapsed}
         setSidebarCollapsed={setSidebarCollapsed}
