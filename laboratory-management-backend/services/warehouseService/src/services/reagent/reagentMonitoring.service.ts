@@ -8,8 +8,6 @@ import {
 interface ReagentMonitoringPayload {
   reagentId: string;
   reagentCode: string;
-  reagentName?: string;
-  reagentType?: string;
   eventMessage: string;
   operatorId?: string | null;
   operatorEmail?: string | null;
@@ -94,11 +92,6 @@ class ReagentMonitoringService {
       event_message: payload.eventMessage,
       service_name: MonitoringServiceName,
       entity_id: payload.reagentId,
-      entity_info: {
-        entity_code: payload.reagentCode,
-        entity_name: payload.reagentName,
-        entity_type: payload.reagentType,
-      },
       old_values: payload.oldValues ?? null,
       new_values: payload.newValues ?? null,
       operator_id: operatorId,

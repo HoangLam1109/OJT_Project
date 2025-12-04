@@ -4,6 +4,9 @@ import dotenv from "dotenv";
 dotenv.config();
 
 
+const isProduction = process.env.NODE_ENV?.toLowerCase() === "production";
+const isSecure = isProduction || !!process.env.RENDER_EXTERNAL_HOSTNAME || process.env.HTTPS === 'true';
+
 const generateJWT = (res: Response, userId: string, email: string, role: string[]) => {
 
   const accessToken = jwt.sign({ userId: userId, email: email, role: role }, process.env.JWT_SECRET_KEY as string, { expiresIn: process.env.JWT_EXPIRY } as SignOptions);
@@ -13,18 +16,25 @@ const generateJWT = (res: Response, userId: string, email: string, role: string[
 
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV?.toLowerCase() === "production",
-    sameSite: "strict",
+    secure: isSecure,
+    sameSite: isProduction ? "none" : "lax",
     maxAge: 15 * 60 * 1000,
+    partitioned: true,
     path: "/",
   });
 
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV?.toLowerCase() === "production",
+    secure: isSecure,
     maxAge: 24 * 60 * 60 * 1000,
-    sameSite: "strict",
+    sameSite: isProduction ? "none" : "lax",
+    partitioned: true,
   });
+
+  return {
+    accessToken,
+    refreshToken,
+  }
 };
 
 const refreshJWT = (res: Response, userId: string) => {
@@ -34,28 +44,34 @@ const refreshJWT = (res: Response, userId: string) => {
 
   res.cookie("accessToken", newAccessToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV?.toLowerCase() === "production",
-    sameSite: "strict",
+    secure: isSecure,
+    sameSite: isProduction ? "none" : "lax",
     maxAge: 15 * 60 * 1000,
+    partitioned: true,
     path: "/",
   });
-  console.log("New access Token has been assigned");
+
+  return {
+    newAccessToken,
+  }
 };
 
 const clearJWT = (res: Response) => {
   res.cookie("accessToken", "", {
     httpOnly: true,
-    secure: process.env.NODE_ENV?.toLowerCase() === "production",
-    sameSite: "strict",
+    secure: isSecure,
+    sameSite: isProduction ? "none" : "lax",
     expires: new Date(0),
+    partitioned: true,
     path: "/",
   });
 
   res.cookie("refreshToken", "", {
     httpOnly: true,
-    secure: process.env.NODE_ENV?.toLowerCase() === "production",
-    sameSite: "strict",
+    secure: isSecure,
+    sameSite: isProduction ? "none" : "lax",
     expires: new Date(0),
+    partitioned: true,
     path: "/",
   });
 };

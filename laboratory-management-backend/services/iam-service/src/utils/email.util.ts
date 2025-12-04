@@ -1,25 +1,18 @@
-import nodemailer from 'nodemailer';
-import { OAuth2Client } from 'google-auth-library';
+import * as emailjs from "@emailjs/nodejs";
 
-// const oauthCredentials = new OAuth2Client({
-//   client_id: process.env.GOOGLE_CLIENT_ID as any,
-//   clientSecret: process.env.GOOGLE_SECRET as any,
-// })
+export async function sendResetPasswordEmail(to: string, token: string) {
+  const frontendUrl = process.env.FRONTEND_URL || "https://ojt-project-ya2d.vercel.app";
 
-// oauthCredentials.setCredentials({
-//   refresh_token: process.env.GOOGLE_REFRESH_TOKEN as any,
-// });
+  const link = `${frontendUrl}/reset-password?token=${encodeURIComponent(token)}`;
+  console.log("[send reset]", to);
 
-// const accessToken = await oauthCredentials.getAccessToken();
-
-export const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  auth: {
-    type: "OAuth2",
-    user: "vuthienloct@gmail.com",
-    clientId: process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    refreshToken: process.env.GOOGLE_REFRESH_TOKEN,
-  },
-});
+  return emailjs.send(
+    "service_fcws2d3",
+    "template_euzpdze",
+    {
+      email: to,
+      link: link,
+    },
+    { publicKey: "HJqJTqSwgXJViD-nw", privateKey: `${process.env.EMAILJS_PRIVATE_KEY}` },
+  );
+}
