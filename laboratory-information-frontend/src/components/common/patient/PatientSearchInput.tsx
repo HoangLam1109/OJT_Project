@@ -64,7 +64,6 @@ export const PatientSearchInput: React.FC<PatientSearchInputProps> = ({
           limit: 10,
           page: 1,
           isActive: true,
-          populateUser: true,
         });
         if (!active) return;
         setSuggestions(list);
