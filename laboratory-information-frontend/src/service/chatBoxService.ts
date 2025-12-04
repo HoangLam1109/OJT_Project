@@ -1,9 +1,8 @@
 import axios from 'axios';
 import type { AxiosInstance } from 'axios';
 
-// Create a dedicated axios instance for Chat service
-// Chat service runs on port 8000 independently
 const CHAT_SERVICE_URL = import.meta.env.VITE_API_AI_CHAT_SERVICE_URL || 'http://localhost:8000';
+
 const chatApiClient: AxiosInstance = axios.create({
   baseURL: CHAT_SERVICE_URL,
   timeout: 10000,
@@ -12,6 +11,18 @@ const chatApiClient: AxiosInstance = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+// Interceptor để tự động gắn token từ localStorage
+chatApiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem('authToken'); 
+  if (token && config.headers) {
+    config.headers['Authorization'] = `Bearer ${token}`;
+  }
+  return config;
+}, (error) => {
+  return Promise.reject(error);
+});
+
 
 
 // Chat API response types
