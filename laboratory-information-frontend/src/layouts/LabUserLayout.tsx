@@ -159,7 +159,7 @@ export const LabUserLayout: React.FC<LabUserLayoutProps> = (props) => {
       options={{
         enabled: true,
         suppressToasts: Boolean(isChatPage),
-        pollInterval: 15000, // Tăng lên 15 giây để giảm số lượng request
+        pollInterval: 5000, // 5 giây để kiểm tra tin nhắn mới
       }}
     >
       <LabUserLayoutContent
