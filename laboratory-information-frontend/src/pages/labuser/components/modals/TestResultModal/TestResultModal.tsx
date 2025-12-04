@@ -5,8 +5,6 @@ import Badge from '@/components/common/badge';
 import { FileText, User, TestTube, Activity } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-//use in patient detail
-
 interface TestResultModalProps {
   isOpen: boolean;
   onClose: () => void;
