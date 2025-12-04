@@ -171,7 +171,6 @@ export const testOrderService = {
           params: { page, limit }
         }
       );
-      console.log("response", response.data);
       
       // Handle both paginated response and direct array response
       const ordersArray = Array.isArray(response.data) 
@@ -202,7 +201,6 @@ export const testOrderService = {
   async getTestOrderById(_id: string): Promise<TestOrder | null> {
     try {
       const response = await testOrderApiClient.get<BackendTestOrder>(`${TEST_ORDER_API_BASE_URL}/${_id}`);
-      console.log("response", response.data)
       return transformBackendOrder(response.data);
     } catch (error) {
       console.error('Error fetching test order:', error);
@@ -213,7 +211,6 @@ export const testOrderService = {
   // Create new test order
   // testOrderService.ts
   async createTestOrder(orderData: Partial<TestOrder>): Promise<TestOrder> {
-    console.log("orderData", orderData)
     try {
       if (!orderData.created_by) {
         throw new Error('created_by is required to create a test order');
@@ -264,7 +261,6 @@ export const testOrderService = {
         delete backendData.patient_id;
       }
 
-      console.log('Sending to backend:', backendData); // DEBUG
  
       const response = await testOrderApiClient.post<BackendTestOrder>(
         `${TEST_ORDER_API_BASE_URL}/create`,
@@ -353,8 +349,6 @@ export const testOrderService = {
           params: { keyword, page, limit }
         }
       );
-      
-      console.log("search response", response.data);
       
       const ordersArray = response.data.data || [];
       const orders = ordersArray.map(transformBackendOrder);

@@ -19,7 +19,6 @@ const instrumentsApiClient: AxiosInstance = axios.create({
 instrumentsApiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('authToken');
-    console.log('token', token);
     if (token) {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore

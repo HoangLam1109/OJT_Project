@@ -66,7 +66,7 @@ export function ServiceLayout({
         navigationItems={navigationItems}
         currentUserName={currentUser.name}
         currentUserAvatar={profile?.avatar}
-        currentUserRole={t('sidebar.role')}
+        currentUserRole={t('manager.service')}
         currentPage={currentPage}
         sidebarCollapsed={sidebarCollapsed}
         setSidebarCollapsed={setSidebarCollapsed}

@@ -261,7 +261,7 @@
     "emailPlaceholder": "Email của bạn"
   },
   "admin": {
-    "role": "Vai trò"
+    "role": "Quản trị viên"
   },
   "manager": {
     "managerRole": "Quản lý",
@@ -283,7 +283,7 @@
     "admin": "Quản trị viên",
     "manager": "Quản lý",
     "labUser": "Người dùng phòng lab",
-    "service": "Dịch vụ",
+    "service": "Quản lý dịch vụ",
     "user": "Người dùng",
     "status": "Trạng thái",
     "allStatus": "Tất cả trạng thái",
@@ -327,11 +327,11 @@
     "dashboard": "Tổng quan",
     "userManagement": "Quản lý người dùng",
     "patientManagement": "Quản lý bệnh nhân",
-    "testOrders": "Quản lý đơn xét nghiệm",
+    "testOrders": "Đơn xét nghiệm",
     "auditReports": "Nhật ký sự kiện",
     "testResults": "Kết quả xét nghiệm",
-    "instruments": "Quản lý thiết bị",
-    "reagents": "Quản lý hóa chất",
+    "instruments": "Thiết bị",
+    "reagents": "Hóa chất",
     "profile": "Hồ sơ cá nhân",
     "role": "Quản trị viên",
     "eventLogs": "Nhật ký sự kiện",
@@ -607,6 +607,7 @@
     "processing": "Đang xử lý",
     "completed": "Đã hoàn thành",
     "status": "Trạng thái",
+    "statusChanged": "Đã chuyển sang {{status}}",
     "biochemistry": "Sinh hóa máu",
     "generalHematology": "Huyết học tổng quát",
     "microbiology": "Vi sinh",
