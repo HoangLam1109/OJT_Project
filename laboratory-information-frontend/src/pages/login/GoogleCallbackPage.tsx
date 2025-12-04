@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { handleGoogleCallbackFromData, handleGoogleCallback, handleGoogleCallbackFromHash, cleanGoogleCallbackUrl } from '../../service/authService/googleOAuthApi';
+import { handleGoogleCallbackFromData, handleGoogleCallback } from '../../service/authService/googleOAuthApi';
 import { useAuthContext } from '../../hooks/useAuthContext';
 import type { User } from '../../types/User';
 
@@ -40,77 +40,41 @@ export function GoogleCallbackPage() {
 
     const tryProcessCallback = async (): Promise<boolean> => {
       try {
-        // Priority 1: Xử lý hash fragment (#accessToken=...&refreshToken=...&user=...)
-        // Backend trả về callback với hash fragment
-        if (window.location.hash && window.location.hash.length > 1) {
-          const hash = window.location.hash.substring(1);
-          const hashParams = new URLSearchParams(hash);
-          
-          // Kiểm tra xem có accessToken và user trong hash không
-          if (hashParams.has('accessToken') && hashParams.has('user')) {
-            console.log('[GoogleCallback] Processing hash fragment callback...');
-            const user = handleGoogleCallbackFromHash();
-            
-            if (user) {
-              console.log('[GoogleCallback] ✓ User authenticated from hash fragment');
-              onLogin(user);
-              // Clean hash fragment sau khi xử lý thành công
-              cleanGoogleCallbackUrl();
-              const redirectTo = getRedirectPathByRole(user.role);
-              console.log('[GoogleCallback] Redirecting to:', redirectTo);
-              navigate(redirectTo);
-              processed = true;
-              return true;
-            } else {
-              setError('Không thể xử lý thông tin đăng nhập từ hash fragment');
-              return false;
-            }
-          }
-        }
-
-        // Priority 2: Xử lý query parameter 'data' (JSON encoded)
         const urlParams = new URLSearchParams(window.location.search);
         const responseData = urlParams.get('data');
 
         if (responseData) {
-          console.log('[GoogleCallback] Processing query parameter data...');
-          try {
-            // Parse response data từ URL
-            const parsedData = JSON.parse(decodeURIComponent(responseData));
-      
-            // Xử lý user data
-            const user = handleGoogleCallbackFromData(parsedData);
+          // Parse response data từ URL
+          const parsedData = JSON.parse(decodeURIComponent(responseData));
+    
+          // Xử lý user data
+          const user = handleGoogleCallbackFromData(parsedData);
 
-            if (user) {
-              console.log('[GoogleCallback] ✓ User authenticated from query data');
-              onLogin(user);
-              cleanGoogleCallbackUrl();
-              const redirectTo = getRedirectPathByRole(user.role);
-              navigate(redirectTo);
-              processed = true;
-              return true;
-            } else {
-              setError('Không thể xử lý thông tin đăng nhập');
-              return false;
-            }
-          } catch (parseError) {
-            console.error('[GoogleCallback] Failed to parse response data:', parseError);
-            setError('Dữ liệu đăng nhập không hợp lệ');
+          if (user) {
+            // Đăng nhập user
+            onLogin(user);
+
+            // Redirect dựa trên role
+            const redirectTo = getRedirectPathByRole(user.role);
+            navigate(redirectTo);
+
+            processed = true;
+            return true;
+          } else {
+            // parsing succeeded but payload invalid => treat as final failure
+            setError('Không thể xử lý thông tin đăng nhập');
             return false;
           }
         }
 
-        // Priority 3: Xử lý OAuth code/state flow (standard OAuth)
+        // Nếu không có data, kiểm tra code/state
         const code = urlParams.get('code');
         const state = urlParams.get('state');
 
         if (code && state) {
-          console.log('[GoogleCallback] Processing OAuth code flow...');
           const user = await handleGoogleCallback();
           if (user) {
-            console.log('[GoogleCallback] ✓ User authenticated from OAuth code');
             onLogin(user);
-            cleanGoogleCallbackUrl();
             const redirectTo = getRedirectPathByRole(user.role);
             navigate(redirectTo);
             processed = true;
@@ -121,12 +85,11 @@ export function GoogleCallbackPage() {
           }
         }
 
-        // Nothing to process
-        console.warn('[GoogleCallback] No valid callback parameters found');
+        // Nothing to process now
         return false;
       } catch (err) {
-        console.error('[GoogleCallback] Unexpected error:', err);
-        setError(`Có lỗi xảy ra khi đăng nhập: ${err instanceof Error ? err.message : 'Unknown error'}`);
+        console.error('Google OAuth callback error:', err);
+        setError('Có lỗi xảy ra khi đăng nhập');
         return false;
       }
     };
