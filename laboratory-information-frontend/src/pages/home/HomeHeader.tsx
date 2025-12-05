@@ -40,7 +40,7 @@ export function HomeHeader({ onShowLogin, onShowRegister }: HomeHeaderProps) {
           case "SERVICE":
             return "/service/event-logs";
           case "USER":
-            return "/user/dashboard";
+            return "/user/test-results";
           default:
             return "/";
         }
