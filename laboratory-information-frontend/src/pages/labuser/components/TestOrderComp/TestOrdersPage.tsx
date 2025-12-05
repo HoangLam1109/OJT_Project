@@ -20,8 +20,8 @@ const TestOrdersPage: React.FC = () => {
   const location = useLocation();
   const { t } = useTranslation();
   // orders state is used in useEffect to update processing percentage via setOrders
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-unused-expressions
-  const [orders, setOrders] = useState<TestOrder[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_orders, setOrders] = useState<TestOrder[]>([]);
   const [filteredOrders, setFilteredOrders] = useState<TestOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
