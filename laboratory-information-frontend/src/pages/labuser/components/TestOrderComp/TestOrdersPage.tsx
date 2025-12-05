@@ -37,7 +37,10 @@ const TestOrdersPage: React.FC = () => {
     page: 1,
     limit: 10,
     total: 0,
-    totalPages: 1
+    totalPages: 1,
+    pendingCount: 0,
+    processingCount: 0,
+    completedCount: 0
   });
 
   // Debounce search input - update searchTerm after 500ms of no typing
@@ -271,7 +274,7 @@ const TestOrdersPage: React.FC = () => {
   }
 
 
-  const stats = calculateStats(orders);
+  const stats = calculateStats(pagination);
 
   return (
     <div className="space-y-4 sm:space-y-6 p-3 sm:p-4 lg:p-6">

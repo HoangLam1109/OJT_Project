@@ -63,7 +63,7 @@ interface BackendTestOrder {
     email: string;
     phoneNumber?: string;
     age?: number;
-  };  
+  };
   instrument?: {
     instrument_code: string;
     instrument_name: string;
@@ -82,6 +82,9 @@ interface BackendTestOrder {
 interface PaginatedResponse<T> {
   data: T[];
   pagination?: {
+    pendingCount: number;
+    processingCount: number;
+    completedCount: number;
     page?: number;
     limit?: number;
     total?: number;
@@ -94,6 +97,9 @@ export interface PaginationInfo {
   limit: number;
   total: number;
   totalPages: number;
+  pendingCount: number;
+  processingCount: number;
+  completedCount: number;
 }
 // Transform backend response to frontend format
 const transformBackendOrder = (backendOrder: BackendTestOrder): TestOrder => {
@@ -171,23 +177,26 @@ export const testOrderService = {
           params: { page, limit }
         }
       );
-      
+
       // Handle both paginated response and direct array response
-      const ordersArray = Array.isArray(response.data) 
-        ? response.data 
+      const ordersArray = Array.isArray(response.data)
+        ? response.data
         : (response.data.data || []);
-      
+
       const orders = ordersArray.map(transformBackendOrder);
-      
+
       // Extract pagination info
       const paginationData = response.data.pagination;
       const pagination: PaginationInfo = {
         page: paginationData?.page ?? page,
         limit: paginationData?.limit ?? limit,
         total: paginationData?.total ?? orders.length,
-        totalPages: paginationData?.totalPages ?? Math.ceil((paginationData?.total ?? orders.length) / limit)
+        totalPages: paginationData?.totalPages ?? Math.ceil((paginationData?.total ?? orders.length) / limit),
+        pendingCount: paginationData?.pendingCount ?? 0,
+        processingCount: paginationData?.processingCount ?? 0,
+        completedCount: paginationData?.completedCount ?? 0
       };
-      
+
       return { orders, pagination };
     } catch (error) {
       console.error('Error fetching test orders:', error);
@@ -215,7 +224,7 @@ export const testOrderService = {
       if (!orderData.created_by) {
         throw new Error('created_by is required to create a test order');
       }
-      
+
       const backendData: any = {
         ...orderData,
         status: (orderData.status && isValidStatus(orderData.status))
@@ -261,14 +270,14 @@ export const testOrderService = {
         delete backendData.patient_id;
       }
 
- 
+
       const response = await testOrderApiClient.post<BackendTestOrder>(
         `${TEST_ORDER_API_BASE_URL}/create`,
         backendData
       );
 
       return transformBackendOrder(response.data);
-      
+
     } catch (error) {
       console.error('Error creating test order:', error);
       throw new Error(apiUtils.getErrorMessage(error));
@@ -349,19 +358,22 @@ export const testOrderService = {
           params: { keyword, page, limit }
         }
       );
-      
+
       const ordersArray = response.data.data || [];
       const orders = ordersArray.map(transformBackendOrder);
-      
+
       // Extract pagination info
       const paginationData = response.data.pagination;
       const pagination: PaginationInfo = {
         page: paginationData?.page ?? page,
         limit: paginationData?.limit ?? limit,
         total: paginationData?.total ?? orders.length,
-        totalPages: paginationData?.totalPages ?? Math.ceil((paginationData?.total ?? orders.length) / limit)
+        totalPages: paginationData?.totalPages ?? Math.ceil((paginationData?.total ?? orders.length) / limit),
+        pendingCount: paginationData?.pendingCount ?? 0,
+        processingCount: paginationData?.processingCount ?? 0,
+        completedCount: paginationData?.completedCount ?? 0
       };
-      
+
       return { orders, pagination };
     } catch (error) {
       console.error('Error searching test orders:', error);
@@ -374,7 +386,7 @@ export const testOrderService = {
       const response = await testOrderApiClient.get<any>(`${TEST_ORDER_API_BASE_URL}/group-by-userId`, {
         params: { user_id: userId }
       });
-      
+
       const responseData = response.data;
       let ordersArray: any[] = [];
 
