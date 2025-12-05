@@ -357,16 +357,6 @@ export default function Profile({ currentUser, onUpdateProfile }: ProfileProps) 
                   </select>
                 </div>
 
-                <div className="space-y-2">
-                  <Label className="text-gray-600 text-xs xs:text-sm">{t('userProfile.age')}</Label>
-                  <Input
-                    type="number"
-                    value={formData.age || ''}
-                    onChange={(e) => handleChange("age", parseInt(e.target.value))}
-                    disabled={!isEditing}
-                    className="bg-gray-50/50 border-gray-200 focus:bg-white transition-all text-xs xs:text-sm"
-                  />
-                </div>
 
                 <div className="space-y-2">
                   <Label className="text-gray-600 text-xs xs:text-sm">{t('userProfile.identityNumber')}</Label>
