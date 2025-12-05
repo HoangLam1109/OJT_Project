@@ -19,6 +19,8 @@ const TestOrdersPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
+  // orders state is used in useEffect to update processing percentage via setOrders
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-unused-expressions
   const [orders, setOrders] = useState<TestOrder[]>([]);
   const [filteredOrders, setFilteredOrders] = useState<TestOrder[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,6 +40,13 @@ const TestOrdersPage: React.FC = () => {
     limit: 10,
     total: 0,
     totalPages: 1,
+    pendingCount: 0,
+    processingCount: 0,
+    completedCount: 0
+  });
+  
+  // Store overall stats separately to preserve them during search
+  const [overallStats, setOverallStats] = useState({
     pendingCount: 0,
     processingCount: 0,
     completedCount: 0
@@ -89,6 +98,12 @@ const TestOrdersPage: React.FC = () => {
       setFilteredOrders(data); // Set filtered orders to all orders when not searching
       setPagination(paginationInfo);
       setCurrentPage(paginationInfo.page); // Sync currentPage with API response
+      // Update overall stats when loading all orders
+      setOverallStats({
+        pendingCount: paginationInfo.pendingCount,
+        processingCount: paginationInfo.processingCount,
+        completedCount: paginationInfo.completedCount
+      });
     } catch (error) {
       toast.error(t('testOrder.notLoading'));
       console.error('Error loading test orders:', error);
@@ -106,6 +121,7 @@ const TestOrdersPage: React.FC = () => {
       setFilteredOrders(data); // Set filtered orders to search results
       setPagination(paginationInfo);
       setCurrentPage(paginationInfo.page); // Sync currentPage with API response
+      // Keep overall stats unchanged during search - don't update them
     } catch (error) {
       toast.error(t('testOrder.notSearching'));
       console.error('Error searching test orders:', error);
@@ -274,7 +290,10 @@ const TestOrdersPage: React.FC = () => {
   }
 
 
-  const stats = calculateStats(pagination);
+  // Use overall stats when searching, otherwise use pagination stats
+  const stats = searchTerm.trim() 
+    ? calculateStats({ ...pagination, ...overallStats })
+    : calculateStats(pagination);
 
   return (
     <div className="space-y-4 sm:space-y-6 p-3 sm:p-4 lg:p-6">
