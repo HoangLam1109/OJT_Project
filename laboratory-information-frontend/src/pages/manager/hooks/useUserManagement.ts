@@ -1,10 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import type { ManagerUser, UserFormData } from '../types/ManagerTypes';
 import { userService } from '../../../service/userService';
 import { apiUtils } from '../../../service/apiClient';
 
 export function useUserManagement() {
+  const { t } = useTranslation();
   const [users, setUsers] = useState<ManagerUser[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const hasLoadedRef = useRef(false);
@@ -44,7 +46,7 @@ export function useUserManagement() {
       hasLoadedRef.current = true;
     } catch (error) {
       console.error('Error loading users:', error);
-      toast.error('Không thể tải danh sách người dùng');
+      toast.error(t('notifications.user.cannotLoadUsers'));
     } finally {
       setIsLoading(false);
     }
@@ -89,7 +91,7 @@ export function useUserManagement() {
       await fetchPage(lastCursor);
     } catch (e) {
       console.error('Error jumping to last page:', e);
-      toast.error('Không thể tới trang cuối');
+      toast.error(t('notifications.user.cannotGoToLastPage'));
     } finally {
       setIsLoading(false);
     }
@@ -108,7 +110,7 @@ export function useUserManagement() {
   const createUser = useCallback(async (data: UserFormData): Promise<boolean> => {
     try {
       await userService.createUser(data);
-      toast.success('Tạo người dùng thành công');
+      toast.success(t('notifications.user.createSuccess'));
       return true;
     } catch (error) {
       console.error('Error creating user:', error);
@@ -121,7 +123,7 @@ export function useUserManagement() {
   const updateUser = useCallback(async (userId: string, data: UserFormData): Promise<boolean> => {
     try {
       await userService.updateUser(userId, data);
-      toast.success('Cập nhật người dùng thành công');
+      toast.success(t('notifications.user.updateSuccess'));
       return true;
     } catch (error) {
       console.error('Error updating user:', error);
@@ -134,7 +136,7 @@ export function useUserManagement() {
   const deleteUser = useCallback(async (userId: string): Promise<boolean> => {
     try {
       await userService.deleteUser(userId);
-      toast.success('Xóa người dùng thành công');
+      toast.success(t('notifications.user.deleteSuccess'));
       return true;
     } catch (error) {
       console.error('Error deleting user:', error);
@@ -147,7 +149,7 @@ export function useUserManagement() {
   const toggleUserLock = useCallback(async (userId: string, currentStatus: boolean): Promise<boolean> => {
     try {
       await userService.toggleUserStatus(userId, !currentStatus);
-      toast.success(currentStatus ? 'Khóa tài khoản thành công' : 'Mở khóa tài khoản thành công');
+      toast.success(currentStatus ? t('notifications.user.lockSuccess') : t('notifications.user.unlockSuccess'));
       return true;
     } catch (error) {
       console.error('Error toggling lock:', error);

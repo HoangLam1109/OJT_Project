@@ -190,11 +190,11 @@ const TestOrdersPage: React.FC = () => {
     if (!selectedOrder) return;
     try {
       await testOrderService.deleteTestOrder(selectedOrder._id, user?.name ?? 'system');
-      toast.success(`Đã xóa lệnh xét nghiệm "${selectedOrder.patient_name}" thành công`);
+      toast.success(t('notifications.testOrder.deleteSuccess', { patientName: selectedOrder.patient_name }));
       setDeleteModalOpen(false);
       await loadTestOrders(currentPage);
     } catch (error) {
-      toast.error('Không thể xóa lệnh xét nghiệm');
+      toast.error(t('notifications.testOrder.deleteFailed'));
       console.error('Error deleting test order:', error);
     }
   };
@@ -208,10 +208,10 @@ const TestOrdersPage: React.FC = () => {
         setSelectedOrder(fullOrderDetails);
         setShowDetailDialog(true);
       } else {
-        toast.error('Không thể tải chi tiết lệnh xét nghiệm');
+        toast.error(t('notifications.testOrder.cannotLoadDetails'));
       }
     } catch (error) {
-      toast.error('Không thể tải chi tiết lệnh xét nghiệm');
+      toast.error(t('notifications.testOrder.cannotLoadDetails'));
       console.error('Error loading order details:', error);
       // Fallback to basic order info if fetch fails
       setSelectedOrder(order);

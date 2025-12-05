@@ -424,7 +424,12 @@
     "success": "Đăng xuất thành công",
     "error": "Đăng xuất thất bại",
     "loading": "Đang đăng xuất...",
-    "logout": "Đăng xuất"
+    "logout": "Đăng xuất",
+    "confirmTitle": "Xác nhận đăng xuất",
+    "confirmMessage": "Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?",
+    "note": "Lưu ý:",
+    "noteMessage": "Sau khi đăng xuất, bạn sẽ cần đăng nhập lại để tiếp tục sử dụng hệ thống.",
+    "cancel": "Hủy"
   },
   "patient": {
     "title": "Quản lý Bệnh nhân",
@@ -750,7 +755,7 @@
       "statusProcessing": "Đang chạy",
       "statusMaintenance": "Bảo trì",
       "statusError": "Lỗi",
-      "statusInactive": "Ngưng hoạt động",
+      "statusInactive": "Bảo trì",
       "cannotLoadInstruments": "Không thể tải danh sách thiết bị",
       "cannotDeleteInstrument": "Không thể xóa thiết bị",
       "cannotAddInstrument": "Không thể thêm thiết bị",
@@ -1029,7 +1034,7 @@
     "deleteConfirmDefault": "Bạn có chắc muốn xóa {{itemName}}? Hành động này không thể hoàn tác."
   },
   "role": {
-    "normalUser": "Người dùng thường",
+    "normalUser": "Người dùng",
     "service": "Dịch vụ"
   },
   "userProfile": {
@@ -1217,6 +1222,62 @@
       "instrumentInfo": "Thông tin thiết bị",
       "reagentCode": "Mã thuốc thử",
       "reagentName": "Tên thuốc thử"
+    }
+  },
+  "notifications": {
+    "message": {
+      "newMessage": "Tin nhắn mới",
+      "newMessageDescription": "Bạn có tin nhắn mới.",
+      "defaultRoomName": "Phòng chat"
+    },
+    "chat": {
+      "roomNotFound": "Không tìm thấy phòng chat",
+      "cannotLoadRoomInfo": "Không thể tải thông tin phòng chat",
+      "cannotLoadMessages": "Không thể tải tin nhắn",
+      "cannotSendInitialNote": "Không thể gửi ghi chú ban đầu",
+      "cannotSendMessage": "Không thể gửi tin nhắn"
+    },
+    "testOrder": {
+      "deleteSuccess": "Đã xóa lệnh xét nghiệm \"{{patientName}}\" thành công",
+      "deleteFailed": "Không thể xóa lệnh xét nghiệm",
+      "cannotLoadDetails": "Không thể tải chi tiết lệnh xét nghiệm",
+      "cannotLoadPatients": "Không thể tải danh sách bệnh nhân",
+      "cannotLoadInstruments": "Không thể tải danh sách thiết bị",
+      "cannotLoadReagents": "Không thể tải danh sách thuốc thử",
+      "cannotLoadTestItems": "Không thể tải danh sách test items",
+      "fillRequiredFields": "Vui lòng điền đầy đủ thông tin bắt buộc",
+      "updateSuccess": "Cập nhật thành công!",
+      "systemError": "Lỗi hệ thống"
+    },
+    "user": {
+      "cannotLoadUsers": "Không thể tải danh sách người dùng",
+      "cannotGoToLastPage": "Không thể tới trang cuối",
+      "createSuccess": "Tạo người dùng thành công",
+      "updateSuccess": "Cập nhật người dùng thành công",
+      "deleteSuccess": "Xóa người dùng thành công",
+      "lockSuccess": "Khóa tài khoản thành công",
+      "unlockSuccess": "Mở khóa tài khoản thành công"
+    },
+    "reagent": {
+      "cannotConnectServer": "Không thể kết nối đến server. Vui lòng kiểm tra backend service đã chạy chưa (port 5003)",
+      "reagentNotFound": "Không tìm thấy thông tin thuốc thử",
+      "cannotLoadReagentInfo": "Không thể tải thông tin thuốc thử",
+      "fillRequiredFields": "Vui lòng điền đầy đủ thông tin bắt buộc (Tên, Số lượng, Ngày hết hạn)",
+      "lotNumberExists": "Số lô đã tồn tại",
+      "expiryDateInvalid": "Ngày hết hạn phải sau ngày hiện tại",
+      "quantityInvalid": "Số lượng phải lớn hơn hoặc bằng 0",
+      "updateSuccess": "Cập nhật thuốc thử thành công",
+      "createSuccess": "Tạo thuốc thử thành công",
+      "deleteSuccess": "Xóa thuốc thử thành công",
+      "lotNumberDuplicate": "Số lô thuốc thử đã tồn tại trong hệ thống",
+      "quantityExceedsReceived": "Số lượng hiện tại không được lớn hơn số lượng đã nhận",
+      "invalidData": "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại thông tin nhập vào.",
+      "reagentNotFoundForUpdate": "Không tìm thấy thuốc thử để cập nhật",
+      "saveError": "Có lỗi xảy ra khi lưu thuốc thử",
+      "deleteError": "Có lỗi xảy ra khi xóa thuốc thử"
+    },
+    "testResult": {
+      "aiReviewFailed": "Không nhận được phản hồi từ AI"
     }
   }
 }

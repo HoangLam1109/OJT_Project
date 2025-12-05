@@ -50,7 +50,7 @@ export function ManagerLayout({
     <div className="flex h-screen bg-gray-100">
       <Sidebar
         currentUserName={currentUser.name}
-        currentUserRole={t('manager.role')}
+        currentUserRole={t('manager.managerRole')}
         currentPage={currentPage}
         currentUserAvatar={profile?.avatar}
         sidebarCollapsed={sidebarCollapsed}

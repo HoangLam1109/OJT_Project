@@ -110,18 +110,18 @@ paths:
         '500':
           description: Lỗi server
   # ==================== GET: Lấy tất cả Test Order của mỗi patient====================
-  /testOrder/group-by-patient:
+  /testOrder/group-by-userId:
     get:
-      summary: Lấy test orders của 1 patient
+      summary: Lấy test orders của 1 userId
       tags:
         - Test Order
       parameters:
         - in: query
-          name: patient_id
+          name: userId
           required: true
           schema:
           type: string
-          description: ID của patient
+          description: ID của userId
         - in: query
           name: page
           required: false
