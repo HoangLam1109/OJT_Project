@@ -5,8 +5,6 @@ import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
 import { AppError } from "../utils/error.util.js";
 import { clearJWT, generateJWT, refreshJWT } from "../utils/jwt.util.js";
-import patientServiceClient from "../services/patientService.client.js";
-import { ROLE_CODES } from "../constants/roles.constant.js";
 dotenv.config();
 
 const userService = new UserService();
@@ -74,7 +72,7 @@ const registerUser = async (
       );
     }
 
-    const newUser = await userService.createUser(
+    await userService.createUser(
       {
         email,
         fullName,
@@ -86,18 +84,8 @@ const registerUser = async (
         phoneNumber,
         address,
       },
-      undefined
+      "System"
     );
-
-    console.log("[AuthController] Created user role:", newUser.role);
-    // Auto-create patient record only for normal users
-    if (!newUser.role || newUser.role[0] === ROLE_CODES.USER) {
-      console.log("[AuthController] Auto-creating patient for user role USER");
-      await patientServiceClient.createPatientForUser(String(newUser._id), {
-        id: String(newUser._id),
-        email: newUser.email,
-      });
-    }
 
     res.status(200).json({
       message: "User created successfully!",
