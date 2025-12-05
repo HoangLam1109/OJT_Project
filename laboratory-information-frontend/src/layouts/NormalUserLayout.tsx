@@ -89,7 +89,7 @@ const NormalUserLayoutContent: React.FC<LayoutContentProps> = ({
       <Sidebar
         navigationItems={navigationItemsWithBadges}
         currentUserName={currentUser.name}
-        currentUserRole={t('manager.service')}
+        currentUserRole={t('role.normalUser')}
         currentUserAvatar={profile?.avatar}
         currentPage={currentPage}
         sidebarCollapsed={sidebarCollapsed}

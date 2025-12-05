@@ -350,7 +350,7 @@ export function AdminPatientManagementPage() {
           {/* Patients Table */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg sm:text-xl">{t('patient.patientList')} ({filteredPatients.length})</CardTitle>
+              <CardTitle className="text-lg sm:text-xl">{t('patient.patientList')} </CardTitle>
               <CardDescription className="text-xs sm:text-sm">{t('patient.patientListDescription')}</CardDescription>
             </CardHeader>
             <CardContent>
