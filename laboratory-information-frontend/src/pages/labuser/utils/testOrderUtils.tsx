@@ -2,6 +2,7 @@ import React from 'react';
 import Badge from '../../../components/common/badge';
 import { Clock, PlayCircle, CheckCircle } from 'lucide-react';
 import type { TestOrder } from '../types/TestOrderTypes';
+import type { PaginationInfo } from '@/service/testOrderService';
 
 export const getStatusBadge = (status: string, t: (key: string) => string): React.JSX.Element => {
   const statusLower = status.toLowerCase();
@@ -35,13 +36,14 @@ export const getStatusBadge = (status: string, t: (key: string) => string): Reac
 
 
 
-export const calculateStats = (orders: TestOrder[]) => {
+export const calculateStats = (pagination: PaginationInfo) => {
   return {
-    pending: orders.filter(o => o.status === 'Pending').length,
-    processing: orders.filter(o => o.status === 'Processing').length,
-    completed: orders.filter(o => o.status === 'Completed').length,
+    pending: pagination.pendingCount,
+    processing: pagination.processingCount,
+    completed: pagination.completedCount,
   };
 };
+
 
 export const filterTestOrders = (
   orders: TestOrder[],
