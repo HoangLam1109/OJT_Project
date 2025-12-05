@@ -2,7 +2,7 @@ import React from 'react';
 import { Eye, Edit2, Trash2, Package, AlertTriangle } from 'lucide-react';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '../../../../components/common/table';
 import type { Reagent } from '@/pages/labuser/types/Reagent';
-import { getStatusBadge, formatDate, isExpired, isExpiringSoon, getRowClassName } from '../../utils/reagentUtils';
+import { formatDate, isExpired, isExpiringSoon, getRowClassName } from '../../utils/reagentUtils';
 import { useTranslation } from 'react-i18next';
 
 interface ReagentTableProps {
@@ -15,6 +15,32 @@ interface ReagentTableProps {
 
 const ReagentTable: React.FC<ReagentTableProps> = ({ reagents, isLoading = false, onView, onEdit, onDelete }) => {
   const { t } = useTranslation();
+
+  const getTranslatedStatusBadge = (status: string): React.JSX.Element => {
+    const statusClasses = {
+      Available: 'bg-green-100 text-green-800',
+      'Low Stock': 'bg-yellow-100 text-yellow-800',
+      Expired: 'bg-red-100 text-red-800',
+      Depleted: 'bg-gray-100 text-gray-700'
+    };
+
+    const statusTranslationMap: Record<string, string> = {
+      'Available': t('reagent.status.available'),
+      'Low Stock': t('reagent.status.lowStock'),
+      'Expired': t('reagent.status.expired'),
+      'Depleted': t('reagent.status.depleted')
+    };
+
+    const translatedStatus = statusTranslationMap[status] || status;
+    const statusClass = statusClasses[status as keyof typeof statusClasses] || 'bg-gray-100 text-gray-700';
+
+    return (
+      <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusClass}`}>
+        {translatedStatus}
+      </span>
+    );
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
       <div className="overflow-x-auto">
@@ -83,7 +109,7 @@ const ReagentTable: React.FC<ReagentTableProps> = ({ reagents, isLoading = false
                 </div>
               </TableCell>
               <TableCell className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                {getStatusBadge(reagent.status)}
+                {getTranslatedStatusBadge(reagent.status)}
               </TableCell>
               <TableCell className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900 hidden md:table-cell">
                 <div className="max-w-[120px] truncate" title={reagent.storageLocation}>
