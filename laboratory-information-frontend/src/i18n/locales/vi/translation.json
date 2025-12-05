@@ -1034,7 +1034,7 @@
     "deleteConfirmDefault": "Bạn có chắc muốn xóa {{itemName}}? Hành động này không thể hoàn tác."
   },
   "role": {
-    "normalUser": "Người dùng thường",
+    "normalUser": "Người dùng",
     "service": "Dịch vụ"
   },
   "userProfile": {
