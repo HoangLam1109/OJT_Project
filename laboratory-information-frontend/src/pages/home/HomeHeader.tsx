@@ -264,7 +264,7 @@ export function HomeHeader({ onShowLogin, onShowRegister }: HomeHeaderProps) {
                 className="bg-gradient-to-r from-gray-900 to-gray-700 hover:from-black hover:to-gray-800 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 text-xs sm:text-sm px-2 sm:px-4"
               >
                 <span className="hidden sm:inline">{t("header.login")}</span>
-                <span className="sm:hidden">Login</span>
+                <span className="sm:hidden">{t("header.login")}</span>
                 <ArrowRight className="ml-1 sm:ml-2 h-3 w-3 sm:h-4 sm:w-4" />
               </Button>
             </>
