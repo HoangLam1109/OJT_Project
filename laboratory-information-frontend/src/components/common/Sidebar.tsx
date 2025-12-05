@@ -27,7 +27,7 @@ export function Sidebar({
       {/* Backdrop overlay for mobile */}
       {!sidebarCollapsed && (
         <div
-          className="fixed inset-0 bg-black/50 z-30 md:hidden transition-opacity duration-300"
+          className="fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity duration-300"
           onClick={() => setSidebarCollapsed(true)}
           aria-hidden="true"
         />
@@ -40,7 +40,7 @@ export function Sidebar({
         sidebarCollapsed 
           ? 'w-0 -translate-x-full overflow-hidden pointer-events-none opacity-0 md:opacity-100 md:pointer-events-auto md:translate-x-0 md:w-16 md:overflow-visible lg:w-16' 
           : 'w-64 md:w-64 lg:w-64 opacity-100'
-      } flex flex-col h-screen fixed left-0 top-0 z-40 md:z-40 lg:z-40`}>
+      } flex flex-col h-screen fixed left-0 top-0 z-50 md:z-40 lg:z-40`}>
             
         {/* Header */}
         <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-200 flex-shrink-0">
