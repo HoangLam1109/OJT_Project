@@ -131,7 +131,7 @@ const LabUserLayoutContent: React.FC<LabUserLayoutProps & { sidebarCollapsed: bo
         navigationItems={navigationItems}
         currentUserName={currentUser.name}
         currentUserAvatar={profile?.avatar}
-        currentUserRole={t('sidebar.role')}
+        currentUserRole={t('mangager.labUser')}
         currentPage={currentPage}
         sidebarCollapsed={sidebarCollapsed}
         setSidebarCollapsed={setSidebarCollapsed}
@@ -159,7 +159,7 @@ export const LabUserLayout: React.FC<LabUserLayoutProps> = (props) => {
       options={{
         enabled: true,
         suppressToasts: Boolean(isChatPage),
-        pollInterval: 15000, // Tăng lên 15 giây để giảm số lượng request
+        pollInterval: 5000, // 5 giây để kiểm tra tin nhắn mới
       }}
     >
       <LabUserLayoutContent

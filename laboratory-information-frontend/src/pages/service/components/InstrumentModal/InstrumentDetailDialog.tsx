@@ -70,7 +70,7 @@ export function InstrumentDetailDialog({
         const map: Record<string, { text: string; variant: "default" | "secondary" | "destructive" | "outline" | "success" | "warning" }> = {
             Ready: { text: t('service.instrument.statusReady'), variant: "success" },
             Processing: { text: t('service.instrument.statusProcessing'), variant: "warning" },
-            Inactive: { text: t('service.instrument.statusInactive') === 'Inactive' ? 'Bảo trì' : t('service.instrument.statusInactive'), variant: "destructive" },
+            Inactive: { text: t('service.instrument.statusInactive'), variant: "destructive" },
         };
         const data = map[status] || { text: status, variant: "outline" };
         return <Badge variant={data.variant}>{data.text}</Badge>;

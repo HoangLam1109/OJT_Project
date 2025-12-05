@@ -424,7 +424,12 @@
     "success": "Đăng xuất thành công",
     "error": "Đăng xuất thất bại",
     "loading": "Đang đăng xuất...",
-    "logout": "Đăng xuất"
+    "logout": "Đăng xuất",
+    "confirmTitle": "Xác nhận đăng xuất",
+    "confirmMessage": "Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?",
+    "note": "Lưu ý:",
+    "noteMessage": "Sau khi đăng xuất, bạn sẽ cần đăng nhập lại để tiếp tục sử dụng hệ thống.",
+    "cancel": "Hủy"
   },
   "patient": {
     "title": "Quản lý Bệnh nhân",
@@ -750,7 +755,7 @@
       "statusProcessing": "Đang chạy",
       "statusMaintenance": "Bảo trì",
       "statusError": "Lỗi",
-      "statusInactive": "Ngưng hoạt động",
+      "statusInactive": "Bảo trì",
       "cannotLoadInstruments": "Không thể tải danh sách thiết bị",
       "cannotDeleteInstrument": "Không thể xóa thiết bị",
       "cannotAddInstrument": "Không thể thêm thiết bị",
