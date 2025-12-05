@@ -38,7 +38,7 @@ const TestOrderToolbar: React.FC<TestOrderToolbarProps> = ({
           >
             <Plus className="h-4 w-4 flex-shrink-0" />
             <span className="hidden sm:inline">{t('testOrder.createTestOrder')}</span>
-            <span className="sm:hidden">Create</span>
+            <span className="sm:hidden">{t('testOrder.createTestOrder')}</span>
           </Button>
         )}
       </div>
