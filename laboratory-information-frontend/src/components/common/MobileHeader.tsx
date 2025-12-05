@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next';
+
 import { Menu } from 'lucide-react';
 import { LanguageToggle } from './LanguageToggle';
 import Button from './button';
@@ -11,7 +11,6 @@ interface MobileHeaderProps {
 }
 
 export function MobileHeader({ onMenuClick, navigationItems }: MobileHeaderProps) {
-  const { t } = useTranslation();
   
   // Collect all dropdown items from navigationItems
   const dropdownItems = navigationItems?.flatMap(item => 
@@ -37,9 +36,9 @@ export function MobileHeader({ onMenuClick, navigationItems }: MobileHeaderProps
               <Menu className="h-4 w-4 xs:h-5 xs:w-5 text-gray-700" />
             </Button>
           )}
-          <h1 className="text-sm xs:text-base font-bold text-gray-900 truncate">
+          {/* <h1 className="text-sm xs:text-base font-bold text-gray-900 truncate">
             {t('topHeader.appName')}
-          </h1>
+          </h1> */}
         </div>
         
         {/* Center: Dropdown Items Icons */}
