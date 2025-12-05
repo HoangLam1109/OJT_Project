@@ -15,7 +15,6 @@ import {
 import { ManagerUserManagementPage } from "../pages/manager";
 import { ManagerLayout } from "../layouts/ManagerLayout";
 import NormalUserLayout from "../layouts/NormalUserLayout";
-import Dashboard from "@/pages/normaluser/Dashboard";
 import TestResults from "@/pages/normaluser/TestResults";
 import ChatPage from "@/pages/normaluser/ChatPage";
 import ChatRoomPage from "@/pages/normaluser/ChatRoomPage";
@@ -102,9 +101,8 @@ const roleRoutes: Record<string, RoleRouteConfig> = {
     basePath: "/user",
     allowedRoles: ["USER"],
     Layout: NormalUserLayout as ComponentType<LayoutProps>,
-    defaultPage: "dashboard",
+    defaultPage: "test-results",
     pages: [
-      { path: "dashboard", component: Dashboard },
       { path: "test-results", component: TestResults },
       { path: "chat", component: ChatPage },
       { path: "chat/:roomId", component: ChatRoomPage },
@@ -306,7 +304,7 @@ export function AppRoutes() {
 
   // State để track currentPage cho mỗi role
   const [pageStates, setPageStates] = useState<Record<string, string>>({
-    USER: "dashboard",
+    USER: "test-results",
     ADMIN: "user-management",
     MANAGER: "user-management",
     LAB_USER: "test-orders",
